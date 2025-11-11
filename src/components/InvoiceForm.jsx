@@ -200,7 +200,7 @@ export default function InvoiceForm({ prefill, parts, onRemovePart })
                     <h3 className="text-base font-medium">Vehicle Information</h3>
                     <button
                         onClick={clearVehicle}
-                        className="px-3 py-1.5 text-gray-50 text-sm rounded-md border hover:bg-gray-50"
+                        className="px-3 py-1.5 text-gray-50n text-sm rounded-md border hover:bg-gray-50"
                     >
                         Clear
                     </button>

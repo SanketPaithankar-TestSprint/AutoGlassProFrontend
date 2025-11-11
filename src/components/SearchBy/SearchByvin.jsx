@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Input } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
-import config from "../config.jsx";
+import config from "../../config";
 
 const VIN_REGEX = /^[A-HJ-NPR-Z0-9]{17}$/;
 

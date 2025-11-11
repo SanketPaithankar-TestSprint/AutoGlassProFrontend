@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import SearchByVin from "./SearchByvin";
-import OrderPage from "./OrderPage";
-import InvoiceForm from "./InvoiceForm";
+import OrderPage from "../OrderPage";
+import InvoiceForm from "../InvoiceForm";
 
 export default function SearchByVinPage()
 {

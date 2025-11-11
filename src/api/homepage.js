@@ -1,7 +1,7 @@
-import apiUrl from '../config.jsx';
+import urls from '../config';
 async function login({ usernameOrEmail, password, deviceType, browserInfo })
 {
-    const response = await fetch(`${apiUrl}/auth/login`, {
+    const response = await fetch(`${urls.javaApiUrl}/auth/login`, {
         method: 'POST',
         headers: {
             'accept': '*/*',
@@ -15,6 +15,7 @@ async function login({ usernameOrEmail, password, deviceType, browserInfo })
         }),
     });
     const data = await response.json();
+    debugger;
     return data;
 }
 

@@ -1,12 +1,12 @@
 import React from "react";
 import { Layout, Row, Col, Typography, Space, Divider, Button } from "antd";
 import
-    {
-        CarOutlined,
-        LinkedinFilled,
-        FacebookFilled,
-        TwitterSquareFilled,
-    } from "@ant-design/icons";
+{
+    CarOutlined,
+    LinkedinFilled,
+    FacebookFilled,
+    TwitterSquareFilled,
+} from "@ant-design/icons";
 
 const { Footer: AntFooter } = Layout;
 const { Title, Paragraph } = Typography;
@@ -21,7 +21,7 @@ const Footer = () =>
                     <Col xs={24} md={10} lg={10}>
                         <div className="flex items-center gap-3">
                             <CarOutlined className="text-2xl" style={{ color: "#8b5cf6" }} />
-                            <span className="text-xl font-semibold">AutoGlass Pro</span>
+                            <span className="text-xl font-semibold">AutoPaneAi</span>
                         </div>
                         <Paragraph className="!text-white/70 !mt-4 !mb-8">
                             Professional auto glass pricing and quoting
@@ -120,7 +120,7 @@ const Footer = () =>
                     © {new Date().getFullYear()} AutoGlass Pro. All rights reserved.
                 </div>
             </div>
-        </AntFooter>
+        </AntFooter >
     );
 };
 

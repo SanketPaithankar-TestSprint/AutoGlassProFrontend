@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Layout } from 'antd';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import Home from './components/Home';
+import Home from './components/Home/HomeRoot.jsx';
 import OrderPage from './components/OrderPage.jsx';
 import SearchByVinPage from "./components/SearchByVinPage";
 import SearchByYMMPage from "./components/SearchByYMMPage";
