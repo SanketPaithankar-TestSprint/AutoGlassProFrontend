@@ -34,7 +34,6 @@ export default function SearchByVin({
   {
     if (!autoDecode) return;
 
-    // Clear any pending debounce
     if (timerRef.current) clearTimeout(timerRef.current);
 
     // Only fire when valid 17-char VIN
