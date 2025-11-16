@@ -41,18 +41,14 @@ export default function Login()
                 usernameOrEmail: form.email,
                 password: form.password,
             });
-
             if (res && res.success)
             {
-                localStorage.setItem("token", res.token);
-
+                localStorage.setItem("ApiToken", JSON.stringify(res));
                 api.success({
-                    message: `Welcome, ${res.username}!`,
+                    message: `Welcome, ${res.data.username}!`,
                     description: "Signed in successfully.",
                     placement: "topRight",
                 });
-
-                // Redirect to homepage after successful login
                 window.location.href = "/";
             } else
             {

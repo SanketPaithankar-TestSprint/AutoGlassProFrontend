@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { message } from "antd";
 import SearchByYMM from "./SearchByYMM";
-import CarGlassViewer from "./CarGlassViewer";
-import InvoiceForm from "./InvoiceForm";
+import CarGlassViewer from "../CarGlassViewer";
+import InvoiceForm from "../InvoiceForm";
 
 const SearchByYMMPage = () =>
 {

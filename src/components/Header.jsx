@@ -1,181 +1,309 @@
-import React, { useState, useEffect } from "react";
-import { Layout, Button, Space, Drawer, Modal } from "antd";
-import { MenuOutlined, CarOutlined } from "@ant-design/icons";
+import React, { useEffect, useState } from "react";
+import { Layout, Button, Space, Drawer, Modal, Dropdown } from "antd";
+import { MenuOutlined, UserOutlined, DownOutlined } from "@ant-design/icons";
+import Logo from "./logo";
 import SignUpForm from "./SignUpForm";
 import Login from "./login";
+import { getValidToken } from "../api/getValidToken";
 
 const { Header: AntHeader } = Layout;
 
+// ProfileDropdown component
+const ProfileDropdown = ({ onLogout }) =>
+{
+  const items = [
+    {
+      key: "profile",
+      label: <a href="/profile">User Profile</a>,
+    },
+    {
+      key: "logout",
+      label: (
+        <span
+          style={{ color: "#f97373" }}
+          onClick={onLogout}
+        >
+          Logout
+        </span>
+      ),
+      danger: true,
+    },
+  ];
+
+  return (
+    <Dropdown
+      menu={{ items }}
+      placement="bottomRight"
+      trigger={["click"]}
+    >
+      <Button
+        type="text"
+        icon={<UserOutlined />}
+        className="!h-9 !px-4 !text-slate-100 hover:!text-white !bg-transparent hover:!bg-transparent !border-0 focus:!outline-none focus:!ring-0"
+      >
+        <span className="inline-flex items-center gap-1">
+          <span>Profile</span>
+          <DownOutlined className="text-[10px]" />
+        </span>
+      </Button>
+    </Dropdown>
+  );
+};
+
 const useIsMobile = () =>
 {
-    const [isMobile, setIsMobile] = useState(
-        typeof window !== "undefined" ? window.innerWidth < 1024 : true
-    );
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== "undefined" ? window.innerWidth < 1024 : true
+  );
 
-    useEffect(() =>
+  useEffect(() =>
+  {
+    const mql = window.matchMedia("(max-width: 1023.98px)");
+    const onChange = (e) => setIsMobile(e.matches);
+    setIsMobile(mql.matches);
+    if (mql.addEventListener) mql.addEventListener("change", onChange);
+    else mql.addListener(onChange);
+    return () =>
     {
-        const mql = window.matchMedia("(max-width: 1023.98px)");
-        const onChange = (e) => setIsMobile(e.matches);
-        setIsMobile(mql.matches);
-        if (mql.addEventListener) mql.addEventListener("change", onChange);
-        else mql.addListener(onChange);
-        return () =>
-        {
-            if (mql.removeEventListener) mql.removeEventListener("change", onChange);
-            else mql.removeListener(onChange);
-        };
-    }, []);
-    return isMobile;
+      if (mql.removeEventListener) mql.removeEventListener("change", onChange);
+      else mql.removeListener(onChange);
+    };
+  }, []);
+
+  return isMobile;
 };
+
 const Header = () =>
 {
-    const isMobile = useIsMobile();
-    const [drawerOpen, setDrawerOpen] = useState(false);
-    const [modalOpen, setModalOpen] = useState(false);
-    const [loginModalOpen, setLoginModalOpen] = useState(false); // Add this state
-    useEffect(() =>
+  const isMobile = useIsMobile();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [isAuthed, setIsAuthed] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() =>
+  {
+    const token = getValidToken();
+    setIsAuthed(!!token);
+    setLoading(false);
+  }, []);
+
+  useEffect(() =>
+  {
+    if (!isMobile) setDrawerOpen(false);
+  }, [isMobile]);
+
+  useEffect(() =>
+  {
+    const onScroll = () =>
     {
-        if (!isMobile) setDrawerOpen(false);
-    }, [isMobile]);
-    const menuItems = [
-        { key: "home", label: "Home", href: "#" },
-        { key: "pricing", label: "Pricing", href: "#" },
-        { key: "about", label: "About", href: "#" },
-        { key: "contact", label: "Contact", href: "#" },
-    ];
-    const NavLink = ({ label, href }) => (
-        <a
-            href={href}
-            className="inline-flex items-center px-1 py-1 rounded-md text-white/90 hover:text-white outline-none transition"
-            style={{ WebkitTapHighlightColor: "transparent" }}
-        >
-            {label}
-        </a>
-    );
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const menuItems = [
+    { key: "home", label: "Home", href: "/" },
+    { key: "pricing", label: "Pricing", href: "/Pricing" },
+    { key: "about", label: "About", href: "/about" },
+    { key: "contact", label: "Contact", href: "/contact" },
+  ];
+
+  const NavLink = ({ label, href }) => (
+    <a
+      href={href}
+      className="relative inline-flex items-center px-1 py-1 text-sm font-medium text-slate-200/90 hover:text-white transition-colors duration-200 outline-none"
+      style={{ WebkitTapHighlightColor: "transparent" }}
+    >
+      <span className="relative">
+        {label}
+        <span className="pointer-events-none absolute -bottom-1 left-0 h-[2px] w-0 bg-gradient-to-r from-violet-400 to-fuchsia-400 transition-all duration-300 group-hover/navlink:w-full" />
+      </span>
+    </a>
+  );
+
+  if (loading)
+  {
     return (
-        <>
-            <AntHeader className="fixed top-0 left-0 right-0 z-[1000] h-16 bg-[#071a26] px-4 md:px-6 flex items-center">
-                <div className="flex items-center text-white">
-                    <CarOutlined className="text-2xl mr-2" />
-                    <span className="text-xl font-bold tracking-tight">AutoGlass Pro</span>
-                </div>
-                <nav className="hidden lg:flex flex-1 justify-center">
-                    <ul className="flex items-center gap-8 xl:gap-12">
-                        {menuItems.map((item) => (
-                            <li key={item.key} className="list-none">
-                                <NavLink label={item.label} href={item.href} />
-                            </li>
-                        ))}
-                    </ul>
-                </nav>
-                <div className="hidden lg:block">
-                    <Space>
-                        <Button
-                            type="text"
-                            className="!h-9 !px-3 !text-white/90 hover:!text-white !bg-transparent hover:!bg-transparent !border-0 focus:!outline-none focus:!ring-0 focus:!shadow-none hover:!shadow-none active:!shadow-none"
-                            onClick={() => setLoginModalOpen(true)} // Add onClick
-                        >
-                            Login
-                        </Button>
-                        <Button
-                            type="primary"
-                            onClick={() => setModalOpen(true)}
-                            className="!h-9 !px-5 !rounded-full !bg-[#7c3aed] hover:!bg-[#6d28d9] !border-transparent !text-white focus:!outline-none focus:!ring-0 focus:!shadow-none hover:!shadow-none active:!shadow-none"
-                        >
-                            Sign Up
-                        </Button>
-                    </Space>
-                </div>
-                {isMobile && (
-                    <Button
-                        type="text"
-                        aria-label="Open navigation"
-                        icon={<MenuOutlined />}
-                        onClick={() => setDrawerOpen(true)}
-                        className="ml-auto !text-white !text-xl !bg-transparent hover:!bg-transparent !border-0 focus:!outline-none focus:!ring-0 focus:!shadow-none hover:!shadow-none active:!shadow-none"
-                    />
-                )}
-            </AntHeader>
-            {isMobile && (
-                <Drawer
-                    title={
-                        <div className="flex items-center">
-                            <CarOutlined className="text-xl mr-2" />
-                            <span className="font-semibold">AutoGlass Pro</span>
-                        </div>
-                    }
-                    placement="right"
-                    open={drawerOpen}
-                    onClose={() => setDrawerOpen(false)}
-                    bodyStyle={{ padding: 0 }}
-                    maskClosable
-                    destroyOnClose
-                >
-                    <nav className="p-3">
-                        <ul className="space-y-1">
-                            {menuItems.map((item) => (
-                                <li key={item.key}>
-                                    <a
-                                        href={item.href}
-                                        className="block px-3 py-2 rounded-md text-gray-800 hover:text-white hover:bg-[#6d28d9] outline-none"
-                                        style={{ WebkitTapHighlightColor: "transparent" }}
-                                        onClick={() => setDrawerOpen(false)}
-                                    >
-                                        {item.label}
-                                    </a>
-                                </li>
-                            ))}
-                        </ul>
-                        <div className="px-3 pt-3 border-t mt-3">
-                            <Button
-                                type="text"
-                                className="w-full !h-10 !text-gray-800 !bg-transparent hover:!bg-transparent !border-0 focus:!outline-none focus:!ring-0 focus:!shadow-none hover:!shadow-none active:!shadow-none"
-                                onClick={() =>
-                                {
-                                    setDrawerOpen(false);
-                                    setLoginModalOpen(true); // Add onClick for mobile
-                                }}
-                            >
-                                Login
-                            </Button>
-                            <Button
-                                type="primary"
-                                onClick={() =>
-                                {
-                                    setDrawerOpen(false);
-                                    setModalOpen(true);
-                                }}
-                                className="w-full !h-10 !mt-2 !rounded-full !bg-[#7c3aed] hover:!bg-[#6d28d9] !border-transparent !text-white focus:!outline-none focus:!ring-0 focus:!shadow-none hover:!shadow-none active:!shadow-none"
-                            >
-                                Sign Up
-                            </Button>
-                        </div>
-                    </nav>
-                </Drawer>
-            )}
-            <Modal
-                title="Create Your AutoGlass Pro Account"
-                open={modalOpen}
-                onCancel={() => setModalOpen(false)}
-                footer={null}
-                destroyOnClose
-                className="signup-modal"
-            >
-                <SignUpForm />
-            </Modal>
-            <Modal
-                title="Login to AutoGlass Pro"
-                open={loginModalOpen}
-                onCancel={() => setLoginModalOpen(false)}
-                footer={null}
-                destroyOnClose
-                className="login-modal"
-            >
-                <Login />
-            </Modal>
-            <div className="h-16" />
-        </>
+      <div className="fixed top-0 left-0 right-0 z-40 h-20 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/70 flex items-center justify-center">
+        <div className="h-6 w-6 rounded-full border-2 border-violet-500 border-t-transparent animate-spin" />
+      </div>
     );
+  }
+
+  return (
+    <>
+      <AntHeader
+        className={`
+          fixed top-0 left-0 right-0 z-40
+          flex items-center
+          px-4 md:px-6
+          border-b border-slate-800/70
+          transition-all duration-300
+          ${scrolled
+            ? "h-16 bg-slate-950/90 shadow-lg shadow-slate-950/40 backdrop-blur-xl"
+            : "h-20 bg-slate-950/75 shadow-md shadow-slate-950/30 backdrop-blur-lg"
+          }
+        `}
+        style={{ paddingInline: 0 }}
+      >
+        {/* Left: Logo + small tag */}
+        <div className="flex items-center gap-3">
+          <a
+            href="/"
+            className="flex items-center gap-2 hover:scale-[1.02] transition-transform duration-150"
+          >
+            <Logo className="w-32 h-auto" />
+          </a>
+        </div>
+
+        {/* Center: Navigation */}
+        <nav className="hidden lg:flex flex-1 justify-center">
+          <ul className="flex items-center gap-8 xl:gap-12 group/navlink">
+            {menuItems.map((item) => (
+              <li key={item.key} className="list-none">
+                <NavLink label={item.label} href={item.href} />
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        {/* Right: Buttons / Profile */}
+        {!isAuthed ? (
+          <div className="hidden lg:block ml-auto">
+            <Space>
+              <Button
+                type="text"
+                className="!h-9 !px-3 !text-slate-200/90 hover:!text-white !bg-transparent hover:!bg-transparent !border-0 focus:!outline-none focus:!ring-0 focus:!shadow-none hover:!shadow-none active:!shadow-none"
+                onClick={() => setLoginModalOpen(true)}
+              >
+                Login
+              </Button>
+              <Button
+                type="primary"
+                onClick={() => setModalOpen(true)}
+                className="relative !h-9 !px-5 !rounded-full !border-0 !bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:!from-violet-400 hover:!to-fuchsia-400 !text-white shadow-lg shadow-violet-700/40 transition-transform duration-150 hover:scale-105"
+              >
+                <span className="relative">Sign Up</span>
+              </Button>
+            </Space>
+          </div>
+        ) : (
+          <div className="hidden lg:flex items-center gap-3 ml-auto">
+            <ProfileDropdown
+              onLogout={() =>
+              {
+                localStorage.removeItem("ApiToken");
+                setIsAuthed(false);
+              }}
+            />
+          </div>
+        )}
+
+        {/* Mobile menu button */}
+        {isMobile && (
+          <Button
+            type="text"
+            aria-label="Open navigation"
+            icon={<MenuOutlined />}
+            onClick={() => setDrawerOpen(true)}
+            className="ml-auto !flex lg:!hidden !items-center !justify-center !h-9 !w-9 !rounded-full !text-slate-100 !bg-slate-900/60 hover:!bg-slate-800/80 !border border-slate-700/70 shadow-sm shadow-slate-900/60 focus:!outline-none focus:!ring-0 focus:!shadow-none"
+          />
+        )}
+      </AntHeader>
+
+      {/* Mobile Drawer */}
+      {isMobile && (
+        <Drawer
+          title={
+            <div className="flex items-center gap-2">
+              <Logo className="w-24 h-auto" />
+              <span className="font-semibold text-slate-100 text-sm">
+                APAi
+              </span>
+            </div>
+          }
+          placement="right"
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          bodyStyle={{ padding: 0, background: "#020617" }}
+          maskClosable
+          destroyOnClose
+          className="ap-header-drawer"
+        >
+          <nav className="p-3 text-slate-100">
+            <ul className="space-y-1">
+              {menuItems.map((item) => (
+                <li key={item.key}>
+                  <a
+                    href={item.href}
+                    className="block px-3 py-2 rounded-md text-sm text-slate-200 hover:text-white hover:bg-slate-800/80 outline-none transition-colors duration-150"
+                    style={{ WebkitTapHighlightColor: "transparent" }}
+                    onClick={() => setDrawerOpen(false)}
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+
+            {!isAuthed && (
+              <div className="px-3 pt-3 border-t border-slate-800 mt-3">
+                <Button
+                  type="text"
+                  className="w-full !h-10 !text-slate-200 !bg-transparent hover:!bg-transparent !border-0 text-sm"
+                  onClick={() =>
+                  {
+                    setDrawerOpen(false);
+                    setLoginModalOpen(true);
+                  }}
+                >
+                  Login
+                </Button>
+                <Button
+                  type="primary"
+                  onClick={() =>
+                  {
+                    setDrawerOpen(false);
+                    setModalOpen(true);
+                  }}
+                  className="w-full !h-10 !mt-2 !rounded-full !bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:!from-violet-400 hover:!to-fuchsia-400 !border-0 !text-white text-sm shadow-lg shadow-violet-800/40"
+                >
+                  Sign Up
+                </Button>
+              </div>
+            )}
+          </nav>
+        </Drawer>
+      )}
+
+      {/* Modals */}
+      <Modal
+        title="Create your APAi account"
+        open={modalOpen}
+        onCancel={() => setModalOpen(false)}
+        footer={null}
+        destroyOnClose
+        className="signup-modal"
+      >
+        <SignUpForm />
+      </Modal>
+
+      <Modal
+        title="Login to APAi"
+        open={loginModalOpen}
+        onCancel={() => setLoginModalOpen(false)}
+        footer={null}
+        destroyOnClose
+        className="login-modal"
+      >
+        <Login />
+      </Modal>
+    </>
+  );
 };
 
 export default Header;

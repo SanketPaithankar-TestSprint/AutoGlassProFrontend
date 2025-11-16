@@ -12,7 +12,6 @@ export default function OrderPage({ data })
 {
     if (!data)
     {
-        debugger;
         return <div className="text-gray-500">Enter a VIN to view vehicle details.</div>;
     }
 

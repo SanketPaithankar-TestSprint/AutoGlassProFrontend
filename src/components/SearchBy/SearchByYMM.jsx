@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Select, Spin, message } from "antd";
-import { getModelId } from "../api/getModel"; // Import the API function
-import CarGlassViewer from "./CarGlassViewer";
+import { getModelId } from "../../api/getModel"; // Import the API function
+import CarGlassViewer from "../CarGlassViewer";
 
 const VPIC_BASE = "https://vpic.nhtsa.dot.gov/api/vehicles";
 const VEHICLE_TYPE = "car";

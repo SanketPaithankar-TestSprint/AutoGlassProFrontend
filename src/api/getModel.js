@@ -1,7 +1,7 @@
-import config from "../config";
+import urls from "../config";
 export const getModelId = async (year, make, model) =>
 {
-    const baseUrl = config.pythonApiUrl + "agp/v1/get-model-id";
+    const baseUrl = urls.pythonApiUrl + "agp/v1/get-model-id";
     const url = `${baseUrl}?year=${year}&make=${make}&model=${model}`;
 
     try
