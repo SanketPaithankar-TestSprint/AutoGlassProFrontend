@@ -97,7 +97,7 @@ const Home = () =>
                                 <p className="text-sm text-slate-300">
                                     Instantly navigate to the{" "}
                                     <span className="font-medium text-violet-300">
-                                        SearchByRoot
+                                        SearchBy
                                     </span>{" "}
                                     experience to explore vehicle hierarchies and decode
                                     structured data starting from a root code.

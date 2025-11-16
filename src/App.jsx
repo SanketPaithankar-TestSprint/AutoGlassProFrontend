@@ -6,7 +6,6 @@ import Home from './components/Home/HomeRoot.jsx';
 import OrderPage from './components/OrderPage.jsx';
 import SearchByRoot from "./components/SearchBy/SearchByRoot";
 import Profile from './components/profile/Profile.jsx';
-import SearchByVin from './components/SearchBy/SearchByvin.jsx';
 import PricingPage from './components/PricingPage.jsx';
 const { Content } = Layout;
 
@@ -20,7 +19,7 @@ function App()
           <Route path="/" element={<Home />} />
           <Route path="/search-by-root" element={<SearchByRoot />} />
           <Route path="/Profile" element={<Profile />} />
-          <Route path="/Search-by-vin" element={<SearchByVin />} />
+          <Route path="/Order" element={<OrderPage />} />
           <Route path="/Pricing" element={<PricingPage />} />
         </Routes>
       </Content>
