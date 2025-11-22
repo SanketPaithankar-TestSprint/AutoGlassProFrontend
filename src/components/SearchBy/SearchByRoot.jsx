@@ -9,7 +9,7 @@ const SearchByRoot = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-950 to-slate-900 flex items-center justify-center px-4 pt-24 pb-16">
-      <div className="w-full max-w-5xl mx-auto">
+      <div className="w-full max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-10">
           <p className="text-[11px] font-semibold tracking-[0.3em] uppercase text-violet-400/80 mb-3">

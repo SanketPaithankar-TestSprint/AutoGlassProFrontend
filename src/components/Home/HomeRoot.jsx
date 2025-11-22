@@ -88,11 +88,11 @@ const Home = () =>
                             <div>
                                 <div className="inline-flex items-center gap-2 rounded-full bg-violet-500/10 border border-violet-500/30 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-violet-200 mb-4">
                                     <span className="h-1.5 w-1.5 rounded-full bg-violet-400 animate-pulse" />
-                                    Root based search
+                                    Search For Your Vehicle
                                 </div>
 
                                 <h3 className="text-lg md:text-xl font-semibold mb-2">
-                                    Search by Root
+                                    Search by Vin or Year Make Model
                                 </h3>
                                 <p className="text-sm text-slate-300">
                                     Instantly navigate to the{" "}

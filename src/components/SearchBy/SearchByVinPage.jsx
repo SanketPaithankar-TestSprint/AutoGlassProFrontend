@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import SearchByVin from "./SearchByvin";
 import OrderPage from "../OrderPage";
 import InvoiceForm from "../InvoiceForm";
@@ -8,7 +8,7 @@ export default function SearchByVinPage()
   const [vinData, setVinData] = useState(null);
 
   return (
-    <div className="w-full mx-auto space-y-6">
+      <div className="min-h-screen w-full bg-gradient-to-br from-blue-100 via-purple-100 to-blue-200 mx-auto p-4 md:p-8 space-y-6">
       {/* Main VIN search card */}
       <div
         className="
@@ -16,10 +16,11 @@ export default function SearchByVinPage()
           bg-slate-900/70 backdrop-blur-lg
           shadow-xl shadow-slate-950/70
           p-4 md:p-6
+          text-slate-50
         "
       >
         <div className="mb-4">
-          <h1 className="text-xl md:text-2xl font-semibold text-slate-50">
+          <h1 className="text-xl md:text-2xl font-semibold">
             Search by VIN
           </h1>
           <p className="mt-1 text-sm text-slate-300">
@@ -46,12 +47,15 @@ export default function SearchByVinPage()
               bg-slate-900/70 backdrop-blur-lg
               shadow-xl shadow-slate-950/70
               p-4 md:p-6
+              text-slate-50
             "
           >
-            <h2 className="text-lg font-semibold text-slate-50 mb-3">
+            <h2 className="text-lg font-semibold mb-3">
               Order Details
             </h2>
-            <OrderPage data={vinData} />
+            <div className="text-slate-200 text-sm">
+              <OrderPage data={vinData} />
+            </div>
           </div>
 
           {/* Invoice section */}
@@ -61,20 +65,23 @@ export default function SearchByVinPage()
               bg-slate-900/70 backdrop-blur-lg
               shadow-xl shadow-slate-950/70
               p-4 md:p-6
+              text-slate-50
             "
           >
-            <h2 className="text-lg font-semibold text-slate-50 mb-3">
+            <h2 className="text-lg font-semibold mb-3">
               Invoice Preview
             </h2>
-            <InvoiceForm
-              prefill={{
-                year: vinData?.year || "",
-                make: vinData?.make || "",
-                model: vinData?.model || "",
-                body: vinData?.body_type || vinData?.vehicle_type || "",
-                vin: vinData?.vin || "",
-              }}
-            />
+            <div className="text-slate-200 text-sm">
+              <InvoiceForm
+                prefill={{
+                  year: vinData?.year || "",
+                  make: vinData?.make || "",
+                  model: vinData?.model || "",
+                  body: vinData?.body_type || vinData?.vehicle_type || "",
+                  vin: vinData?.vin || "",
+                }}
+              />
+            </div>
           </div>
         </div>
       )}
