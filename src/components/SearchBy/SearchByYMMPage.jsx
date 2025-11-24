@@ -7,28 +7,34 @@ import InvoiceForm from "../InvoiceForm";
 const SearchByYMMPage = () =>
 {
   const [modelId, setModelId] = useState(null);
-  const [selectedParts, setSelectedParts] = useState([]);
+  const [selectedParts, setSelectedParts] = useState([]); // Array of { glass, part, glassInfo }
   const [vehicleInfo, setVehicleInfo] = useState({});
 
   // Handle adding a part to the invoice
-  const handleAddPart = (part) =>
-  {
-    setSelectedParts((prevParts) =>
-    {
-      if (prevParts.find((p) => p.code === part.code))
-      {
+  const handleAddPart = ({ glass, part, glassInfo }) => {
+
+    setSelectedParts((prevParts) => {
+      const alreadyAdded = prevParts.some(
+        (p) =>
+          p.part.nags_glass_id === part.nags_glass_id &&
+          p.part.oem_glass_id === part.oem_glass_id &&
+          p.glass.code === glass.code
+      );
+      debugger;
+      if (alreadyAdded) {
         message.warning("Part already added to the invoice.");
         return prevParts;
       }
-      return [...prevParts, part];
+      return [...prevParts, { glass, part, glassInfo }];
     });
   };
 
   // Handle removing a part from the invoice
-  const handleRemovePart = (partCode) =>
-  {
+  const handleRemovePart = (partKey) => {
     setSelectedParts((prevParts) =>
-      prevParts.filter((p) => p.code !== partCode)
+      prevParts.filter(
+        (p) => `${p.part.nags_glass_id || ""}|${p.part.oem_glass_id || ""}|${p.glass.code}` !== partKey
+      )
     );
   };
 

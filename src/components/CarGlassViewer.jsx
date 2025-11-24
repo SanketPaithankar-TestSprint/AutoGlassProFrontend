@@ -96,12 +96,9 @@ export default function CarGlassViewer({ modelId, onPartSelect }) {
     }
   };
 
-  // ---------- 3) when a part is selected, load detailed glass info ----------
   const handleSelectPart = async (part) => {
-    // Uniqueness: compare both NAGS and OEM IDs
     const partKey = `${part.nags_glass_id || ""}|${part.oem_glass_id || ""}`;
     const glassKey = selectedGlass ? selectedGlass.code : "";
-    // Check if already selected
     const alreadySelected = selectedParts.some(
       (p) =>
         p.part.nags_glass_id === part.nags_glass_id &&
@@ -264,30 +261,59 @@ export default function CarGlassViewer({ modelId, onPartSelect }) {
     );
   };
 
-  const renderSelectedPartPanel = () => {
-    if (!selectedParts.length) return null;
-    return (
-      <div className="mt-6 rounded-xl border-2 border-violet-500 bg-slate-900/90 p-4 text-sm text-slate-100 shadow-lg">
-        <h5 className="text-base font-bold text-violet-300 mb-2">
-          Selected Parts
-        </h5>
-        <div className="flex flex-col gap-4">
-          {selectedParts.map(({ glass, part, glassInfo }, idx) => {
-            const prefix_cd = glass ? getPrefixCd(glass) : null;
-            const pos_cd = glass ? getPosCd(glass) : null;
-            const side_cd = glass ? getSideCd(glass) : null;
-            return (
-              <div key={idx} className="border-b border-slate-700 pb-3 mb-3 last:border-b-0 last:mb-0 last:pb-0">
-                <div className="flex justify-between gap-3 text-xs">
-                  <span className="text-slate-400 font-semibold">NAGS Glass ID</span>
-                  <span className="text-slate-100 break-all">{part.nags_glass_id || "-"}</span>
+  // Remove selected part by unique key
+  const handleRemoveSelectedPart = (partKey) => {
+    setSelectedParts((prev) =>
+      prev.filter(
+        (p) => `${p.part.nags_glass_id || ""}|${p.part.oem_glass_id || ""}|${p.glass.code}` !== partKey
+      )
+    );
+  };
+
+const renderSelectedPartPanel = () => {
+  if (!selectedParts.length) return null;
+
+  return (
+    <div className="mt-6 rounded-xl border-2 border-violet-500 bg-slate-900/90 p-4 text-sm text-slate-100 shadow-lg relative">
+      <h5 className="text-base font-bold text-violet-300 mb-2">Selected Parts</h5>
+
+      <div className="flex flex-col gap-4">
+        {selectedParts.map(({ glass, part, glassInfo }, idx) => {
+          const prefix_cd = glass ? getPrefixCd(glass) : null;
+          const pos_cd = glass ? getPosCd(glass) : null;
+          const side_cd = glass ? getSideCd(glass) : null;
+          const partKey = `${part.nags_glass_id || ""}|${part.oem_glass_id || ""}|${glass.code}`;
+
+          return (
+            <div
+              key={partKey}
+              className="relative border-b border-slate-700 pb-3 mb-3 last:border-b-0 last:mb-0 last:pb-0"
+            >
+              {/* Cross icon positioned correctly in the top-right corner */}
+              <button
+                type="button"
+                onClick={() => handleRemoveSelectedPart(partKey)}
+                className="absolute top-3 right-3 text-slate-400 hover:text-red-400 text-lg font-bold rounded-full focus:outline-none"
+                title="Remove"
+                aria-label="Remove"
+              >
+                &times;
+              </button>
+
+              {/* Selected Part Information */}
+              <div className="flex flex-col gap-3">
+                <div className="flex text-s">
+                  <span className="text-slate-400 font-semibold">NAGS Glass ID : </span>
+                  <span className="text-slate-100">{part.nags_glass_id || "-"}</span>
                 </div>
-                <div className="flex justify-between gap-3 text-xs">
-                  <span className="text-slate-400 font-semibold">OEM Glass ID</span>
-                  <span className="text-slate-100 break-all">{part.oem_glass_id || "-"}</span>
+
+                <div className="flex text-s">
+                  <span className="text-slate-400 font-semibold">OEM Glass ID : </span>
+                  <span className="text-slate-100">{" " + (part.oem_glass_id || "-")}</span>
                 </div>
+
                 {glass && (
-                  <div className="flex flex-col gap-1 mt-2 text-xs text-slate-300">
+                  <div className="flex flex-col gap-1 text-xs text-slate-300">
                     <div>
                       <b>Type:</b> {prefixMap[prefix_cd] || prefix_cd}
                     </div>
@@ -299,25 +325,25 @@ export default function CarGlassViewer({ modelId, onPartSelect }) {
                     </div>
                   </div>
                 )}
+
                 <div className="mt-3">
                   <h6 className="text-xs font-bold text-violet-400 mb-1">Labor Info</h6>
-                  {glassInfo && (glassInfo.labor) ? (
+                  {glassInfo && glassInfo.labor ? (
                     <div className="text-slate-200 text-xs">
-                      {glassInfo.labor !== undefined && (
-                        <div><b>Labor Hours:</b> {glassInfo.labor}</div>
-                      )}
+                      <div><b>Labor Hours:</b> {glassInfo.labor}</div>
                     </div>
                   ) : (
                     <span className="text-slate-400 text-xs">No labor info available.</span>
                   )}
                 </div>
               </div>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
       </div>
-    );
-  };
+    </div>
+  );
+};
 
   // ---------- main render ----------
   if (loading) {
