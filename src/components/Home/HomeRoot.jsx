@@ -83,15 +83,6 @@ const Home = () => {
 
                         <div className="relative p-6 flex flex-col h-full justify-between">
                             <div>
-<<<<<<< Updated upstream
-                                <div className="inline-flex items-center gap-2 rounded-full bg-violet-500/10 border border-violet-500/30 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-violet-200 mb-4">
-                                    <span className="h-1.5 w-1.5 rounded-full bg-violet-400 animate-pulse" />
-                                    Root based search
-                                </div>
-
-                                <h3 className="text-lg md:text-xl font-semibold mb-2">
-                                    Search by Root
-=======
                                 <div className="inline-flex items-center gap-2 rounded-full bg-violet-50/80 border border-violet-200 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-violet-700 mb-4">
                                     <span className="h-1.5 w-1.5 rounded-full bg-violet-500 animate-pulse" />
                                     Search For Your Vehicle
@@ -99,17 +90,11 @@ const Home = () => {
 
                                 <h3 className="text-lg md:text-xl font-semibold mb-2 text-slate-900">
                                     Search by Vin or Year Make Model
->>>>>>> Stashed changes
                                 </h3>
                                 <p className="text-sm text-slate-600">
                                     Instantly navigate to the{" "}
-<<<<<<< Updated upstream
-                                    <span className="font-medium text-violet-300">
-                                        SearchByRoot
-=======
                                     <span className="font-medium text-violet-600">
                                         SearchBy
->>>>>>> Stashed changes
                                     </span>{" "}
                                     experience to explore vehicle hierarchies and decode
                                     structured data starting from a root code.
