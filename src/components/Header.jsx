@@ -10,8 +10,7 @@ import ThemeSwitch from './ThemeSwitch';
 const { Header: AntHeader } = Layout;
 
 // ProfileDropdown component
-const ProfileDropdown = ({ onLogout }) =>
-{
+const ProfileDropdown = ({ onLogout }) => {
   const items = [
     {
       key: "profile",
@@ -51,21 +50,18 @@ const ProfileDropdown = ({ onLogout }) =>
   );
 };
 
-const useIsMobile = () =>
-{
+const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(
     typeof window !== "undefined" ? window.innerWidth < 1024 : true
   );
 
-  useEffect(() =>
-  {
+  useEffect(() => {
     const mql = window.matchMedia("(max-width: 1023.98px)");
     const onChange = (e) => setIsMobile(e.matches);
     setIsMobile(mql.matches);
     if (mql.addEventListener) mql.addEventListener("change", onChange);
     else mql.addListener(onChange);
-    return () =>
-    {
+    return () => {
       if (mql.removeEventListener) mql.removeEventListener("change", onChange);
       else mql.removeListener(onChange);
     };
@@ -74,8 +70,7 @@ const useIsMobile = () =>
   return isMobile;
 };
 
-const Header = () =>
-{
+const Header = () => {
   const isMobile = useIsMobile();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -84,22 +79,18 @@ const Header = () =>
   const [loading, setLoading] = useState(true);
   const [scrolled, setScrolled] = useState(false);
 
-  useEffect(() =>
-  {
+  useEffect(() => {
     const token = getValidToken();
     setIsAuthed(!!token);
     setLoading(false);
   }, []);
 
-  useEffect(() =>
-  {
+  useEffect(() => {
     if (!isMobile) setDrawerOpen(false);
   }, [isMobile]);
 
-  useEffect(() =>
-  {
-    const onScroll = () =>
-    {
+  useEffect(() => {
+    const onScroll = () => {
       setScrolled(window.scrollY > 20);
     };
     window.addEventListener("scroll", onScroll);
@@ -116,20 +107,16 @@ const Header = () =>
   const NavLink = ({ label, href }) => (
     <a
       href={href}
-      className="relative inline-flex items-center px-1 py-1 text-sm font-medium text-slate-200/90 hover:text-white transition-colors duration-200 outline-none"
+      className="nav-link"
       style={{ WebkitTapHighlightColor: "transparent" }}
     >
-      <span className="relative">
-        {label}
-        <span className="pointer-events-none absolute -bottom-1 left-0 h-[2px] w-0 bg-gradient-to-r from-violet-400 to-fuchsia-400 transition-all duration-300 group-hover/navlink:w-full" />
-      </span>
+      {label}
     </a>
   );
 
-  if (loading)
-  {
+  if (loading) {
     return (
-      <div className="fixed top-0 left-0 right-0 z-40 h-20 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/70 flex items-center justify-center">
+      <div className="fixed top-0 left-0 right-0 z-40 h-20 bg-slate-950/80 backdrop-blur-xl flex items-center justify-center">
         <div className="h-6 w-6 rounded-full border-2 border-violet-500 border-t-transparent animate-spin" />
       </div>
     );
@@ -139,17 +126,14 @@ const Header = () =>
     <>
       <AntHeader
         className={`
+          glass-navbar
           fixed top-0 left-0 right-0 z-40
           flex items-center
           px-4 md:px-6
-          border-b border-slate-800/70
           transition-all duration-300
-          ${scrolled
-            ? "h-16 bg-slate-950/90 shadow-lg shadow-slate-950/40 backdrop-blur-xl"
-            : "h-20 bg-slate-950/75 shadow-md shadow-slate-950/30 backdrop-blur-lg"
-          }
+          ${scrolled ? "h-16" : "h-20"}
         `}
-        style={{ paddingInline: 0 }}
+        style={{ paddingInline: 0, boxShadow: scrolled ? '0 2px 8px rgba(0,0,0,0.12)' : 'none' }}
       >
 
         {/* Left: Logo + small tag */}
@@ -201,8 +185,7 @@ const Header = () =>
         ) : (
           <div className="hidden lg:flex items-center gap-3 ml-auto">
             <ProfileDropdown
-              onLogout={() =>
-              {
+              onLogout={() => {
                 localStorage.removeItem("ApiToken");
                 setIsAuthed(false);
               }}
@@ -262,8 +245,7 @@ const Header = () =>
                 <Button
                   type="text"
                   className="w-full !h-10 !text-slate-200 !bg-transparent hover:!bg-transparent !border-0 text-sm"
-                  onClick={() =>
-                  {
+                  onClick={() => {
                     setDrawerOpen(false);
                     setLoginModalOpen(true);
                   }}
@@ -272,8 +254,7 @@ const Header = () =>
                 </Button>
                 <Button
                   type="primary"
-                  onClick={() =>
-                  {
+                  onClick={() => {
                     setDrawerOpen(false);
                     setModalOpen(true);
                   }}

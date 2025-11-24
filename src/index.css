@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 
 html[data-theme="light"] body,
 html[data-theme="light"] .ant-layout {
@@ -10,6 +11,63 @@ html[data-theme="dark"] .ant-layout {
   background-color: var(--color-bg-dark) !important;
   color: var(--color-text-dark) !important;
 }
+=======
+/* Glassmorphism Navbar */
+.ant-layout-header.glass-navbar {
+  background: rgba(10, 15, 34, 0.55) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff !important;
+}
+
+/* Clean light background for main page */
+body,
+.ant-layout {
+  background: #F8F9FC !important;
+}
+
+/* Navbar and Footer custom styles */
+.ant-layout-header {
+  background: transparent !important;
+  /* Default to transparent, let specific classes override */
+  color: #fff !important;
+}
+
+.footer-black {
+  background: #0f172a !important;
+  color: #fff !important;
+}
+
+.nav-link {
+  color: #fff !important;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  transition: color 0.2s, background 0.2s;
+}
+
+.nav-link:hover,
+.nav-link:focus {
+  color: #60a5fa !important;
+  /* Tailwind's blue-400 */
+  background: none;
+}
+
+.footer-link {
+  color: #fff !important;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.footer-link:hover,
+.footer-link:focus {
+  color: #60a5fa !important;
+}
+
+>>>>>>> Stashed changes
 @import "tailwindcss";
 
 :root {
@@ -73,9 +131,11 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
+
 button:hover {
   border-color: #646cff;
 }
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
@@ -85,8 +145,10 @@ button:focus-visible {
 
 /* Firefox */
 * {
-  scrollbar-width: none;           /* Firefox */
-  -ms-overflow-style: none;        /* IE 10+ */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE 10+ */
 }
 
 /* Chrome, Edge, Safari, Opera */
@@ -101,9 +163,11 @@ button:focus-visible {
     color: #213547;
     background-color: #ffffff;
   }
+
   a:hover {
     color: #747bff;
   }
+
   button {
     background-color: #f9f9f9;
   }
