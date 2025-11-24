@@ -8,25 +8,27 @@ import SearchByRoot from "./components/SearchBy/SearchByRoot";
 import Profile from './components/profile/Profile.jsx';
 import SearchByVin from './components/SearchBy/SearchByvin.jsx';
 import PricingPage from './components/PricingPage.jsx';
+import ThemeSwitch from './components/ThemeSwitch';
 const { Content } = Layout;
 
-function App()
-{
-  return (<Router>
-    <Layout className="min-h-screen">
-      <Header />
-      <Content>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/search-by-root" element={<SearchByRoot />} />
-          <Route path="/Profile" element={<Profile />} />
-          <Route path="/Search-by-vin" element={<SearchByVin />} />
-          <Route path="/Pricing" element={<PricingPage />} />
-        </Routes>
-      </Content>
-      <Footer />
-    </Layout>
-  </Router>
+function App() {
+  return (
+    <Router>
+      <Layout className="min-h-screen">
+        <Header />
+        <ThemeSwitch />
+        <Content>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/search-by-root" element={<SearchByRoot />} />
+            <Route path="/Profile" element={<Profile />} />
+            <Route path="/Search-by-vin" element={<SearchByVin />} />
+            <Route path="/Pricing" element={<PricingPage />} />
+          </Routes>
+        </Content>
+        <Footer />
+      </Layout>
+    </Router>
   );
 }
 

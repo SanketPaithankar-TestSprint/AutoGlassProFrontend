@@ -5,6 +5,7 @@ import Logo from "./logo";
 import SignUpForm from "./SignUpForm";
 import Login from "./login";
 import { getValidToken } from "../api/getValidToken";
+import ThemeSwitch from './ThemeSwitch';
 
 const { Header: AntHeader } = Layout;
 
@@ -150,6 +151,7 @@ const Header = () =>
         `}
         style={{ paddingInline: 0 }}
       >
+
         {/* Left: Logo + small tag */}
         <div className="flex items-center gap-3">
           <a
@@ -158,6 +160,11 @@ const Header = () =>
           >
             <Logo className="w-32 h-auto" />
           </a>
+        </div>
+
+        {/* Theme Switcher */}
+        <div className="ml-4">
+          <ThemeSwitch />
         </div>
 
         {/* Center: Navigation */}
