@@ -8,15 +8,14 @@ import SearchByRoot from "./components/SearchBy/SearchByRoot";
 import Profile from './components/profile/Profile.jsx';
 import SearchByVin from './components/SearchBy/SearchByvin.jsx';
 import PricingPage from './components/PricingPage.jsx';
-import ThemeSwitch from './components/ThemeSwitch';
 const { Content } = Layout;
 
-function App() {
+function App()
+{
   return (
     <Router>
       <Layout className="min-h-screen">
         <Header />
-        <ThemeSwitch />
         <Content>
           <Routes>
             <Route path="/" element={<Home />} />
