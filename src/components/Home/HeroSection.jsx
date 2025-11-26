@@ -7,28 +7,28 @@ const HeroSection = () =>
     return (
     <section
       id="hero"
-      className="relative overflow-hidden bg-gradient-to-r from-violet-500 via-indigo-500 to-violet-600 text-white"
+      className="relative overflow-hidden bg-[#F8F9FC] text-slate-900"
     >
-      {/* Soft glow / blobs */}
-      <div className="pointer-events-none absolute inset-0 opacity-60 mix-blend-screen">
-        <div className="absolute -top-32 -left-16 h-64 w-64 rounded-full bg-fuchsia-500/40 blur-3xl animate-pulse" />
-        <div className="absolute -bottom-24 right-0 h-72 w-72 rounded-full bg-indigo-400/40 blur-3xl animate-[pulse_6s_ease-in-out_infinite]" />
+      {/* Soft glow / blobs - Adjusted for light theme */}
+      <div className="pointer-events-none absolute inset-0 opacity-60 mix-blend-multiply">
+        <div className="absolute -top-32 -left-16 h-64 w-64 rounded-full bg-violet-200/60 blur-3xl animate-pulse" />
+        <div className="absolute -bottom-24 right-0 h-72 w-72 rounded-full bg-indigo-200/60 blur-3xl animate-[pulse_6s_ease-in-out_infinite]" />
       </div>
 
       {/* Content */}
       <div className="relative max-w-5xl mx-auto px-6 pt-24 pb-24 md:pt-28 md:pb-28 text-center">
         {/* Tagline */}
-        <p className="text-xs md:text-sm font-semibold tracking-[0.32em] uppercase text-violet-100/80 mb-5">
+        <p className="text-xs md:text-sm font-semibold tracking-[0.32em] uppercase text-violet-600/90 mb-5">
           AUTO GLASS QUOTING · POWERED BY AI
         </p>
 
         {/* Heading */}
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4 animate-[fadeInUp_0.7s_ease-out]">
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4 animate-[fadeInUp_0.7s_ease-out] text-slate-900">
           Ready to simplify your glass replacement quotes?
         </h1>
 
         {/* Subheading */}
-        <p className="text-base md:text-lg text-violet-100/90 mb-8 max-w-2xl mx-auto animate-[fadeInUp_0.9s_ease-out]">
+        <p className="text-base md:text-lg text-slate-600 mb-8 max-w-2xl mx-auto animate-[fadeInUp_0.9s_ease-out]">
           Join thousands of auto glass shops already saving time and increasing profits.
         </p>
 

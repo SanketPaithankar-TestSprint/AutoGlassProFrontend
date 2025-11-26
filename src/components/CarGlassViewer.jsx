@@ -1,37 +1,95 @@
-"use client";
+import React, { useEffect, useState, useRef } from "react";
+import config from "../config";
 
-import React, { useEffect, useState } from "react";
-
-export default function CarGlassViewer({ modelId, onPartSelect })
-{
+export default function CarGlassViewer({
+  modelId,
+  vehicleInfo,
+  onPartSelect,
+}) {
+  // 1) Glass catalog (left column)
   const [loading, setLoading] = useState(true);
   const [glassData, setGlassData] = useState([]);
-  const [selectedGlasses, setSelectedGlasses] = useState([]);
   const [error, setError] = useState(null);
 
-  useEffect(() =>
-  {
+  // Multi-selection state: Array of { glass, label, parts, loading, error, isExpanded }
+  const [selectedGlassTypes, setSelectedGlassTypes] = useState([]);
+
+  // 3) Selected parts + extra info (bottom)
+  const [selectedParts, setSelectedParts] = useState([]); // Array of { glass, part, glassInfo }
+  const [glassInfoLoading, setGlassInfoLoading] = useState(false);
+  const [glassInfoError, setGlassInfoError] = useState(null);
+
+  // 4) Tooltip state
+  const [hoveredZone, setHoveredZone] = useState(null); // { label, x, y }
+  const svgRef = useRef(null);
+
+  // 5) Expanded parts state (Global set of expanded part IDs)
+  const [expandedPartIds, setExpandedPartIds] = useState(new Set());
+
+  const togglePartExpansion = (id) => {
+    setExpandedPartIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const toggleGlassTypeExpansion = (glassCode) => {
+    setSelectedGlassTypes((prev) =>
+      prev.map((item) =>
+        item.glass.code === glassCode
+          ? { ...item, isExpanded: !item.isExpanded }
+          : item
+      )
+    );
+  };
+
+  // ---------- helpers: convert backend data → API params ----------
+  const getPrefixCd = (glass) => glass.prefix || glass.code.substring(0, 2).toUpperCase();
+
+  const getPosCd = (glass) => {
+    const prefix = getPrefixCd(glass);
+    if (prefix === "DW" || prefix === "DB") return "NULL";
+
+    const raw = (glass.position || "").toUpperCase();
+    if (raw.startsWith("FRONT") || raw === "F") return "F";
+    if (raw.startsWith("REAR") || raw === "R") return "R";
+    return "NULL";
+  };
+
+  const getSideCd = (glass) => {
+    const prefix = getPrefixCd(glass);
+    if (prefix === "DW" || prefix === "DB") return "NULL";
+
+    const raw = (glass.side || "").toUpperCase();
+    if (raw.startsWith("LEFT") || raw === "L") return "L";
+    if (raw.startsWith("RIGHT") || raw === "R") return "R";
+    return "NULL";
+  };
+
+  // ---------- 1) load glass types for this model ----------
+  useEffect(() => {
     if (!modelId) return;
 
-    const fetchGlassTypes = async () =>
-    {
-      try
-      {
+    const fetchGlassTypes = async () => {
+      try {
         setLoading(true);
         setError(null);
         const res = await fetch(
-          `http://44.198.158.71:8000/agp/v1/glass-types?model=${modelId}`,
+          `${config.pythonApiUrl}agp/v1/glass-types?model=${modelId}`,
           { headers: { accept: "application/json" } }
         );
         if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
         const data = await res.json();
         setGlassData(data?.glass_types || []);
-      } catch (err)
-      {
+      } catch (err) {
         console.error(err);
         setError(err.message || "Failed to fetch glass data");
-      } finally
-      {
+      } finally {
         setLoading(false);
       }
     };
@@ -39,444 +97,581 @@ export default function CarGlassViewer({ modelId, onPartSelect })
     fetchGlassTypes();
   }, [modelId]);
 
-  const toggleGlass = (glass) =>
-  {
-    setSelectedGlasses((prev) =>
-    {
-      const isSelected = prev.find((g) => g.code === glass.code);
-      if (isSelected)
-      {
-        return prev.filter((g) => g.code !== glass.code);
-      } else
-      {
-        onPartSelect?.(glass); // Notify parent when a part is selected
-        return [...prev, glass];
+  // ---------- 2) when a glass is selected, load its parts ----------
+  const handleSelectGlass = async (glass, label) => {
+    if (!glass) return;
+
+    // Check if already selected
+    if (selectedGlassTypes.some((item) => item.glass.code === glass.code)) {
+      // Optional: Scroll to it or just expand it?
+      // Let's just ensure it's expanded
+      toggleGlassTypeExpansion(glass.code);
+      return;
+    }
+
+    // Add to list with loading state
+    const newItem = {
+      glass,
+      label,
+      parts: [],
+      loading: true,
+      error: null,
+      isExpanded: true,
+    };
+
+    setSelectedGlassTypes((prev) => [...prev, newItem]);
+
+    try {
+      const prefix_cd = getPrefixCd(glass);
+      const pos_cd = getPosCd(glass);
+      const side_cd = getSideCd(glass);
+
+      const params = new URLSearchParams();
+      params.append("make_model_id", modelId);
+      params.append("prefix_cd", prefix_cd);
+
+      // For Windshield (DW) and Back Glass (DB), omit pos_cd and side_cd
+      if (prefix_cd !== "DW" && prefix_cd !== "DB") {
+        params.append("pos_cd", pos_cd);
+        params.append("side_cd", side_cd);
       }
-    });
+
+      const url = `${config.pythonApiUrl}agp/v1/glass-parts?${params.toString()}`;
+      const res = await fetch(url, { headers: { accept: "application/json" } });
+      if (!res.ok) throw new Error("Failed to fetch glass parts");
+      const data = await res.json();
+      const glassParts = Array.isArray(data?.glass_parts)
+        ? data.glass_parts
+        : Array.isArray(data)
+          ? data
+          : [];
+
+      // Update item with parts
+      setSelectedGlassTypes((prev) =>
+        prev.map((item) =>
+          item.glass.code === glass.code
+            ? { ...item, parts: glassParts, loading: false }
+            : item
+        )
+      );
+    } catch (e) {
+      console.error(e);
+      // Update item with error
+      setSelectedGlassTypes((prev) =>
+        prev.map((item) =>
+          item.glass.code === glass.code
+            ? { ...item, error: e.message || "Failed to fetch parts", loading: false }
+            : item
+        )
+      );
+    }
   };
 
-  const isSelected = (code) => selectedGlasses.some((g) => g.code === code);
+  const handleSelectPart = async (part, glass) => {
+    const partKey = `${part.nags_glass_id || ""}|${part.oem_glass_id || ""}`;
+    const glassKey = glass ? glass.code : "";
+    const alreadySelected = selectedParts.some(
+      (p) =>
+        p.part.nags_glass_id === part.nags_glass_id &&
+        p.part.oem_glass_id === part.oem_glass_id &&
+        p.glass.code === glassKey
+    );
+    if (alreadySelected) return; // Prevent duplicate selection
 
-  // Map NAGS type to color
-  const getGlassColor = (type) =>
-  {
-    const colorMap = {
-      Door_Glass: "#3B82F6",
-      Door_Vent_Glass: "#8B5CF6",
-      DQ: "#F59E0B",
-      DR: "#10B981",
-      Door_Back_Glass: "#EF4444",
-      Door_Window: "#06B6D4",
-    };
-    return colorMap[type] || "#6B7280";
+    let info = null;
+    if (part?.nags_glass_id) {
+      try {
+        setGlassInfoLoading(true);
+        setGlassInfoError(null);
+        const res = await fetch(
+          `${config.pythonApiUrl}agp/v1/glass-info?nags_glass_id=${part.nags_glass_id}`,
+          { headers: { accept: "application/json" } }
+        );
+        if (!res.ok) throw new Error("Failed to fetch glass info");
+        info = await res.json();
+      } catch (e) {
+        console.error(e);
+        setGlassInfoError(e.message || "Failed to fetch glass info.");
+      } finally {
+        setGlassInfoLoading(false);
+      }
+    }
+
+    onPartSelect?.({ glass: glass, part, glassInfo: info });
+
+    setSelectedParts((prev) => [
+      ...prev,
+      { glass: glass, part, glassInfo: info },
+    ]);
   };
 
-  // Position glass on SVG based on NAGS position/side
-  const getGlassPosition = (glass) =>
-  {
-    const { type, position, side } = glass;
-
-    // Door Glass (DD prefix in NAGS)
-    if (type === "Door_Glass")
-    {
-      if (position === "Front" && side === "Left")
-        return { x: 140, y: 100, w: 70, h: 75, label: "FL" };
-      if (position === "Front" && side === "Right")
-        return { x: 140, y: 25, w: 70, h: 75, label: "FR" };
-      if (position === "Rear" && side === "Left")
-        return { x: 340, y: 100, w: 70, h: 75, label: "RL" };
-      if (position === "Rear" && side === "Right")
-        return { x: 340, y: 25, w: 70, h: 75, label: "RR" };
-    }
-
-    // Door Vent Glass (DV prefix in NAGS)
-    if (type === "Door_Vent_Glass")
-    {
-      if (position === "Front" && side === "Left")
-        return { x: 90, y: 100, w: 40, h: 40, label: "VFL", shape: "triangle" };
-      if (position === "Front" && side === "Right")
-        return { x: 90, y: 25, w: 40, h: 40, label: "VFR", shape: "triangle" };
-      if (position === "Rear" && side === "Left")
-        return { x: 420, y: 100, w: 40, h: 40, label: "VRL", shape: "triangle" };
-      if (position === "Rear" && side === "Right")
-        return { x: 420, y: 25, w: 40, h: 40, label: "VRR", shape: "triangle" };
-    }
-
-    // Quarter Glass (DQ prefix in NAGS)
-    if (type === "DQ")
-    {
-      if (side === "Left")
-        return { x: 470, y: 100, w: 50, h: 60, label: "QL", shape: "quad" };
-      if (side === "Right")
-        return { x: 470, y: 25, w: 50, h: 60, label: "QR", shape: "quad" };
-    }
-
-    // Roof Glass / Sunroof (DR prefix in NAGS)
-    if (type === "DR")
-    {
-      if (position === "Front")
-        return { x: 180, y: 90, w: 80, h: 20, label: "RF", shape: "roof" };
-      if (position === "Rear")
-        return { x: 300, y: 90, w: 80, h: 20, label: "RR", shape: "roof" };
-    }
-
-    // Back Glass / Rear Windshield (DB prefix in NAGS)
-    if (type === "Door_Back_Glass")
-      return { x: 530, y: 50, w: 60, h: 100, label: "BG", shape: "back" };
-
-    // Windshield (DW prefix in NAGS)
-    if (type === "Door_Window")
-      return { x: 30, y: 50, w: 60, h: 100, label: "WS", shape: "wind" };
-
-    // Default fallback
-    return { x: 250, y: 75, w: 60, h: 50, label: "?" };
-  };
-
-  const renderGlassPart = (glass, idx) =>
-  {
-    const pos = getGlassPosition(glass);
-    const color = getGlassColor(glass.type);
-    const selected = isSelected(glass.code);
-    const opacity = selected ? 0.9 : 0.3;
-
-    const shapeProps = {
-      fill: color,
-      stroke: selected ? "#FFFFFF" : color,
-      strokeWidth: selected ? 3 : 1,
-      opacity,
-      className: "cursor-pointer transition-all duration-200 hover:opacity-100",
-      onClick: () => toggleGlass(glass),
-    };
-
-    // Render different shapes based on glass type
-    if (pos.shape === "triangle")
-    {
-      return (
-        <g key={idx}>
-          <polygon
-            points={`${pos.x},${pos.y + pos.h} ${pos.x + pos.w},${pos.y + pos.h} ${pos.x + pos.w / 2},${pos.y}`}
-            {...shapeProps}
-          />
-          <text
-            x={pos.x + pos.w / 2}
-            y={pos.y + pos.h - 10}
-            textAnchor="middle"
-            fill="white"
-            fontSize="8"
-            fontWeight="bold"
-            className="pointer-events-none select-none"
-          >
-            {pos.label}
-          </text>
-        </g>
-      );
-    }
-
-    if (pos.shape === "quad")
-    {
-      return (
-        <g key={idx}>
-          <path
-            d={`M ${pos.x} ${pos.y + pos.h} L ${pos.x + pos.w} ${pos.y + pos.h / 2} L ${pos.x + pos.w} ${pos.y} L ${pos.x} ${pos.y + pos.h / 3} Z`}
-            {...shapeProps}
-          />
-          <text
-            x={pos.x + pos.w / 2}
-            y={pos.y + pos.h / 2}
-            textAnchor="middle"
-            fill="white"
-            fontSize="8"
-            fontWeight="bold"
-            className="pointer-events-none select-none"
-          >
-            {pos.label}
-          </text>
-        </g>
-      );
-    }
-
-    if (pos.shape === "back")
-    {
-      return (
-        <g key={idx}>
-          <path
-            d={`M ${pos.x} ${pos.y + 20} Q ${pos.x + pos.w / 2} ${pos.y} ${pos.x + pos.w} ${pos.y + 20} L ${pos.x + pos.w} ${pos.y + pos.h - 20} Q ${pos.x + pos.w / 2} ${pos.y + pos.h} ${pos.x} ${pos.y + pos.h - 20} Z`}
-            {...shapeProps}
-          />
-          <text
-            x={pos.x + pos.w / 2}
-            y={pos.y + pos.h / 2}
-            textAnchor="middle"
-            fill="white"
-            fontSize="9"
-            fontWeight="bold"
-            className="pointer-events-none select-none"
-          >
-            {pos.label}
-          </text>
-        </g>
-      );
-    }
-
-    if (pos.shape === "wind")
-    {
-      return (
-        <g key={idx}>
-          <path
-            d={`M ${pos.x} ${pos.y + pos.h} L ${pos.x} ${pos.y + 20} Q ${pos.x + pos.w / 2} ${pos.y} ${pos.x + pos.w} ${pos.y + 20} L ${pos.x + pos.w} ${pos.y + pos.h} Z`}
-            {...shapeProps}
-          />
-          <text
-            x={pos.x + pos.w / 2}
-            y={pos.y + pos.h / 2}
-            textAnchor="middle"
-            fill="white"
-            fontSize="9"
-            fontWeight="bold"
-            className="pointer-events-none select-none"
-          >
-            {pos.label}
-          </text>
-        </g>
-      );
-    }
-
-    if (pos.shape === "roof")
-    {
-      return (
-        <g key={idx}>
-          <rect x={pos.x} y={pos.y} width={pos.w} height={pos.h} rx="4" {...shapeProps} />
-          <text
-            x={pos.x + pos.w / 2}
-            y={pos.y + pos.h / 2 + 3}
-            textAnchor="middle"
-            fill="white"
-            fontSize="7"
-            fontWeight="bold"
-            className="pointer-events-none select-none"
-          >
-            {pos.label}
-          </text>
-        </g>
-      );
-    }
-
-    // Default rectangle
-    return (
-      <g key={idx}>
-        <rect x={pos.x} y={pos.y} width={pos.w} height={pos.h} rx="4" {...shapeProps} />
-        <text
-          x={pos.x + pos.w / 2}
-          y={pos.y + pos.h / 2 + 3}
-          textAnchor="middle"
-          fill="white"
-          fontSize="8"
-          fontWeight="bold"
-          className="pointer-events-none select-none"
-        >
-          {pos.label}
-        </text>
-      </g>
+  // Remove selected part by unique key
+  const handleRemoveSelectedPart = (partKey) => {
+    setSelectedParts((prev) =>
+      prev.filter(
+        (p) =>
+          `${p.part.nags_glass_id || ""}|${p.part.oem_glass_id || ""}|${p.glass.code
+          }` !== partKey
+      )
     );
   };
 
-  if (loading)
-  {
+  // Helper to find glass by code prefix/position/side
+  const findGlass = (prefix, pos = "N/A", side = "N/A") => {
+    return glassData.find((g) => {
+      // Match prefix (use helper to be safe)
+      const gPrefix = getPrefixCd(g);
+      if (gPrefix !== prefix) return false;
+
+      // Match position (handle null/undefined as "N/A", case-insensitive)
+      const gPos = (g.position || "N/A").toUpperCase();
+      const targetPos = (pos || "N/A").toUpperCase();
+      if (gPos !== targetPos) return false;
+
+      // Match side (handle null/undefined as "N/A", case-insensitive)
+      const gSide = (g.side || "N/A").toUpperCase();
+      const targetSide = (side || "N/A").toUpperCase();
+      if (gSide !== targetSide) return false;
+
+      return true;
+    });
+  };
+
+  // Define clickable zones (7 per side + DW + DB)
+  // Using a 300x520 coordinate system
+  const zones = [
+    {
+      id: "windshield",
+      label: "Windshield",
+      glass: findGlass("DW", "N/A", "N/A"),
+      path: "M85,140 C85,140 110,120 150,120 C190,120 215,140 215,140 L225,175 C225,175 190,185 150,185 C110,185 75,175 75,175 L85,140 Z",
+    },
+    {
+      id: "back_glass",
+      label: "Back Glass",
+      glass: findGlass("DB", "N/A", "N/A"),
+      path: "M80,405 C80,405 110,395 150,395 C190,395 220,405 220,405 L210,445 C210,445 180,455 150,455 C120,455 90,445 90,445 L80,405 Z",
+    },
+
+    // --- LEFT SIDE ---
+    {
+      id: "l_fq",
+      label: "Front Quarter (left)",
+      // Mapping DQ (N/A pos) to Front Quarter as fallback, or check if specific code exists
+      glass: findGlass("DQ", "N/A", "Left"),
+      path: "M68,170 L72,185 L52,185 C51,180 55,175 68,170 Z",
+    },
+    {
+      id: "l_fv",
+      label: "Front Vent (left)",
+      glass: findGlass("DV", "Front", "Left"),
+      path: "M72,188 L72,210 L52,210 L52,188 Z",
+    },
+    {
+      id: "l_fd",
+      label: "Front Door (left)",
+      glass: findGlass("DD", "Front", "Left"),
+      path: "M72,213 L72,270 L50,270 C48,250 48,230 52,213 Z",
+    },
+    {
+      id: "l_md",
+      label: "Middle Door (left)",
+      glass: findGlass("DD", "Middle", "Left"), // Assuming "Middle" if it exists
+      path: "M72,273 L72,295 L50,295 L50,273 Z",
+    },
+    {
+      id: "l_rd",
+      label: "Rear Door (left)",
+      glass: findGlass("DD", "Rear", "Left"),
+      path: "M72,298 L72,355 L52,355 C50,335 50,315 50,298 Z",
+    },
+    {
+      id: "l_rv",
+      label: "Rear Vent (left)",
+      glass: findGlass("DV", "Rear", "Left"),
+      path: "M72,358 L72,380 L54,380 L52,358 Z",
+    },
+    {
+      id: "l_rq",
+      label: "Rear Quarter (left)",
+      // Using DQ again? Or maybe DR? 
+      // User JSON has DQ with N/A pos. We'll map it to Rear Quarter too if needed, or just Front.
+      // Let's try to map DQ to Rear Quarter primarily if Front Quarter is less common with DQ code.
+      // But for now, mapping DQ to both might be ambiguous. 
+      // Given the JSON, DQ is likely the Quarter glass.
+      glass: findGlass("DQ", "N/A", "Left"),
+      path: "M72,383 L68,400 C58,395 55,390 54,383 Z",
+    },
+
+    // --- RIGHT SIDE ---
+    {
+      id: "r_fq",
+      label: "Front Quarter (right)",
+      glass: findGlass("DQ", "N/A", "Right"),
+      path: "M232,170 L228,185 L248,185 C249,180 245,175 232,170 Z",
+    },
+    {
+      id: "r_fv",
+      label: "Front Vent (right)",
+      glass: findGlass("DV", "Front", "Right"),
+      path: "M228,188 L228,210 L248,210 L248,188 Z",
+    },
+    {
+      id: "r_fd",
+      label: "Front Door (right)",
+      glass: findGlass("DD", "Front", "Right"),
+      path: "M228,213 L228,270 L250,270 C252,250 252,230 248,213 Z",
+    },
+    {
+      id: "r_md",
+      label: "Middle Door (right)",
+      glass: findGlass("DD", "Middle", "Right"),
+      path: "M228,273 L228,295 L250,295 L250,273 Z",
+    },
+    {
+      id: "r_rd",
+      label: "Rear Door (right)",
+      glass: findGlass("DD", "Rear", "Right"),
+      path: "M228,298 L228,355 L248,355 C250,335 250,315 250,298 Z",
+    },
+    {
+      id: "r_rv",
+      label: "Rear Vent (right)",
+      glass: findGlass("DV", "Rear", "Right"),
+      path: "M228,358 L228,380 L246,380 L248,358 Z",
+    },
+    {
+      id: "r_rq",
+      label: "Rear Quarter (right)",
+      glass: findGlass("DQ", "N/A", "Right"),
+      path: "M228,383 L232,400 C242,395 245,390 246,383 Z",
+    },
+  ];
+
+  const handleZoneHover = (e, zone) => {
+    if (!zone.glass) {
+      setHoveredZone(null);
+      return;
+    }
+    const rect = e.target.getBoundingClientRect();
+    setHoveredZone({
+      label: zone.label,
+      x: rect.left + rect.width / 2,
+      y: rect.top - 10,
+    });
+  };
+
+  const handleZoneLeave = () => {
+    setHoveredZone(null);
+  };
+
+  const renderDiagram = () => {
     return (
-      <div className="flex justify-center items-center h-[500px] bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl border border-slate-200 shadow-sm">
+      <div className="relative w-full max-w-[300px] mx-auto" ref={svgRef}>
+        <svg viewBox="0 0 300 520" className="w-full h-auto drop-shadow-xl">
+          {/* Car Body Outline - Smooth Sedan Shape */}
+          <path
+            d="M75,100 
+               C75,100 150,70 225,100 
+               C250,110 260,130 260,160 
+               L260,420 
+               C260,450 250,470 225,480 
+               C150,500 75,480 75,480 
+               C50,470 40,450 40,420 
+               L40,160 
+               C40,130 50,110 75,100 Z"
+            fill="#e2e8f0"
+            stroke="#94a3b8"
+            strokeWidth="2"
+          />
+
+          {/* Roof / Cabin Area */}
+          <path
+            d="M75,175 
+               L225,175 
+               L225,405 
+               L75,405 Z"
+            fill="#f1f5f9"
+            stroke="none"
+          />
+
+          {/* Glass Zones */}
+          {zones.map((zone) => {
+            const isAvailable = !!zone.glass;
+            const isSelected = selectedGlassTypes.some(item => item.glass.code === zone.glass?.code);
+
+            // Fill color logic
+            let fill = "#cbd5e1"; // Default gray (unavailable)
+            if (isAvailable) fill = "#7dd3fc"; // Light blue (available)
+            if (isSelected) fill = "#2563eb"; // Dark blue (selected)
+
+            return (
+              <g
+                key={zone.id}
+                onClick={() => isAvailable && handleSelectGlass(zone.glass)}
+                onMouseEnter={(e) => handleZoneHover(e, zone)}
+                onMouseLeave={handleZoneLeave}
+                className={`${isAvailable
+                  ? "cursor-pointer hover:opacity-80"
+                  : "cursor-not-allowed opacity-50"
+                  } transition-all duration-200`}
+              >
+                <path
+                  d={zone.path}
+                  fill={fill}
+                  stroke={isSelected ? "#1e40af" : "#0f172a"}
+                  strokeWidth={isSelected ? "2" : "1"}
+                  strokeLinejoin="round"
+                />
+              </g>
+            );
+          })}
+        </svg>
+
+        {/* Legend / Status */}
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4 text-[10px] font-medium text-slate-500">
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-3 bg-sky-300 rounded-full border border-slate-600"></div>
+            <span>Available</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-3 bg-blue-600 rounded-full border border-blue-800"></div>
+            <span>Selected</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-3 bg-slate-300 rounded-full border border-slate-400"></div>
+            <span>Unavailable</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderPartsColumn = () => {
+    if (selectedGlassTypes.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full text-slate-400 italic p-8 text-center">
+          <p>
+            Select a highlighted glass part on the diagram to view available
+            options.
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex flex-col h-full overflow-y-auto p-4 space-y-4">
+        {selectedGlassTypes.map((item) => (
+          <div key={item.glass.code} className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
+            {/* Glass Type Header (Accordion) */}
+            <div
+              onClick={() => toggleGlassTypeExpansion(item.glass.code)}
+              className="flex items-center justify-between p-4 bg-slate-50/80 cursor-pointer hover:bg-slate-100 transition-colors"
+            >
+              <div>
+                <h3 className="font-bold text-slate-800 text-base">
+                  {item.label || item.glass.description || "Glass Parts"}
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {item.loading ? "Loading..." : `${item.parts.length} options`}
+                </p>
+              </div>
+              <svg
+                className={`w-5 h-5 text-slate-400 transition-transform duration-200 ${item.isExpanded ? "rotate-180" : ""}`}
+                fill="none" viewBox="0 0 24 24" stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+
+            {/* Parts List */}
+            {item.isExpanded && (
+              <div className="border-t border-slate-100">
+                {item.loading ? (
+                  <div className="p-4 text-slate-400 text-sm">Loading parts...</div>
+                ) : item.error ? (
+                  <div className="p-4 text-red-400 text-sm">{item.error}</div>
+                ) : !item.parts.length ? (
+                  <div className="p-4 text-slate-400 text-sm">No parts available.</div>
+                ) : (
+                  <div className="p-3 space-y-3 bg-white">
+                    {item.parts.map((part) => {
+                      const partId = part.nags_glass_id || part.oem_glass_id;
+                      const isExpanded = expandedPartIds.has(partId);
+                      const isSelected = selectedParts.some(
+                        (p) =>
+                          p.part.nags_glass_id === part.nags_glass_id &&
+                          p.part.oem_glass_id === part.oem_glass_id &&
+                          p.glass.code === item.glass.code
+                      );
+
+                      return (
+                        <div
+                          key={partId}
+                          className={`
+                            rounded-xl border transition-all duration-200 overflow-hidden
+                            ${isSelected
+                              ? "border-blue-500 bg-blue-50/30 shadow-sm"
+                              : "border-slate-200 bg-white hover:border-blue-300 hover:shadow-md"
+                            }
+                          `}
+                        >
+                          {/* Part Header */}
+                          <div
+                            onClick={() => togglePartExpansion(partId)}
+                            className="flex items-center justify-between p-3 cursor-pointer select-none"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${isSelected ? "border-blue-500 bg-blue-500" : "border-slate-300 bg-white"}`}>
+                                {isSelected && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                              </div>
+                              <span className="font-medium text-slate-700 text-sm">
+                                {part.part_description || "Glass Part"}
+                              </span>
+                            </div>
+                            <svg className={`w-5 h-5 text-slate-400 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                          </div>
+
+                          {/* Part Details */}
+                          {isExpanded && (
+                            <div className="px-4 pb-4 pt-0 animate-[fadeIn_0.2s_ease-out]">
+                              <div className="mt-2 pt-3 border-t border-slate-100 grid grid-cols-1 gap-2">
+                                <div className="flex justify-between items-center bg-slate-50 p-2 rounded-lg">
+                                  <span className="text-xs font-semibold text-slate-500">NAGS ID</span>
+                                  <span className="text-sm font-mono text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200">{part.nags_glass_id || "N/A"}</span>
+                                </div>
+                                <div className="flex justify-between items-center bg-slate-50 p-2 rounded-lg">
+                                  <span className="text-xs font-semibold text-slate-500">OEM ID</span>
+                                  <span className="text-sm font-mono text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200">{part.oem_glass_id || "N/A"}</span>
+                                </div>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSelectPart(part, item.glass);
+                                  }}
+                                  className={`w-full mt-2 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${isSelected ? "bg-red-50 text-red-600 hover:bg-red-100 border border-red-200" : "bg-blue-600 text-white hover:bg-blue-700 shadow-sm hover:shadow"}`}
+                                >
+                                  {isSelected ? "Remove Selection" : "Select Part"}
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+
+
+  // ---------- main render ----------
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64 bg-slate-50 rounded-3xl border border-slate-200">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-600 font-medium">Loading glass catalog...</p>
+          <div className="w-10 h-10 border-4 border-violet-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-slate-500 text-sm">Loading glass catalog…</p>
         </div>
       </div>
     );
   }
 
-  if (error)
-  {
+  if (error) {
     return (
-      <div className="flex flex-col justify-center items-center h-[500px] bg-red-50 rounded-2xl border border-red-200 shadow-sm">
-        <svg className="w-16 h-16 text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <p className="text-red-600 font-semibold mb-2">Unable to load glass data</p>
-        <p className="text-red-500 text-sm">{error}</p>
-      </div>
-    );
-  }
-
-  if (!glassData.length)
-  {
-    return (
-      <div className="flex flex-col justify-center items-center h-[500px] bg-slate-50 rounded-2xl border border-slate-200 shadow-sm">
-        <svg className="w-16 h-16 text-slate-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-        <p className="text-slate-600 font-medium">No glass parts available for this model</p>
+      <div className="bg-red-50 rounded-3xl border border-red-200 p-6 text-sm text-red-600">
+        {error}
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 border-b border-blue-800">
-        <h2 className="text-xl font-bold text-white flex items-center gap-2">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          Select Glass Parts
-        </h2>
-        <p className="text-blue-100 text-sm mt-1">Model #{modelId} · {glassData.length} parts available</p>
+    <div className="bg-white rounded-3xl border border-slate-200 p-6 md:p-8 shadow-sm relative">
+      {/* Header with Vehicle Info */}
+      <div className="text-center mb-8">
+        <h3 className="text-2xl font-bold text-slate-900">
+          {vehicleInfo?.year} {vehicleInfo?.make} {vehicleInfo?.model}
+        </h3>
+        <p className="text-slate-500 text-sm">
+          Select a glass part from the diagram below
+        </p>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6 p-6">
-        {/* Left: Car Top View Diagram */}
-        <div className="space-y-4">
-          <div className="relative h-[500px] bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl overflow-hidden border border-slate-300 shadow-inner">
-            <svg
-              viewBox="0 0 620 200"
-              className="w-full h-full p-4"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              {/* Car body outline (top view) */}
-              <g id="car-body">
-                {/* Main body */}
-                <rect x="20" y="30" width="580" height="140" rx="15" fill="#E5E7EB" stroke="#9CA3AF" strokeWidth="2" opacity="0.6" />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Left column: Diagram */}
+        <div className="flex flex-col items-center justify-start border-r border-slate-100 pr-0 md:pr-8">
+          {renderDiagram()}
 
-                {/* Hood/Front section */}
-                <rect x="20" y="30" width="80" height="140" rx="10" fill="#D1D5DB" stroke="#9CA3AF" strokeWidth="1.5" opacity="0.5" />
-
-                {/* Cabin area */}
-                <rect x="120" y="45" width="380" height="110" fill="#F3F4F6" stroke="#9CA3AF" strokeWidth="1.5" opacity="0.4" />
-
-                {/* Rear/Trunk section */}
-                <rect x="520" y="40" width="80" height="120" rx="10" fill="#D1D5DB" stroke="#9CA3AF" strokeWidth="1.5" opacity="0.5" />
-
-                {/* Door separators */}
-                <line x1="220" y1="45" x2="220" y2="155" stroke="#9CA3AF" strokeWidth="1.5" strokeDasharray="4 2" opacity="0.5" />
-                <line x1="420" y1="45" x2="420" y2="155" stroke="#9CA3AF" strokeWidth="1.5" strokeDasharray="4 2" opacity="0.5" />
-
-                {/* Labels */}
-                <text x="310" y="100" textAnchor="middle" fill="#6B7280" fontSize="10" fontWeight="500" opacity="0.6">TOP VIEW</text>
-              </g>
-
-              {/* Glass parts positioned by NAGS data */}
-              {glassData.map((glass, idx) => renderGlassPart(glass, idx))}
-            </svg>
-          </div>
-
-          {/* Legend */}
-          <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
-            <p className="text-xs text-slate-600 mb-2 font-medium">Click on glass parts to select</p>
-            <div className="flex flex-wrap gap-2">
-              {glassData.map((glass, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => toggleGlass(glass)}
-                  className={`px-2.5 py-1 rounded text-xs font-medium transition-all duration-200 border ${isSelected(glass.code)
-                      ? "border-white shadow-md scale-105 opacity-100"
-                      : "border-transparent opacity-50 hover:opacity-80"
-                    }`}
-                  style={{
-                    backgroundColor: getGlassColor(glass.type),
-                    color: "white",
-                  }}
-                >
-                  {glass.code}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Right: Selected Glass List */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-slate-800">
-              Selected Parts ({selectedGlasses.length})
-            </h3>
-            {selectedGlasses.length > 0 && (
-              <button
-                onClick={() => setSelectedGlasses([])}
-                className="text-sm text-red-600 hover:text-red-700 font-medium transition-colors flex items-center gap-1"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                Clear All
-              </button>
-            )}
-          </div>
-
-          {selectedGlasses.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-[480px] bg-slate-50 rounded-xl border-2 border-dashed border-slate-300">
-              <svg className="w-16 h-16 text-slate-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
-              </svg>
-              <p className="text-slate-500 font-medium">No parts selected</p>
-              <p className="text-slate-400 text-sm mt-1">Click on the diagram to add</p>
-            </div>
-          ) : (
-            <div className="space-y-2.5 max-h-[480px] overflow-y-auto pr-2 custom-scrollbar">
-              {selectedGlasses.map((glass) => (
-                <div
-                  key={glass.code}
-                  className="bg-white rounded-lg p-3.5 border-l-4 hover:shadow-md transition-all duration-200 shadow-sm"
-                  style={{ borderLeftColor: getGlassColor(glass.type) }}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <span
-                          className="px-2 py-0.5 rounded text-xs font-bold text-white"
-                          style={{ backgroundColor: getGlassColor(glass.type) }}
-                        >
-                          {glass.code}
-                        </span>
-                        <h4 className="font-semibold text-slate-800 text-sm truncate">
-                          {glass.description}
-                        </h4>
-                      </div>
-                      <div className="text-xs text-slate-600 space-y-0.5">
-                        <p>
-                          <span className="font-medium">Type:</span> {glass.type.replace(/_/g, " ")}
-                        </p>
-                      </div>
-                    </div>
+          {/* Fallback list for unmapped parts */}
+          <div className="mt-8 w-full">
+            <details className="group">
+              <summary className="flex items-center justify-between cursor-pointer list-none text-sm font-medium text-slate-500 hover:text-violet-600 transition-colors">
+                <span>Other Glass Parts</span>
+                <span className="transition group-open:rotate-180">▼</span>
+              </summary>
+              <div className="mt-2 space-y-2 pl-2 border-l-2 border-slate-100">
+                {glassData
+                  .filter((g) => !zones.some((z) => z.glass?.code === g.code))
+                  .map((glass) => (
                     <button
-                      onClick={() => toggleGlass(glass)}
-                      className="text-slate-400 hover:text-red-500 transition-colors flex-shrink-0 p-1"
-                      title="Remove"
+                      key={glass.code}
+                      onClick={() => handleSelectGlass(glass)}
+                      className={`block w-full text-left text-xs py-1 px-2 rounded hover:bg-slate-50 ${selectedGlassTypes.some(item => item.glass.code === glass.code)
+                        ? "text-violet-600 font-bold bg-violet-50"
+                        : "text-slate-600"
+                        }`}
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
+                      {glass.description} ({glass.code})
                     </button>
-                  </div>
-                </div>
-              ))}
+                  ))}
+                {glassData.filter(
+                  (g) => !zones.some((z) => z.glass?.code === g.code)
+                ).length === 0 && (
+                    <div className="text-xs text-slate-400 italic py-1">
+                      All parts mapped to diagram.
+                    </div>
+                  )}
+              </div>
+            </details>
+          </div>
+        </div>
+
+        {/* Right column: Parts Selection */}
+        <div className="flex flex-col h-full">
+          <div className="bg-slate-50 rounded-2xl border border-slate-200 flex-1 overflow-hidden flex flex-col">
+            <div className="p-4 border-b border-slate-200 bg-slate-100/50">
+              <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide">
+                Selected Glass Parts
+              </h4>
             </div>
-          )}
+            <div className="overflow-y-auto max-h-[400px]">
+              {renderPartsColumn()}
+            </div>
+          </div>
+
+
         </div>
       </div>
 
-      <style jsx>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: #f1f5f9;
-          border-radius: 3px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #cbd5e1;
-          border-radius: 3px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #94a3b8;
-        }
-      `}</style>
+      {/* Floating Tooltip */}
+      {hoveredZone && (
+        <div
+          className="fixed z-50 px-3 py-1.5 bg-slate-800 text-white text-xs font-semibold rounded shadow-lg pointer-events-none transform -translate-x-1/2 -translate-y-full"
+          style={{
+            left: hoveredZone.x,
+            top: hoveredZone.y,
+          }}
+        >
+          {hoveredZone.label}
+          <div className="absolute left-1/2 -bottom-1 w-2 h-2 bg-slate-800 transform -translate-x-1/2 rotate-45"></div>
+        </div>
+      )}
     </div>
   );
 }
