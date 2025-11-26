@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Input } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import config from "../../config";
@@ -13,14 +13,23 @@ export default function SearchByVin({
   delayMs = 400,
   defaultVin = "",
   onDecoded,
-})
-{
+}) {
   const [vin, setVin] = useState(defaultVin.toUpperCase().slice(0, 17));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const timerRef = useRef(null);
 
   const isValid = useMemo(() => VIN_REGEX.test(vin), [vin]);
+
+  // Auto-decode effect
+  useEffect(() => {
+    if (autoDecode && isValid && !loading && !error && vin.length === 17) {
+      const timer = setTimeout(() => {
+        handleDecode();
+      }, delayMs);
+      return () => clearTimeout(timer);
+    }
+  }, [vin, isValid, autoDecode, delayMs]);
 
   const sanitizeVin = (raw) =>
     raw
@@ -29,35 +38,29 @@ export default function SearchByVin({
       .replace(/[IOQ]/g, "")
       .slice(0, 17);
 
-  const handleChange = (e) =>
-  {
+  const handleChange = (e) => {
     setError("");
     setVin(sanitizeVin(e.target.value));
   };
 
-  const handleDecode = async () =>
-  {
-    if (!isValid)
-    {
+  const handleDecode = async () => {
+    if (!isValid) {
       setError("VIN must be 17 characters and cannot contain I, O, or Q.");
       return;
     }
     setLoading(true);
     setError("");
-    try
-    {
+    try {
       const res = await fetch(`${baseUrl}agp/v1/vin?vin=${vin}`, {
         headers: { accept: "application/json" },
       });
       if (!res.ok) throw new Error(`Error: ${res.status}`);
       const data = await res.json();
       onDecoded?.(data);
-    } catch (e)
-    {
+    } catch (e) {
       console.error(e);
       setError("Failed to decode VIN. Please try again.");
-    } finally
-    {
+    } finally {
       setLoading(false);
     }
   };
@@ -66,7 +69,7 @@ export default function SearchByVin({
     <div className="space-y-2">
       <label
         htmlFor="vin-inline"
-        className="text-sm text-slate-200 font-medium"
+        className="text-sm text-slate-600 font-medium"
       >
         Enter VIN
       </label>
@@ -79,13 +82,13 @@ export default function SearchByVin({
         size="large"
         placeholder="17-character VIN"
         aria-label="Vehicle Identification Number"
-        prefix={<SearchOutlined className="text-violet-400" />}
+        prefix={<SearchOutlined className="text-violet-500" />}
         className="
           !h-11 !rounded-xl
-          !bg-slate-950/70
-          !border-slate-700 hover:!border-violet-400 focus:!border-violet-500
+          !bg-white
+          !border-slate-200 hover:!border-violet-400 focus:!border-violet-500
           focus:!shadow-[0_0_0_1px_rgba(139,92,246,0.7)]
-          !text-slate-50 placeholder:!text-slate-500
+          !text-slate-900 placeholder:!text-slate-400
           transition-all duration-200
         "
         status={error ? "error" : undefined}
@@ -103,7 +106,7 @@ export default function SearchByVin({
 
       <div className="h-5 text-xs md:text-sm">
         {vin.length === 0 && (
-          <span className="text-slate-400">
+          <span className="text-slate-500">
             The VIN is a 17-character code containing letters and numbers.
           </span>
         )}
@@ -113,7 +116,7 @@ export default function SearchByVin({
           </span>
         )}
         {loading && isValid && (
-          <span className="text-slate-300">Decoding…</span>
+          <span className="text-slate-500">Decoding…</span>
         )}
         {error && <span className="text-rose-400">{error}</span>}
       </div>

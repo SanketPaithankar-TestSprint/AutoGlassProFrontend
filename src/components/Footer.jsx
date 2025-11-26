@@ -10,11 +10,10 @@ import {
 const { Footer: AntFooter } = Layout;
 const { Title, Paragraph } = Typography;
 
-const Footer = () =>
-{
+const Footer = () => {
   return (
     <AntFooter
-      className="footer-black px-4 sm:px-6 !pt-6 !pb-3 border-t border-slate-800/70"
+      className="footer-gradient px-4 sm:px-6 !pt-6 !pb-3 border-t border-slate-800/70"
     >
       <div className="mx-auto w-full max-w-6xl">
         {/* Accent line */}

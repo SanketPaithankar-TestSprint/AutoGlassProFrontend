@@ -19,8 +19,8 @@ body,
   color: #fff !important;
 }
 
-.footer-black {
-  background: #0f172a !important;
+.footer-gradient {
+  background: linear-gradient(180deg, #0f172a 0%, #1e1b4b 100%) !important;
   color: #fff !important;
 }
 

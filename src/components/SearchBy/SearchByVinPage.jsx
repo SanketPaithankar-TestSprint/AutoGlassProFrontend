@@ -1,14 +1,13 @@
 import { useState } from "react";
 import SearchByVin from "./SearchByvin";
 import OrderPage from "../OrderPage";
-import InvoiceForm from "../InvoiceForm";
+import QuoteDetails from "../QuoteDetails";
 
-export default function SearchByVinPage()
-{
+export default function SearchByVinPage() {
   const [vinData, setVinData] = useState(null);
 
   return (
-      <div className="min-h-screen w-full bg-gradient-to-br from-blue-100 via-purple-100 to-blue-200 mx-auto p-4 md:p-8 space-y-6">
+    <div className="min-h-screen w-full bg-gradient-to-br from-blue-100 via-purple-100 to-blue-200 mx-auto p-4 md:p-8 space-y-6">
       {/* Main VIN search card */}
       <div
         className="
@@ -39,7 +38,7 @@ export default function SearchByVinPage()
 
       {/* When we have a successful decode, render Order + Invoice below */}
       {vinData && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="flex flex-col gap-6">
           {/* Order section */}
           <div
             className="
@@ -69,10 +68,10 @@ export default function SearchByVinPage()
             "
           >
             <h2 className="text-lg font-semibold mb-3">
-              Invoice Preview
+              Quote Preview
             </h2>
             <div className="text-slate-200 text-sm">
-              <InvoiceForm
+              <QuoteDetails
                 prefill={{
                   year: vinData?.year || "",
                   make: vinData?.make || "",

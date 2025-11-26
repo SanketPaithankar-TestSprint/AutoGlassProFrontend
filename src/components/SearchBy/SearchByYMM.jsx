@@ -6,8 +6,7 @@ import CarGlassViewer from "../CarGlassViewer";
 const VPIC_BASE = "https://vpic.nhtsa.dot.gov/api/vehicles";
 const VEHICLE_TYPE = "car";
 
-const buildYears = (start = 1981) =>
-{
+const buildYears = (start = 1981) => {
   const current = new Date().getFullYear();
   const arr = [];
   for (let y = current; y >= start; y--) arr.push(y);
@@ -27,13 +26,21 @@ export default function SearchByYMM({
   disabled = false,
   minYear = 1981,
   showSearch = true,
-})
-{
+}) {
   // --- YMM state
   const [year, setYear] = useState(value?.year || null);
   const [make, setMake] = useState(value?.make || null);
   const [model, setModel] = useState(value?.model || null);
   const [modelId, setModelId] = useState(null); // State to store the model ID
+
+  // Sync state with value prop
+  useEffect(() => {
+    if (value) {
+      setYear(value.year || null);
+      setMake(value.make || null);
+      setModel(value.model || null);
+    }
+  }, [value]);
 
   const [makes, setMakes] = useState([]);
   const [models, setModels] = useState([]);
@@ -48,20 +55,16 @@ export default function SearchByYMM({
   const years = useMemo(() => buildYears(minYear), [minYear]);
 
   // Fetch makes (cached)
-  useEffect(() =>
-  {
+  useEffect(() => {
     let ignore = false;
-    const loadMakes = async () =>
-    {
+    const loadMakes = async () => {
       const cacheKey = VEHICLE_TYPE;
-      if (makesCache.current.has(cacheKey))
-      {
+      if (makesCache.current.has(cacheKey)) {
         setMakes(makesCache.current.get(cacheKey));
         return;
       }
       setLoadingMakes(true);
-      try
-      {
+      try {
         const resp = await fetch(
           `${VPIC_BASE}/GetMakesForVehicleType/${encodeURIComponent(
             VEHICLE_TYPE
@@ -75,42 +78,34 @@ export default function SearchByYMM({
             MakeName: (r.MakeName || "").trim(),
           }))
           .filter((r) => r.MakeName);
-        if (!ignore)
-        {
+        if (!ignore) {
           makesCache.current.set(cacheKey, norm);
           setMakes(norm);
         }
-      } catch (e)
-      {
+      } catch (e) {
         console.error("Failed to load makes:", e);
         if (!ignore) setMakes([]);
-      } finally
-      {
+      } finally {
         if (!ignore) setLoadingMakes(false);
       }
     };
     loadMakes();
-    return () =>
-    {
+    return () => {
       ignore = true;
     };
   }, []);
 
   // Fetch models when year+make set
-  useEffect(() =>
-  {
+  useEffect(() => {
     let ignore = false;
-    const loadModels = async (m, y) =>
-    {
+    const loadModels = async (m, y) => {
       const cacheKey = `${m}|${y}`;
-      if (modelsCache.current.has(cacheKey))
-      {
+      if (modelsCache.current.has(cacheKey)) {
         setModels(modelsCache.current.get(cacheKey));
         return;
       }
       setLoadingModels(true);
-      try
-      {
+      try {
         const url = `${VPIC_BASE}/GetModelsForMakeYear/make/${encodeURIComponent(
           m
         )}/modelyear/${encodeURIComponent(y)}?format=json`;
@@ -122,58 +117,47 @@ export default function SearchByYMM({
             ModelName: (r.Model_Name || r.ModelName || "").trim(),
           }))
           .filter((r) => r.ModelName);
-        if (!ignore)
-        {
+        if (!ignore) {
           modelsCache.current.set(cacheKey, norm);
           setModels(norm);
         }
-      } catch (e)
-      {
+      } catch (e) {
         console.error("Failed to load models:", e);
         if (!ignore) setModels([]);
-      } finally
-      {
+      } finally {
         if (!ignore) setLoadingModels(false);
       }
     };
 
-    if (year && make)
-    {
+    if (year && make) {
       loadModels(make, year);
-    } else
-    {
+    } else {
       setModels([]);
     }
 
-    return () =>
-    {
+    return () => {
       ignore = true;
     };
   }, [year, make]);
 
   // Fetch model ID when year, make, and model are selected
-  useEffect(() =>
-  {
-    const fetchModelId = async () =>
-    {
+  useEffect(() => {
+    const fetchModelId = async () => {
       if (!year || !make || !model) return;
 
       setLoadingModelId(true);
-      try
-      {
+      try {
         const data = await getModelId(year, make, model);
         const modelId = data?.model_id || null;
         setModelId(modelId);
         onModelIdFetched?.(modelId); // Pass modelId to parent
         onVehicleInfoUpdate?.({ year, make, model }); // Pass vehicle info to parent
         message.success(`Model ID fetched: ${modelId}`);
-      } catch (error)
-      {
+      } catch (error) {
         console.error("Failed to fetch model ID:", error);
         message.error("Failed to fetch model ID. Please try again.");
         setModelId(null);
-      } finally
-      {
+      } finally {
         setLoadingModelId(false);
       }
     };
@@ -181,23 +165,20 @@ export default function SearchByYMM({
     fetchModelId();
   }, [year, make, model]);
 
-  const handleYear = (v) =>
-  {
+  const handleYear = (v) => {
     setYear(v);
     setMake(null);
     setModel(null);
     setModelId(null); // Reset model ID on year change
   };
 
-  const handleMake = (v) =>
-  {
+  const handleMake = (v) => {
     setMake(v);
     setModel(null);
     setModelId(null); // Reset model ID on make change
   };
 
-  const handleModel = (v) =>
-  {
+  const handleModel = (v) => {
     setModel(v);
     setModelId(null); // Reset model ID on model change
   };
