@@ -75,7 +75,7 @@ const SearchByRoot = () => {
         </div>
 
         {/* Search Container */}
-        <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-100 overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-100 overflow-hidden max-w-[70%] mx-auto">
           {/* VIN Search Section */}
           <div className="p-6 md:p-8 border-b border-slate-100 bg-slate-50/50">
             <h2 className="text-lg font-semibold text-slate-900 mb-4">

@@ -71,6 +71,43 @@ export default function CarGlassViewer({
     return "NULL";
   };
 
+  // Helper to format glass name
+  const formatGlassName = (glass) => {
+    const prefix = getPrefixCd(glass);
+    const pos = (glass.position || "").toUpperCase();
+    const side = (glass.side || "").toUpperCase();
+
+    const GLASS_CODE_NAMES = {
+      DW: "Windshield",
+      DB: "Back Glass",
+      DD: "Door Drop Glass",
+      DQ: "Door Quarter Glass",
+      DR: "Door Rear Glass",
+      DV: "Door Vent Glass",
+    };
+
+    const baseName = GLASS_CODE_NAMES[prefix] || glass.description || "Glass Part";
+
+    // For Windshield and Back Glass, return just the name
+    if (prefix === "DW" || prefix === "DB") return baseName;
+
+    // Build parts: [Side] [Position] [BaseName]
+    let parts = [];
+
+    // Side
+    if (side.startsWith("L")) parts.push("Left");
+    else if (side.startsWith("R")) parts.push("Right");
+
+    // Position
+    if (pos.startsWith("F")) parts.push("Front");
+    else if (pos.startsWith("R")) parts.push("Rear");
+    else if (pos.startsWith("M")) parts.push("Middle");
+
+    parts.push(baseName);
+
+    return parts.join(" ");
+  };
+
   // ---------- 1) load glass types for this model ----------
   useEffect(() => {
     if (!modelId) return;
@@ -112,7 +149,7 @@ export default function CarGlassViewer({
     // Add to list with loading state
     const newItem = {
       glass,
-      label,
+      label: label || formatGlassName(glass), // Use formatted name if label not provided
       parts: [],
       loading: true,
       error: null,
@@ -460,7 +497,7 @@ export default function CarGlassViewer({
     }
 
     return (
-      <div className="flex flex-col h-full overflow-y-auto p-4 space-y-4">
+      <div className="flex flex-col p-4 space-y-4">
         {selectedGlassTypes.map((item) => (
           <div key={item.glass.code} className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
             {/* Glass Type Header (Accordion) */}
@@ -470,7 +507,7 @@ export default function CarGlassViewer({
             >
               <div>
                 <h3 className="font-bold text-slate-800 text-base">
-                  {item.label || item.glass.description || "Glass Parts"}
+                  {item.label || formatGlassName(item.glass)}
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
                   {item.loading ? "Loading..." : `${item.parts.length} options`}
@@ -526,7 +563,7 @@ export default function CarGlassViewer({
                                 {isSelected && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
                               </div>
                               <span className="font-medium text-slate-700 text-sm">
-                                {part.part_description || "Glass Part"}
+                                {part.nags_glass_id || part.part_description || "Glass Part"}
                               </span>
                             </div>
                             <svg className={`w-5 h-5 text-slate-400 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
@@ -627,7 +664,7 @@ export default function CarGlassViewer({
                         : "text-slate-600"
                         }`}
                     >
-                      {glass.description} ({glass.code})
+                      {formatGlassName(glass)} ({glass.code})
                     </button>
                   ))}
                 {glassData.filter(
@@ -650,7 +687,7 @@ export default function CarGlassViewer({
                 Selected Glass Parts
               </h4>
             </div>
-            <div className="overflow-y-auto max-h-[400px]">
+            <div className="flex-1 overflow-y-auto min-h-0">
               {renderPartsColumn()}
             </div>
           </div>
