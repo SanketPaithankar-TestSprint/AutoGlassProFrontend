@@ -188,9 +188,9 @@ export default function SearchByYMM({
       {/* Card container */}
       <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 md:p-8">
         {/* Grid: Year / Make / Model */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="flex flex-col md:flex-row gap-6 justify-center items-end">
           {/* Year */}
-          <div>
+          <div className="w-full md:w-72">
             <label className="block text-gray-800 font-medium mb-2">Year</label>
             <Select
               size="large"
@@ -205,7 +205,7 @@ export default function SearchByYMM({
           </div>
 
           {/* Make */}
-          <div>
+          <div className="w-full md:w-72">
             <label className="block text-gray-800 font-medium mb-2">Make</label>
             <Select
               size="large"
@@ -221,7 +221,7 @@ export default function SearchByYMM({
           </div>
 
           {/* Model */}
-          <div>
+          <div className="w-full md:w-72">
             <label className="block text-gray-800 font-medium mb-2">Model</label>
             <Select
               size="large"

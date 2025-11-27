@@ -67,6 +67,17 @@ export default function SearchByVin({
 
   return (
     <div className="space-y-2">
+      <style>{`
+        #vin-inline:-webkit-autofill,
+        #vin-inline:-webkit-autofill:hover, 
+        #vin-inline:-webkit-autofill:focus, 
+        #vin-inline:-webkit-autofill:active {
+          -webkit-box-shadow: 0 0 0 30px white inset !important;
+          -webkit-text-fill-color: black !important;
+          font-weight: bold !important;
+          transition: background-color 5000s ease-in-out 0s;
+        }
+      `}</style>
       <label
         htmlFor="vin-inline"
         className="text-sm text-slate-600 font-medium"
@@ -88,7 +99,7 @@ export default function SearchByVin({
           !bg-white
           !border-slate-200 hover:!border-violet-400 focus:!border-violet-500
           focus:!shadow-[0_0_0_1px_rgba(139,92,246,0.7)]
-          !text-slate-900 placeholder:!text-slate-400
+          !text-black !font-bold placeholder:!text-slate-400
           transition-all duration-200
         "
         status={error ? "error" : undefined}

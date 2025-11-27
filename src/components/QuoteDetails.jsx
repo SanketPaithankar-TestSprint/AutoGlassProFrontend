@@ -11,7 +11,7 @@ const newItem = () => ({
     manufacturer: "",
     qty: 1,
     unitPrice: 0,
-    taxRate: 0,
+    amount: 0,
 });
 
 export default function QuoteDetails({ prefill, parts, onRemovePart }) {
@@ -40,8 +40,9 @@ export default function QuoteDetails({ prefill, parts, onRemovePart }) {
     const [items, setItems] = useState([]);
 
     // Charges
-    const [shipping, setShipping] = useState(0);
-    const [discount, setDiscount] = useState(0);
+    const [laborCost, setLaborCost] = useState(0);
+    const [globalTaxRate, setGlobalTaxRate] = useState(0);
+    const [discountPercent, setDiscountPercent] = useState(0);
     const [payment, setPayment] = useState(0);
 
     // Sync items with parts prop
@@ -58,8 +59,8 @@ export default function QuoteDetails({ prefill, parts, onRemovePart }) {
                         description: part.part_description || "",
                         manufacturer: part.manufacturer || "",
                         qty: 1,
-                        unitPrice: part.price || 0,
-                        taxRate: 0,
+                        unitPrice: glassInfo?.list_price || part.price || 0,
+                        amount: (glassInfo?.list_price || part.price || 0),
                     };
                 })
             );
@@ -68,31 +69,47 @@ export default function QuoteDetails({ prefill, parts, onRemovePart }) {
 
     const updateItem = (id, field, value) => {
         setItems((prev) =>
-            prev.map((it) => (it.id === id ? { ...it, [field]: value } : it))
+            prev.map((it) => {
+                if (it.id !== id) return it;
+                const updated = { ...it, [field]: value };
+
+                // Auto-calculate amount if qty or unitPrice changes
+                if (field === "qty" || field === "unitPrice") {
+                    const q = field === "qty" ? Number(value) : Number(it.qty);
+                    const p = field === "unitPrice" ? Number(value) : Number(it.unitPrice);
+                    updated.amount = q * p;
+                }
+
+                return updated;
+            })
         );
     };
 
     // Calculations
-    const { subtotal, totalTax } = useMemo(() => {
+    const subtotal = useMemo(() => {
         let sub = 0;
-        let tax = 0;
         for (const it of items) {
-            const lineBase = (Number(it.qty) || 0) * (Number(it.unitPrice) || 0);
-            sub += lineBase;
-            const lineTaxRate = Number(it.taxRate) || 0;
-            const lineTax = (lineBase * lineTaxRate) / 100;
-            tax += lineTax;
+            sub += (Number(it.amount) || 0);
         }
-        return { subtotal: sub, totalTax: tax };
+        return sub;
     }, [items]);
+
+    const totalTax = useMemo(() => {
+        return (subtotal * (Number(globalTaxRate) || 0)) / 100;
+    }, [subtotal, globalTaxRate]);
+
+    const discountAmount = useMemo(() => {
+        const subPlusLabor = subtotal + (Number(laborCost) || 0);
+        return (subPlusLabor * (Number(discountPercent) || 0)) / 100;
+    }, [subtotal, laborCost, discountPercent]);
 
     const total = useMemo(
         () =>
             Math.max(
                 0,
-                subtotal + totalTax + (Number(shipping) || 0) - (Number(discount) || 0)
+                subtotal + (Number(laborCost) || 0) + totalTax - discountAmount
             ),
-        [subtotal, totalTax, shipping, discount]
+        [subtotal, laborCost, totalTax, discountAmount]
     );
 
     const numericPayment = Number(payment) || 0;
@@ -160,18 +177,14 @@ export default function QuoteDetails({ prefill, parts, onRemovePart }) {
                     "Description",
                     "Manufacturer",
                     "Qty",
-                    "Unit",
-                    "Tax %",
+                    "List Price",
                     "Amount",
-                    "Tax",
                 ],
             ],
             body: items.map((it) => {
                 const qty = Number(it.qty) || 0;
                 const unit = Number(it.unitPrice) || 0;
-                const lineBase = qty * unit;
-                const lineTaxRate = Number(it.taxRate) || 0;
-                const lineTax = (lineBase * lineTaxRate) / 100;
+                const lineBase = Number(it.amount) || 0;
                 return [
                     it.nagsId || "-",
                     it.oemId || "-",
@@ -180,9 +193,7 @@ export default function QuoteDetails({ prefill, parts, onRemovePart }) {
                     it.manufacturer || "-",
                     String(qty),
                     currency(unit),
-                    `${lineTaxRate || 0}%`,
                     currency(lineBase),
-                    currency(lineTax),
                 ];
             }),
             styles: { fontSize: 8, cellPadding: 4 },
@@ -191,8 +202,7 @@ export default function QuoteDetails({ prefill, parts, onRemovePart }) {
             columnStyles: {
                 5: { halign: "right" },
                 6: { halign: "right" },
-                8: { halign: "right" },
-                9: { halign: "right" },
+                7: { halign: "right" },
             },
             margin: { left },
         });
@@ -211,9 +221,10 @@ export default function QuoteDetails({ prefill, parts, onRemovePart }) {
 
         doc.setFontSize(11);
         row("Subtotal:", currency(subtotal));
-        row("Tax Total:", currency(totalTax));
-        if (Number(shipping)) row("Shipping:", currency(Number(shipping)));
-        if (Number(discount)) row("Discount:", `- ${currency(Number(discount))}`);
+        if (Number(laborCost)) row("Labor Cost:", currency(Number(laborCost)));
+        if (Number(globalTaxRate)) row(`Tax (${globalTaxRate}%):`, currency(totalTax));
+        else row("Tax:", currency(totalTax));
+        if (Number(discountPercent)) row(`Discount (${discountPercent}%):`, `- ${currency(discountAmount)}`);
         row("Total:", currency(total), true);
         row("Payment Received:", currency(numericPayment));
         row("Balance Due:", currency(balance), true);
@@ -268,8 +279,7 @@ export default function QuoteDetails({ prefill, parts, onRemovePart }) {
                             <th className="px-3 py-2 min-w-[180px]">Description</th>
                             <th className="px-3 py-2 min-w-[120px]">Manufacturer</th>
                             <th className="px-3 py-2 text-right min-w-[70px]">Qty</th>
-                            <th className="px-3 py-2 text-right min-w-[90px]">Unit</th>
-                            <th className="px-3 py-2 text-right min-w-[70px]">Tax %</th>
+                            <th className="px-3 py-2 text-right min-w-[90px]">List Price</th>
                             <th className="px-3 py-2 text-right min-w-[90px]">Amount</th>
                             <th className="px-2 py-2 w-8"></th>
                         </tr>
@@ -278,7 +288,7 @@ export default function QuoteDetails({ prefill, parts, onRemovePart }) {
                         {items.map((it) => {
                             const qty = Number(it.qty) || 0;
                             const unit = Number(it.unitPrice) || 0;
-                            const lineBase = qty * unit;
+                            const lineBase = Number(it.amount) || 0;
                             const lineTaxRate = Number(it.taxRate) || 0;
                             const lineTax = (lineBase * lineTaxRate) / 100;
                             return (
@@ -337,18 +347,14 @@ export default function QuoteDetails({ prefill, parts, onRemovePart }) {
                                             className="w-full h-8 rounded border border-slate-300 px-2 text-xs text-right focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none"
                                         />
                                     </td>
-                                    <td className="px-3 py-2 text-right">
-                                        <input
-                                            type="number"
-                                            value={it.taxRate}
-                                            onChange={(e) => updateItem(it.id, "taxRate", e.target.value)}
-                                            className="w-full h-8 rounded border border-slate-300 px-2 text-xs text-right focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none"
-                                        />
-                                    </td>
                                     <td className="px-3 py-2 text-right font-medium text-xs">
-                                        <div className="flex flex-col items-end">
-                                            <span>{currency(lineBase)}</span>
-                                            {lineTax > 0 && <span className="text-[10px] text-slate-400">Tax: {currency(lineTax)}</span>}
+                                        <div className="flex flex-col items-end gap-1">
+                                            <input
+                                                type="number"
+                                                value={it.amount}
+                                                onChange={(e) => updateItem(it.id, "amount", e.target.value)}
+                                                className="w-24 rounded border border-slate-300 px-2 py-1 text-right text-xs focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none"
+                                            />
                                         </div>
                                     </td>
                                     <td className="px-2 py-2 text-center">
@@ -396,9 +402,11 @@ export default function QuoteDetails({ prefill, parts, onRemovePart }) {
 
                 <div className="bg-slate-50/60 rounded-xl border border-slate-200 p-4 space-y-3">
                     <Row label="Subtotal" value={currency(subtotal)} />
+                    <NumberRow label="Labor Cost" value={laborCost} setter={setLaborCost} />
+                    <NumberRow label="Tax %" value={globalTaxRate} setter={setGlobalTaxRate} />
                     <Row label="Tax Total" value={currency(totalTax)} />
-                    <NumberRow label="Shipping" value={shipping} setter={setShipping} />
-                    <NumberRow label="Discount" value={discount} setter={setDiscount} />
+                    <NumberRow label="Discount %" value={discountPercent} setter={setDiscountPercent} />
+                    {Number(discountPercent) > 0 && <Row label="Discount Amount" value={`- ${currency(discountAmount)}`} />}
                     <Row label="Total" value={currency(total)} bold />
                     <NumberRow label="Payment Received" value={payment} setter={setPayment} />
                     <Row label="Balance Due" value={currency(balance)} bold />
