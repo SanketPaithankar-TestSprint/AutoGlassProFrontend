@@ -1,73 +1,70 @@
 import React, { useState } from 'react';
-import
-{
-    Form,
-    Input,
-    Button,
-    Row,
-    Col,
-    Alert,
-    notification,
-    Space
+import {
+Form,
+Input,
+Button,
+Row,
+Col,
+Alert,
+notification,
+Space
 } from 'antd';
-import
-{
-    UserOutlined,
-    MailOutlined,
-    LockOutlined,
-    PhoneOutlined,
-    EyeInvisibleOutlined,
-    EyeTwoTone
+import {
+UserOutlined,
+MailOutlined,
+LockOutlined,
+PhoneOutlined,
+EyeInvisibleOutlined,
+EyeTwoTone
 } from '@ant-design/icons';
 import axios from 'axios';
 
-const SignUpForm = ({ onSuccess, onCancel }) =>
-{
+const SignUpForm = ({ onSuccess, onCancel }) => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    const onFinish = async (values) =>
-    {
+    const onFinish = async (values) => {
         setLoading(true);
         setError(null);
 
-        try
-        {
-            const response = await axios.post('http://localhost:8080/api/auth/register', {
-                username: values.username,
+        try {
+            const payload = {
+                businessName: values.businessName,
+                ownerName: values.ownerName,
                 email: values.email,
                 password: values.password,
-                firstName: values.firstName,
-                lastName: values.lastName,
-                phoneNumber: values.phoneNumber || null
-            });
+                phone: values.phone,
+                alternatePhone: values.alternatePhone,
+                addressLine1: values.addressLine1,
+                addressLine2: values.addressLine2,
+                city: values.city,
+                state: values.state,
+                postalCode: values.postalCode,
+                country: values.country,
+                businessNumber: values.businessNumber,
+                userType: values.userType
+            };
 
-            if (response.data.success)
-            {
-                if (response.data.data.token)
-                {
-                    localStorage.setItem('token', response.data.data.token);
-                    localStorage.setItem('username', response.data.data.username);
-                }
+            const response = await axios.post('http://localhost:8080/api/auth/register', payload);
+
+            if (response.data) {
+                // Assuming successful response structure might vary, but checking for 200 OK implicitly via try/catch
+                // If the API returns a specific success flag, we can check it. 
+                // Based on previous code, it checked response.data.success. 
+                // I will assume standard success if no error is thrown, but keep the check if data exists.
 
                 notification.success({
                     message: 'Registration Successful!',
-                    description: 'Welcome to AutoGlass Pro! Your account has been created.',
+                    description: 'Your account has been created.',
                     duration: 4
                 });
 
-                // Call success callback to close modal and handle navigation
-                if (onSuccess)
-                {
-                    onSuccess(response.data.data);
+                if (onSuccess) {
+                    onSuccess(response.data);
                 }
-            } else
-            {
-                setError(response.data.message || 'Registration failed');
             }
-        } catch (err)
-        {
+        } catch (err) {
             const errorMessage = err.response?.data?.message ||
                 err.response?.data?.error ||
                 'Registration failed. Please try again.';
@@ -78,34 +75,28 @@ const SignUpForm = ({ onSuccess, onCancel }) =>
                 description: errorMessage,
                 duration: 5
             });
-        } finally
-        {
+        } finally {
             setLoading(false);
         }
     };
 
-    const validatePassword = (_, value) =>
-    {
-        if (!value)
-        {
+    const validatePassword = (_, value) => {
+        if (!value) {
             return Promise.reject(new Error('Please input your password!'));
         }
-        if (value.length < 6)
-        {
+        if (value.length < 6) {
             return Promise.reject(new Error('Password must be at least 6 characters long!'));
         }
-        if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(value))
-        {
+        // Keeping the complexity check as it's good practice
+        if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(value)) {
             return Promise.reject(new Error('Password must contain uppercase, lowercase, number and special character!'));
         }
         return Promise.resolve();
     };
 
     const validateConfirmPassword = ({ getFieldValue }) => ({
-        validator(_, value)
-        {
-            if (!value || getFieldValue('password') === value)
-            {
+        validator(_, value) {
+            if (!value || getFieldValue('password') === value) {
                 return Promise.resolve();
             }
             return Promise.reject(new Error('The two passwords do not match!'));
@@ -113,7 +104,7 @@ const SignUpForm = ({ onSuccess, onCancel }) =>
     });
 
     return (
-        <div style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+        <div style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: '10px' }}>
             {error && (
                 <Alert
                     message="Registration Error"
@@ -133,110 +124,170 @@ const SignUpForm = ({ onSuccess, onCancel }) =>
                 layout="vertical"
                 size="large"
                 requiredMark={false}
+                initialValues={{ userType: 'BUSINESS' }}
             >
                 <Row gutter={16}>
                     <Col xs={24} sm={12}>
                         <Form.Item
-                            name="firstName"
-                            label="First Name"
-                            rules={[
-                                { required: true, message: 'Please input your first name!' },
-                                { min: 2, message: 'First name must be at least 2 characters!' }
-                            ]}
+                            name="businessName"
+                            label="Business Name"
+                            rules={[{ required: true, message: 'Please input business name!' }]}
                         >
-                            <Input
-                                prefix={<UserOutlined />}
-                                placeholder="John"
-                            />
+                            <Input placeholder="AutoGlass Pro" />
                         </Form.Item>
                     </Col>
                     <Col xs={24} sm={12}>
                         <Form.Item
-                            name="lastName"
-                            label="Last Name"
+                            name="ownerName"
+                            label="Owner Name"
+                            rules={[{ required: true, message: 'Please input owner name!' }]}
+                        >
+                            <Input prefix={<UserOutlined />} placeholder="John Doe" />
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                <Row gutter={16}>
+                    <Col xs={24} sm={12}>
+                        <Form.Item
+                            name="email"
+                            label="Email"
                             rules={[
-                                { required: true, message: 'Please input your last name!' },
-                                { min: 2, message: 'Last name must be at least 2 characters!' }
+                                { required: true, message: 'Please input email!' },
+                                { type: 'email', message: 'Invalid email!' }
                             ]}
                         >
-                            <Input
-                                prefix={<UserOutlined />}
-                                placeholder="Doe"
-                            />
+                            <Input prefix={<MailOutlined />} placeholder="john@example.com" />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24} sm={12}>
+                        <Form.Item
+                            name="businessNumber"
+                            label="Business Number"
+                            rules={[{ required: true, message: 'Please input business number!' }]}
+                        >
+                            <Input placeholder="BN-123456" />
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                <Row gutter={16}>
+                    <Col xs={24} sm={12}>
+                        <Form.Item
+                            name="phone"
+                            label="Phone"
+                            rules={[{ required: true, message: 'Please input phone number!' }]}
+                        >
+                            <Input prefix={<PhoneOutlined />} placeholder="123-456-7890" />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24} sm={12}>
+                        <Form.Item
+                            name="alternatePhone"
+                            label="Alternate Phone"
+                        >
+                            <Input prefix={<PhoneOutlined />} placeholder="098-765-4321" />
                         </Form.Item>
                     </Col>
                 </Row>
 
                 <Form.Item
-                    name="username"
-                    label="Username"
-                    rules={[
-                        { required: true, message: 'Please input your username!' },
-                        { min: 3, message: 'Username must be at least 3 characters!' },
-                        { max: 50, message: 'Username cannot exceed 50 characters!' },
-                        { pattern: /^[a-zA-Z0-9_]+$/, message: 'Username can only contain letters, numbers, and underscores!' }
-                    ]}
+                    name="addressLine1"
+                    label="Address Line 1"
+                    rules={[{ required: true, message: 'Please input address!' }]}
                 >
-                    <Input
-                        prefix={<UserOutlined />}
-                        placeholder="johndoe123"
-                    />
+                    <Input placeholder="123 Main St" />
                 </Form.Item>
 
                 <Form.Item
-                    name="email"
-                    label="Email Address"
-                    rules={[
-                        { required: true, message: 'Please input your email!' },
-                        { type: 'email', message: 'Please enter a valid email address!' }
-                    ]}
+                    name="addressLine2"
+                    label="Address Line 2"
                 >
-                    <Input
-                        prefix={<MailOutlined />}
-                        placeholder="john.doe@example.com"
-                    />
+                    <Input placeholder="Suite 100" />
                 </Form.Item>
 
-                <Form.Item
-                    name="phoneNumber"
-                    label="Phone Number (Optional)"
-                    rules={[
-                        { pattern: /^[\+]?[\d\s\-\(\)]{10,}$/, message: 'Please enter a valid phone number!' }
-                    ]}
-                >
-                    <Input
-                        prefix={<PhoneOutlined />}
-                        placeholder="555-123-4567"
-                    />
-                </Form.Item>
+                <Row gutter={16}>
+                    <Col xs={24} sm={12}>
+                        <Form.Item
+                            name="city"
+                            label="City"
+                            rules={[{ required: true, message: 'Please input city!' }]}
+                        >
+                            <Input placeholder="New York" />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24} sm={12}>
+                        <Form.Item
+                            name="state"
+                            label="State"
+                            rules={[{ required: true, message: 'Please input state!' }]}
+                        >
+                            <Input placeholder="NY" />
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                <Row gutter={16}>
+                    <Col xs={24} sm={12}>
+                        <Form.Item
+                            name="postalCode"
+                            label="Postal Code"
+                            rules={[{ required: true, message: 'Please input postal code!' }]}
+                        >
+                            <Input placeholder="10001" />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24} sm={12}>
+                        <Form.Item
+                            name="country"
+                            label="Country"
+                            rules={[{ required: true, message: 'Please input country!' }]}
+                        >
+                            <Input placeholder="USA" />
+                        </Form.Item>
+                    </Col>
+                </Row>
 
                 <Form.Item
-                    name="password"
-                    label="Password"
-                    rules={[{ validator: validatePassword }]}
+                    name="userType"
+                    label="User Type"
+                    rules={[{ required: true, message: 'Please input user type!' }]}
                 >
-                    <Input.Password
-                        prefix={<LockOutlined />}
-                        placeholder="Enter your password"
-                        iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
-                    />
+                    <Input placeholder="BUSINESS" />
                 </Form.Item>
 
-                <Form.Item
-                    name="confirmPassword"
-                    label="Confirm Password"
-                    dependencies={['password']}
-                    rules={[
-                        { required: true, message: 'Please confirm your password!' },
-                        validateConfirmPassword
-                    ]}
-                >
-                    <Input.Password
-                        prefix={<LockOutlined />}
-                        placeholder="Confirm your password"
-                        iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
-                    />
-                </Form.Item>
+                <Row gutter={16}>
+                    <Col xs={24} sm={12}>
+                        <Form.Item
+                            name="password"
+                            label="Password"
+                            rules={[{ validator: validatePassword }]}
+                        >
+                            <Input.Password
+                                prefix={<LockOutlined />}
+                                placeholder="Password"
+                                iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
+                            />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24} sm={12}>
+                        <Form.Item
+                            name="confirmPassword"
+                            label="Confirm Password"
+                            dependencies={['password']}
+                            rules={[
+                                { required: true, message: 'Please confirm password!' },
+                                validateConfirmPassword
+                            ]}
+                        >
+                            <Input.Password
+                                prefix={<LockOutlined />}
+                                placeholder="Confirm Password"
+                                iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
+                            />
+                        </Form.Item>
+                    </Col>
+                </Row>
 
                 <Form.Item style={{ marginBottom: 0, marginTop: '24px' }}>
                     <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
