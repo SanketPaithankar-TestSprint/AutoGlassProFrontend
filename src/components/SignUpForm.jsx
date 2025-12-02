@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
 Form,
 Input,
+Select,
 Button,
 Row,
 Col,
@@ -42,34 +43,35 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                 state: values.state,
                 postalCode: values.postalCode,
                 country: values.country,
-                businessNumber: values.businessNumber,
-                userType: values.userType
+                businessLicenseNumber: values.businessLicenseNumber,
+                userType: values.userType,
+                ein: values.ein
             };
 
             const response = await axios.post('http://localhost:8080/api/auth/register', payload);
-
-            if (response.data) {
-                // Assuming successful response structure might vary, but checking for 200 OK implicitly via try/catch
-                // If the API returns a specific success flag, we can check it. 
-                // Based on previous code, it checked response.data.success. 
-                // I will assume standard success if no error is thrown, but keep the check if data exists.
-
+            if (response.data?.success) {
                 notification.success({
                     message: 'Registration Successful!',
-                    description: 'Your account has been created.',
+                    description: response.data.message || 'Your account has been created.',
                     duration: 4
                 });
-
+                setError(null);
                 if (onSuccess) {
                     onSuccess(response.data);
                 }
+            } else {
+                setError(response.data?.message || 'Registration failed.');
+                notification.error({
+                    message: 'Registration Failed',
+                    description: response.data?.message || 'Registration failed.',
+                    duration: 5
+                });
             }
         } catch (err) {
             const errorMessage = err.response?.data?.message ||
                 err.response?.data?.error ||
                 'Registration failed. Please try again.';
             setError(errorMessage);
-
             notification.error({
                 message: 'Registration Failed',
                 description: errorMessage,
@@ -127,48 +129,48 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                 initialValues={{ userType: 'BUSINESS' }}
             >
                 <Row gutter={16}>
-                    <Col xs={24} sm={12}>
-                        <Form.Item
-                            name="businessName"
-                            label="Business Name"
-                            rules={[{ required: true, message: 'Please input business name!' }]}
-                        >
-                            <Input placeholder="AutoGlass Pro" />
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} sm={12}>
-                        <Form.Item
-                            name="ownerName"
-                            label="Owner Name"
-                            rules={[{ required: true, message: 'Please input owner name!' }]}
-                        >
-                            <Input prefix={<UserOutlined />} placeholder="John Doe" />
-                        </Form.Item>
-                    </Col>
+                        <Col xs={24} sm={12}>
+                            <Form.Item
+                                name="businessName"
+                                label="Business Name"
+                                rules={[{ required: true, message: 'Please input business name!' }]}
+                            >
+                                <Input placeholder="AutoGlass Pro" />
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} sm={12}>
+                            <Form.Item
+                                name="ownerName"
+                                label="Owner Name"
+                                rules={[{ required: true, message: 'Please input owner name!' }]}
+                            >
+                                <Input prefix={<UserOutlined />} placeholder="John Doe" />
+                            </Form.Item>
+                        </Col>
                 </Row>
 
                 <Row gutter={16}>
-                    <Col xs={24} sm={12}>
-                        <Form.Item
-                            name="email"
-                            label="Email"
-                            rules={[
-                                { required: true, message: 'Please input email!' },
-                                { type: 'email', message: 'Invalid email!' }
-                            ]}
-                        >
-                            <Input prefix={<MailOutlined />} placeholder="john@example.com" />
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} sm={12}>
-                        <Form.Item
-                            name="businessNumber"
-                            label="Business Number"
-                            rules={[{ required: true, message: 'Please input business number!' }]}
-                        >
-                            <Input placeholder="BN-123456" />
-                        </Form.Item>
-                    </Col>
+                        <Col xs={24} sm={12}>
+                            <Form.Item
+                                name="email"
+                                label="Email"
+                                rules={[
+                                    { required: true, message: 'Please input email!' },
+                                    { type: 'email', message: 'Invalid email!' }
+                                ]}
+                            >
+                                <Input prefix={<MailOutlined />} placeholder="john@example.com" />
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} sm={12}>
+                            <Form.Item
+                                name="businessLicenseNumber"
+                                label="Business License Number"
+                                rules={[{ required: true, message: 'Please input business license number!' }]}
+                            >
+                                <Input placeholder="BLN-123456" />
+                            </Form.Item>
+                        </Col>
                 </Row>
 
                 <Row gutter={16}>
@@ -251,10 +253,25 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                 <Form.Item
                     name="userType"
                     label="User Type"
-                    rules={[{ required: true, message: 'Please input user type!' }]}
+                    rules={[{ required: true, message: 'Please select user type!' }]}
                 >
-                    <Input placeholder="BUSINESS" />
+                    <Select placeholder="Select user type">
+                        <Select.Option value="SHOP_OWNER">Shop Owner</Select.Option>
+                        <Select.Option value="REMOTE_WORKER">Remote Worker</Select.Option>
+                    </Select>
                 </Form.Item>
+
+                    <Row gutter={16}>
+                        <Col xs={24} sm={12}>
+                            <Form.Item
+                                name="ein"
+                                label="EIN"
+                                rules={[{ required: true, message: 'Please input EIN!' }]}
+                            >
+                                <Input placeholder="12-3456789" />
+                            </Form.Item>
+                        </Col>
+                    </Row>
 
                 <Row gutter={16}>
                     <Col xs={24} sm={12}>

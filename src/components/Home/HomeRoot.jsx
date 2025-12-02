@@ -5,20 +5,16 @@ import { getValidToken } from "../../api/getValidToken";
 import HeroSection from "./HeroSection";
 import { SearchOutlined, CarOutlined } from "@ant-design/icons";
 
-const Home = () =>
-{
+const Home = () => {
     const navigate = useNavigate();
     const [isAuthed, setIsAuthed] = useState(false);
     const [mounted, setMounted] = useState(false)
 
-    useEffect(() =>
-    {
+    useEffect(() => {
         const token = getValidToken();
         setIsAuthed(Boolean(token));
     }, []);
-
-    useEffect(() =>
-    {
+    useEffect(() => {
         setMounted(true)
     }, [])
 
@@ -112,8 +108,14 @@ const Home = () =>
 
                                 <button
                                     type="button"
-                                    className="relative inline-flex items-center gap-2 rounded-full bg-violet-600 px-4 py-1.5 text-xs font-semibold text-white shadow-md shadow-violet-500/30 transition-all duration-200 hover:scale-105 hover:bg-violet-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-                                    onClick={() => navigate("/search-by-root")}
+                                    className={`relative inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold shadow-md transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white
+                                    ${isAuthed
+                                            ? 'bg-white text-violet-600 border border-violet-400 shadow-violet-200 hover:bg-violet-50 hover:text-violet-700'
+                                            : 'bg-slate-100 text-slate-600 border border-slate-200 cursor-not-allowed opacity-50'
+                                        }`}
+
+                                    onClick={() => isAuthed && navigate("/search-by-root")}
+                                    disabled={!isAuthed}
                                 >
                                     <span className="relative flex items-center gap-1">
                                         <span>Open</span>

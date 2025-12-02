@@ -15,7 +15,6 @@ async function login({ usernameOrEmail, password, deviceType, browserInfo })
         }),
     });
     const data = await response.json();
-    debugger;
     return data;
 }
 

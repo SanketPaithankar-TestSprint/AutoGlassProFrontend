@@ -128,28 +128,27 @@ const Header = () => {
           glass-navbar
           fixed top-0 left-0 right-0 z-40
           flex items-center
-          px-4 md:px-6
+          px-2 sm:px-4 md:px-6
           transition-all duration-300
           ${scrolled ? "h-16" : "h-20"}
         `}
-        style={{ paddingInline: 0, boxShadow: scrolled ? '0 2px 8px rgba(0,0,0,0.12)' : 'none' }}
+        style={{ paddingInline: 0, boxShadow: scrolled ? '0 2px 8px rgba(0,0,0,0.12)' : 'none', minWidth: 0 }}
       >
-
         {/* Left: Logo + small tag */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <a
             href="/"
-            className="flex items-center gap-2 hover:scale-[1.02] transition-transform duration-150"
+            className="flex items-center gap-2 hover:scale-[1.02] transition-transform duration-150 min-w-0"
           >
-            <Logo className="w-32 h-auto" />
+            <Logo className="w-24 sm:w-32 h-auto min-w-0" />
           </a>
         </div>
 
         {/* Center: Navigation */}
-        <nav className="hidden lg:flex flex-1 justify-center">
-          <ul className="flex items-center gap-8 xl:gap-12 group/navlink">
+        <nav className="hidden lg:flex flex-1 justify-center min-w-0">
+          <ul className="flex items-center gap-4 sm:gap-8 xl:gap-12 group/navlink min-w-0">
             {menuItems.map((item) => (
-              <li key={item.key} className="list-none">
+              <li key={item.key} className="list-none min-w-0">
                 <NavLink label={item.label} href={item.href} />
               </li>
             ))}
@@ -158,11 +157,11 @@ const Header = () => {
 
         {/* Right: Buttons / Profile */}
         {!isAuthed ? (
-          <div className="hidden lg:block ml-auto">
+          <div className="hidden lg:block ml-auto min-w-0">
             <Space>
               <Button
                 type="text"
-                className="!h-9 !px-3 !text-slate-200/90 hover:!text-white !bg-transparent hover:!bg-transparent !border-0 focus:!outline-none focus:!ring-0 focus:!shadow-none hover:!shadow-none active:!shadow-none"
+                className="!h-9 !px-2 sm:!px-3 !text-slate-200/90 hover:!text-white !bg-transparent hover:!bg-transparent !border-0 focus:!outline-none focus:!ring-0 focus:!shadow-none hover:!shadow-none active:!shadow-none"
                 onClick={() => setLoginModalOpen(true)}
               >
                 Login
@@ -170,14 +169,14 @@ const Header = () => {
               <Button
                 type="primary"
                 onClick={() => setModalOpen(true)}
-                className="relative !h-9 !px-5 !rounded-full !border-0 !bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:!from-violet-400 hover:!to-fuchsia-400 !text-white shadow-lg shadow-violet-700/40 transition-transform duration-150 hover:scale-105"
+                className="relative !h-9 !px-3 sm:!px-5 !rounded-full !border-0 !bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:!from-violet-400 hover:!to-fuchsia-400 !text-white shadow-lg shadow-violet-700/40 transition-transform duration-150 hover:scale-105"
               >
                 <span className="relative">Sign Up</span>
               </Button>
             </Space>
           </div>
         ) : (
-          <div className="hidden lg:flex items-center gap-3 ml-auto">
+          <div className="hidden lg:flex items-center gap-2 sm:gap-3 ml-auto min-w-0">
             <ProfileDropdown
               onLogout={() => {
                 localStorage.removeItem("ApiToken");
@@ -189,13 +188,15 @@ const Header = () => {
 
         {/* Mobile menu button */}
         {isMobile && (
-          <Button
-            type="text"
-            aria-label="Open navigation"
-            icon={<MenuOutlined />}
-            onClick={() => setDrawerOpen(true)}
-            className="ml-auto !flex lg:!hidden !items-center !justify-center !h-9 !w-9 !rounded-full !text-slate-100 !bg-slate-900/60 hover:!bg-slate-800/80 !border border-slate-700/70 shadow-sm shadow-slate-900/60 focus:!outline-none focus:!ring-0 focus:!shadow-none"
-          />
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
+            <Button
+              type="text"
+              aria-label="Open navigation"
+              icon={<MenuOutlined />}
+              onClick={() => setDrawerOpen(true)}
+              className="!flex lg:!hidden !items-center !justify-center !h-9 !w-9 !rounded-full !text-slate-100 !bg-slate-900/60 hover:!bg-slate-800/80 !border border-slate-700/70 shadow-sm shadow-slate-900/60 focus:!outline-none focus:!ring-0 focus:!shadow-none"
+            />
+          </div>
         )}
       </AntHeader>
 
@@ -205,26 +206,23 @@ const Header = () => {
           title={
             <div className="flex items-center gap-2">
               <Logo className="w-24 h-auto" />
-              <span className="font-semibold text-slate-100 text-sm">
-                APAi
-              </span>
             </div>
           }
           placement="right"
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
-          bodyStyle={{ padding: 0, background: "#020617" }}
+          bodyStyle={{ padding: 0, background: "#f7f7fa", borderRadius: '16px 0 0 16px' }}
           maskClosable
           destroyOnClose
           className="ap-header-drawer"
         >
-          <nav className="p-3 text-slate-100">
-            <ul className="space-y-1">
+          <nav className="p-4 text-slate-700">
+            <ul className="space-y-2">
               {menuItems.map((item) => (
                 <li key={item.key}>
                   <a
                     href={item.href}
-                    className="block px-3 py-2 rounded-md text-sm text-slate-200 hover:text-white hover:bg-slate-800/80 outline-none transition-colors duration-150"
+                    className="block px-4 py-2 rounded-md text-base text-slate-700 hover:text-violet-700 hover:bg-violet-100 outline-none transition-colors duration-150"
                     style={{ WebkitTapHighlightColor: "transparent" }}
                     onClick={() => setDrawerOpen(false)}
                   >
@@ -235,10 +233,10 @@ const Header = () => {
             </ul>
 
             {!isAuthed && (
-              <div className="px-3 pt-3 border-t border-slate-800 mt-3">
+              <div className="px-4 pt-4 border-t border-slate-200 mt-4">
                 <Button
                   type="text"
-                  className="w-full !h-10 !text-slate-200 !bg-transparent hover:!bg-transparent !border-0 text-sm"
+                  className="w-full !h-10 !text-slate-700 !bg-transparent hover:!bg-violet-100 !border-0 text-base"
                   onClick={() => {
                     setDrawerOpen(false);
                     setLoginModalOpen(true);
@@ -252,7 +250,7 @@ const Header = () => {
                     setDrawerOpen(false);
                     setModalOpen(true);
                   }}
-                  className="w-full !h-10 !mt-2 !rounded-full !bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:!from-violet-400 hover:!to-fuchsia-400 !border-0 !text-white text-sm shadow-lg shadow-violet-800/40"
+                  className="w-full !h-10 !mt-2 !rounded-full !bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:!from-violet-400 hover:!to-fuchsia-400 !border-0 !text-white text-base shadow-lg shadow-violet-800/40"
                 >
                   Sign Up
                 </Button>
