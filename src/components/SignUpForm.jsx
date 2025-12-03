@@ -1,22 +1,23 @@
 import React, { useState } from 'react';
+import urls from '../config';
 import {
-Form,
-Input,
-Select,
-Button,
-Row,
-Col,
-Alert,
-notification,
-Space
+    Form,
+    Input,
+    Select,
+    Button,
+    Row,
+    Col,
+    Alert,
+    notification,
+    Space
 } from 'antd';
 import {
-UserOutlined,
-MailOutlined,
-LockOutlined,
-PhoneOutlined,
-EyeInvisibleOutlined,
-EyeTwoTone
+    UserOutlined,
+    MailOutlined,
+    LockOutlined,
+    PhoneOutlined,
+    EyeInvisibleOutlined,
+    EyeTwoTone
 } from '@ant-design/icons';
 import axios from 'axios';
 
@@ -48,7 +49,8 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                 ein: values.ein
             };
 
-            const response = await axios.post('http://localhost:8080/api/auth/register', payload);
+            // Use javaApiUrl from config.js
+            const response = await axios.post(`${urls.javaApiUrl}/auth/register`, payload);
             if (response.data?.success) {
                 notification.success({
                     message: 'Registration Successful!',
@@ -129,48 +131,48 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                 initialValues={{ userType: 'BUSINESS' }}
             >
                 <Row gutter={16}>
-                        <Col xs={24} sm={12}>
-                            <Form.Item
-                                name="businessName"
-                                label="Business Name"
-                                rules={[{ required: true, message: 'Please input business name!' }]}
-                            >
-                                <Input placeholder="AutoGlass Pro" />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} sm={12}>
-                            <Form.Item
-                                name="ownerName"
-                                label="Owner Name"
-                                rules={[{ required: true, message: 'Please input owner name!' }]}
-                            >
-                                <Input prefix={<UserOutlined />} placeholder="John Doe" />
-                            </Form.Item>
-                        </Col>
+                    <Col xs={24} sm={12}>
+                        <Form.Item
+                            name="businessName"
+                            label="Business Name"
+                            rules={[{ required: true, message: 'Please input business name!' }]}
+                        >
+                            <Input placeholder="AutoGlass Pro" />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24} sm={12}>
+                        <Form.Item
+                            name="ownerName"
+                            label="Owner Name"
+                            rules={[{ required: true, message: 'Please input owner name!' }]}
+                        >
+                            <Input prefix={<UserOutlined />} placeholder="John Doe" />
+                        </Form.Item>
+                    </Col>
                 </Row>
 
                 <Row gutter={16}>
-                        <Col xs={24} sm={12}>
-                            <Form.Item
-                                name="email"
-                                label="Email"
-                                rules={[
-                                    { required: true, message: 'Please input email!' },
-                                    { type: 'email', message: 'Invalid email!' }
-                                ]}
-                            >
-                                <Input prefix={<MailOutlined />} placeholder="john@example.com" />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} sm={12}>
-                            <Form.Item
-                                name="businessLicenseNumber"
-                                label="Business License Number"
-                                rules={[{ required: true, message: 'Please input business license number!' }]}
-                            >
-                                <Input placeholder="BLN-123456" />
-                            </Form.Item>
-                        </Col>
+                    <Col xs={24} sm={12}>
+                        <Form.Item
+                            name="email"
+                            label="Email"
+                            rules={[
+                                { required: true, message: 'Please input email!' },
+                                { type: 'email', message: 'Invalid email!' }
+                            ]}
+                        >
+                            <Input prefix={<MailOutlined />} placeholder="john@example.com" />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24} sm={12}>
+                        <Form.Item
+                            name="businessLicenseNumber"
+                            label="Business License Number"
+                            rules={[{ required: true, message: 'Please input business license number!' }]}
+                        >
+                            <Input placeholder="BLN-123456" />
+                        </Form.Item>
+                    </Col>
                 </Row>
 
                 <Row gutter={16}>
@@ -261,17 +263,17 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                     </Select>
                 </Form.Item>
 
-                    <Row gutter={16}>
-                        <Col xs={24} sm={12}>
-                            <Form.Item
-                                name="ein"
-                                label="EIN"
-                                rules={[{ required: true, message: 'Please input EIN!' }]}
-                            >
-                                <Input placeholder="12-3456789" />
-                            </Form.Item>
-                        </Col>
-                    </Row>
+                <Row gutter={16}>
+                    <Col xs={24} sm={12}>
+                        <Form.Item
+                            name="ein"
+                            label="EIN"
+                            rules={[{ required: true, message: 'Please input EIN!' }]}
+                        >
+                            <Input placeholder="12-3456789" />
+                        </Form.Item>
+                    </Col>
+                </Row>
 
                 <Row gutter={16}>
                     <Col xs={24} sm={12}>
