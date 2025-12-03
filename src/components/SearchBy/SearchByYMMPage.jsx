@@ -19,7 +19,6 @@ const SearchByYMMPage = () => {
           p.part.oem_glass_id === part.oem_glass_id &&
           p.glass.code === glass.code
       );
-      debugger;
       if (alreadyAdded) {
         message.warning("Part already added to the invoice.");
         return prevParts;

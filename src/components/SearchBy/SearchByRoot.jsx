@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import SearchByVin from "./SearchByvin";
 import SearchByYMM from "./SearchByYMM";
 import CarGlassViewer from "../CarGlassViewer";
-import QuoteDetails from "../QuoteDetails";
+import QuoteDetails from "../QuoteDetails/QuoteDetails";
 
 
 const SearchByRoot = () => {
