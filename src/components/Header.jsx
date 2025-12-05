@@ -180,7 +180,7 @@ const Header = () => {
             <ProfileDropdown
               onLogout={() => {
                 localStorage.removeItem("ApiToken");
-                setIsAuthed(false);
+                window.location.href = "/";
               }}
             />
           </div>
