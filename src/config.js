@@ -1,5 +1,5 @@
 const urls = {
-    javaApiUrl: 'https://localhost:8443/api',
+    javaApiUrl: 'https://javaapi.autopaneai.com/api',
     pythonApiUrl: 'https://api.autopaneai.com/',
 };
 
