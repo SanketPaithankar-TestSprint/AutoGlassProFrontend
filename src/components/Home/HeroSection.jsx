@@ -2,9 +2,8 @@ import React from "react";
 import { Button } from "antd";
 import { LinkOutlined } from "@ant-design/icons";
 
-const HeroSection = () =>
-{
-    return (
+const HeroSection = () => {
+  return (
     <section
       id="hero"
       className="relative overflow-hidden bg-[#F8F9FC] text-slate-900"
@@ -29,30 +28,30 @@ const HeroSection = () =>
 
         {/* Subheading */}
         <p className="text-base md:text-lg text-slate-600 mb-8 max-w-2xl mx-auto animate-[fadeInUp_0.9s_ease-out]">
-          Join thousands of auto glass shops already saving time and increasing profits.
+          Professional B2B platform for auto glass vendors and repair shops. Generate instant quotes, manage work orders, and invoice customers—all in one place.
         </p>
 
         {/* CTA */}
-        <div className="flex justify-center animate-[fadeInUp_1.1s_ease-out]">
+        <div className="flex flex-col sm:flex-row justify-center gap-4 animate-[fadeInUp_1.1s_ease-out]">
           <Button
             type="primary"
             size="large"
-            icon={<LinkOutlined />}
-            className="group relative !inline-flex !items-center !gap-2 !bg-violet-600 !border-violet-600 
-                       hover:!bg-violet-500 hover:!border-violet-500 !text-base !rounded-full 
-                       !py-3 !px-10 shadow-lg shadow-violet-900/40 transition-transform duration-200 
-                       hover:scale-105"
-            onClick={() =>
-            {
+            className="!bg-violet-600 !border-violet-600 hover:!bg-violet-500 hover:!border-violet-500 !text-white !rounded-full !px-8 !h-12 !text-base shadow-lg shadow-violet-900/20 transition-transform duration-200 hover:scale-105"
+            onClick={() => {
               const el = document.getElementById("signup");
-              if (el)
-              {
+              if (el) {
                 el.scrollIntoView({ behavior: "smooth" });
               }
             }}
           >
-            <span className="absolute inset-0 rounded-full bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-            <span className="relative">Get Started Free</span>
+            Start Free Trial
+          </Button>
+
+          <Button
+            size="large"
+            className="!bg-white !border-slate-200 hover:!border-violet-400 !text-slate-700 hover:!text-violet-700 !rounded-full !px-8 !h-12 !text-base shadow-sm hover:shadow-md transition-transform duration-200 hover:scale-105"
+          >
+            Watch Demo
           </Button>
         </div>
       </div>

@@ -8,9 +8,9 @@ import SearchByRoot from "./components/SearchBy/SearchByRoot";
 import Profile from './components/profile/Profile.jsx';
 import PricingPage from './components/PricingPage.jsx';
 const { Content } = Layout;
+import Chatbot from './components/Chatbot';
 
-function App()
-{
+function App() {
   return (<Router>
     <Layout className="min-h-screen">
       <Header />
@@ -24,6 +24,7 @@ function App()
         </Routes>
       </Content>
       <Footer />
+      <Chatbot />
     </Layout>
   </Router>
   );
