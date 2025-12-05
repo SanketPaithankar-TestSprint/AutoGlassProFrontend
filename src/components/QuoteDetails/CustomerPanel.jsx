@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import urls from "../../config";
 import { getValidToken } from "../../api/getValidToken";
 
 export default function CustomerPanel({ prefill }) {
@@ -41,7 +42,7 @@ export default function CustomerPanel({ prefill }) {
         setCustomerSuccess(null);
         try {
             const token = await getValidToken();
-            const response = await fetch("http://localhost:8080/api/v1/customers/create-with-vehicle", {
+            const response = await fetch(`${urls.javaApiUrl}/v1/customers/create-with-vehicle`, {
                 method: "POST",
                 headers: {
                     "accept": "*/*",
