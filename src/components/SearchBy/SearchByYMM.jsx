@@ -72,12 +72,16 @@ export default function SearchByYMM({
         );
         const data = await resp.json();
         const results = Array.isArray(data?.Results) ? data.Results : [];
-        const norm = results
-          .map((r) => ({
-            MakeId: r.MakeId,
-            MakeName: (r.MakeName || "").trim(),
-          }))
-          .filter((r) => r.MakeName);
+        const uniqueMakes = new Set();
+        const norm = [];
+        results.forEach((r) => {
+          const name = (r.MakeName || "").trim();
+          if (name && !uniqueMakes.has(name)) {
+            uniqueMakes.add(name);
+            norm.push({ MakeId: r.MakeId, MakeName: name });
+          }
+        });
+        norm.sort((a, b) => a.MakeName.localeCompare(b.MakeName));
         if (!ignore) {
           makesCache.current.set(cacheKey, norm);
           setMakes(norm);
@@ -112,11 +116,16 @@ export default function SearchByYMM({
         const resp = await fetch(url);
         const data = await resp.json();
         const results = Array.isArray(data?.Results) ? data.Results : [];
-        const norm = results
-          .map((r) => ({
-            ModelName: (r.Model_Name || r.ModelName || "").trim(),
-          }))
-          .filter((r) => r.ModelName);
+        const uniqueModels = new Set();
+        const norm = [];
+        results.forEach((r) => {
+          const name = (r.Model_Name || r.ModelName || "").trim();
+          if (name && !uniqueModels.has(name)) {
+            uniqueModels.add(name);
+            norm.push({ ModelName: name });
+          }
+        });
+        norm.sort((a, b) => a.ModelName.localeCompare(b.ModelName));
         if (!ignore) {
           modelsCache.current.set(cacheKey, norm);
           setModels(norm);
@@ -185,56 +194,53 @@ export default function SearchByYMM({
 
   return (
     <div className={className}>
-      {/* Card container */}
-      <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 md:p-8">
-        {/* Grid: Year / Make / Model */}
-        <div className="flex flex-col md:flex-row gap-6 justify-center items-end">
-          {/* Year */}
-          <div className="w-full md:w-72">
-            <label className="block text-gray-800 font-medium mb-2">Year</label>
-            <Select
-              size="large"
-              className="w-full"
-              placeholder="Select year"
-              value={year}
-              onChange={handleYear}
-              disabled={disabled}
-              options={years.map((y) => ({ label: y.toString(), value: y }))}
-              showSearch={showSearch}
-            />
-          </div>
+      {/* Grid: Year / Make / Model */}
+      <div className="flex flex-col md:flex-row gap-6 justify-center items-end">
+        {/* Year */}
+        <div className="w-full md:w-72">
+          <label className="block text-gray-800 font-medium mb-2">Year</label>
+          <Select
+            size="large"
+            className="w-full"
+            placeholder="Select year"
+            value={year}
+            onChange={handleYear}
+            disabled={disabled}
+            options={years.map((y) => ({ label: y.toString(), value: y }))}
+            showSearch={showSearch}
+          />
+        </div>
 
-          {/* Make */}
-          <div className="w-full md:w-72">
-            <label className="block text-gray-800 font-medium mb-2">Make</label>
-            <Select
-              size="large"
-              className="w-full"
-              placeholder="Select make"
-              value={make}
-              onChange={handleMake}
-              disabled={disabled || !year}
-              notFoundContent={loadingMakes ? <Spin size="small" /> : null}
-              options={toOptions(makes, "MakeName", "MakeName")}
-              showSearch={showSearch}
-            />
-          </div>
+        {/* Make */}
+        <div className="w-full md:w-72">
+          <label className="block text-gray-800 font-medium mb-2">Make</label>
+          <Select
+            size="large"
+            className="w-full"
+            placeholder="Select make"
+            value={make}
+            onChange={handleMake}
+            disabled={disabled || !year}
+            notFoundContent={loadingMakes ? <Spin size="small" /> : null}
+            options={toOptions(makes, "MakeName", "MakeName")}
+            showSearch={showSearch}
+          />
+        </div>
 
-          {/* Model */}
-          <div className="w-full md:w-72">
-            <label className="block text-gray-800 font-medium mb-2">Model</label>
-            <Select
-              size="large"
-              className="w-full"
-              placeholder="Select model"
-              value={model}
-              onChange={handleModel}
-              disabled={disabled || !year || !make}
-              notFoundContent={loadingModels ? <Spin size="small" /> : null}
-              options={toOptions(models, "ModelName", "ModelName")}
-              showSearch={showSearch}
-            />
-          </div>
+        {/* Model */}
+        <div className="w-full md:w-72">
+          <label className="block text-gray-800 font-medium mb-2">Model</label>
+          <Select
+            size="large"
+            className="w-full"
+            placeholder="Select model"
+            value={model}
+            onChange={handleModel}
+            disabled={disabled || !year || !make}
+            notFoundContent={loadingModels ? <Spin size="small" /> : null}
+            options={toOptions(models, "ModelName", "ModelName")}
+            showSearch={showSearch}
+          />
         </div>
       </div>
     </div>

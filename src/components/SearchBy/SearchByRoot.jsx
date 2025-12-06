@@ -23,7 +23,6 @@ const SearchByRoot = () => {
       });
     }
   };
-
   // Handle vehicle info update from YMM selector
   const handleVehicleInfoUpdate = (info) => {
     setVehicleInfo(info);
@@ -57,8 +56,8 @@ const SearchByRoot = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center px-4 pt-24 pb-16">
-      <div className="w-full max-w-[85%] 2xl:max-w-[1800px] mx-auto space-y-8">
+    <div className="min-h-screen bg-white flex flex-col items-center px-0 pt-24 pb-16">
+      <div className="w-full md:max-w-[85%] 2xl:max-w-[1800px] mx-auto space-y-8">
         {/* Header */}
         <div className="text-center mb-8">
           <p className="text-[11px] font-semibold tracking-[0.3em] uppercase text-violet-600 mb-3">
@@ -74,9 +73,9 @@ const SearchByRoot = () => {
         </div>
 
         {/* Search Container */}
-        <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-100 overflow-hidden max-w-[70%] mx-auto">
+        <div className="bg-white rounded-none md:rounded-2xl shadow-sm md:shadow-xl shadow-slate-200/60 border-y md:border border-slate-100 overflow-hidden w-full md:max-w-[85%] lg:max-w-[70%] mx-auto">
           {/* VIN Search Section */}
-          <div className="p-6 md:p-8 border-b border-slate-100 bg-slate-50/50">
+          <div className="p-4 md:p-8 border-b border-slate-100 bg-slate-50/50">
             <h2 className="text-lg font-semibold text-slate-900 mb-4">
               Option 1: Search by VIN
             </h2>
@@ -88,7 +87,7 @@ const SearchByRoot = () => {
           </div>
 
           {/* YMM Search Section */}
-          <div className="p-6 md:p-8">
+          <div className="p-4 md:p-8">
             <h2 className="text-lg font-semibold text-slate-900 mb-4">
               Option 2: Search by Year, Make, Model
             </h2>
@@ -105,7 +104,7 @@ const SearchByRoot = () => {
         {modelId && (
           <div className="space-y-8 animate-[fadeIn_0.5s_ease-out]">
             {/* Glass Diagram */}
-            <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-100 p-6 md:p-8">
+            <div className="bg-white rounded-none md:rounded-2xl shadow-sm md:shadow-xl shadow-slate-200/60 border-y md:border border-slate-100 p-4 md:p-8">
               <h2 className="text-xl font-semibold text-slate-900 mb-2">
                 Select Parts
               </h2>
@@ -120,7 +119,7 @@ const SearchByRoot = () => {
 
             {/* Invoice/Quote Form */}
             {selectedParts.length > 0 && (
-              <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-100 p-6 md:p-8">
+              <div className="bg-white rounded-none md:rounded-2xl shadow-sm md:shadow-xl shadow-slate-200/60 border-y md:border border-slate-100 p-4 md:p-8">
                 <h2 className="text-xl font-semibold text-slate-900 mb-2">
                   Quote Details
                 </h2>

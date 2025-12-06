@@ -1,7 +1,6 @@
 import React from "react";
-import ZONES from "../../const/zones";
 
-const Diagram = ({ selectedGlassTypes, handleSelectGlass, handleZoneHover, handleZoneLeave }) => {
+const Diagram = ({ zones, selectedGlassTypes, onZoneHover, onZoneLeave }) => {
     return (
         <div className="relative w-full max-w-[300px] mx-auto">
             <svg viewBox="0 0 300 520" className="w-full h-auto drop-shadow-xl">
@@ -12,26 +11,33 @@ const Diagram = ({ selectedGlassTypes, handleSelectGlass, handleZoneHover, handl
                     stroke="#94a3b8"
                     strokeWidth="2"
                 />
+
                 {/* Roof / Cabin Area */}
                 <path
                     d="M75,175 L225,175 L225,405 L75,405 Z"
                     fill="#f1f5f9"
                     stroke="none"
                 />
+
                 {/* Glass Zones */}
-                {ZONES.map((zone) => {
-                    const isAvailable = !!zone.code;
-                    const isSelected = selectedGlassTypes.some(item => item.glass.code === zone.code);
-                    let fill = "#cbd5e1";
-                    if (isAvailable) fill = "#7dd3fc";
-                    if (isSelected) fill = "#2563eb";
+                {zones.map((zone) => {
+                    const isAvailable = !!zone.glass;
+                    const isSelected = selectedGlassTypes.some(item => item.glass.code === zone.glass?.code);
+
+                    // Fill color logic
+                    let fill = "#cbd5e1"; // Default gray (unavailable)
+                    if (isAvailable) fill = "#7dd3fc"; // Light blue (available)
+                    if (isSelected) fill = "#2563eb"; // Dark blue (selected)
+
                     return (
                         <g
                             key={zone.id}
-                            onClick={() => isAvailable && handleSelectGlass(zone)}
-                            onMouseEnter={(e) => handleZoneHover(e, zone)}
-                            onMouseLeave={handleZoneLeave}
-                            className={`${isAvailable ? "cursor-pointer hover:opacity-80" : "cursor-not-allowed opacity-50"} transition-all duration-200`}
+                            onMouseEnter={(e) => onZoneHover(e, zone)}
+                            onMouseLeave={onZoneLeave}
+                            className={`${isAvailable
+                                ? "hover:opacity-80"
+                                : "cursor-not-allowed opacity-50"
+                                } transition-all duration-200`}
                         >
                             <path
                                 d={zone.path}
@@ -44,6 +50,22 @@ const Diagram = ({ selectedGlassTypes, handleSelectGlass, handleZoneHover, handl
                     );
                 })}
             </svg>
+
+            {/* Legend / Status */}
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4 text-[10px] font-medium text-slate-500">
+                <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 bg-sky-300 rounded-full border border-slate-600"></div>
+                    <span>Available</span>
+                </div>
+                <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 bg-blue-600 rounded-full border border-blue-800"></div>
+                    <span>Selected</span>
+                </div>
+                <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 bg-slate-300 rounded-full border border-slate-400"></div>
+                    <span>Unavailable</span>
+                </div>
+            </div>
         </div>
     );
 };

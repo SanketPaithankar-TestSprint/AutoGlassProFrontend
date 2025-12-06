@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { notification } from "antd";
 import urls from "../../config";
 import { getValidToken } from "../../api/getValidToken";
 
@@ -19,33 +20,11 @@ const FormInput = ({ label, name, value, onChange, required = false, type = "tex
     </div>
 );
 
-export default function CustomerPanel({ prefill = {}, setCanShowQuotePanel, setPanel }) {
-    // 2. Initialize state with defaults to avoid "uncontrolled to controlled" warnings
-    const [formData, setFormData] = useState({
-        firstName: prefill.firstName || "",
-        lastName: prefill.lastName || "",
-        email: prefill.email || "",
-        phone: prefill.phone || "",
-        alternatePhone: prefill.alternatePhone || "",
-        addressLine1: prefill.addressLine1 || "",
-        addressLine2: prefill.addressLine2 || "",
-        city: prefill.city || "",
-        state: prefill.state || "",
-        postalCode: prefill.postalCode || "",
-        country: prefill.country || "",
-        preferredContactMethod: prefill.preferredContactMethod ? prefill.preferredContactMethod.toLowerCase() : "phone",
-        notes: prefill.notes || "",
-        vehicleYear: prefill.vehicleYear || prefill.year || "",
-        vehicleMake: prefill.vehicleMake || prefill.make || "",
-        vehicleModel: prefill.vehicleModel || prefill.model || "",
-        vehicleStyle: prefill.vehicleStyle || prefill.body || "",
-        licensePlateNumber: prefill.licensePlateNumber || "",
-        vin: prefill.vin || "",
-        vehicleNotes: prefill.vehicleNotes || "",
-    });
+export default function CustomerPanel({ formData, setFormData, setCanShowQuotePanel, setPanel }) {
+    // 2. State is now managed by parent
 
-    // 3. Consolidated Status State
-    const [status, setStatus] = useState({ type: "idle", message: "" });
+    // 3. Simple Loading State
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -54,7 +33,7 @@ export default function CustomerPanel({ prefill = {}, setCanShowQuotePanel, setP
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setStatus({ type: "loading", message: "Submitting..." });
+        setLoading(true);
 
         try {
             const token = await getValidToken();
@@ -76,14 +55,32 @@ export default function CustomerPanel({ prefill = {}, setCanShowQuotePanel, setP
             const data = await response.json();
 
             if (data.customerId && data.vehicleId) {
-                setStatus({ type: "success", message: "Customer created successfully!" });
+                notification.success({
+                    message: 'Customer Created',
+                    description: 'Customer profile and vehicle saved successfully!'
+                });
+
+                setFormData((prev) => {
+                    const newData = {
+                        ...prev,
+                        customerId: data.customerId,
+                        vehicleId: data.vehicleId,
+                    };
+                    localStorage.setItem("agp_customer_data", JSON.stringify(newData));
+                    return newData;
+                });
                 if (setCanShowQuotePanel) setCanShowQuotePanel(true);
                 if (setPanel) setPanel("quote");
             } else {
                 throw new Error("Invalid response from server.");
             }
         } catch (err) {
-            setStatus({ type: "error", message: err.message || "Network error occurred." });
+            notification.error({
+                message: 'Submission Failed',
+                description: err.message || "Network error occurred."
+            });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -150,18 +147,12 @@ export default function CustomerPanel({ prefill = {}, setCanShowQuotePanel, setP
 
                 {/* Action Bar */}
                 <div className="pt-4 border-t flex flex-col items-end gap-3">
-                    {status.message && (
-                        <div className={`text-sm font-medium ${status.type === 'error' ? 'text-red-500' : 'text-green-600'}`}>
-                            {status.message}
-                        </div>
-                    )}
-
                     <button
                         type="submit"
-                        disabled={status.type === "loading"}
+                        disabled={loading}
                         className="w-full md:w-auto px-6 py-2.5 rounded-lg bg-violet-600 hover:bg-violet-700 disabled:bg-violet-300 text-white font-semibold shadow-md transition-all"
                     >
-                        {status.type === "loading" ? "Processing..." : "Create Customer & Vehicle"}
+                        {loading ? "Processing..." : "Create Customer & Vehicle"}
                     </button>
                 </div>
             </form>
