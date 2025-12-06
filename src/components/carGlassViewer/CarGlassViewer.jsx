@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
-import config from "../config";
+import config from "../../config";
+import GLASS_CODE_NAMES from "../../const/glassCodeNames";
 
 export default function CarGlassViewer({
   modelId,
@@ -10,7 +11,7 @@ export default function CarGlassViewer({
   const [loading, setLoading] = useState(true);
   const [glassData, setGlassData] = useState([]);
   const [error, setError] = useState(null);
-
+  debugger;
   // Multi-selection state: Array of { glass, label, parts, loading, error, isExpanded }
   const [selectedGlassTypes, setSelectedGlassTypes] = useState([]);
 
@@ -77,16 +78,8 @@ export default function CarGlassViewer({
     const pos = (glass.position || "").toUpperCase();
     const side = (glass.side || "").toUpperCase();
 
-    const GLASS_CODE_NAMES = {
-      DW: "Windshield",
-      DB: "Back Glass",
-      DD: "Door Drop Glass",
-      DQ: "Door Quarter Glass",
-      DR: "Door Rear Glass",
-      DV: "Door Vent Glass",
-    };
-
-    const baseName = GLASS_CODE_NAMES[prefix] || glass.description || "Glass Part";
+    const codeObj = GLASS_CODE_NAMES.find(obj => obj.code === prefix);
+    const baseName = codeObj ? codeObj.name : (glass.description || "Glass Part");
 
     // For Windshield and Back Glass, return just the name
     if (prefix === "DW" || prefix === "DB") return baseName;
@@ -164,10 +157,6 @@ export default function CarGlassViewer({
       const side_cd = getSideCd(glass);
 
       const params = new URLSearchParams();
-      params.append("make_model_id", modelId);
-      params.append("prefix_cd", prefix_cd);
-
-      // For Windshield (DW) and Back Glass (DB), omit pos_cd and side_cd
       if (prefix_cd !== "DW" && prefix_cd !== "DB") {
         params.append("pos_cd", pos_cd);
         params.append("side_cd", side_cd);
@@ -247,10 +236,13 @@ export default function CarGlassViewer({
     setSelectedParts((prev) =>
       prev.filter(
         (p) =>
-          `${p.part.nags_glass_id || ""}|${p.part.oem_glass_id || ""}|${p.glass.code
-          }` !== partKey
+          `${p.part.nags_glass_id || ""}|${p.part.oem_glass_id || ""}|${p.glass.code}` !== partKey
       )
     );
+    // Optionally, notify parent if needed
+    if (typeof onPartSelect === 'function') {
+      onPartSelect({ remove: true, partKey });
+    }
   };
 
   // Helper to find glass by code prefix/position/side
@@ -534,6 +526,7 @@ export default function CarGlassViewer({
                   <div className="p-3 space-y-3 bg-white">
                     {item.parts.map((part) => {
                       const partId = part.nags_glass_id || part.oem_glass_id;
+                      const partKey = `${part.nags_glass_id || ""}|${part.oem_glass_id || ""}|${item.glass.code}`;
                       const isExpanded = expandedPartIds.has(partId);
                       const isSelected = selectedParts.some(
                         (p) =>
@@ -581,15 +574,25 @@ export default function CarGlassViewer({
                                   <span className="text-xs font-semibold text-slate-500">OEM ID</span>
                                   <span className="text-sm font-mono text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200">{part.oem_glass_id || "N/A"}</span>
                                 </div>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleSelectPart(part, item.glass);
-                                  }}
-                                  className={`w-full mt-2 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${isSelected ? "bg-red-50 text-red-600 hover:bg-red-100 border border-red-200" : "bg-blue-600 text-white hover:bg-blue-700 shadow-sm hover:shadow"}`}
-                                >
-                                  {isSelected ? "Remove Selection" : "Select Part"}
-                                </button>
+                                <div className="flex gap-2 mt-2">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const uniqueKey = `${part.nags_glass_id || ""}|${part.oem_glass_id || ""}|${item.glass?.code || ""}`;
+                                      if (isSelected) {
+                                        handleRemoveSelectedPart?.(uniqueKey);
+                                      } else {
+                                        handleSelectPart(part, item.glass);
+                                      }
+                                    }}
+                                    className={`w-full mt-2 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${isSelected
+                                      ? "bg-red-50 text-red-600 hover:bg-red-100 border border-red-200"
+                                      : "bg-blue-600 text-white hover:bg-blue-700 shadow-sm hover:shadow"
+                                      }`}
+                                  >
+                                    {isSelected ? "Remove Selection" : "Select Part"}
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           )}

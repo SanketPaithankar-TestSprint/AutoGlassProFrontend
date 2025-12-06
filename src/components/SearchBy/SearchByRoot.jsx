@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import SearchByVin from "./SearchByvin";
 import SearchByYMM from "./SearchByYMM";
-import CarGlassViewer from "../CarGlassViewer";
+import CarGlassViewer from "../carGlassViewer/CarGlassViewer";
 import QuoteDetails from "../QuoteDetails/QuoteDetails";
 
 
@@ -28,7 +28,6 @@ const SearchByRoot = () => {
   const handleVehicleInfoUpdate = (info) => {
     setVehicleInfo(info);
   };
-
   // Handle adding a part to the invoice
   const handleAddPart = ({ glass, part, glassInfo }) => {
     setSelectedParts((prevParts) => {
@@ -115,6 +114,7 @@ const SearchByRoot = () => {
                 modelId={modelId}
                 vehicleInfo={vehicleInfo}
                 onPartSelect={handleAddPart}
+                onPartDeselect={handleRemovePart}
               />
             </div>
 

@@ -50,7 +50,7 @@ export default function QuotePanel({ parts = [], onRemovePart }) {
     const [globalTaxRate, setGlobalTaxRate] = useState(0);
     const [discountPercent, setDiscountPercent] = useState(0);
     const [payment, setPayment] = useState(0);
-
+    debugger;
     const updateItem = (id, key, value) => {
         setItems((prev) => prev.map((it) => (it.id === id ? { ...it, [key]: value } : it)));
     };

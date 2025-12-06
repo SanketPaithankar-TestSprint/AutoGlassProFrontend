@@ -101,6 +101,7 @@ const Header = () => {
     { key: "pricing", label: "Pricing", href: "/Pricing" },
     { key: "about", label: "About", href: "/about" },
     { key: "contact", label: "Contact", href: "/contact" },
+    { key: "searchby", label: "SearchBy", href: "/search-by-root" },
   ];
 
   const NavLink = ({ label, href }) => (
