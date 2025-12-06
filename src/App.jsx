@@ -6,6 +6,7 @@ import Home from './components/Home/HomeRoot.jsx';
 import OrderPage from './components/OrderPage.jsx';
 import SearchByRoot from "./components/SearchBy/SearchByRoot";
 import Profile from './components/profile/Profile.jsx';
+import Work from './components/work/Work.jsx';
 import PricingPage from './components/PricingPage.jsx';
 const { Content } = Layout;
 import Chatbot from './components/Chatbot';
@@ -19,6 +20,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/search-by-root" element={<SearchByRoot />} />
           <Route path="/Profile" element={<Profile />} />
+          <Route path="/work" element={<Work />} />
           <Route path="/Order" element={<OrderPage />} />
           <Route path="/Pricing" element={<PricingPage />} />
         </Routes>

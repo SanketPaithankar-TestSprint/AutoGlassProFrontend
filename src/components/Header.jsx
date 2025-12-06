@@ -16,6 +16,10 @@ const ProfileDropdown = ({ onLogout }) => {
       label: <a href="/profile">User Profile</a>,
     },
     {
+      key: "work",
+      label: <a href="/work">Work</a>,
+    },
+    {
       key: "logout",
       label: (
         <span

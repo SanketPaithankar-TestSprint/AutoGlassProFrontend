@@ -1,8 +1,7 @@
-// src/api/getProfile.js
 import urls from "../config";
 
-export async function getProfile(token) {
-    const url = `${urls.javaApiUrl}/v1/users/profile`;
+export async function getEmployees(token) {
+    const url = `${urls.javaApiUrl}/v1/employees`;
     try {
         const response = await fetch(url, {
             method: "GET",
@@ -16,7 +15,7 @@ export async function getProfile(token) {
         }
         return await response.json();
     } catch (error) {
-        console.error("Failed to fetch profile:", error);
+        console.error("Failed to fetch employees:", error);
         throw error;
     }
 }

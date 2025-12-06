@@ -1,8 +1,8 @@
-// src/api/getProfile.js
+// src/api/getServiceDocuments.js
 import urls from "../config";
 
-export async function getProfile(token) {
-    const url = `${urls.javaApiUrl}/v1/users/profile`;
+export async function getServiceDocuments(token) {
+    const url = `${urls.javaApiUrl}/v1/service-documents/my`;
     try {
         const response = await fetch(url, {
             method: "GET",
@@ -16,7 +16,7 @@ export async function getProfile(token) {
         }
         return await response.json();
     } catch (error) {
-        console.error("Failed to fetch profile:", error);
+        console.error("Failed to fetch service documents:", error);
         throw error;
     }
 }
