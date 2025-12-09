@@ -44,8 +44,13 @@ export default function QuoteDetails({ prefill, parts, onRemovePart }) {
                 console.error("Failed to parse saved customer data", e);
             }
         }
-        return initial;
     });
+
+    useEffect(() => {
+        if (customerData) {
+            localStorage.setItem("agp_customer_data", JSON.stringify(customerData));
+        }
+    }, [customerData]);
 
     useEffect(() => {
         const fetchGlassInfo = async () => {

@@ -91,6 +91,15 @@ class ErrorBoundary extends React.Component {
 
 function QuotePanelContent({ parts = [], onRemovePart, customerData }) {
     const [items, setItems] = useState(parts.length ? parts : [newItem()]);
+    const [userProfile, setUserProfile] = useState(() => {
+        try {
+            const saved = localStorage.getItem("agp_profile_data");
+            return saved ? JSON.parse(saved) : null;
+        } catch (e) {
+            console.error("Failed to parse user profile", e);
+            return null;
+        }
+    });
 
     useEffect(() => {
         setItems((prevItems) => {
@@ -216,14 +225,23 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData }) {
 
         // --- Header Section ---
         // Left: Company Info
+        // Left: Company Info
         doc.setFontSize(14);
         doc.setFont("helvetica", "bold");
-        doc.text("GlassFixit Auto Glass", margin + 10, 50);
+        doc.text(userProfile?.businessName || "", margin + 10, 50);
         doc.setFontSize(10);
-        doc.text("1250 Norman Ave", margin + 10, 65);
-        doc.text("Santa Clara, CA 95054", margin + 10, 80);
-        doc.text("(408) 564-0419", margin + 10, 95);
-        doc.text("Fed. ID# 922599034", margin + 10, 110);
+        const addressLine = (userProfile?.addressLine1 && userProfile?.addressLine2)
+            ? `${userProfile.addressLine1}, ${userProfile.addressLine2}`
+            : (userProfile?.addressLine1 || "");
+
+        const cityStateZip = (userProfile?.city && userProfile?.state)
+            ? `${userProfile.city}, ${userProfile.state} ${userProfile.postalCode || ""}`
+            : "";
+
+        doc.text(addressLine, margin + 10, 65);
+        doc.text(cityStateZip, margin + 10, 80);
+        doc.text(userProfile?.phone || "", margin + 10, 95);
+        doc.text(`Fed. ID# ${userProfile?.ein || userProfile?.businessLicenseNumber || ""}`, margin + 10, 110);
 
         // Right: Quote/Invoice Info Grid
         // Row 1: Quote # | Date
@@ -264,7 +282,8 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData }) {
         doc.rect(topGridX + 120, y3, 100, rowH);
         doc.line(topGridX + 155, y3, topGridX + 155, y3 + rowH);
         doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.text("Sold By", topGridX + 122, y3 + 12);
-        doc.setFont("helvetica", "bold"); doc.text("SUYOG", topGridX + 160, y3 + 13);
+        const soldBy = userProfile?.ownerName || (userProfile?.firstName ? `${userProfile.firstName} ${userProfile.lastName || ""}` : "");
+        doc.setFont("helvetica", "bold"); doc.text(soldBy, topGridX + 160, y3 + 13);
 
         // Row 4: Fed Tax # | Inst'l By
         const y4 = y3 + rowH;
@@ -278,36 +297,61 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData }) {
 
         // --- Address Box (Visual Markers) ---
         const addrY = 140;
+
+        // Calculate dynamic height based on text
+        let addrBoxH = 60;
+        let addressLines = [];
+        let cityY = addrY + 50;
+
+        if (customerData) {
+            const addr1 = customerData.addressLine1 || "";
+            addressLines = doc.splitTextToSize(addr1, 250); // Adjusted to fit new width (340 - 25(margin) - few pts)
+            // approx 12pts per line. 
+            // Start Y for address is addrY + 35. 
+            // City Y is after address lines.
+            cityY = addrY + 35 + (addressLines.length * 12);
+
+            // Check if we need to expand box
+            // We want some padding below cityY. Say 15pts.
+            const requiredH = (cityY + 15) - addrY;
+            if (requiredH > addrBoxH) {
+                addrBoxH = requiredH;
+            }
+        }
+
         // Top Left Bracket
         doc.line(margin, addrY, margin + 20, addrY);
         doc.line(margin, addrY, margin, addrY + 20);
-        // Top Right Bracket
-        doc.line(300, addrY, 280, addrY);
-        doc.line(300, addrY, 300, addrY + 20);
-        // Bottom Left Bracket
-        doc.line(margin, addrY + 60, margin + 20, addrY + 60);
-        doc.line(margin, addrY + 60, margin, addrY + 40);
-        // Bottom Right Bracket
-        doc.line(300, addrY + 60, 280, addrY + 60);
-        doc.line(300, addrY + 60, 300, addrY + 40);
+        // Top Right Bracket (Moved to 340)
+        doc.line(340, addrY, 320, addrY);
+        doc.line(340, addrY, 340, addrY + 20);
+
+        // Bottom Left Bracket (Dynamic Y)
+        const bottomY = addrY + addrBoxH;
+        doc.line(margin, bottomY, margin + 20, bottomY);
+        doc.line(margin, bottomY, margin, bottomY - 20);
+        // Bottom Right Bracket (Dynamic Y - Moved to 340)
+        doc.line(340, bottomY, 320, bottomY);
+        doc.line(340, bottomY, 340, bottomY - 20);
 
         if (customerData) {
             doc.setFontSize(10);
             doc.setFont("helvetica", "bold");
             doc.text(`${customerData.firstName} ${customerData.lastName}`, margin + 25, addrY + 20);
             doc.setFont("helvetica", "normal");
-            doc.text(`${customerData.addressLine1}`, margin + 25, addrY + 35);
-            doc.text(`${customerData.city}, ${customerData.state} ${customerData.postalCode}`, margin + 25, addrY + 50);
+
+            doc.text(addressLines, margin + 25, addrY + 35);
+            doc.text(`${customerData.city}, ${customerData.state} ${customerData.postalCode}`, margin + 25, cityY);
         }
 
         // --- Vehicle Info Grid ---
-        const vY = 220;
+        const vY = bottomY + 20; // Dynamic start for next section
         const vRowH = 20;
         const fullW = 540; // width of table
 
         // Row 1: Year | Make | Policy
         doc.rect(margin, vY, 40, vRowH); doc.text("Year", margin + 2, vY + 14);
-        doc.rect(margin + 40, vY, 80, vRowH); doc.setFont("helvetica", "bold"); doc.text(customerData?.vehicleYear || "", margin + 45, vY + 14); doc.setFont("helvetica", "normal");
+        doc.rect(margin + 40, vY, 80, vRowH); doc.setFont("helvetica", "bold"); doc.text(String(customerData?.vehicleYear || ""), margin + 45, vY + 14); doc.setFont("helvetica", "normal");
 
         doc.rect(margin + 120, vY, 40, vRowH); doc.text("Make", margin + 122, vY + 14);
         doc.rect(margin + 160, vY, 200, vRowH); doc.setFont("helvetica", "bold"); doc.text(customerData?.vehicleMake || "", margin + 165, vY + 14); doc.setFont("helvetica", "normal");
@@ -569,9 +613,8 @@ Auto Glass Pro Team`;
                 taxRate: Number(globalTaxRate) || 0,
                 discountAmount: discountAmount,
                 items: items
-                    // Filter out nothing, send all? Or specific logic?
-                    // Previous logic filtered labor to calculate it? 
-                    // Now we just send everything as items.
+                    // Filter out Labor items as per user request to avoid backend errors
+                    .filter(it => it.type !== 'Labor')
                     .map((it) => ({
                         prefixCd: it.prefixCd || "",
                         posCd: it.posCd || "",
@@ -579,16 +622,7 @@ Auto Glass Pro Team`;
                         nagsGlassId: it.nagsId || "MISC",
                         partDescription: it.description || "",
                         partPrice: Number(it.unitPrice) || 0,
-                        // If it's a labor row, laborAmount is the amount? Or do we map it differently?
-                        // The backend likely expects 'laborAmount' on a part item, or separate items?
-                        // If the backend sums up, we can just send "laborAmount" as 0 for parts, 
-                        // and the Labor Row has the cost?
-                        // Actually, looking at the previous logic: `itemLaborAmount` was calculated and attached to parts.
-                        // If we now have separate rows, we should send them as separate items?
-                        // Or does the backend specifically expect "laborAmount" on the item?
-                        // "items" in backend likely has a structure.
-                        // Let's assume sending them as line items with price is fine.
-                        laborAmount: it.type === 'Labor' ? (Number(it.amount) || 0) : 0,
+                        laborAmount: 0, // Set to 0 since we filtered out labor rows
                         quantity: Number(it.qty) || 1
                     }))
             };

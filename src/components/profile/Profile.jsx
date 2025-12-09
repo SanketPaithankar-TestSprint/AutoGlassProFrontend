@@ -2,8 +2,12 @@ import React, { useEffect, useState } from "react";
 import { getProfile } from "../../api/getProfile";
 import { getCustomers } from "../../api/getCustomers";
 import { getEmployees } from "../../api/getEmployees";
+import { createCustomer } from "../../api/createCustomer";
+import { updateCustomer } from "../../api/updateCustomer";
+import { createEmployee } from "../../api/createEmployee";
 import { getValidToken } from "../../api/getValidToken";
-import { UserOutlined, TeamOutlined, IdcardOutlined, ShopOutlined, PhoneOutlined, MailOutlined, EnvironmentOutlined } from "@ant-design/icons";
+import { UserOutlined, TeamOutlined, IdcardOutlined, ShopOutlined, PhoneOutlined, MailOutlined, EnvironmentOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
+import { Modal, Form, Input, Select, Button, notification, message } from "antd";
 
 const Profile = () => {
     const [activeTab, setActiveTab] = useState('profile');
@@ -14,6 +18,15 @@ const Profile = () => {
     const [loadingProfile, setLoadingProfile] = useState(true);
     const [loadingCustomers, setLoadingCustomers] = useState(false);
     const [loadingEmployees, setLoadingEmployees] = useState(false);
+    const [saving, setSaving] = useState(false);
+
+    // Modals state
+    const [isCustomerModalVisible, setIsCustomerModalVisible] = useState(false);
+    const [isEmployeeModalVisible, setIsEmployeeModalVisible] = useState(false);
+    const [editingCustomer, setEditingCustomer] = useState(null);
+
+    const [form] = Form.useForm();
+    const [employeeForm] = Form.useForm();
 
     const [error, setError] = useState(null);
 
@@ -35,6 +48,7 @@ const Profile = () => {
             if (!token) throw new Error("No token found. Please login.");
             const res = await getProfile(token);
             setProfile(res);
+            localStorage.setItem("agp_profile_data", JSON.stringify(res));
         } catch (err) {
             setError(err.message || "Failed to fetch profile.");
         } finally {
@@ -72,6 +86,85 @@ const Profile = () => {
         }
     };
 
+    // Customer Handlers
+    const handleAddCustomer = () => {
+        setEditingCustomer(null);
+        form.resetFields();
+        setIsCustomerModalVisible(true);
+    };
+
+    const handleEditCustomer = (customer) => {
+        setEditingCustomer(customer);
+        form.setFieldsValue({
+            ...customer,
+            vehicle: null // Vehicle editing not supported in this simple form yet
+        });
+        setIsCustomerModalVisible(true);
+    };
+
+    const handleSaveCustomer = async () => {
+        try {
+            const values = await form.validateFields();
+            setSaving(true);
+
+            if (!token) throw new Error("No token found");
+            if (!profile?.userId) throw new Error("User ID not found");
+
+            const payload = {
+                ...values,
+                userId: profile.userId
+            };
+
+            if (editingCustomer) {
+                await updateCustomer(token, editingCustomer.customerId, payload);
+                notification.success({ message: "Customer updated successfully" });
+            } else {
+                await createCustomer(token, payload);
+                notification.success({ message: "Customer created successfully" });
+            }
+
+            setIsCustomerModalVisible(false);
+            fetchCustomers(); // Refresh list
+        } catch (err) {
+            console.error(err);
+            notification.error({ message: "Failed to save customer", description: err.message });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    // Employee Handlers
+    const handleAddEmployee = () => {
+        employeeForm.resetFields();
+        setIsEmployeeModalVisible(true);
+    };
+
+    const handleSaveEmployee = async () => {
+        try {
+            const values = await employeeForm.validateFields();
+            setSaving(true);
+
+            if (!token) throw new Error("No token found");
+            if (!profile?.userId) throw new Error("User ID not found");
+
+            const payload = {
+                ...values,
+                userId: profile.userId
+            };
+
+            await createEmployee(token, payload);
+            notification.success({ message: "Employee created successfully" });
+
+            setIsEmployeeModalVisible(false);
+            fetchEmployees(); // Refresh list
+        } catch (err) {
+            console.error(err);
+            notification.error({ message: "Failed to create employee", description: err.message });
+        } finally {
+            setSaving(false);
+        }
+    };
+
     // Format address helper
     const formatAddress = (p) => {
         if (!p) return "-";
@@ -90,8 +183,8 @@ const Profile = () => {
         <button
             onClick={() => setActiveTab(id)}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left font-medium ${activeTab === id
-                    ? "bg-violet-600 text-white shadow-md shadow-violet-200"
-                    : "text-gray-600 hover:bg-violet-50 hover:text-violet-600"
+                ? "bg-violet-600 text-white shadow-md shadow-violet-200"
+                : "text-gray-600 hover:bg-violet-50 hover:text-violet-600"
                 }`}
         >
             <span className="text-lg">{icon}</span>
@@ -182,8 +275,11 @@ const Profile = () => {
             <div className="space-y-6 animate-fadeIn">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-2xl font-bold text-gray-800">Customers</h2>
-                    <button className="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                        Add Customer
+                    <button
+                        onClick={handleAddCustomer}
+                        className="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                    >
+                        <PlusOutlined /> Add Customer
                     </button>
                 </div>
                 {customers.length === 0 ? (
@@ -201,6 +297,7 @@ const Profile = () => {
                                         <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Email</th>
                                         <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Phone</th>
                                         <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Vehicle</th>
+                                        <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
@@ -210,6 +307,13 @@ const Profile = () => {
                                             <td className="p-4 text-sm text-gray-600">{c.email || "-"}</td>
                                             <td className="p-4 text-sm text-gray-600">{c.phone || "-"}</td>
                                             <td className="p-4 text-sm text-gray-600">{c.vehicle ? `${c.vehicle.year} ${c.vehicle.make} ${c.vehicle.model}` : "-"}</td>
+                                            <td className="p-4 text-sm text-gray-600">
+                                                <Button
+                                                    type="text"
+                                                    icon={<EditOutlined />}
+                                                    onClick={() => handleEditCustomer(c)}
+                                                />
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -217,6 +321,50 @@ const Profile = () => {
                         </div>
                     </div>
                 )}
+
+                <Modal
+                    title={editingCustomer ? "Edit Customer" : "Add Customer"}
+                    open={isCustomerModalVisible}
+                    onOk={handleSaveCustomer}
+                    onCancel={() => setIsCustomerModalVisible(false)}
+                    confirmLoading={saving}
+                >
+                    <Form form={form} layout="vertical">
+                        <div className="grid grid-cols-2 gap-4">
+                            <Form.Item name="firstName" label="First Name" rules={[{ required: true }]}>
+                                <Input />
+                            </Form.Item>
+                            <Form.Item name="lastName" label="Last Name" rules={[{ required: true }]}>
+                                <Input />
+                            </Form.Item>
+                        </div>
+                        <Form.Item name="email" label="Email" rules={[{ type: 'email' }]}>
+                            <Input />
+                        </Form.Item>
+                        <Form.Item name="phone" label="Phone" rules={[{ required: true }]}>
+                            <Input />
+                        </Form.Item>
+                        <Form.Item name="addressLine1" label="Address Line 1">
+                            <Input />
+                        </Form.Item>
+                        <div className="grid grid-cols-2 gap-4">
+                            <Form.Item name="city" label="City">
+                                <Input />
+                            </Form.Item>
+                            <Form.Item name="state" label="State">
+                                <Input />
+                            </Form.Item>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <Form.Item name="postalCode" label="Zip Code">
+                                <Input />
+                            </Form.Item>
+                            <Form.Item name="country" label="Country">
+                                <Input />
+                            </Form.Item>
+                        </div>
+                    </Form>
+                </Modal>
             </div>
         );
     };
@@ -228,8 +376,11 @@ const Profile = () => {
             <div className="space-y-6 animate-fadeIn">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-2xl font-bold text-gray-800">Employees</h2>
-                    <button className="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                        Add Employee
+                    <button
+                        onClick={handleAddEmployee}
+                        className="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                    >
+                        <PlusOutlined /> Add Employee
                     </button>
                 </div>
                 {employees.length === 0 ? (
@@ -267,6 +418,40 @@ const Profile = () => {
                         </div>
                     </div>
                 )}
+
+                <Modal
+                    title="Add Employee"
+                    open={isEmployeeModalVisible}
+                    onOk={handleSaveEmployee}
+                    onCancel={() => setIsEmployeeModalVisible(false)}
+                    confirmLoading={saving}
+                >
+                    <Form form={employeeForm} layout="vertical">
+                        <div className="grid grid-cols-2 gap-4">
+                            <Form.Item name="firstName" label="First Name" rules={[{ required: true }]}>
+                                <Input />
+                            </Form.Item>
+                            <Form.Item name="lastName" label="Last Name" rules={[{ required: true }]}>
+                                <Input />
+                            </Form.Item>
+                        </div>
+                        <Form.Item name="email" label="Email" rules={[{ type: 'email' }]}>
+                            <Input />
+                        </Form.Item>
+                        <Form.Item name="phone" label="Phone" rules={[{ required: true }]}>
+                            <Input />
+                        </Form.Item>
+                        <Form.Item name="role" label="Role" rules={[{ required: true }]}>
+                            <Select>
+                                <Select.Option value="technician">Technician</Select.Option>
+                                <Select.Option value="manager">Manager</Select.Option>
+                                <Select.Option value="sales">Sales</Select.Option>
+                                <Select.Option value="csr">CSR</Select.Option>
+                                <Select.Option value="installer">Installer</Select.Option>
+                            </Select>
+                        </Form.Item>
+                    </Form>
+                </Modal>
             </div>
         );
     };

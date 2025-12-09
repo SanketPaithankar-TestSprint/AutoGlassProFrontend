@@ -67,6 +67,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                         vehicleId: data.vehicleId,
                     };
                     localStorage.setItem("agp_customer_data", JSON.stringify(newData));
+                    
                     return newData;
                 });
                 if (setCanShowQuotePanel) setCanShowQuotePanel(true);

@@ -32,7 +32,9 @@ export default function SearchByVinPage() {
         <SearchByVin
           autoDecode
           delayMs={500}
-          onDecoded={(data) => setVinData(data)}
+          onDecoded={(data) => {
+            setVinData(data);
+          }}
         />
       </div>
 
