@@ -1,7 +1,8 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import { Modal, Input, Button, message } from "antd";
+import { Modal, Input, Button, message, Dropdown } from "antd";
+import { DownOutlined } from "@ant-design/icons";
 import { createServiceDocument } from "../../api/createServiceDocument";
 import { sendEmail } from "../../api/sendEmail";
 
@@ -46,19 +47,83 @@ const newItem = () => ({
     type: "Part",
 });
 
-export default function QuotePanel({ parts = [], onRemovePart, customerData }) {
+// --- Error Boundary ---
+class ErrorBoundary extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { hasError: false, error: null };
+    }
+
+    static getDerivedStateFromError(error) {
+        return { hasError: true, error };
+    }
+
+    componentDidCatch(error, errorInfo) {
+        console.error("QuotePanel Error:", error, errorInfo);
+    }
+
+    render() {
+        if (this.state.hasError) {
+            return (
+                <div className="p-8 bg-red-50 border border-red-200 rounded-xl text-center shadow-sm">
+                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mb-4">
+                        <svg className="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <h3 className="text-lg font-bold text-red-800 mb-2">Something went wrong</h3>
+                    <p className="text-red-600 text-sm mb-6 max-w-md mx-auto">
+                        {this.state.error?.message || "An unexpected error occurred while loading the quote panel."}
+                    </p>
+                    <Button
+                        onClick={() => this.setState({ hasError: false })}
+                        className="bg-white border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300"
+                    >
+                        Try Again
+                    </Button>
+                </div>
+            );
+        }
+
+        return this.props.children;
+    }
+}
+
+function QuotePanelContent({ parts = [], onRemovePart, customerData }) {
     const [items, setItems] = useState(parts.length ? parts : [newItem()]);
 
     useEffect(() => {
         setItems((prevItems) => {
-            const currentMap = new Map(prevItems.map((i) => [i.id, i]));
-            const newItems = parts.map((p) => {
-                if (currentMap.has(p.id)) {
-                    return currentMap.get(p.id);
-                }
-                return p;
-            });
-            return newItems.length > 0 ? newItems : (parts.length > 0 ? newItems : []);
+            // Create a map of existing items that CAME from parts (based on IDs)
+            // Manual items (random IDs) won't be in the parts list, so we keep them if they exist
+            // Actually, a simpler strategy:
+            // 1. Keep manual items (those strictly NOT matching any incoming part ID or generated labor ID)
+            // 2. Overwrite/Add incoming parts
+            // But wait, parts changed means the user selected/deselected something.
+            // When parts prop changes, it sends the "correct" list of managed items.
+            // We should just "merge" manual items back in.
+
+            // Identify managed IDs from the NEW parts list
+            const newPartIds = new Set(parts.map(p => p.id));
+
+            // Keep existing manual items (items NOT in the new managed list, but also check if they were managed before?)
+            // A better way: The parent (QuoteDetails) controls the "managed" items. 
+            // Any item in `prevItems` that is NOT found in `parts` (and wasn't a previously managed item) is manual.
+            // However, we don't track which were managed easily unless we use a flag. 
+            // Let's assume manual items have random IDs not containing pipes `|`. 
+            // Or better: QuoteDetails generates specific ID formats.
+
+            // Simple approach: 
+            // Take all new parts.
+            // Take all existing items that are NOT found in the previous parts set... 
+            // Actually simplest: User adds "Custom Item". It has a random ID.
+            // QuoteDetails sends "Invoice Items". 
+            // We want `items = [...parts, ...manualItems]`.
+
+            const currentManualItems = prevItems.filter(it => it.isManual);
+
+            // Merge: New Parts + Existing Manual Items
+            return [...parts, ...currentManualItems];
         });
     }, [parts]);
 
@@ -74,22 +139,35 @@ export default function QuotePanel({ parts = [], onRemovePart, customerData }) {
         setItems((prev) => prev.filter((it) => it.id !== id));
     };
 
-    // Labor cost is now derived from the Total Labor line item in the table
-    const laborItem = items.find(it => it.id === 'TOTAL_LABOR' || it.type === 'Labor');
-    const laborCost = laborItem ? (Number(laborItem.amount) || 0) : 0;
-
-    const setLaborCost = (val) => {
-        if (laborItem) {
-            updateItem(laborItem.id, 'amount', val);
-        }
-    };
+    // Labor cost is now just the sum of items with type 'Labor'
+    const laborCostDisplay = items.filter(it => it.type === 'Labor').reduce((sum, it) => sum + (Number(it.amount) || 0), 0);
+    const totalLaborHours = items.reduce((sum, it) => sum + (Number(it.labor) || 0), 0);
 
     const [globalTaxRate, setGlobalTaxRate] = useState(0);
     const [discountPercent, setDiscountPercent] = useState(0);
     const [payment, setPayment] = useState(0);
 
     const updateItem = (id, key, value) => {
-        setItems((prev) => prev.map((it) => (it.id === id ? { ...it, [key]: value } : it)));
+        setItems((prev) => prev.map((it) => {
+            if (it.id !== id) return it;
+            const updated = { ...it, [key]: value };
+
+            // Auto-calc amount if qty or unitPrice changes (standard behavior)
+            if (key === 'qty' || key === 'unitPrice') {
+                updated.amount = (Number(updated.qty) || 0) * (Number(updated.unitPrice) || 0);
+            }
+            return updated;
+        }));
+    };
+
+    const handleAddRow = (type = "Part") => {
+        setItems(prev => [...prev, {
+            ...newItem(),
+            id: Math.random().toString(36).substring(2, 9),
+            isManual: true, // Flag to identify manual items
+            description: type === "Part" ? "Custom Part" : type === "Labor" ? "Custom Labor" : "Service",
+            type: type
+        }]);
     };
 
     const subtotal = useMemo(() => items.reduce((sum, it) => sum + (Number(it.amount) || 0), 0), [items]);
@@ -109,84 +187,288 @@ export default function QuotePanel({ parts = [], onRemovePart, customerData }) {
 
     const generatePdfDoc = () => {
         const doc = new jsPDF({ unit: "pt", format: "a4" });
-        const left = 40;
-        const lineGap = 18;
-        doc.setFontSize(18);
-        doc.text(docType.toUpperCase(), left, 40);
-        doc.setFontSize(10);
-        const now = new Date();
-        doc.text(`Date: ${now.toLocaleDateString()}`, left, 60);
+        const pageWidth = doc.internal.pageSize.width;
+        const pageHeight = doc.internal.pageSize.height;
+        const margin = 30;
 
-        // Add Customer Info
+        // --- Helper Functions ---
+        const drawGrid = (x, y, w, h, rows, cols) => {
+            // rows/cols = array of { size, text, label }
+            // simple impl: just draw rects
+            doc.setDrawColor(0);
+            doc.rect(x, y, w, h);
+        };
+
+        const cell = (x, y, w, h, label, value, labelWidth = 0.4) => {
+            doc.rect(x, y, w, h);
+            doc.line(x + (w * labelWidth), y, x + (w * labelWidth), y + h);
+            doc.setFontSize(8);
+            doc.setFont("helvetica", "normal");
+            if (label) doc.text(label, x + 2, y + 10);
+            doc.setFont("helvetica", "bold");
+            if (value) doc.text(String(value), x + (w * labelWidth) + 4, y + 10);
+        };
+
+        const topGridX = 350;
+        const topGridY = 40;
+        const rowH = 20;
+        const gridW = 220;
+
+        // --- Header Section ---
+        // Left: Company Info
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.text("GlassFixit Auto Glass", margin + 10, 50);
+        doc.setFontSize(10);
+        doc.text("1250 Norman Ave", margin + 10, 65);
+        doc.text("Santa Clara, CA 95054", margin + 10, 80);
+        doc.text("(408) 564-0419", margin + 10, 95);
+        doc.text("Fed. ID# 922599034", margin + 10, 110);
+
+        // Right: Quote/Invoice Info Grid
+        // Row 1: Quote # | Date
+        const now = new Date().toLocaleDateString();
+        doc.setLineWidth(0.5);
+
+        // Quote # / Date
+        // Box for Quote #
+        doc.rect(topGridX, topGridY, 120, rowH);
+        doc.line(topGridX + 40, topGridY, topGridX + 40, topGridY + rowH);
+        doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.text("Quote #", topGridX + 2, topGridY + 12);
+        doc.setFontSize(10); doc.setFont("helvetica", "bold"); doc.text("GFI0016248", topGridX + 45, topGridY + 13);
+
+        // Box for Date
+        doc.rect(topGridX + 120, topGridY, 100, rowH);
+        doc.line(topGridX + 150, topGridY, topGridX + 150, topGridY + rowH);
+        doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.text("Date", topGridX + 122, topGridY + 12);
+        doc.setFontSize(10); doc.setFont("helvetica", "bold"); doc.text(now, topGridX + 155, topGridY + 13);
+
+        // Row 2: Cust # | BillCode
+        const y2 = topGridY + rowH;
+        doc.rect(topGridX, y2, 120, rowH); // Cust
+        doc.line(topGridX + 40, y2, topGridX + 40, y2 + rowH);
+        doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.text("Cust. #", topGridX + 2, y2 + 12);
+        doc.setFontSize(10); doc.setFont("helvetica", "bold"); doc.text(customerData?.customerId ? String(customerData.customerId) : "-", topGridX + 45, y2 + 13);
+
+        doc.rect(topGridX + 120, y2, 100, rowH); // BillCode
+        doc.line(topGridX + 155, y2, topGridX + 155, y2 + rowH);
+        doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.text("BillCode", topGridX + 122, y2 + 12);
+        doc.text("G1", topGridX + 160, y2 + 13);
+
+        // Row 3: PO # | Sold By
+        const y3 = y2 + rowH;
+        doc.rect(topGridX, y3, 120, rowH);
+        doc.line(topGridX + 40, y3, topGridX + 40, y3 + rowH);
+        doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.text("P.O. #", topGridX + 2, y3 + 12);
+
+        doc.rect(topGridX + 120, y3, 100, rowH);
+        doc.line(topGridX + 155, y3, topGridX + 155, y3 + rowH);
+        doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.text("Sold By", topGridX + 122, y3 + 12);
+        doc.setFont("helvetica", "bold"); doc.text("SUYOG", topGridX + 160, y3 + 13);
+
+        // Row 4: Fed Tax # | Inst'l By
+        const y4 = y3 + rowH;
+        doc.rect(topGridX, y4, 120, rowH);
+        doc.line(topGridX + 40, y4, topGridX + 40, y4 + rowH);
+        doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.text("Fed Tax #", topGridX + 2, y4 + 12);
+
+        doc.rect(topGridX + 120, y4, 100, rowH);
+        doc.line(topGridX + 155, y4, topGridX + 155, y4 + rowH);
+        doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.text("Inst'l By", topGridX + 122, y4 + 12);
+
+        // --- Address Box (Visual Markers) ---
+        const addrY = 140;
+        // Top Left Bracket
+        doc.line(margin, addrY, margin + 20, addrY);
+        doc.line(margin, addrY, margin, addrY + 20);
+        // Top Right Bracket
+        doc.line(300, addrY, 280, addrY);
+        doc.line(300, addrY, 300, addrY + 20);
+        // Bottom Left Bracket
+        doc.line(margin, addrY + 60, margin + 20, addrY + 60);
+        doc.line(margin, addrY + 60, margin, addrY + 40);
+        // Bottom Right Bracket
+        doc.line(300, addrY + 60, 280, addrY + 60);
+        doc.line(300, addrY + 60, 300, addrY + 40);
+
         if (customerData) {
             doc.setFontSize(10);
-            doc.text("Customer:", left, 80);
-            doc.setFont(undefined, "bold");
-            doc.text(`${customerData.firstName} ${customerData.lastName}`, left + 60, 80);
-            doc.setFont(undefined, "normal");
-            doc.text(`${customerData.phone} | ${customerData.email}`, left + 60, 92);
-            doc.text(`${customerData.addressLine1}, ${customerData.city}, ${customerData.state} ${customerData.postalCode}`, left + 60, 104);
-
-            doc.text("Vehicle:", left, 124);
-            doc.setFont(undefined, "bold");
-            doc.text(`${customerData.vehicleYear} ${customerData.vehicleMake} ${customerData.vehicleModel}`, left + 60, 124);
-            doc.setFont(undefined, "normal");
-            doc.text(`VIN: ${customerData.vin || "N/A"}`, left + 60, 136);
+            doc.setFont("helvetica", "bold");
+            doc.text(`${customerData.firstName} ${customerData.lastName}`, margin + 25, addrY + 20);
+            doc.setFont("helvetica", "normal");
+            doc.text(`${customerData.addressLine1}`, margin + 25, addrY + 35);
+            doc.text(`${customerData.city}, ${customerData.state} ${customerData.postalCode}`, margin + 25, addrY + 50);
         }
 
-        let y = customerData ? 160 : 90;
-        doc.setFontSize(12);
-        doc.text("Items", left, y);
+        // --- Vehicle Info Grid ---
+        const vY = 220;
+        const vRowH = 20;
+        const fullW = 540; // width of table
+
+        // Row 1: Year | Make | Policy
+        doc.rect(margin, vY, 40, vRowH); doc.text("Year", margin + 2, vY + 14);
+        doc.rect(margin + 40, vY, 80, vRowH); doc.setFont("helvetica", "bold"); doc.text(customerData?.vehicleYear || "", margin + 45, vY + 14); doc.setFont("helvetica", "normal");
+
+        doc.rect(margin + 120, vY, 40, vRowH); doc.text("Make", margin + 122, vY + 14);
+        doc.rect(margin + 160, vY, 200, vRowH); doc.setFont("helvetica", "bold"); doc.text(customerData?.vehicleMake || "", margin + 165, vY + 14); doc.setFont("helvetica", "normal");
+
+        doc.rect(margin + 360, vY, 40, vRowH); doc.text("Policy #", margin + 362, vY + 14);
+        doc.rect(margin + 400, vY, 140, vRowH);
+
+        // Row 2: Model | Body | Auth
+        const vY2 = vY + vRowH;
+        doc.rect(margin, vY2, 40, vRowH); doc.text("Model", margin + 2, vY2 + 14);
+        doc.rect(margin + 40, vY2, 100, vRowH); doc.setFont("helvetica", "bold"); doc.text(customerData?.vehicleModel || "", margin + 45, vY2 + 14); doc.setFont("helvetica", "normal");
+
+        doc.rect(margin + 140, vY2, 40, vRowH);
+        doc.text("Body\nStyle", margin + 142, vY2 + 8, { lineHeightFactor: 1 });
+        doc.rect(margin + 180, vY2, 180, vRowH); doc.setFont("helvetica", "bold"); doc.text("4 DOOR UTILITY", margin + 185, vY2 + 14); doc.setFont("helvetica", "normal");
+
+        doc.rect(margin + 360, vY2, 40, vRowH); doc.text("Author-\nized by", margin + 362, vY2 + 8, { lineHeightFactor: 1 });
+        doc.rect(margin + 400, vY2, 140, vRowH);
+
+        // Row 3: Lic | VIN | Claim | Loss Date
+        const vY3 = vY2 + vRowH;
+        doc.rect(margin, vY3, 40, vRowH); doc.text("Lic. #", margin + 2, vY3 + 14);
+        doc.rect(margin + 40, vY3, 100, vRowH); doc.setFont("helvetica", "bold"); doc.text("8ZEY923", margin + 45, vY3 + 14); doc.setFont("helvetica", "normal");
+
+        doc.rect(margin + 140, vY3, 40, vRowH); doc.text("V.I.N", margin + 142, vY3 + 14);
+        doc.rect(margin + 180, vY3, 180, vRowH); doc.setFont("helvetica", "bold"); doc.text(customerData?.vin || "", margin + 185, vY3 + 14); doc.setFont("helvetica", "normal");
+
+        doc.rect(margin + 360, vY3, 40, vRowH); doc.text("Claim #", margin + 362, vY3 + 14);
+        doc.rect(margin + 400, vY3, 80, vRowH); doc.setFont("helvetica", "bold"); doc.text("YTRYRTYTR", margin + 405, vY3 + 14); doc.setFont("helvetica", "normal");
+
+        doc.rect(margin + 480, vY3, 60, vRowH);
+        doc.setFontSize(6); doc.text("Loss Date", margin + 482, vY3 + 8); doc.setFontSize(8);
+        doc.text(now, margin + 482, vY3 + 18);
+
+        // Row 4: Phones | Damage
+        const vY4 = vY3 + vRowH;
+        doc.rect(margin, vY4, 40, vRowH); doc.text("Home\nPhone", margin + 2, vY4 + 8, { lineHeightFactor: 1 });
+        doc.rect(margin + 40, vY4, 100, vRowH); doc.text("() -", margin + 45, vY4 + 14);
+
+        doc.rect(margin + 140, vY4, 40, vRowH); doc.text("Bus.\nPhone", margin + 142, vY4 + 8, { lineHeightFactor: 1 });
+        doc.rect(margin + 180, vY4, 100, vRowH); doc.text("() -", margin + 185, vY4 + 14);
+
+        doc.rect(margin + 280, vY4, 80, vRowH); doc.text("Damage\n/ Cause", margin + 282, vY4 + 8, { lineHeightFactor: 1 });
+        doc.rect(margin + 360, vY4, 180, vRowH);
+
+
+        // --- Items Table ---
+        const tableY = vY4 + vRowH + 10;
         autoTable(doc, {
-            startY: y + 10,
-            head: [["Type", "NAGS ID", "OEM ID", "Labor (Hrs)", "Description", "Manufacturer", "Qty", "List Price", "Amount"]],
+            startY: tableY,
+            head: [["Qty", "Part #", "Description", "Block Size", "List", "Price", "Total"]],
             body: items.map((it) => [
-                it.type || "Part",
-                it.nagsId || "-",
-                it.oemId || "-",
-                it.labor || "-",
-                it.description || "-",
-                it.manufacturer || "-",
                 String(Number(it.qty) || 0),
-                currency(Number(it.unitPrice) || 0),
-                currency(Number(it.amount) || 0),
+                it.nagsId || it.oemId || "-",
+                it.description || "-",
+                "0 x 0", // Block Size dummy
+                (Number(it.unitPrice) || 0).toFixed(2), // List
+                (Number(it.unitPrice) || 0).toFixed(2), // Price
+                (Number(it.amount) || 0).toFixed(2)     // Total
             ]),
-            styles: { fontSize: 8, cellPadding: 4 },
-            headStyles: { fillColor: [139, 92, 246], textColor: [255, 255, 255] },
-            theme: "striped",
-            columnStyles: { 5: { halign: "right" }, 6: { halign: "right" }, 7: { halign: "right" } },
-            margin: { left },
+            styles: {
+                fontSize: 9,
+                cellPadding: 4,
+                lineWidth: 0, // No internal borders 
+                valign: 'top'
+            },
+            headStyles: {
+                fillColor: [255, 255, 255],
+                textColor: [0, 0, 0],
+                fontStyle: "normal",
+                lineWidth: 0.5,
+                lineColor: [0, 0, 0]
+            },
+            bodyStyles: {
+                textColor: [0, 0, 0]
+            },
+            theme: "plain", // We want custom lines or just list
+            columnStyles: {
+                0: { halign: "center", cellWidth: 30 },
+                1: { cellWidth: 90 },
+                2: { cellWidth: 200 },
+                4: { halign: "right" },
+                5: { halign: "right" },
+                6: { halign: "right" }
+            },
+            margin: { left: margin, right: margin },
+            didDrawPage: (data) => {
+                // Draw borders if needed
+            }
         });
-        const afterTableY = doc.lastAutoTable.finalY + 10;
-        const totalsLeft = 340;
-        let yCount = afterTableY;
-        const row = (label, value, bold = false) => {
-            if (bold) doc.setFont(undefined, "bold");
-            else doc.setFont(undefined, "normal");
-            yCount += lineGap;
-            doc.text(label, totalsLeft, yCount);
-            doc.text(value, totalsLeft + 160, yCount, { align: "right" });
-        };
-        doc.setFontSize(11);
-        row("Subtotal:", currency(subtotal));
-        if (Number(laborCost)) row("Labor Cost:", currency(Number(laborCost)));
-        if (Number(globalTaxRate)) row(`Tax (${globalTaxRate}%):`, currency(totalTax));
-        else row("Tax:", currency(totalTax));
-        if (Number(discountPercent)) row(`Discount (${discountPercent}%):`, `- ${currency(discountAmount)}`);
-        row("Total:", currency(total), true);
-        row("Payment Received:", currency(numericPayment));
-        row("Balance Due:", currency(balance), true);
-        if (printableNote.trim()) {
-            doc.setFontSize(10);
-            doc.setFont(undefined, "italic");
-            doc.text("Note:", left, yCount + 40);
-            doc.setFont(undefined, "normal");
-            doc.text(printableNote, left, yCount + 58, { maxWidth: 480 });
-            yCount += 30;
+
+        // --- Totals ---
+        let finalY = doc.lastAutoTable.finalY + 10;
+        // Ensure we are at bottom or distinct section
+        // Depending on page breaks, just putting it after table for now.
+        // We'll mimic the big footer block.
+
+        // Let's force it to bottom of page if possible, or just below table.
+        // Image shows a block at bottom.
+        let footerY = Math.max(finalY, pageHeight - 150);
+        if (finalY > pageHeight - 160) {
+            doc.addPage();
+            footerY = pageHeight - 150;
         }
-        doc.setFontSize(9);
-        doc.setFont(undefined, "normal");
-        doc.text("Thank you for your business!", left, yCount + 40);
+
+        // Special Instructions Bar
+        doc.rect(margin, footerY, 540, 15);
+        doc.setFontSize(8);
+        doc.text("SPECIAL INSTRUCTIONS", margin + 200, footerY + 10);
+
+        // Block below instructions
+        const totalBoxY = footerY + 15;
+        const totalBoxH = 100;
+
+        // Left Text Block
+        doc.rect(margin, totalBoxY, 410, totalBoxH);
+        doc.setFontSize(7);
+        const disclaimer = "Windshield Post Replacement- 1) NO CAR WASH for 3 days. 2) Leave Blue tape on for 3 days. 3) Leave front 2 windows rolled down slightly (1/2 inch) for 48 hours. 4) Gently remove blue tape after 3 days period.\n\nWarranty: Any issues caused by an installation error, such as wind and water leaks, lose moldings, and some types of stress cracks, will be repaired or replaced at no cost to you.\n\nTerms of payment are 0 days from Invoice date.";
+        doc.text(disclaimer, margin + 4, totalBoxY + 10, { maxWidth: 400 });
+
+        // Right Totals Block
+        const totalsX = margin + 410;
+        const totalsW = 130;
+        doc.rect(totalsX, totalBoxY, totalsW, totalBoxH);
+
+        // Lines for totals
+        const tRowH = 20;
+        // Labor
+        doc.text("Labor", totalsX + 4, totalBoxY + 12);
+        doc.text(totalHours > 0 ? (totalHours * 65).toFixed(2) : "0.00", totalsX + 125, totalBoxY + 12, { align: "right" }); // Example logic
+
+        // Subtotal
+        doc.text("Subtotal", totalsX + 4, totalBoxY + 28);
+        doc.text(subtotal.toFixed(2), totalsX + 125, totalBoxY + 28, { align: "right" });
+
+        // Tax
+        doc.text("Tax", totalsX + 4, totalBoxY + 44);
+        doc.text(totalTax.toFixed(2), totalsX + 125, totalBoxY + 44, { align: "right" });
+
+        // Total
+        doc.text("Total", totalsX + 4, totalBoxY + 60);
+        doc.setFont("helvetica", "bold");
+        doc.text(total.toFixed(2), totalsX + 125, totalBoxY + 60, { align: "right" });
+        doc.setFont("helvetica", "normal");
+
+        // Balance
+        doc.line(totalsX, totalBoxY + 80, totalsX + totalsW, totalBoxY + 80);
+        doc.text("Balance", totalsX + 4, totalBoxY + 92);
+        doc.setFont("helvetica", "bold");
+        doc.text(balance.toFixed(2), totalsX + 125, totalBoxY + 92, { align: "right" });
+
+        // Bottom Footer: Received By
+        const recY = totalBoxY + totalBoxH;
+        doc.rect(margin, recY, 200, 20);
+        doc.setFontSize(8); doc.setFont("helvetica", "normal");
+        doc.text("RECEIVED BY", margin + 4, recY + 14);
+
+        doc.rect(margin + 200, recY, 340, 20);
+        doc.setFontSize(6);
+        doc.text("The glass listed has been replaced / repaired with like kind and quality to my entire satisfaction, and I authorize my Insurance Company to pay GlassFixit Auto Glass.", margin + 204, recY + 8, { maxWidth: 330 });
+
         return doc;
     };
 
@@ -224,6 +506,14 @@ export default function QuotePanel({ parts = [], onRemovePart, customerData }) {
             message.error("Please save/create the customer profile before generating a quote.");
             return;
         }
+
+        // Validation: Check for 0 amounts
+        const invalidItems = items.filter(it => !Number(it.amount) || Number(it.amount) === 0);
+        if (invalidItems.length > 0) {
+            message.error(`Please enter a valid amount for: ${invalidItems.map(it => it.type === 'Labor' ? 'Labor' : (it.description || 'Item')).join(', ')}`);
+            return;
+        }
+
         const doc = generatePdfDoc();
         const blob = doc.output('blob');
         const url = URL.createObjectURL(blob);
@@ -279,31 +569,28 @@ Auto Glass Pro Team`;
                 taxRate: Number(globalTaxRate) || 0,
                 discountAmount: discountAmount,
                 items: items
-                    // Filter out Labor items
-                    .filter(it => it.type !== 'Labor' && it.id !== 'TOTAL_LABOR')
-                    .map((it, index) => {
-                        const partItems = items.filter(i => i.type !== 'Labor' && i.id !== 'TOTAL_LABOR');
-                        const totalHoursFromParts = partItems.reduce((sum, x) => sum + (Number(x.labor) || 0), 0);
-                        let itemLaborAmount = 0;
-                        if (laborCost > 0) {
-                            if (totalHoursFromParts > 0) {
-                                const hours = Number(it.labor) || 0;
-                                itemLaborAmount = laborCost * (hours / totalHoursFromParts);
-                            } else if (index === 0) {
-                                itemLaborAmount = laborCost;
-                            }
-                        }
-                        return {
-                            prefixCd: it.prefixCd || "",
-                            posCd: it.posCd || "",
-                            sideCd: it.sideCd || "",
-                            nagsGlassId: it.nagsId || "MISC",
-                            partDescription: it.description || "",
-                            partPrice: Number(it.unitPrice) || 0,
-                            laborAmount: Number(itemLaborAmount.toFixed(2)),
-                            quantity: Number(it.qty) || 1
-                        };
-                    })
+                    // Filter out nothing, send all? Or specific logic?
+                    // Previous logic filtered labor to calculate it? 
+                    // Now we just send everything as items.
+                    .map((it) => ({
+                        prefixCd: it.prefixCd || "",
+                        posCd: it.posCd || "",
+                        sideCd: it.sideCd || "",
+                        nagsGlassId: it.nagsId || "MISC",
+                        partDescription: it.description || "",
+                        partPrice: Number(it.unitPrice) || 0,
+                        // If it's a labor row, laborAmount is the amount? Or do we map it differently?
+                        // The backend likely expects 'laborAmount' on a part item, or separate items?
+                        // If the backend sums up, we can just send "laborAmount" as 0 for parts, 
+                        // and the Labor Row has the cost?
+                        // Actually, looking at the previous logic: `itemLaborAmount` was calculated and attached to parts.
+                        // If we now have separate rows, we should send them as separate items?
+                        // Or does the backend specifically expect "laborAmount" on the item?
+                        // "items" in backend likely has a structure.
+                        // Let's assume sending them as line items with price is fine.
+                        laborAmount: it.type === 'Labor' ? (Number(it.amount) || 0) : 0,
+                        quantity: Number(it.qty) || 1
+                    }))
             };
 
             await createServiceDocument(payload);
@@ -363,29 +650,77 @@ Auto Glass Pro Team`;
                                     </span>
                                 </td>
                                 <td className="px-3 py-2">
-                                    <input value={it.nagsId} onChange={(e) => updateItem(it.id, "nagsId", e.target.value)} className="w-full h-8 rounded border border-slate-300 px-2 text-xs focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" placeholder="NAGS" />
+                                    <input
+                                        value={it.nagsId}
+                                        onChange={(e) => updateItem(it.id, "nagsId", e.target.value)}
+                                        className={`w-full h-8 rounded border border-slate-300 px-2 text-xs focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none ${(!it.isManual && it.type === 'Labor') ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : ''}`}
+                                        placeholder="NAGS"
+                                        disabled={!it.isManual && it.type === 'Labor'}
+                                    />
                                 </td>
                                 <td className="px-3 py-2">
-                                    <input value={it.oemId} onChange={(e) => updateItem(it.id, "oemId", e.target.value)} className="w-full h-8 rounded border border-slate-300 px-2 text-xs focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" placeholder="OEM" />
+                                    <input
+                                        value={it.oemId}
+                                        onChange={(e) => updateItem(it.id, "oemId", e.target.value)}
+                                        className={`w-full h-8 rounded border border-slate-300 px-2 text-xs focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none ${(!it.isManual && it.type === 'Labor') ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : ''}`}
+                                        placeholder="OEM"
+                                        disabled={!it.isManual && it.type === 'Labor'}
+                                    />
                                 </td>
                                 <td className="px-3 py-2">
-                                    <input value={it.labor} onChange={(e) => updateItem(it.id, "labor", e.target.value)} className="w-full h-8 rounded border border-slate-300 px-2 text-xs focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" placeholder="Hrs" />
+                                    <input
+                                        value={it.labor}
+                                        onChange={(e) => updateItem(it.id, "labor", e.target.value)}
+                                        className={`w-full h-8 rounded border border-slate-300 px-2 text-xs focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none ${(!it.isManual && it.type === 'Labor') ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : ''}`}
+                                        placeholder="Hrs"
+                                        disabled={!it.isManual && it.type === 'Labor'}
+                                    />
                                 </td>
                                 <td className="px-3 py-2">
-                                    <input value={it.description} onChange={(e) => updateItem(it.id, "description", e.target.value)} className="w-full h-8 rounded border border-slate-300 px-2 text-xs focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" />
+                                    <input
+                                        value={it.description}
+                                        onChange={(e) => updateItem(it.id, "description", e.target.value)}
+                                        className={`w-full h-8 rounded border border-slate-300 px-2 text-xs focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none ${(!it.isManual && it.type === 'Labor') ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : ''}`}
+                                        disabled={!it.isManual && it.type === 'Labor'}
+                                    />
                                 </td>
                                 <td className="px-3 py-2">
-                                    <input value={it.manufacturer} onChange={(e) => updateItem(it.id, "manufacturer", e.target.value)} className="w-full h-8 rounded border border-slate-300 px-2 text-xs focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" />
+                                    <input
+                                        value={it.manufacturer}
+                                        onChange={(e) => updateItem(it.id, "manufacturer", e.target.value)}
+                                        className={`w-full h-8 rounded border border-slate-300 px-2 text-xs focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none ${(!it.isManual && it.type === 'Labor') ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : ''}`}
+                                        disabled={!it.isManual && it.type === 'Labor'}
+                                    />
                                 </td>
                                 <td className="px-3 py-2 text-right">
-                                    <input type="number" value={it.qty} onChange={(e) => updateItem(it.id, "qty", e.target.value)} className="w-full h-8 rounded border border-slate-300 px-2 text-xs text-right focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" />
+                                    <input
+                                        type="number"
+                                        value={it.qty}
+                                        onChange={(e) => updateItem(it.id, "qty", e.target.value)}
+                                        className={`w-full h-8 rounded border border-slate-300 px-2 text-xs text-right focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none ${(!it.isManual && it.type === 'Labor') ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : ''}`}
+                                        disabled={!it.isManual && it.type === 'Labor'}
+                                    />
                                 </td>
                                 <td className="px-3 py-2 text-right">
-                                    <input type="number" value={it.unitPrice} onChange={(e) => updateItem(it.id, "unitPrice", e.target.value)} className="w-full h-8 rounded border border-slate-300 px-2 text-xs text-right focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" />
+                                    <input
+                                        type="number"
+                                        value={it.unitPrice}
+                                        onChange={(e) => updateItem(it.id, "unitPrice", e.target.value)}
+                                        className={`w-full h-8 rounded border border-slate-300 px-2 text-xs text-right focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none ${(!it.isManual && it.type === 'Labor') ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : ''}`}
+                                        disabled={!it.isManual && it.type === 'Labor'}
+                                    />
                                 </td>
                                 <td className="px-3 py-2 text-right font-medium text-xs">
                                     <div className="flex flex-col items-end gap-1">
-                                        <input type="number" value={it.amount} onChange={(e) => updateItem(it.id, "amount", e.target.value)} className="w-24 rounded border border-slate-300 px-2 py-1 text-right text-xs focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" />
+                                        <input
+                                            type="number"
+                                            value={it.amount}
+                                            onChange={(e) => updateItem(it.id, "amount", e.target.value)}
+                                            className={`w-24 rounded border px-2 py-1 text-right text-xs outline-none focus:ring-1 ${(!Number(it.amount) || Number(it.amount) === 0) ? 'border-red-500 focus:border-red-500 bg-red-50 text-red-700' : 'border-slate-300 focus:border-violet-500 focus:ring-violet-500'}`}
+                                        />
+                                        {(!Number(it.amount) || Number(it.amount) === 0) && (
+                                            <span className="text-[10px] text-red-500 font-semibold">Required</span>
+                                        )}
                                     </div>
                                 </td>
                                 <td className="px-2 py-2 text-center">
@@ -400,6 +735,24 @@ Auto Glass Pro Team`;
                     </tbody>
                 </table>
             </div>
+
+            <div className="flex justify-end mb-6">
+                <Dropdown
+                    menu={{
+                        items: [
+                            { key: 'Part', label: 'Add Part' },
+                            { key: 'Labor', label: 'Add Labor' },
+                            { key: 'Service', label: 'Add Service' }
+                        ],
+                        onClick: (e) => handleAddRow(e.key)
+                    }}
+                >
+                    <button className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-sm font-medium transition-colors">
+                        Add Item <DownOutlined />
+                    </button>
+                </Dropdown>
+            </div>
+
             {/* Totals & Notes */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-4">
@@ -414,11 +767,12 @@ Auto Glass Pro Team`;
                 </div>
                 <div className="bg-slate-50/60 rounded-xl border border-slate-200 p-4 space-y-3">
                     <Row label="Subtotal" value={currency(subtotal)} />
-                    <NumberRow
-                        label={<span className="flex items-center gap-1">Labor Cost <span className="text-[10px] text-slate-400 font-normal">({totalHours.toFixed(1)} hrs)</span></span>}
-                        value={laborCost}
-                        setter={setLaborCost}
-                    />
+                    <Row label="Subtotal" value={currency(subtotal)} />
+                    {/* Labor is now in subtotal, but show hours for reference */}
+                    <div className="flex justify-between text-xs text-slate-400 px-1">
+                        <span>Total Labor Hours</span>
+                        <span>{totalHours.toFixed(1)} hrs</span>
+                    </div>
                     <NumberRow label="Tax %" value={globalTaxRate} setter={setGlobalTaxRate} />
                     <Row label="Tax Total" value={currency(totalTax)} />
                     <NumberRow label="Discount %" value={discountPercent} setter={setDiscountPercent} />
@@ -487,5 +841,13 @@ Auto Glass Pro Team`;
                 </div>
             </Modal>
         </div>
+    );
+}
+
+export default function QuotePanel(props) {
+    return (
+        <ErrorBoundary>
+            <QuotePanelContent {...props} />
+        </ErrorBoundary>
     );
 }

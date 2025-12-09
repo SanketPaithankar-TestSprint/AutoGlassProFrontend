@@ -32,6 +32,8 @@ export default function SearchByYMM({
   const [make, setMake] = useState(value?.make || null);
   const [model, setModel] = useState(value?.model || null);
   const [modelId, setModelId] = useState(null); // State to store the model ID
+  const [modelImage, setModelImage] = useState(null);
+  const [modelDescription, setModelDescription] = useState(null);
 
   // Sync state with value prop
   useEffect(() => {
@@ -159,13 +161,25 @@ export default function SearchByYMM({
         const data = await getModelId(year, make, model);
         const modelId = data?.model_id || null;
         setModelId(modelId);
+        setModelImage(data?.image || null);
+        setModelDescription(data?.description || null);
+
         onModelIdFetched?.(modelId); // Pass modelId to parent
-        onVehicleInfoUpdate?.({ year, make, model }); // Pass vehicle info to parent
+        onVehicleInfoUpdate?.({
+          year,
+          make,
+          model,
+          image: data?.image || null,
+          description: data?.description || null
+        }); // Pass vehicle info to parent
         message.success(`Model ID fetched: ${modelId}`);
       } catch (error) {
         console.error("Failed to fetch model ID:", error);
         message.error("Failed to fetch model ID. Please try again.");
+        message.error("Failed to fetch model ID. Please try again.");
         setModelId(null);
+        setModelImage(null);
+        setModelDescription(null);
       } finally {
         setLoadingModelId(false);
       }
@@ -179,17 +193,23 @@ export default function SearchByYMM({
     setMake(null);
     setModel(null);
     setModelId(null); // Reset model ID on year change
+    setModelImage(null);
+    setModelDescription(null);
   };
 
   const handleMake = (v) => {
     setMake(v);
     setModel(null);
     setModelId(null); // Reset model ID on make change
+    setModelImage(null);
+    setModelDescription(null);
   };
 
   const handleModel = (v) => {
     setModel(v);
     setModelId(null); // Reset model ID on model change
+    setModelImage(null);
+    setModelDescription(null);
   };
 
   return (

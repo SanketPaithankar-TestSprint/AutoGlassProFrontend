@@ -7,11 +7,8 @@ import GLASS_CODE_NAMES from "../../const/glassCodeNames";
 import {
   getPrefixCd,
   getPosCd,
-  getSideCd,
-  findGlassInCatalog,
-  GLASS_ZONES_CONFIG
+  getSideCd
 } from "./carGlassHelpers";
-import Diagram from "./Diagram";
 
 export default function CarGlassViewer({
   modelId,
@@ -33,8 +30,7 @@ export default function CarGlassViewer({
   const [glassInfoLoading, setGlassInfoLoading] = useState(false);
   const [glassInfoError, setGlassInfoError] = useState(null);
 
-  // 4) Tooltip state
-  const [hoveredZone, setHoveredZone] = useState(null); // { label, x, y }
+
 
   // 5) Expanded parts state (Global set of expanded part IDs)
   const [expandedPartIds, setExpandedPartIds] = useState(new Set());
@@ -62,6 +58,8 @@ export default function CarGlassViewer({
   };
 
   // ---------- helpers: convert backend data → API params ----------
+
+  const imageSrc = vehicleInfo?.image ? `data:image/png;base64,${vehicleInfo.image}` : null;
 
   // Helper to format glass name
   const formatGlassName = (glass) => {
@@ -150,9 +148,9 @@ export default function CarGlassViewer({
 
       const params = new URLSearchParams();
       params.append("make_model_id", modelId);
-      params.append("prefix_cd", prefix_cd);
-      params.append("pos_cd", pos_cd);
-      params.append("side_cd", side_cd);
+      if (prefix_cd) params.append("prefix_cd", prefix_cd);
+      if (pos_cd && pos_cd !== "NULL") params.append("pos_cd", pos_cd);
+      if (side_cd && side_cd !== "NULL") params.append("side_cd", side_cd);
 
       const url = `${config.pythonApiUrl}agp/v1/glass-parts?${params.toString()}`;
       const res = await fetch(url, { headers: { accept: "application/json" } });
@@ -194,8 +192,8 @@ export default function CarGlassViewer({
     );
     if (alreadySelected) return; // Prevent duplicate selection
 
-    // Performance optimization: Removed api/v1/glass-info call
-    const info = null;
+    // Use nested glass_info from API response
+    const info = part.glass_info || null;
 
     onPartSelect?.({ glass: glass, part, glassInfo: info });
 
@@ -247,28 +245,7 @@ export default function CarGlassViewer({
     }
   };
 
-  // Define clickable zones using config
-  const zones = GLASS_ZONES_CONFIG.map((z) => ({
-    ...z,
-    glass: findGlassInCatalog(glassData, z.criteria.prefix, z.criteria.pos, z.criteria.side),
-  }));
 
-  const handleZoneHover = (e, zone) => {
-    if (!zone.glass) {
-      setHoveredZone(null);
-      return;
-    }
-    const rect = e.target.getBoundingClientRect();
-    setHoveredZone({
-      label: zone.label,
-      x: rect.left + rect.width / 2,
-      y: rect.top - 10,
-    });
-  };
-
-  const handleZoneLeave = () => {
-    setHoveredZone(null);
-  };
 
   const renderPartsColumn = () => {
     if (selectedGlassTypes.length === 0) {
@@ -280,6 +257,8 @@ export default function CarGlassViewer({
         </div>
       );
     }
+
+
 
     return (
       <div className="flex flex-col p-4 space-y-4">
@@ -385,6 +364,13 @@ export default function CarGlassViewer({
                             <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">
                               {part.part_description || "Glass Part"}
                             </p>
+                            {part.glass_info?.ta && (
+                              <div className="flex gap-3 mt-1 text-xs text-slate-600">
+                                <span className="font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                                  TA: {part.glass_info.ta}
+                                </span>
+                              </div>
+                            )}
                           </div>
                         </div>
                       );
@@ -423,8 +409,8 @@ export default function CarGlassViewer({
       {/* Header with Vehicle Info */}
       <div className="text-center mb-8">
         <h3 className="text-2xl font-bold text-slate-900">
-          {vehicleInfo?.year} {vehicleInfo?.make} {vehicleInfo?.model}
-        </h3>
+          {vehicleInfo?.description}
+          </h3>
         <p className="text-slate-500 text-sm">
           Select a glass part from the dropdown to view available options
         </p>
@@ -456,45 +442,18 @@ export default function CarGlassViewer({
               ))}
             </Select>
           </div>
-          <Diagram
-            zones={zones}
-            selectedGlassTypes={selectedGlassTypes}
-            onZoneHover={handleZoneHover}
-            onZoneLeave={handleZoneLeave}
-          />
+          {imageSrc && (
+            <div className="flex flex-col items-center w-full">
+              <img
+                src={imageSrc}
+                alt="Vehicle Graphic"
+                width="100%"
+                height="auto"
+                className="max-w-md w-full rounded-lg shadow-lg border border-gray-100 object-contain bg-white p-4 mb-4"
+              />
+            </div>
+          )}
 
-          {/* Fallback list for unmapped parts */}
-          <div className="mt-8 w-full">
-            <details className="group">
-              <summary className="flex items-center justify-between cursor-pointer list-none text-sm font-medium text-slate-500 hover:text-violet-600 transition-colors">
-                <span>Other Glass Parts</span>
-                <span className="transition group-open:rotate-180">▼</span>
-              </summary>
-              <div className="mt-2 space-y-2 pl-2 border-l-2 border-slate-100">
-                {glassData
-                  .filter((g) => !zones.some((z) => z.glass?.code === g.code))
-                  .map((glass) => (
-                    <button
-                      key={glass.code}
-                      onClick={() => handleSelectGlass(glass)}
-                      className={`block w-full text-left text-xs py-1 px-2 rounded hover:bg-slate-50 ${selectedGlassTypes.some(item => item.glass.code === glass.code)
-                        ? "text-violet-600 font-bold bg-violet-50"
-                        : "text-slate-600"
-                        }`}
-                    >
-                      {formatGlassName(glass)} ({glass.code})
-                    </button>
-                  ))}
-                {glassData.filter(
-                  (g) => !zones.some((z) => z.glass?.code === g.code)
-                ).length === 0 && (
-                    <div className="text-xs text-slate-400 italic py-1">
-                      All parts mapped to diagram.
-                    </div>
-                  )}
-              </div>
-            </details>
-          </div>
         </div>
 
         {/* Right column: Parts Selection */}
@@ -529,24 +488,31 @@ export default function CarGlassViewer({
                   return (
                     <div
                       key={partKey}
-                      className="group flex flex-col bg-blue-50 border border-blue-200 rounded-lg p-2 pr-7 relative shadow-sm hover:shadow-md transition-all animate-[fadeIn_0.2s_ease-out]"
+                      className="group flex flex-col bg-blue-50 border border-blue-200 rounded-lg p-3 pr-8 relative shadow-sm hover:shadow-md transition-all animate-[fadeIn_0.2s_ease-out] min-w-[140px]"
                       title={`${item.part.part_description || "Glass Part"} - ${item.glass.code}`}
                     >
                       <button
                         onClick={() => handleRemoveSelectedPart(partKey)}
                         className="absolute top-1 right-1 p-1 text-blue-400 hover:text-red-500 hover:bg-white rounded-full transition-colors"
                       >
-                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                       </button>
 
-                      <span className="text-xs font-bold text-slate-700 leading-tight">
+                      <span className="text-sm font-bold text-slate-700 leading-tight mb-0.5">
                         {item.part.nags_glass_id || "Unknown ID"}
                       </span>
-                      <span className="text-[10px] text-slate-500 line-clamp-1 max-w-[120px]">
+                      <span className="text-xs text-slate-500 line-clamp-1 max-w-[160px] mb-1">
                         {item.label || item.part.part_description || formatGlassName(item.glass)}
                       </span>
+                      {(item.glassInfo?.ta || item.part.glass_info?.ta) && (
+                        <div className="mt-auto pt-1 border-t border-blue-100">
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                            TA: {item.glassInfo?.ta || item.part.glass_info?.ta}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -556,19 +522,7 @@ export default function CarGlassViewer({
         </div>
       </div>
 
-      {/* Floating Tooltip */}
-      {hoveredZone && (
-        <div
-          className="fixed z-50 px-3 py-1.5 bg-slate-800 text-white text-xs font-semibold rounded shadow-lg pointer-events-none transform -translate-x-1/2 -translate-y-full"
-          style={{
-            left: hoveredZone.x,
-            top: hoveredZone.y,
-          }}
-        >
-          {hoveredZone.label}
-          <div className="absolute left-1/2 -bottom-1 w-2 h-2 bg-slate-800 transform -translate-x-1/2 rotate-45"></div>
-        </div>
-      )}
+
     </div>
   );
 }

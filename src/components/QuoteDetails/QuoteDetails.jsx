@@ -87,31 +87,27 @@ export default function QuoteDetails({ prefill, parts, onRemovePart }) {
                     amount: info?.list_price || 0
                 });
 
+                // 2. The Labor Item (if applicable)
+                if (Number(info?.labor) > 0) {
+                    items.push({
+                        type: "Labor",
+                        id: `${uniqueId}_LABOR`,
+                        nagsId: "",
+                        oemId: "",
+                        labor: Number(info?.labor) || "",
+                        description: "Installation Labor",
+                        manufacturer: "",
+                        qty: 1,
+                        unitPrice: 0,
+                        amount: 0
+                    });
+                }
+
                 return items;
             }));
 
             // Flatten items
             const allItems = result.flat();
-
-            // Calculate Total Labor Hours
-            const totalLaborHours = allItems.reduce((sum, item) => sum + (Number(item.labor) || 0), 0);
-
-            // Append Single Labor Row if hours exist
-            if (totalLaborHours > 0) {
-                allItems.push({
-                    type: "Labor",
-                    id: "TOTAL_LABOR",
-                    nagsId: "",
-                    oemId: "",
-                    labor: "",
-                    description: "Total Installation Labor",
-                    manufacturer: "",
-                    qty: Number(totalLaborHours.toFixed(2)),
-                    unitPrice: 0,
-                    amount: 0
-                });
-            }
-
             setInvoiceItems(allItems);
         };
 

@@ -3,7 +3,7 @@ import { Form, Input, Button, Checkbox, Alert, Divider, Space, notification } fr
 import { UserOutlined, LockOutlined, GoogleOutlined, FacebookOutlined } from "@ant-design/icons";
 import { login } from "../api/homepage";
 
-export default function Login() {
+export default function Login({ onLoginSuccess }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -20,13 +20,23 @@ export default function Login() {
             });
 
             if (res && res.success) {
-                localStorage.setItem("ApiToken", JSON.stringify(res));
+                const tokenStr = JSON.stringify(res);
+                if (values.remember) {
+                    localStorage.setItem("ApiToken", tokenStr);
+                } else {
+                    sessionStorage.setItem("ApiToken", tokenStr);
+                }
+
                 notification.success({
                     message: `Welcome, ${res.data.username}!`,
                     description: "Signed in successfully.",
                     placement: "topRight",
                 });
-                window.location.href = "/";
+                if (onLoginSuccess) {
+                    onLoginSuccess();
+                } else {
+                    window.location.href = "/";
+                }
             } else {
                 setError(res?.message || "Login failed. Please check your credentials.");
             }
@@ -126,3 +136,4 @@ export default function Login() {
         </div>
     );
 }
+

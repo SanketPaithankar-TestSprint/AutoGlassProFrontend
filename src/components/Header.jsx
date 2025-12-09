@@ -5,6 +5,7 @@ import Logo from "./logo";
 import SignUpForm from "./SignUpForm";
 import Login from "./login";
 import { getValidToken } from "../api/getValidToken";
+import { Link, useNavigate } from "react-router-dom";
 
 const { Header: AntHeader } = Layout;
 
@@ -13,11 +14,11 @@ const ProfileDropdown = ({ onLogout }) => {
   const items = [
     {
       key: "profile",
-      label: <a href="/profile">User Profile</a>,
+      label: <Link to="/profile">User Profile</Link>,
     },
     {
       key: "work",
-      label: <a href="/work">Work</a>,
+      label: <Link to="/work">Work</Link>,
     },
     {
       key: "logout",
@@ -81,6 +82,7 @@ const Header = () => {
   const [isAuthed, setIsAuthed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [scrolled, setScrolled] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = getValidToken();
@@ -100,22 +102,28 @@ const Header = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const handleLoginSuccess = () => {
+    setIsAuthed(true);
+    setLoginModalOpen(false);
+    navigate("/search-by-root");
+  };
+
   const menuItems = [
     { key: "home", label: "Home", href: "/" },
     { key: "pricing", label: "Pricing", href: "/Pricing" },
     { key: "about", label: "About", href: "/about" },
     { key: "contact", label: "Contact", href: "/contact" },
-    { key: "searchby", label: "SearchBy", href: "/search-by-root" },
+    ...(isAuthed ? [{ key: "Quote", label: "SearchBy", href: "/search-by-root" }] : []),
   ];
 
   const NavLink = ({ label, href }) => (
-    <a
-      href={href}
+    <Link
+      to={href}
       className="nav-link"
       style={{ WebkitTapHighlightColor: "transparent" }}
     >
       {label}
-    </a>
+    </Link>
   );
 
   if (loading) {
@@ -141,12 +149,12 @@ const Header = () => {
       >
         {/* Left: Logo + small tag */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <a
-            href="/"
+          <Link
+            to="/"
             className="flex items-center gap-2 hover:scale-[1.02] transition-transform duration-150 min-w-0"
           >
             <Logo className="w-24 sm:w-32 h-auto min-w-0" />
-          </a>
+          </Link>
         </div>
 
         {/* Center: Navigation */}
@@ -185,6 +193,7 @@ const Header = () => {
             <ProfileDropdown
               onLogout={() => {
                 localStorage.removeItem("ApiToken");
+                sessionStorage.removeItem("ApiToken");
                 window.location.href = "/";
               }}
             />
@@ -225,14 +234,14 @@ const Header = () => {
             <ul className="space-y-2">
               {menuItems.map((item) => (
                 <li key={item.key}>
-                  <a
-                    href={item.href}
+                  <Link
+                    to={item.href}
                     className="block px-4 py-2 rounded-md text-base text-slate-700 hover:text-violet-700 hover:bg-violet-100 outline-none transition-colors duration-150"
                     style={{ WebkitTapHighlightColor: "transparent" }}
                     onClick={() => setDrawerOpen(false)}
                   >
                     {item.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -285,7 +294,7 @@ const Header = () => {
         destroyOnClose
         className="login-modal"
       >
-        <Login />
+        <Login onLoginSuccess={handleLoginSuccess} />
       </Modal>
     </>
   );
