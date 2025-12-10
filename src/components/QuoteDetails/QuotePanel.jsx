@@ -613,8 +613,9 @@ Auto Glass Pro Team`;
                 taxRate: Number(globalTaxRate) || 0,
                 discountAmount: discountAmount,
                 items: items
-                    // Filter out Labor items as per user request to avoid backend errors
-                    .filter(it => it.type !== 'Labor')
+                    // Filter out nothing, send all? Or specific logic?
+                    // Previous logic filtered labor to calculate it? 
+                    // Now we just send everything as items.
                     .map((it) => ({
                         prefixCd: it.prefixCd || "",
                         posCd: it.posCd || "",
@@ -622,7 +623,16 @@ Auto Glass Pro Team`;
                         nagsGlassId: it.nagsId || "MISC",
                         partDescription: it.description || "",
                         partPrice: Number(it.unitPrice) || 0,
-                        laborAmount: 0, // Set to 0 since we filtered out labor rows
+                        // If it's a labor row, laborAmount is the amount? Or do we map it differently?
+                        // The backend likely expects 'laborAmount' on a part item, or separate items?
+                        // If the backend sums up, we can just send "laborAmount" as 0 for parts, 
+                        // and the Labor Row has the cost?
+                        // Actually, looking at the previous logic: `itemLaborAmount` was calculated and attached to parts.
+                        // If we now have separate rows, we should send them as separate items?
+                        // Or does the backend specifically expect "laborAmount" on the item?
+                        // "items" in backend likely has a structure.
+                        // Let's assume sending them as line items with price is fine.
+                        laborAmount: it.type === 'Labor' ? (Number(it.amount) || 0) : 0,
                         quantity: Number(it.qty) || 1
                     }))
             };
@@ -659,7 +669,7 @@ Auto Glass Pro Team`;
                 </div>
             </div>
             {/* Line Items Table */}
-            <div className="overflow-x-auto mb-6 border border-slate-200 rounded-lg shadow-sm">
+            <div className="overflow-x-auto mb-2 border border-slate-200 bg-white">
                 <table className="min-w-full divide-y divide-slate-200">
                     <thead className="bg-slate-50">
                         <tr className="text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
@@ -675,7 +685,7 @@ Auto Glass Pro Team`;
                             <th className="px-2 py-2 w-8"></th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-slate-200">
+                    <tbody className="bg-white divide-y divide-slate-100">
                         {items.map((it) => (
                             <tr key={it.id} className="hover:bg-slate-50 transition group">
                                 <td className="px-3 py-2">
@@ -770,7 +780,7 @@ Auto Glass Pro Team`;
                 </table>
             </div>
 
-            <div className="flex justify-end mb-6">
+            <div className="flex justify-end mb-2">
                 <Dropdown
                     menu={{
                         items: [
@@ -788,18 +798,18 @@ Auto Glass Pro Team`;
             </div>
 
             {/* Totals & Notes */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
                     <div>
-                        <label className="text-sm text-slate-500 mb-1 block">Printable Note</label>
-                        <textarea rows={3} value={printableNote} onChange={(e) => setPrintableNote(e.target.value)} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" placeholder="Notes for the customer..." />
+                        <label className="text-xs text-slate-500 mb-0.5 block">Printable Note</label>
+                        <textarea rows={2} value={printableNote} onChange={(e) => setPrintableNote(e.target.value)} className="w-full rounded border border-slate-300 px-2 py-1 text-xs" placeholder="Notes for the customer..." />
                     </div>
                     <div>
-                        <label className="text-sm text-slate-500 mb-1 block">Internal Note</label>
-                        <textarea rows={3} value={internalNote} onChange={(e) => setInternalNote(e.target.value)} className="w-full rounded border border-slate-300 px-3 py-2 text-sm" placeholder="Internal use only..." />
+                        <label className="text-xs text-slate-500 mb-0.5 block">Internal Note</label>
+                        <textarea rows={2} value={internalNote} onChange={(e) => setInternalNote(e.target.value)} className="w-full rounded border border-slate-300 px-2 py-1 text-xs" placeholder="Internal use only..." />
                     </div>
                 </div>
-                <div className="bg-slate-50/60 rounded-xl border border-slate-200 p-4 space-y-3">
+                <div className="bg-slate-50 border border-slate-200 p-2 space-y-2">
                     <Row label="Subtotal" value={currency(subtotal)} />
                     <Row label="Subtotal" value={currency(subtotal)} />
                     {/* Labor is now in subtotal, but show hours for reference */}

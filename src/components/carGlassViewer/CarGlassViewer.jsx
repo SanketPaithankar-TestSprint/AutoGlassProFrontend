@@ -121,25 +121,17 @@ export default function CarGlassViewer({
   const handleSelectGlass = async (glass, label) => {
     if (!glass) return;
 
-    // Check if already selected
-    if (selectedGlassTypes.some((item) => item.glass.code === glass.code)) {
-      // Optional: Scroll to it or just expand it?
-      // Let's just ensure it's expanded
-      toggleGlassTypeExpansion(glass.code);
-      return;
-    }
-
-    // Add to list with loading state
+    // Replace existing selection with new one (Single selection mode for specific glass type)
     const newItem = {
       glass,
-      label: label || formatGlassName(glass), // Use formatted name if label not provided
+      label: label || formatGlassName(glass),
       parts: [],
       loading: true,
       error: null,
       isExpanded: true,
     };
 
-    setSelectedGlassTypes((prev) => [...prev, newItem]);
+    setSelectedGlassTypes([newItem]);
 
     try {
       const prefix_cd = getPrefixCd(glass);
@@ -248,7 +240,9 @@ export default function CarGlassViewer({
 
 
   const renderPartsColumn = () => {
-    if (selectedGlassTypes.length === 0) {
+    const item = selectedGlassTypes[0]; // Only one selected at a time now
+
+    if (!item) {
       return (
         <div className="flex flex-col items-center justify-center h-full text-slate-400 italic p-8 text-center">
           <p>
@@ -258,9 +252,8 @@ export default function CarGlassViewer({
       );
     }
 
-
-
     return (
+<<<<<<< Updated upstream
       <div className="flex flex-col p-4 space-y-4">
         {selectedGlassTypes.map((item) => (
           <div key={item.glass.code} className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
@@ -375,19 +368,94 @@ export default function CarGlassViewer({
                         </div>
                       );
                     })}
+=======
+      <div className="flex flex-col h-full bg-white">
+        {/* Header for the specific glass type */}
+        <div className="px-3 py-2 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+          <h3 className="font-bold text-slate-800 text-sm">
+            {item.label}
+          </h3>
+          <span className="text-xs text-slate-500">
+            {item.loading ? "Loading..." : `${item.parts.length} options`}
+          </span>
+        </div>
+
+        {/* Parts List (Flat List) */}
+        <div className="flex-1 overflow-y-auto p-2">
+          {item.loading ? (
+            <div className="text-slate-400 text-sm p-4 text-center">Loading parts...</div>
+          ) : item.error ? (
+            <div className="text-red-400 text-sm p-4 text-center">{item.error}</div>
+          ) : !item.parts.length ? (
+            <div className="text-slate-400 text-sm p-4 text-center">No parts available.</div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {item.parts.map((part) => {
+                const partKey = `${part.nags_glass_id || ""}|${part.oem_glass_id || ""}|${item.glass.code}`;
+                // Check if selected
+                const isSelected = selectedParts.some(
+                  (p) => `${p.part.nags_glass_id || ""}|${p.part.oem_glass_id || ""}|${p.glass.code}` === partKey
+                );
+
+                return (
+                  <div
+                    key={partKey}
+                    onClick={() => {
+                      if (isSelected) {
+                        handleRemoveSelectedPart(partKey);
+                      } else {
+                        handleSelectPart(part, item.glass);
+                      }
+                    }}
+                    className={`
+                                  group flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all
+                                  ${isSelected
+                        ? "bg-blue-50 border-blue-200 shadow-sm"
+                        : "bg-white border-slate-200 hover:border-blue-300 hover:shadow-sm"
+                      }
+                              `}
+                  >
+                    {/* Selection Indicator */}
+                    <div className={`
+                                  w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors
+                                  ${isSelected
+                        ? "bg-blue-500 border-blue-500"
+                        : "border-slate-300 group-hover:border-blue-400"
+                      }
+                             `}>
+                      {isSelected && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
+                    </div>
+
+                    <div className="flex flex-col min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className={`text-sm font-semibold truncate ${isSelected ? "text-blue-900" : "text-slate-800"}`}>
+                          {part.nags_glass_id || "Unknown"}
+                          {part.glass_info?.ta ? <span className="text-slate-500 font-normal ml-1">({part.glass_info.ta})</span> : ""}
+                        </span>
+                        {part.oem_glass_id && (
+                          <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 rounded border border-slate-200">
+                            OEM: {part.oem_glass_id}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-xs text-slate-500 truncate">
+                        {part.part_description || "Glass Part"}
+                      </span>
+                    </div>
+>>>>>>> Stashed changes
                   </div>
-                )}
-              </div>
-            )}
-          </div>
-        ))}
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
     );
   };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64 bg-slate-50 rounded-3xl border border-slate-200">
+      <div className="flex justify-center items-center h-full bg-slate-50 border border-slate-200">
         <div className="text-center">
           <div className="w-10 h-10 border-4 border-violet-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           <p className="text-slate-500 text-sm">Loading glass catalog…</p>
@@ -398,13 +466,14 @@ export default function CarGlassViewer({
 
   if (error) {
     return (
-      <div className="bg-red-50 rounded-3xl border border-red-200 p-6 text-sm text-red-600">
+      <div className="bg-red-50 border border-red-200 p-4 text-xs text-red-600">
         {error}
       </div>
     );
   }
 
   return (
+<<<<<<< Updated upstream
     <div className="bg-white rounded-3xl border border-slate-200 p-6 md:p-8 shadow-sm relative">
       {/* Header with Vehicle Info */}
       <div className="text-center mb-8">
@@ -421,6 +490,16 @@ export default function CarGlassViewer({
         <div className="flex flex-col items-center justify-start border-r border-slate-100 pr-0 md:pr-8">
           <div className="w-full mb-6">
             <label className="block text-sm font-medium text-slate-700 mb-2">Select Glass Type</label>
+=======
+    <div className="bg-white p-0 h-full flex flex-col">
+      {/* Top header removed, description moved below image */}
+
+      <div className="flex flex-col md:flex-row gap-2 h-full overflow-hidden">
+        {/* Left column: Diagram */}
+        <div className="flex flex-col items-center justify-start border-r border-slate-100 pr-0 md:pr-2 w-full md:w-1/3 shrink-0">
+          <div className="w-full mb-2">
+            <label className="block text-xs font-medium text-slate-700 mb-1">Select Glass Type</label>
+>>>>>>> Stashed changes
             <Select
               className="w-full"
               placeholder="Select a glass part..."
@@ -443,6 +522,7 @@ export default function CarGlassViewer({
             </Select>
           </div>
           {imageSrc && (
+<<<<<<< Updated upstream
             <div className="flex flex-col items-center w-full">
               <img
                 src={imageSrc}
@@ -451,15 +531,31 @@ export default function CarGlassViewer({
                 height="auto"
                 className="max-w-md w-full rounded-lg shadow-lg border border-gray-100 object-contain bg-white p-4 mb-4"
               />
+=======
+            <div className="flex flex-col items-center w-full mt-2">
+              <div className="relative w-full h-32 md:h-40 lg:h-48 flex items-center justify-center">
+                <img
+                  src={imageSrc}
+                  alt="Vehicle Graphic"
+                  className="max-w-full max-h-full w-auto h-auto object-contain p-1"
+                />
+              </div>
+              <h3 className="text-sm font-bold text-slate-900 text-center mt-1">
+                {vehicleInfo?.description}
+              </h3>
+              <p className="text-slate-500 text-xs text-center">
+                Select a glass part from the dropdown
+              </p>
+>>>>>>> Stashed changes
             </div>
           )}
 
         </div>
 
         {/* Right column: Parts Selection */}
-        <div className="flex flex-col h-full bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden">
-          <div className="p-4 border-b border-slate-200 bg-white/50 backdrop-blur-sm">
-            <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide">
+        <div className="flex flex-col flex-1 bg-white border border-slate-200 overflow-hidden min-h-0">
+          <div className="p-2 border-b border-slate-200 bg-slate-50">
+            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wide">
               Avaliable Options
             </h4>
           </div>
@@ -468,6 +564,7 @@ export default function CarGlassViewer({
             {renderPartsColumn()}
           </div>
 
+<<<<<<< Updated upstream
           {/* Sticky Selected Items Tray */}
           {selectedParts.length > 0 && (
             <div className="bg-white border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] p-4 flex flex-col gap-3 relative z-10">
@@ -519,6 +616,8 @@ export default function CarGlassViewer({
               </div>
             </div>
           )}
+=======
+>>>>>>> Stashed changes
         </div>
       </div>
 
