@@ -22,40 +22,12 @@ export default function CarGlassViewer({
   const [glassGroups, setGlassGroups] = useState({});
   const [error, setError] = useState(null);
 
-  // Multi-selection state: Array of { glass, label, parts, loading, error, isExpanded }
-  const [selectedGlassTypes, setSelectedGlassTypes] = useState([]);
+  // Active viewing state (master-detail pattern)
+  const [activeGlassTypeCode, setActiveGlassTypeCode] = useState(null);
+  const [activeGlassParts, setActiveGlassParts] = useState({ loading: false, error: null, data: [] });
 
   // 3) Selected parts + extra info (bottom)
   const [selectedParts, setSelectedParts] = useState([]); // Array of { glass, part, glassInfo }
-  const [glassInfoLoading, setGlassInfoLoading] = useState(false);
-  const [glassInfoError, setGlassInfoError] = useState(null);
-
-
-
-  // 5) Expanded parts state (Global set of expanded part IDs)
-  const [expandedPartIds, setExpandedPartIds] = useState(new Set());
-
-  const togglePartExpansion = (id) => {
-    setExpandedPartIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  };
-
-  const toggleGlassTypeExpansion = (glassCode) => {
-    setSelectedGlassTypes((prev) =>
-      prev.map((item) =>
-        item.glass.code === glassCode
-          ? { ...item, isExpanded: !item.isExpanded }
-          : item
-      )
-    );
-  };
 
   // ---------- helpers: convert backend data → API params ----------
 
@@ -104,8 +76,63 @@ export default function CarGlassViewer({
         );
         if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
         const data = await res.json();
-        setGlassData(data?.glass_types || []);
-        setGlassGroups(data?.organized_by_type || {});
+
+        const rawTypes = data?.glass_types || [];
+        setGlassData(rawTypes);
+
+        // Custom Grouping Logic
+        // Primary: DW (Windshield), DB (Back Glass)
+        // Side: DD (Door), DV (Vent), DQ (Quarter)
+        // Roof: DR (Roof)
+        const newGroups = {
+          "Primary Glass": [],
+          "Side Glass": [],
+          "Roof Glass": []
+        };
+        const others = [];
+
+        rawTypes.forEach(t => {
+          const code = t.code; // e.g. "DW"
+          const desc = (t.description || "").toLowerCase();
+
+          if (
+            ["DW", "DB"].includes(code) ||
+            (t.type && ["DW", "DB"].includes(t.type)) ||
+            desc.includes("windshield") ||
+            desc.includes("back glass")
+          ) {
+            newGroups["Primary Glass"].push(t);
+          } else if (
+            ["DR"].includes(code) ||
+            code.startsWith("DR") ||
+            (t.type === "DR") ||
+            desc.includes("roof") ||
+            desc.includes("sunroof") ||
+            desc.includes("moonroof") ||
+            desc.includes("panoramic") ||
+            desc.includes("glass panel") ||
+            desc.includes("center glass")
+          ) {
+            newGroups["Roof Glass"].push(t);
+          } else {
+            // "Side Glass" is the catch-all for DD, DV, DQ and everything else (Door, Vent, Quarter, etc.)
+            newGroups["Side Glass"].push(t);
+          }
+        });
+
+        // "Other" bucket logic completely removed to enforce the 3 user categories.
+        // Fallback catch-all is now "Side Glass".
+
+        // Filter out empty groups
+        const finalGroups = {};
+        Object.keys(newGroups).forEach(key => {
+          if (newGroups[key].length > 0) {
+            finalGroups[key] = newGroups[key];
+          }
+        });
+
+        setGlassGroups(finalGroups);
+
       } catch (err) {
         console.error(err);
         setError(err.message || "Failed to fetch glass data");
@@ -118,20 +145,11 @@ export default function CarGlassViewer({
   }, [modelId]);
 
   // ---------- 2) when a glass is selected, load its parts ----------
-  const handleSelectGlass = async (glass, label) => {
+  const handleSelectGlassType = async (glass) => {
     if (!glass) return;
 
-    // Replace existing selection with new one (Single selection mode for specific glass type)
-    const newItem = {
-      glass,
-      label: label || formatGlassName(glass),
-      parts: [],
-      loading: true,
-      error: null,
-      isExpanded: true,
-    };
-
-    setSelectedGlassTypes([newItem]);
+    setActiveGlassTypeCode(glass.code);
+    setActiveGlassParts({ loading: true, error: null, data: [] });
 
     try {
       const prefix_cd = getPrefixCd(glass);
@@ -153,24 +171,11 @@ export default function CarGlassViewer({
           ? data
           : [];
 
-      // Update item with parts
-      setSelectedGlassTypes((prev) =>
-        prev.map((item) =>
-          item.glass.code === glass.code
-            ? { ...item, parts: glassParts, loading: false }
-            : item
-        )
-      );
+      setActiveGlassParts({ loading: false, error: null, data: glassParts });
+
     } catch (e) {
       console.error(e);
-      // Update item with error
-      setSelectedGlassTypes((prev) =>
-        prev.map((item) =>
-          item.glass.code === glass.code
-            ? { ...item, error: e.message || "Failed to fetch parts", loading: false }
-            : item
-        )
-      );
+      setActiveGlassParts({ loading: false, error: e.message || "Failed to fetch parts", data: [] });
     }
   };
 
@@ -240,215 +245,93 @@ export default function CarGlassViewer({
 
 
   const renderPartsColumn = () => {
-    const item = selectedGlassTypes[0]; // Only one selected at a time now
-
-    if (!item) {
+    if (!activeGlassTypeCode) {
       return (
-        <div className="flex flex-col items-center justify-center h-full text-slate-400 italic p-8 text-center">
-          <p>
-            Select a glass part from the dropdown to view available options.
+        <div className="flex flex-col items-center justify-center h-full text-slate-400 italic p-4 text-center">
+          <p className="text-sm">
+            Select a glass type from the left to view available parts.
           </p>
         </div>
       );
     }
 
+    const { loading, error, data } = activeGlassParts;
+    // Find glass object for passing to handlers
+    const activeGlassObj = glassData.find(g => g.code === activeGlassTypeCode);
+
+    if (loading) {
+      return <div className="p-4 text-slate-500 text-sm text-center">Loading parts...</div>;
+    }
+    if (error) {
+      return <div className="p-4 text-red-500 text-sm text-center">{error}</div>;
+    }
+    if (!data || data.length === 0) {
+      return <div className="p-4 text-slate-400 text-sm text-center">No parts available for this glass type.</div>;
+    }
+
     return (
-<<<<<<< Updated upstream
-      <div className="flex flex-col p-4 space-y-4">
-        {selectedGlassTypes.map((item) => (
-          <div key={item.glass.code} className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
-            {/* Glass Type Header (Accordion) */}
+      <div className="flex flex-col p-2 space-y-2">
+        {data.map((part, index) => {
+          const partId = part.nags_glass_id || part.oem_glass_id;
+          const partKey = `${part.nags_glass_id || ""}|${part.oem_glass_id || ""}|${activeGlassTypeCode}`;
+          const isSelected = selectedParts.some(
+            (p) =>
+              p.part.nags_glass_id === part.nags_glass_id &&
+              p.part.oem_glass_id === part.oem_glass_id &&
+              p.glass.code === activeGlassTypeCode
+          );
+
+          return (
             <div
-              onClick={() => toggleGlassTypeExpansion(item.glass.code)}
-              className="flex items-center justify-between p-4 bg-slate-50/80 cursor-pointer hover:bg-slate-100 transition-colors"
+              key={`${partId}_${index}`}
+              onClick={() => {
+                if (isSelected) {
+                  handleRemoveSelectedPart(partKey);
+                } else {
+                  handleSelectPart(part, activeGlassObj);
+                }
+              }}
+              className={`
+                    group flex items-center gap-3 p-2 cursor-pointer transition-colors border border-slate-200 rounded
+                    ${isSelected ? "bg-blue-50/50 border-blue-300" : "hover:bg-slate-50 bg-white"}
+                  `}
             >
-              <div>
-                <h3 className="font-bold text-slate-800 text-base">
-                  {item.label || formatGlassName(item.glass)}
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  {item.loading ? "Loading..." : `${item.parts.length} options`}
+              {/* Checkbox */}
+              <div
+                className={`
+                      w-4 h-4 rounded border flex items-center justify-center transition-colors shrink-0
+                      ${isSelected
+                    ? "bg-blue-600 border-blue-600"
+                    : "bg-white border-slate-300 group-hover:border-blue-400"
+                  }
+                    `}
+              >
+                {isSelected && (
+                  <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </div>
+
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <span className={`font-bold text-xs ${isSelected ? "text-blue-900" : "text-slate-800"}`}>
+                    {part.nags_glass_id || "Unknown ID"}{part.glass_info?.ta ? ` ${part.glass_info.ta}` : ""}
+                  </span>
+                  {part.oem_glass_id && (
+                    <span className="text-[10px] font-mono bg-slate-100 text-slate-500 px-1 py-0.5 rounded shrink-0">
+                      OEM: {part.oem_glass_id}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5 truncate">
+                  {part.part_description || "Glass Part"}
                 </p>
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={(e) => handleRemoveGlassType(e, item.glass.code)}
-                  className="p-1 hover:bg-slate-200 rounded-full text-slate-400 hover:text-red-500 transition-colors"
-                  title="Remove glass type"
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-                <svg
-                  className={`w-5 h-5 text-slate-400 transition-transform duration-200 ${item.isExpanded ? "rotate-180" : ""}`}
-                  fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
             </div>
-
-            {/* Parts List */}
-            {item.isExpanded && (
-              <div className="border-t border-slate-100">
-                {item.loading ? (
-                  <div className="p-4 text-slate-400 text-sm">Loading parts...</div>
-                ) : item.error ? (
-                  <div className="p-4 text-red-400 text-sm">{item.error}</div>
-                ) : !item.parts.length ? (
-                  <div className="p-4 text-slate-400 text-sm">No parts available.</div>
-                ) : (
-                  <div className="divide-y divide-slate-100 bg-white">
-                    {item.parts.map((part) => {
-                      const partId = part.nags_glass_id || part.oem_glass_id;
-                      const partKey = `${part.nags_glass_id || ""}|${part.oem_glass_id || ""}|${item.glass.code}`;
-                      const isSelected = selectedParts.some(
-                        (p) =>
-                          p.part.nags_glass_id === part.nags_glass_id &&
-                          p.part.oem_glass_id === part.oem_glass_id &&
-                          p.glass.code === item.glass.code
-                      );
-
-                      return (
-                        <div
-                          key={partId}
-                          onClick={() => {
-                            if (isSelected) {
-                              handleRemoveSelectedPart(partKey);
-                            } else {
-                              handleSelectPart(part, item.glass);
-                            }
-                          }}
-                          className={`
-                            group flex items-center gap-3 p-3 cursor-pointer transition-colors
-                            ${isSelected ? "bg-blue-50/50" : "hover:bg-slate-50"}
-                          `}
-                        >
-                          {/* Checkbox */}
-                          <div
-                            className={`
-                              w-5 h-5 rounded border flex items-center justify-center transition-colors
-                              ${isSelected
-                                ? "bg-blue-600 border-blue-600"
-                                : "bg-white border-slate-300 group-hover:border-blue-400"
-                              }
-                            `}
-                          >
-                            {isSelected && (
-                              <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                              </svg>
-                            )}
-                          </div>
-
-                          {/* Info */}
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between">
-                              <span className={`font-medium text-sm ${isSelected ? "text-blue-900" : "text-slate-700"}`}>
-                                {part.nags_glass_id || "Unknown ID"}
-                              </span>
-                              {part.oem_glass_id && (
-                                <span className="text-[10px] font-mono bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">
-                                  OEM: {part.oem_glass_id}
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">
-                              {part.part_description || "Glass Part"}
-                            </p>
-                            {part.glass_info?.ta && (
-                              <div className="flex gap-3 mt-1 text-xs text-slate-600">
-                                <span className="font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
-                                  TA: {part.glass_info.ta}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-=======
-      <div className="flex flex-col h-full bg-white">
-        {/* Header for the specific glass type */}
-        <div className="px-3 py-2 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-          <h3 className="font-bold text-slate-800 text-sm">
-            {item.label}
-          </h3>
-          <span className="text-xs text-slate-500">
-            {item.loading ? "Loading..." : `${item.parts.length} options`}
-          </span>
-        </div>
-
-        {/* Parts List (Flat List) */}
-        <div className="flex-1 overflow-y-auto p-2">
-          {item.loading ? (
-            <div className="text-slate-400 text-sm p-4 text-center">Loading parts...</div>
-          ) : item.error ? (
-            <div className="text-red-400 text-sm p-4 text-center">{item.error}</div>
-          ) : !item.parts.length ? (
-            <div className="text-slate-400 text-sm p-4 text-center">No parts available.</div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {item.parts.map((part) => {
-                const partKey = `${part.nags_glass_id || ""}|${part.oem_glass_id || ""}|${item.glass.code}`;
-                // Check if selected
-                const isSelected = selectedParts.some(
-                  (p) => `${p.part.nags_glass_id || ""}|${p.part.oem_glass_id || ""}|${p.glass.code}` === partKey
-                );
-
-                return (
-                  <div
-                    key={partKey}
-                    onClick={() => {
-                      if (isSelected) {
-                        handleRemoveSelectedPart(partKey);
-                      } else {
-                        handleSelectPart(part, item.glass);
-                      }
-                    }}
-                    className={`
-                                  group flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all
-                                  ${isSelected
-                        ? "bg-blue-50 border-blue-200 shadow-sm"
-                        : "bg-white border-slate-200 hover:border-blue-300 hover:shadow-sm"
-                      }
-                              `}
-                  >
-                    {/* Selection Indicator */}
-                    <div className={`
-                                  w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors
-                                  ${isSelected
-                        ? "bg-blue-500 border-blue-500"
-                        : "border-slate-300 group-hover:border-blue-400"
-                      }
-                             `}>
-                      {isSelected && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
-                    </div>
-
-                    <div className="flex flex-col min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className={`text-sm font-semibold truncate ${isSelected ? "text-blue-900" : "text-slate-800"}`}>
-                          {part.nags_glass_id || "Unknown"}
-                          {part.glass_info?.ta ? <span className="text-slate-500 font-normal ml-1">({part.glass_info.ta})</span> : ""}
-                        </span>
-                        {part.oem_glass_id && (
-                          <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 rounded border border-slate-200">
-                            OEM: {part.oem_glass_id}
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-xs text-slate-500 truncate">
-                        {part.part_description || "Glass Part"}
-                      </span>
-                    </div>
->>>>>>> Stashed changes
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+          );
+        })}
       </div>
     );
   };
@@ -473,24 +356,6 @@ export default function CarGlassViewer({
   }
 
   return (
-<<<<<<< Updated upstream
-    <div className="bg-white rounded-3xl border border-slate-200 p-6 md:p-8 shadow-sm relative">
-      {/* Header with Vehicle Info */}
-      <div className="text-center mb-8">
-        <h3 className="text-2xl font-bold text-slate-900">
-          {vehicleInfo?.description}
-          </h3>
-        <p className="text-slate-500 text-sm">
-          Select a glass part from the dropdown to view available options
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Left column: Diagram */}
-        <div className="flex flex-col items-center justify-start border-r border-slate-100 pr-0 md:pr-8">
-          <div className="w-full mb-6">
-            <label className="block text-sm font-medium text-slate-700 mb-2">Select Glass Type</label>
-=======
     <div className="bg-white p-0 h-full flex flex-col">
       {/* Top header removed, description moved below image */}
 
@@ -499,39 +364,64 @@ export default function CarGlassViewer({
         <div className="flex flex-col items-center justify-start border-r border-slate-100 pr-0 md:pr-2 w-full md:w-1/3 shrink-0">
           <div className="w-full mb-2">
             <label className="block text-xs font-medium text-slate-700 mb-1">Select Glass Type</label>
->>>>>>> Stashed changes
             <Select
               className="w-full"
-              placeholder="Select a glass part..."
+              placeholder="Select Glass Type"
               onChange={(code) => {
                 const selectedGlass = glassData.find(g => g.code === code);
-                if (selectedGlass) handleSelectGlass(selectedGlass);
+                if (selectedGlass) handleSelectGlassType(selectedGlass);
               }}
               showSearch
               optionFilterProp="children"
             >
-              {Object.entries(glassGroups).map(([type, items]) => (
-                <OptGroup key={type} label={type.replace(/_/g, " ")}>
-                  {items.map(item => (
-                    <Option key={item.code} value={item.code}>
-                      {item.description}
-                    </Option>
-                  ))}
-                </OptGroup>
-              ))}
+              {Object.entries(glassGroups).map(([type, items]) => {
+                // Format Group Label logic
+                let groupLabel = type.replace(/_/g, " ");
+                // Try to replace codes in group label too
+                GLASS_CODE_NAMES.forEach(mapping => {
+                  const regex = new RegExp(`\\b${mapping.code}\\b`, 'g'); // Replace whole word code
+                  groupLabel = groupLabel.replace(regex, mapping.name);
+                });
+
+
+                return (
+                  <OptGroup key={type} label={groupLabel}>
+                    {items.map(item => {
+                      let label = item.description || item.code;
+
+                      // 1. Exact match lookup
+                      const codeObj = GLASS_CODE_NAMES.find(obj => obj.code === item.code);
+                      if (codeObj) {
+                        label = codeObj.name;
+                      } else {
+                        // 2. Replacement fallback: "Left DQ" -> "Left Quarter Glass"
+                        GLASS_CODE_NAMES.forEach(mapping => {
+                          // Use word boundary to avoid partial replacement if codes were substrings (e.g. DQQ)
+                          // But strict 2-letter codes: check if label contains it
+                          if (label.includes(mapping.code)) {
+                            // Replace "DQ" with "Quarter Glass"
+                            label = label.replace(mapping.code, mapping.name);
+                          }
+                        });
+                      }
+
+                      // Clean underscores
+                      if (label) {
+                        label = label.replace(/_/g, " ");
+                      }
+
+                      return (
+                        <Option key={item.code} value={item.code}>
+                          {label}
+                        </Option>
+                      );
+                    })}
+                  </OptGroup>
+                )
+              })}
             </Select>
           </div>
           {imageSrc && (
-<<<<<<< Updated upstream
-            <div className="flex flex-col items-center w-full">
-              <img
-                src={imageSrc}
-                alt="Vehicle Graphic"
-                width="100%"
-                height="auto"
-                className="max-w-md w-full rounded-lg shadow-lg border border-gray-100 object-contain bg-white p-4 mb-4"
-              />
-=======
             <div className="flex flex-col items-center w-full mt-2">
               <div className="relative w-full h-32 md:h-40 lg:h-48 flex items-center justify-center">
                 <img
@@ -546,17 +436,18 @@ export default function CarGlassViewer({
               <p className="text-slate-500 text-xs text-center">
                 Select a glass part from the dropdown
               </p>
->>>>>>> Stashed changes
             </div>
           )}
-
         </div>
 
         {/* Right column: Parts Selection */}
         <div className="flex flex-col flex-1 bg-white border border-slate-200 overflow-hidden min-h-0">
-          <div className="p-2 border-b border-slate-200 bg-slate-50">
+          <div className="p-2 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
             <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wide">
-              Avaliable Options
+              {activeGlassTypeCode
+                ? `Available Options - ${glassData.find(g => g.code === activeGlassTypeCode)?.description || activeGlassTypeCode}`
+                : "Available Options"
+              }
             </h4>
           </div>
 
@@ -564,60 +455,6 @@ export default function CarGlassViewer({
             {renderPartsColumn()}
           </div>
 
-<<<<<<< Updated upstream
-          {/* Sticky Selected Items Tray */}
-          {selectedParts.length > 0 && (
-            <div className="bg-white border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] p-4 flex flex-col gap-3 relative z-10">
-              <div className="flex items-center justify-between">
-                <h5 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  Selected Items ({selectedParts.length})
-                </h5>
-                <span className="text-xs text-blue-600 font-medium cursor-pointer hover:underline" onClick={() => {
-                  // Optional: clear all logic if needed, or loops
-                }}>
-                  {/* Clear All? */}
-                </span>
-              </div>
-
-              <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
-                {selectedParts.map((item) => {
-                  const partKey = `${item.part.nags_glass_id || ""}|${item.part.oem_glass_id || ""}|${item.glass.code}`;
-                  return (
-                    <div
-                      key={partKey}
-                      className="group flex flex-col bg-blue-50 border border-blue-200 rounded-lg p-3 pr-8 relative shadow-sm hover:shadow-md transition-all animate-[fadeIn_0.2s_ease-out] min-w-[140px]"
-                      title={`${item.part.part_description || "Glass Part"} - ${item.glass.code}`}
-                    >
-                      <button
-                        onClick={() => handleRemoveSelectedPart(partKey)}
-                        className="absolute top-1 right-1 p-1 text-blue-400 hover:text-red-500 hover:bg-white rounded-full transition-colors"
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-
-                      <span className="text-sm font-bold text-slate-700 leading-tight mb-0.5">
-                        {item.part.nags_glass_id || "Unknown ID"}
-                      </span>
-                      <span className="text-xs text-slate-500 line-clamp-1 max-w-[160px] mb-1">
-                        {item.label || item.part.part_description || formatGlassName(item.glass)}
-                      </span>
-                      {(item.glassInfo?.ta || item.part.glass_info?.ta) && (
-                        <div className="mt-auto pt-1 border-t border-blue-100">
-                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                            TA: {item.glassInfo?.ta || item.part.glass_info?.ta}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-=======
->>>>>>> Stashed changes
         </div>
       </div>
 

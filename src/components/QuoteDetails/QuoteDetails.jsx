@@ -4,10 +4,22 @@ import QuotePanel from "./QuotePanel";
 import config from "../../config";
 import { getPrefixCd, getPosCd, getSideCd } from "../carGlassViewer/carGlassHelpers";
 
-export default function QuoteDetails({ prefill, parts, onRemovePart }) {
-    const [panel, setPanel] = useState("customer");
+export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel, onPanelSwitch, invoiceItems, setInvoiceItems }) {
+    // Internal state fallback if not controlled
+    const [internalPanel, setInternalPanel] = useState("customer");
     const [canShowQuotePanel, setCanShowQuotePanel] = useState(true);
-    const [invoiceItems, setInvoiceItems] = useState([]);
+
+    // Determine which panel is active (controlled vs uncontrolled)
+    const panel = activePanel !== undefined ? activePanel : internalPanel;
+
+    // Handle switching
+    const handlePanelSwitch = (newPanel) => {
+        if (onPanelSwitch) {
+            onPanelSwitch(newPanel);
+        } else {
+            setInternalPanel(newPanel);
+        }
+    };
 
     // Lifted Customer State
     const [customerData, setCustomerData] = useState(() => {
@@ -126,14 +138,14 @@ export default function QuoteDetails({ prefill, parts, onRemovePart }) {
         <div className="text-slate-900">
             <div className="flex justify-center gap-4 mb-6">
                 <button
-                    className={`px-4 py-2 rounded-t-lg font-semibold border-b-2 transition-all duration-150 ${panel === 'customer' ? 'border-violet-500 text-violet-700 bg-white' : 'border-transparent text-slate-400 bg-slate-50'}`}
-                    onClick={() => setPanel('customer')}
+                    className={`px-4 py-2 rounded-md font-semibold border transition-all duration-150 ${panel === 'customer' ? 'border-violet-500 text-violet-700 bg-white shadow-sm' : 'border-transparent text-slate-500 bg-slate-50 hover:bg-slate-100'}`}
+                    onClick={() => handlePanelSwitch('customer')}
                 >
                     Customer Information
                 </button>
                 <button
-                    className={`px-4 py-2 rounded-t-lg font-semibold border-b-2 transition-all duration-150 ${panel === 'quote' ? 'border-violet-500 text-violet-700 bg-white' : 'border-transparent text-slate-400 bg-slate-50'}`}
-                    onClick={() => setPanel('quote')}
+                    className={`px-4 py-2 rounded-md font-semibold border transition-all duration-150 ${panel === 'quote' ? 'border-violet-500 text-violet-700 bg-white' : 'border-transparent text-slate-500 bg-slate-50 hover:bg-slate-100'}`}
+                    onClick={() => handlePanelSwitch('quote')}
                 >
                     Quote Information
                 </button>
@@ -143,7 +155,7 @@ export default function QuoteDetails({ prefill, parts, onRemovePart }) {
                     formData={customerData}
                     setFormData={setCustomerData}
                     setCanShowQuotePanel={setCanShowQuotePanel}
-                    setPanel={setPanel}
+                    setPanel={handlePanelSwitch}
                 />
             )}
             {panel === 'quote' && canShowQuotePanel && (

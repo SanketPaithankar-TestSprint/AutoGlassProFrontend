@@ -214,15 +214,15 @@ export default function SearchByYMM({
 
   return (
     <div className={className}>
-      {/* Grid: Year / Make / Model */}
-      <div className="flex flex-col md:flex-row gap-6 justify-center items-end">
+      {/* Grid: Year / Make / Model - STACKED */}
+      <div className="flex flex-col gap-3 w-full">
         {/* Year */}
-        <div className="w-full md:w-72">
-          <label className="block text-gray-800 font-medium mb-2">Year</label>
+        <div className="w-full">
+          <label className="block text-gray-800 text-sm font-medium mb-1">Year</label>
           <Select
-            size="large"
+            size="middle"
             className="w-full"
-            placeholder="Select year"
+            placeholder="Year"
             value={year}
             onChange={handleYear}
             disabled={disabled}
@@ -232,12 +232,12 @@ export default function SearchByYMM({
         </div>
 
         {/* Make */}
-        <div className="w-full md:w-72">
-          <label className="block text-gray-800 font-medium mb-2">Make</label>
+        <div className="w-full">
+          <label className="block text-gray-800 text-sm font-medium mb-1">Make</label>
           <Select
-            size="large"
+            size="middle"
             className="w-full"
-            placeholder="Select make"
+            placeholder="Make"
             value={make}
             onChange={handleMake}
             disabled={disabled || !year}
@@ -248,12 +248,12 @@ export default function SearchByYMM({
         </div>
 
         {/* Model */}
-        <div className="w-full md:w-72">
-          <label className="block text-gray-800 font-medium mb-2">Model</label>
+        <div className="w-full">
+          <label className="block text-gray-800 text-sm font-medium mb-1">Model</label>
           <Select
-            size="large"
+            size="middle"
             className="w-full"
-            placeholder="Select model"
+            placeholder="Model"
             value={model}
             onChange={handleModel}
             disabled={disabled || !year || !make}
@@ -262,6 +262,11 @@ export default function SearchByYMM({
             showSearch={showSearch}
           />
         </div>
+
+        {/* Find Parts Button Placeholder - Logic relies on auto-fetch but wireframe shows button. We can add a visual button if needed or keep auto. 
+            The current logic auto-fetches. User didn't strictly ask for logic change, just layout. 
+            I'll stick to auto-fetch for now unless explicit.
+        */}
       </div>
     </div>
   );

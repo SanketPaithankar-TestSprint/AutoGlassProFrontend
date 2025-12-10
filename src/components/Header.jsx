@@ -110,10 +110,12 @@ const Header = () => {
 
   const menuItems = [
     { key: "home", label: "Home", href: "/" },
-    { key: "pricing", label: "Pricing", href: "/Pricing" },
-    { key: "about", label: "About", href: "/about" },
-    { key: "contact", label: "Contact", href: "/contact" },
-    ...(isAuthed ? [{ key: "Quote", label: "SearchBy", href: "/search-by-root" }] : []),
+    ...(!isAuthed ? [
+      { key: "pricing", label: "Pricing", href: "/Pricing" },
+      { key: "about", label: "About", href: "/about" },
+      { key: "contact", label: "Contact", href: "/contact" },
+    ] : []),
+    ...(isAuthed ? [{ key: "Quote", label: "Quote", href: "/search-by-root" }] : []),
   ];
 
   const NavLink = ({ label, href }) => (

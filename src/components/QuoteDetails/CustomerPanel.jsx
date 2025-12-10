@@ -22,7 +22,6 @@ const FormInput = ({ label, name, value, onChange, required = false, type = "tex
 
 export default function CustomerPanel({ formData, setFormData, setCanShowQuotePanel, setPanel }) {
     // 2. State is now managed by parent
-
     // 3. Simple Loading State
     const [loading, setLoading] = useState(false);
 
