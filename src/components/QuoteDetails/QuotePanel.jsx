@@ -89,8 +89,11 @@ class ErrorBoundary extends React.Component {
     }
 }
 
-function QuotePanelContent({ parts = [], onRemovePart, customerData }) {
-    const [items, setItems] = useState(parts.length ? parts : [newItem()]);
+function QuotePanelContent({ parts = [], onRemovePart, customerData, setItems }) {
+    // Controlled component: use parts prop as items
+    const items = parts;
+    // setItems is passed via props now
+
     const [userProfile, setUserProfile] = useState(() => {
         try {
             const saved = localStorage.getItem("agp_profile_data");
@@ -101,41 +104,6 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData }) {
         }
     });
 
-    useEffect(() => {
-        setItems((prevItems) => {
-            // Create a map of existing items that CAME from parts (based on IDs)
-            // Manual items (random IDs) won't be in the parts list, so we keep them if they exist
-            // Actually, a simpler strategy:
-            // 1. Keep manual items (those strictly NOT matching any incoming part ID or generated labor ID)
-            // 2. Overwrite/Add incoming parts
-            // But wait, parts changed means the user selected/deselected something.
-            // When parts prop changes, it sends the "correct" list of managed items.
-            // We should just "merge" manual items back in.
-
-            // Identify managed IDs from the NEW parts list
-            const newPartIds = new Set(parts.map(p => p.id));
-
-            // Keep existing manual items (items NOT in the new managed list, but also check if they were managed before?)
-            // A better way: The parent (QuoteDetails) controls the "managed" items. 
-            // Any item in `prevItems` that is NOT found in `parts` (and wasn't a previously managed item) is manual.
-            // However, we don't track which were managed easily unless we use a flag. 
-            // Let's assume manual items have random IDs not containing pipes `|`. 
-            // Or better: QuoteDetails generates specific ID formats.
-
-            // Simple approach: 
-            // Take all new parts.
-            // Take all existing items that are NOT found in the previous parts set... 
-            // Actually simplest: User adds "Custom Item". It has a random ID.
-            // QuoteDetails sends "Invoice Items". 
-            // We want `items = [...parts, ...manualItems]`.
-
-            const currentManualItems = prevItems.filter(it => it.isManual);
-
-            // Merge: New Parts + Existing Manual Items
-            return [...parts, ...currentManualItems];
-        });
-    }, [parts]);
-
     const [printableNote, setPrintableNote] = useState("");
     const [internalNote, setInternalNote] = useState("");
 
@@ -143,8 +111,7 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData }) {
         // 1. Notify parent to remove (if it's a managed part)
         onRemovePart?.(id);
 
-        // 2. Optimistically remove from local state
-        // This handles "TOTAL_LABOR" (which parent ignores) and gives instant feedback for parts
+        // 2. Remove from state (lifted)
         setItems((prev) => prev.filter((it) => it.id !== id));
     };
 
@@ -663,10 +630,8 @@ Auto Glass Pro Team`;
                 <table className="min-w-full divide-y divide-slate-200">
                     <thead className="bg-slate-50">
                         <tr className="text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                            <th className="px-3 py-2 min-w-[80px]">Type</th>
-                            <th className="px-3 py-2 min-w-[90px]">NAGS ID</th>
+                            <th className="px-3 py-2 min-w-[90px]">Part</th>
                             <th className="px-3 py-2 min-w-[90px]">OEM ID</th>
-                            <th className="px-3 py-2 min-w-[70px]">Labor (Hrs)</th>
                             <th className="px-3 py-2 min-w-[180px]">Description</th>
                             <th className="px-3 py-2 min-w-[120px]">Manufacturer</th>
                             <th className="px-3 py-2 text-right min-w-[70px]">Qty</th>
@@ -679,16 +644,11 @@ Auto Glass Pro Team`;
                         {items.map((it) => (
                             <tr key={it.id} className="hover:bg-slate-50 transition group">
                                 <td className="px-3 py-2">
-                                    <span className={`text-xs font-medium px-2 py-1 rounded ${it.type === 'Labor' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'}`}>
-                                        {it.type || "Part"}
-                                    </span>
-                                </td>
-                                <td className="px-3 py-2">
                                     <input
                                         value={it.nagsId}
                                         onChange={(e) => updateItem(it.id, "nagsId", e.target.value)}
                                         className={`w-full h-8 rounded border border-slate-300 px-2 text-xs focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none ${(!it.isManual && it.type === 'Labor') ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : ''}`}
-                                        placeholder="NAGS"
+                                        placeholder="Part ID"
                                         disabled={!it.isManual && it.type === 'Labor'}
                                     />
                                 </td>
@@ -698,15 +658,6 @@ Auto Glass Pro Team`;
                                         onChange={(e) => updateItem(it.id, "oemId", e.target.value)}
                                         className={`w-full h-8 rounded border border-slate-300 px-2 text-xs focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none ${(!it.isManual && it.type === 'Labor') ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : ''}`}
                                         placeholder="OEM"
-                                        disabled={!it.isManual && it.type === 'Labor'}
-                                    />
-                                </td>
-                                <td className="px-3 py-2">
-                                    <input
-                                        value={it.labor}
-                                        onChange={(e) => updateItem(it.id, "labor", e.target.value)}
-                                        className={`w-full h-8 rounded border border-slate-300 px-2 text-xs focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none ${(!it.isManual && it.type === 'Labor') ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : ''}`}
-                                        placeholder="Hrs"
                                         disabled={!it.isManual && it.type === 'Labor'}
                                     />
                                 </td>

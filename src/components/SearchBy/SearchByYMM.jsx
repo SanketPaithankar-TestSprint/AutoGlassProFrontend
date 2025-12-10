@@ -26,6 +26,7 @@ export default function SearchByYMM({
   disabled = false,
   minYear = 1981,
   showSearch = true,
+  stacked = false,
 }) {
   // --- YMM state
   const [year, setYear] = useState(value?.year || null);
@@ -215,9 +216,9 @@ export default function SearchByYMM({
   return (
     <div className={className}>
       {/* Grid: Year / Make / Model */}
-      <div className="flex flex-col md:flex-row gap-6 justify-center items-end">
+      <div className={`flex flex-col ${stacked ? 'gap-4' : 'md:flex-row gap-6'} justify-center items-end`}>
         {/* Year */}
-        <div className="w-full md:w-72">
+        <div className={`w-full ${stacked ? '' : 'md:w-72'}`}>
           <label className="block text-gray-800 font-medium mb-2">Year</label>
           <Select
             size="large"
@@ -232,7 +233,7 @@ export default function SearchByYMM({
         </div>
 
         {/* Make */}
-        <div className="w-full md:w-72">
+        <div className={`w-full ${stacked ? '' : 'md:w-72'}`}>
           <label className="block text-gray-800 font-medium mb-2">Make</label>
           <Select
             size="large"
@@ -248,7 +249,7 @@ export default function SearchByYMM({
         </div>
 
         {/* Model */}
-        <div className="w-full md:w-72">
+        <div className={`w-full ${stacked ? '' : 'md:w-72'}`}>
           <label className="block text-gray-800 font-medium mb-2">Model</label>
           <Select
             size="large"

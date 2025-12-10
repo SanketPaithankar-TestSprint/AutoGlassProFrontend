@@ -104,8 +104,63 @@ export default function CarGlassViewer({
         );
         if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
         const data = await res.json();
-        setGlassData(data?.glass_types || []);
-        setGlassGroups(data?.organized_by_type || {});
+
+        const rawTypes = data?.glass_types || [];
+        setGlassData(rawTypes);
+
+        // Custom Grouping Logic
+        // Primary: DW (Windshield), DB (Back Glass)
+        // Side: DD (Door), DV (Vent), DQ (Quarter)
+        // Roof: DR (Roof)
+        const newGroups = {
+          "Primary Glass": [],
+          "Side Glass": [],
+          "Roof Glass": []
+        };
+        const others = [];
+
+        rawTypes.forEach(t => {
+          const code = t.code; // e.g. "DW"
+          const desc = (t.description || "").toLowerCase();
+
+          if (
+            ["DW", "DB"].includes(code) ||
+            (t.type && ["DW", "DB"].includes(t.type)) ||
+            desc.includes("windshield") ||
+            desc.includes("back glass")
+          ) {
+            newGroups["Primary Glass"].push(t);
+          } else if (
+            ["DR"].includes(code) ||
+            code.startsWith("DR") ||
+            (t.type === "DR") ||
+            desc.includes("roof") ||
+            desc.includes("sunroof") ||
+            desc.includes("moonroof") ||
+            desc.includes("panoramic") ||
+            desc.includes("glass panel") ||
+            desc.includes("center glass")
+          ) {
+            newGroups["Roof Glass"].push(t);
+          } else {
+            // "Side Glass" is the catch-all for DD, DV, DQ and everything else (Door, Vent, Quarter, etc.)
+            newGroups["Side Glass"].push(t);
+          }
+        });
+
+        // "Other" bucket logic completely removed to enforce the 3 user categories.
+        // Fallback catch-all is now "Side Glass".
+
+        // Filter out empty groups
+        const finalGroups = {};
+        Object.keys(newGroups).forEach(key => {
+          if (newGroups[key].length > 0) {
+            finalGroups[key] = newGroups[key];
+          }
+        });
+
+        setGlassGroups(finalGroups);
+
       } catch (err) {
         console.error(err);
         setError(err.message || "Failed to fetch glass data");
@@ -250,8 +305,8 @@ export default function CarGlassViewer({
   const renderPartsColumn = () => {
     if (selectedGlassTypes.length === 0) {
       return (
-        <div className="flex flex-col items-center justify-center h-full text-slate-400 italic p-8 text-center">
-          <p>
+        <div className="flex flex-col items-center justify-center h-full text-slate-400 italic p-4 text-center">
+          <p className="text-sm">
             Select a glass part from the dropdown to view available options.
           </p>
         </div>
@@ -261,13 +316,13 @@ export default function CarGlassViewer({
 
 
     return (
-      <div className="flex flex-col p-4 space-y-4">
+      <div className="flex flex-col p-2 space-y-2">
         {selectedGlassTypes.map((item) => (
           <div key={item.glass.code} className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
             {/* Glass Type Header (Accordion) */}
             <div
               onClick={() => toggleGlassTypeExpansion(item.glass.code)}
-              className="flex items-center justify-between p-4 bg-slate-50/80 cursor-pointer hover:bg-slate-100 transition-colors"
+              className="flex items-center justify-between p-3 bg-slate-50/80 cursor-pointer hover:bg-slate-100 transition-colors"
             >
               <div>
                 <h3 className="font-bold text-slate-800 text-base">
@@ -300,11 +355,11 @@ export default function CarGlassViewer({
             {item.isExpanded && (
               <div className="border-t border-slate-100">
                 {item.loading ? (
-                  <div className="p-4 text-slate-400 text-sm">Loading parts...</div>
+                  <div className="p-3 text-slate-400 text-sm">Loading parts...</div>
                 ) : item.error ? (
-                  <div className="p-4 text-red-400 text-sm">{item.error}</div>
+                  <div className="p-3 text-red-400 text-sm">{item.error}</div>
                 ) : !item.parts.length ? (
-                  <div className="p-4 text-slate-400 text-sm">No parts available.</div>
+                  <div className="p-3 text-slate-400 text-sm">No parts available.</div>
                 ) : (
                   <div className="divide-y divide-slate-100 bg-white">
                     {item.parts.map((part) => {
@@ -328,7 +383,7 @@ export default function CarGlassViewer({
                             }
                           }}
                           className={`
-                            group flex items-center gap-3 p-3 cursor-pointer transition-colors
+                            group flex items-center gap-3 p-2 cursor-pointer transition-colors
                             ${isSelected ? "bg-blue-50/50" : "hover:bg-slate-50"}
                           `}
                         >
@@ -353,7 +408,7 @@ export default function CarGlassViewer({
                           <div className="flex-1">
                             <div className="flex items-center justify-between">
                               <span className={`font-medium text-sm ${isSelected ? "text-blue-900" : "text-slate-700"}`}>
-                                {part.nags_glass_id || "Unknown ID"}
+                                {part.nags_glass_id || "Unknown ID"}{part.glass_info?.ta ? ` ${part.glass_info.ta}` : ""}
                               </span>
                               {part.oem_glass_id && (
                                 <span className="text-[10px] font-mono bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">
@@ -364,13 +419,7 @@ export default function CarGlassViewer({
                             <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">
                               {part.part_description || "Glass Part"}
                             </p>
-                            {part.glass_info?.ta && (
-                              <div className="flex gap-3 mt-1 text-xs text-slate-600">
-                                <span className="font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
-                                  TA: {part.glass_info.ta}
-                                </span>
-                              </div>
-                            )}
+
                           </div>
                         </div>
                       );
@@ -405,20 +454,12 @@ export default function CarGlassViewer({
   }
 
   return (
-    <div className="bg-white rounded-3xl border border-slate-200 p-6 md:p-8 shadow-sm relative">
-      {/* Header with Vehicle Info */}
-      <div className="text-center mb-8">
-        <h3 className="text-2xl font-bold text-slate-900">
-          {vehicleInfo?.description}
-          </h3>
-        <p className="text-slate-500 text-sm">
-          Select a glass part from the dropdown to view available options
-        </p>
-      </div>
+    <div className="bg-white rounded-3xl border border-slate-200 p-4 shadow-sm relative">
+      {/* Top header removed, description moved below image */}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Left column: Diagram */}
-        <div className="flex flex-col items-center justify-start border-r border-slate-100 pr-0 md:pr-8">
+        <div className="flex flex-col items-center justify-start border-r border-slate-100 pr-0 md:pr-4">
           <div className="w-full mb-6">
             <label className="block text-sm font-medium text-slate-700 mb-2">Select Glass Type</label>
             <Select
@@ -431,15 +472,51 @@ export default function CarGlassViewer({
               showSearch
               optionFilterProp="children"
             >
-              {Object.entries(glassGroups).map(([type, items]) => (
-                <OptGroup key={type} label={type.replace(/_/g, " ")}>
-                  {items.map(item => (
-                    <Option key={item.code} value={item.code}>
-                      {item.description}
-                    </Option>
-                  ))}
-                </OptGroup>
-              ))}
+              {Object.entries(glassGroups).map(([type, items]) => {
+                // Format Group Label logic
+                let groupLabel = type.replace(/_/g, " ");
+                // Try to replace codes in group label too
+                GLASS_CODE_NAMES.forEach(mapping => {
+                  const regex = new RegExp(`\\b${mapping.code}\\b`, 'g'); // Replace whole word code
+                  groupLabel = groupLabel.replace(regex, mapping.name);
+                });
+
+
+                return (
+                  <OptGroup key={type} label={groupLabel}>
+                    {items.map(item => {
+                      let label = item.description || item.code;
+
+                      // 1. Exact match lookup
+                      const codeObj = GLASS_CODE_NAMES.find(obj => obj.code === item.code);
+                      if (codeObj) {
+                        label = codeObj.name;
+                      } else {
+                        // 2. Replacement fallback: "Left DQ" -> "Left Quarter Glass"
+                        GLASS_CODE_NAMES.forEach(mapping => {
+                          // Use word boundary to avoid partial replacement if codes were substrings (e.g. DQQ)
+                          // But strict 2-letter codes: check if label contains it
+                          if (label.includes(mapping.code)) {
+                            // Replace "DQ" with "Quarter Glass"
+                            label = label.replace(mapping.code, mapping.name);
+                          }
+                        });
+                      }
+
+                      // Clean underscores
+                      if (label) {
+                        label = label.replace(/_/g, " ");
+                      }
+
+                      return (
+                        <Option key={item.code} value={item.code}>
+                          {label}
+                        </Option>
+                      );
+                    })}
+                  </OptGroup>
+                )
+              })}
             </Select>
           </div>
           {imageSrc && (
@@ -447,13 +524,16 @@ export default function CarGlassViewer({
               <img
                 src={imageSrc}
                 alt="Vehicle Graphic"
-                width="100%"
-                height="auto"
-                className="max-w-md w-full rounded-lg shadow-lg border border-gray-100 object-contain bg-white p-4 mb-4"
+                className="max-w-full w-auto max-h-[200px] rounded-lg shadow-lg border border-gray-100 object-contain bg-white p-2 mb-2"
               />
+              <h3 className="text-lg font-bold text-slate-900 text-center mt-1">
+                {vehicleInfo?.description}
+              </h3>
+              <p className="text-slate-500 text-sm text-center">
+                Select a glass part from the dropdown to view available options
+              </p>
             </div>
           )}
-
         </div>
 
         {/* Right column: Parts Selection */}
@@ -488,31 +568,25 @@ export default function CarGlassViewer({
                   return (
                     <div
                       key={partKey}
-                      className="group flex flex-col bg-blue-50 border border-blue-200 rounded-lg p-3 pr-8 relative shadow-sm hover:shadow-md transition-all animate-[fadeIn_0.2s_ease-out] min-w-[140px]"
+                      className="group flex flex-col bg-blue-50 border border-blue-200 rounded-lg p-3 pr-10 relative shadow-sm hover:shadow-md transition-all animate-[fadeIn_0.2s_ease-out] min-w-[140px]"
                       title={`${item.part.part_description || "Glass Part"} - ${item.glass.code}`}
                     >
                       <button
                         onClick={() => handleRemoveSelectedPart(partKey)}
-                        className="absolute top-1 right-1 p-1 text-blue-400 hover:text-red-500 hover:bg-white rounded-full transition-colors"
+                        className="absolute top-1 right-1 p-1 text-blue-500 hover:text-red-500 hover:bg-white rounded-full transition-colors z-20"
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                       </button>
 
-                      <span className="text-sm font-bold text-slate-700 leading-tight mb-0.5">
-                        {item.part.nags_glass_id || "Unknown ID"}
+                      <span className="text-sm font-bold text-slate-700 leading-tight mb-0.5 pr-2">
+                        {item.part.nags_glass_id || "Unknown ID"}{(item.glassInfo?.ta || item.part.glass_info?.ta) ? ` ${item.glassInfo?.ta || item.part.glass_info?.ta}` : ""}
                       </span>
                       <span className="text-xs text-slate-500 line-clamp-1 max-w-[160px] mb-1">
                         {item.label || item.part.part_description || formatGlassName(item.glass)}
                       </span>
-                      {(item.glassInfo?.ta || item.part.glass_info?.ta) && (
-                        <div className="mt-auto pt-1 border-t border-blue-100">
-                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                            TA: {item.glassInfo?.ta || item.part.glass_info?.ta}
-                          </span>
-                        </div>
-                      )}
+
                     </div>
                   );
                 })}

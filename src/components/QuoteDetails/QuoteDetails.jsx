@@ -4,10 +4,14 @@ import QuotePanel from "./QuotePanel";
 import config from "../../config";
 import { getPrefixCd, getPosCd, getSideCd } from "../carGlassViewer/carGlassHelpers";
 
-export default function QuoteDetails({ prefill, parts, onRemovePart }) {
-    const [panel, setPanel] = useState("customer");
+export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel, onPanelSwitch, invoiceItems, setInvoiceItems }) {
+    // If activePanel is passed (controlled mode), use it. Otherwise default to internal state.
+    const [internalPanel, setInternalPanel] = useState("customer");
+    const panel = activePanel || internalPanel;
+
     const [canShowQuotePanel, setCanShowQuotePanel] = useState(true);
-    const [invoiceItems, setInvoiceItems] = useState([]);
+    // invoiceItems is now passed as prop
+    // const [invoiceItems, setInvoiceItems] = useState([]);
 
     // Lifted Customer State
     const [customerData, setCustomerData] = useState(() => {
@@ -44,6 +48,7 @@ export default function QuoteDetails({ prefill, parts, onRemovePart }) {
                 console.error("Failed to parse saved customer data", e);
             }
         }
+        return initial;
     });
 
     useEffect(() => {
@@ -52,105 +57,44 @@ export default function QuoteDetails({ prefill, parts, onRemovePart }) {
         }
     }, [customerData]);
 
-    useEffect(() => {
-        const fetchGlassInfo = async () => {
-            const result = await Promise.all(parts.map(async (p) => {
-                const uniqueId = `${p.part.nags_glass_id || ""}|${p.part.oem_glass_id || ""}|${p.glass.code}`;
+    // State lifting: useEffect moved to SearchByRoot
+    // useEffect(() => { ... }, [parts]);
 
-                // If we already have this item in our state with valid info, preserve user edits if needed, 
-                // OR just use the cached data to avoid re-fetch.
-                // For now, let's just fetch if missing info.
-
-                let info = p.glassInfo;
-                if (!info && p.part.nags_glass_id) {
-                    try {
-                        const res = await fetch(`${config.pythonApiUrl}agp/v1/glass-info?nags_glass_id=${p.part.nags_glass_id}`);
-                        if (res.ok) {
-                            info = await res.json();
-                        }
-                    } catch (err) {
-                        console.error("Failed to fetch glass info", err);
-                    }
-                }
-
-                const items = [];
-
-                // 1. The Part Item
-                items.push({
-                    type: "Part",
-                    id: uniqueId,
-                    prefixCd: getPrefixCd(p.glass),
-                    posCd: getPosCd(p.glass),
-                    sideCd: getSideCd(p.glass),
-                    nagsId: p.part.nags_glass_id || "",
-                    oemId: p.part.oem_glass_id || "",
-                    labor: Number(info?.labor) || "",
-                    description: p.part.part_description || "",
-                    manufacturer: info?.manufacturer || "",
-                    qty: 1,
-                    unitPrice: info?.list_price || 0,
-                    amount: info?.list_price || 0
-                });
-
-                // 2. The Labor Item (if applicable)
-                if (Number(info?.labor) > 0) {
-                    items.push({
-                        type: "Labor",
-                        id: `${uniqueId}_LABOR`,
-                        nagsId: "",
-                        oemId: "",
-                        labor: Number(info?.labor) || "",
-                        description: "Installation Labor",
-                        manufacturer: "",
-                        qty: 1,
-                        unitPrice: 0,
-                        amount: 0
-                    });
-                }
-
-                return items;
-            }));
-
-            // Flatten items
-            const allItems = result.flat();
-            setInvoiceItems(allItems);
-        };
-
-        if (parts.length > 0) {
-            fetchGlassInfo();
-        } else {
-            setInvoiceItems([]);
-        }
-    }, [parts]);
     return (
         <div className="text-slate-900">
-            <div className="flex justify-center gap-4 mb-6">
-                <button
-                    className={`px-4 py-2 rounded-t-lg font-semibold border-b-2 transition-all duration-150 ${panel === 'customer' ? 'border-violet-500 text-violet-700 bg-white' : 'border-transparent text-slate-400 bg-slate-50'}`}
-                    onClick={() => setPanel('customer')}
-                >
-                    Customer Information
-                </button>
-                <button
-                    className={`px-4 py-2 rounded-t-lg font-semibold border-b-2 transition-all duration-150 ${panel === 'quote' ? 'border-violet-500 text-violet-700 bg-white' : 'border-transparent text-slate-400 bg-slate-50'}`}
-                    onClick={() => setPanel('quote')}
-                >
-                    Quote Information
-                </button>
-            </div>
+            {/* Hide tabs if controlled via activePanel */}
+            {!activePanel && (
+                <div className="flex justify-center gap-4 mb-6">
+                    <button
+                        className={`px-4 py-2 rounded-t-lg font-semibold border-b-2 transition-all duration-150 ${internalPanel === 'customer' ? 'border-violet-500 text-violet-700 bg-white' : 'border-transparent text-slate-400 bg-slate-50'}`}
+                        onClick={() => setInternalPanel('customer')}
+                    >
+                        Customer Information
+                    </button>
+                    <button
+                        className={`px-4 py-2 rounded-t-lg font-semibold border-b-2 transition-all duration-150 ${internalPanel === 'quote' ? 'border-violet-500 text-violet-700 bg-white' : 'border-transparent text-slate-400 bg-slate-50'}`}
+                        onClick={() => setInternalPanel('quote')}
+                    >
+                        Quote Information
+                    </button>
+                </div>
+            )}
             {panel === 'customer' && (
                 <CustomerPanel
                     formData={customerData}
                     setFormData={setCustomerData}
-                    setCanShowQuotePanel={setCanShowQuotePanel}
-                    setPanel={setPanel}
+                    // Only pass setPanel if we are NOT in controlled mode (or handle it via parent)
+                    // For now, if controlled, child cannot switch panel.
+                    setCanShowQuotePanel={!activePanel ? setCanShowQuotePanel : undefined}
+                    setPanel={!activePanel ? setInternalPanel : onPanelSwitch}
                 />
             )}
-            {panel === 'quote' && canShowQuotePanel && (
+            {panel === 'quote' && (
                 <QuotePanel
                     parts={invoiceItems}
                     onRemovePart={onRemovePart}
                     customerData={customerData}
+                    setItems={setInvoiceItems} // Passing setter to QuotePanel
                 />
             )}
         </div>

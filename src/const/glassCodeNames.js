@@ -2,10 +2,10 @@
 const GLASS_CODE_NAMES = [
     { code: "DW", name: "Windshield" },
     { code: "DB", name: "Back Glass" },
-    { code: "DD", name: "Door Drop Glass" },
-    { code: "DQ", name: "Door Quarter Glass" },
-    { code: "DR", name: "Door Rear Glass" },
-    { code: "DV", name: "Door Vent Glass" }
+    { code: "DD", name: "Door Glass" },
+    { code: "DQ", name: "Quarter Glass" },
+    { code: "DR", name: "Roof Glass" },
+    { code: "DV", name: "Vent Glass" }
 ];
 
 export default GLASS_CODE_NAMES;
