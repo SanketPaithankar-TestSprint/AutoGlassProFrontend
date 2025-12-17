@@ -2,14 +2,14 @@ import urls from "../config";
 import { getValidToken } from "./getValidToken";
 
 /**
- * Deletes (cancels) a service document.
- * @param {string} documentNumber - The document number (e.g., "QT-2025-12-00003").
+ * Deletes a vehicle.
+ * @param {number} vehicleId - The vehicle ID.
  * @returns {Promise<Object>} - The deletion response.
  */
-export const deleteServiceDocument = async (documentNumber) => {
+export const deleteVehicle = async (vehicleId) => {
     try {
         const token = await getValidToken();
-        const response = await fetch(`${urls.javaApiUrl}/v1/service-documents/${documentNumber}`, {
+        const response = await fetch(`${urls.javaApiUrl}/v1/vehicles/${vehicleId}`, {
             method: 'DELETE',
             headers: {
                 'accept': '*/*',
@@ -18,10 +18,12 @@ export const deleteServiceDocument = async (documentNumber) => {
         });
 
         if (!response.ok) {
-            throw new Error(`Failed to delete service document: ${response.status}`);
+            throw new Error(`Failed to delete vehicle: ${response.status}`);
         }
+
+        return await response.json();
     } catch (error) {
-        console.error("Error deleting service document:", error);
+        console.error("Error deleting vehicle:", error);
         throw error;
     }
 };

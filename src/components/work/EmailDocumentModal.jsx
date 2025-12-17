@@ -1,24 +1,48 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Modal, Form, Input, Button, message } from "antd";
 import { sendServiceDocumentEmail } from "../../api/sendServiceDocumentEmail";
+import { getActiveSmtpConfig } from "../../api/getActiveSmtpConfig";
+import { useNavigate } from "react-router-dom";
 
-const EmailDocumentModal = ({ visible, onClose, documentId, defaultEmail, onSuccess }) => {
+const EmailDocumentModal = ({ visible, documentNumber, defaultEmail, onClose, onSuccess }) => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
-    useEffect(() => {
-        if (visible && defaultEmail) {
-            form.setFieldsValue({ email: defaultEmail });
-        }
-    }, [visible, defaultEmail]);
-
-    const handleSubmit = async (values) => {
+    const handleSend = async (values) => {
         setLoading(true);
         try {
-            await sendServiceDocumentEmail(documentId, values.email);
+            // Check if SMTP is configured
+            const smtpConfig = await getActiveSmtpConfig();
+            if (!smtpConfig) {
+                Modal.warning({
+                    title: 'SMTP Not Configured',
+                    content: (
+                        <div>
+                            <p className="mb-3">Please configure your SMTP email settings before sending emails.</p>
+                            <Button
+                                type="primary"
+                                onClick={() => {
+                                    Modal.destroyAll();
+                                    onClose();
+                                    navigate('/profile', { state: { activeTab: 'smtp' } });
+                                }}
+                            >
+                                Go to Email Settings
+                            </Button>
+                        </div>
+                    ),
+                    okText: 'Close'
+                });
+                setLoading(false);
+                return;
+            }
+
+            await sendServiceDocumentEmail(documentNumber, values.email);
             message.success("Email sent successfully");
-            onSuccess();
+            if (onSuccess) onSuccess();
             onClose();
+            form.resetFields();
         } catch (error) {
             message.error("Failed to send email: " + error.message);
         } finally {
@@ -31,23 +55,32 @@ const EmailDocumentModal = ({ visible, onClose, documentId, defaultEmail, onSucc
             title="Send Document via Email"
             open={visible}
             onCancel={onClose}
-            onOk={() => form.submit()}
-            confirmLoading={loading}
+            footer={null}
         >
             <Form
                 form={form}
                 layout="vertical"
-                onFinish={handleSubmit}
+                onFinish={handleSend}
+                initialValues={{ email: defaultEmail }}
             >
                 <Form.Item
-                    name="email"
                     label="Recipient Email"
+                    name="email"
                     rules={[
-                        { required: true, message: "Please enter email" },
-                        { type: 'email', message: "Please enter a valid email" }
+                        { required: true, message: "Please enter recipient email" },
+                        { type: "email", message: "Please enter a valid email" }
                     ]}
                 >
                     <Input placeholder="customer@example.com" />
+                </Form.Item>
+
+                <Form.Item>
+                    <div className="flex gap-2 justify-end">
+                        <Button onClick={onClose}>Cancel</Button>
+                        <Button type="primary" htmlType="submit" loading={loading}>
+                            Send Email
+                        </Button>
+                    </div>
                 </Form.Item>
             </Form>
         </Modal>

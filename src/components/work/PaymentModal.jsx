@@ -2,14 +2,14 @@ import React, { useState } from "react";
 import { Modal, Form, InputNumber, Button, message } from "antd";
 import { recordServiceDocumentPayment } from "../../api/recordServiceDocumentPayment";
 
-const PaymentModal = ({ visible, onClose, documentId, balanceDue, onSuccess }) => {
+const PaymentModal = ({ visible, onClose, documentNumber, balanceDue, onSuccess }) => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (values) => {
         setLoading(true);
         try {
-            await recordServiceDocumentPayment(documentId, values.amount);
+            await recordServiceDocumentPayment(documentNumber, values.amount);
             message.success("Payment recorded successfully");
             onSuccess();
             onClose();

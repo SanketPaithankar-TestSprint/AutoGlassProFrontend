@@ -3,13 +3,13 @@ import { getValidToken } from "./getValidToken";
 
 /**
  * Marks a service document as completed.
- * @param {string|number} documentId - The ID of the document.
- * @returns {Promise<Object>} - The updated service document.
+ * @param {string} documentNumber - The document number (e.g., "WO-2025-12-00015").
+ * @returns {Promise<Object>} - The completed service document.
  */
-export const completeServiceDocument = async (documentId) => {
+export const completeServiceDocument = async (documentNumber) => {
     try {
         const token = await getValidToken();
-        const response = await fetch(`${urls.javaApiUrl}/v1/service-documents/${documentId}/complete`, {
+        const response = await fetch(`${urls.javaApiUrl}/v1/service-documents/${documentNumber}/complete`, {
             method: 'POST',
             headers: {
                 'accept': '*/*',

@@ -1,7 +1,11 @@
-import React, { useState } from "react";
-import { notification } from "antd";
+import React, { useState, useEffect } from "react";
+import { notification, Select, Spin } from "antd";
 import urls from "../../config";
 import { getValidToken } from "../../api/getValidToken";
+import { getCustomers } from "../../api/getCustomers";
+import { getCustomerWithVehicles } from "../../api/getCustomerWithVehicles";
+
+const { Option } = Select;
 
 // 1. Reusable Input Component to remove visual clutter
 const FormInput = ({ label, name, value, onChange, required = false, type = "text", ...props }) => (
@@ -21,17 +25,136 @@ const FormInput = ({ label, name, value, onChange, required = false, type = "tex
 );
 
 export default function CustomerPanel({ formData, setFormData, setCanShowQuotePanel, setPanel }) {
-    // 2. State is now managed by parent
-    // 3. Simple Loading State
+    // State management
     const [loading, setLoading] = useState(false);
+    const [customers, setCustomers] = useState([]);
+    const [loadingCustomers, setLoadingCustomers] = useState(false);
+    const [selectedCustomerId, setSelectedCustomerId] = useState(null);
+    const [loadingCustomerDetails, setLoadingCustomerDetails] = useState(false);
+
+    // Load customers on component mount
+    useEffect(() => {
+        fetchCustomers();
+    }, []);
+
+    const fetchCustomers = async () => {
+        try {
+            setLoadingCustomers(true);
+            const token = await getValidToken();
+            const customerList = await getCustomers(token);
+            setCustomers(Array.isArray(customerList) ? customerList : []);
+        } catch (error) {
+            console.error("Error fetching customers:", error);
+            notification.error({
+                message: 'Failed to load customers',
+                description: 'Could not retrieve customer list'
+            });
+        } finally {
+            setLoadingCustomers(false);
+        }
+    };
+
+    const handleCustomerSelect = async (customerId) => {
+        if (!customerId) {
+            // Clear selection
+            setSelectedCustomerId(null);
+            setFormData({
+                firstName: "",
+                lastName: "",
+                email: "",
+                phone: "",
+                alternatePhone: "",
+                preferredContactMethod: "phone",
+                addressLine1: "",
+                addressLine2: "",
+                city: "",
+                state: "",
+                postalCode: "",
+                country: "USA",
+                vehicleYear: "",
+                vehicleMake: "",
+                vehicleModel: "",
+                vehicleStyle: "",
+                licensePlateNumber: "",
+                vin: "",
+                vehicleNotes: ""
+            });
+            return;
+        }
+
+        try {
+            setLoadingCustomerDetails(true);
+            setSelectedCustomerId(customerId);
+
+            const token = await getValidToken();
+            const response = await getCustomerWithVehicles(customerId);
+
+            // Extract customer and vehicle data from nested response
+            const customer = response.customer || {};
+            const vehicles = response.vehicles || [];
+            const firstVehicle = vehicles.length > 0 ? vehicles[0] : {};
+
+            setFormData({
+                customerId: customer.customerId,
+                firstName: customer.firstName || "",
+                lastName: customer.lastName || "",
+                email: customer.email || "",
+                phone: customer.phone || "",
+                alternatePhone: customer.alternatePhone || "",
+                preferredContactMethod: customer.preferredContactMethod || "phone",
+                addressLine1: customer.addressLine1 || "",
+                addressLine2: customer.addressLine2 || "",
+                city: customer.city || "",
+                state: customer.state || "",
+                postalCode: customer.postalCode || "",
+                country: customer.country || "USA",
+                vehicleId: firstVehicle.vehicleId,
+                vehicleYear: firstVehicle.vehicleYear || "",
+                vehicleMake: firstVehicle.vehicleMake || "",
+                vehicleModel: firstVehicle.vehicleModel || "",
+                vehicleStyle: firstVehicle.vehicleStyle || "",
+                licensePlateNumber: firstVehicle.licensePlateNumber || "",
+                vin: firstVehicle.vin || "",
+                vehicleNotes: firstVehicle.notes || ""
+            });
+
+            // Auto-enable quote panel if customer has IDs
+            if (customer.customerId && firstVehicle.vehicleId) {
+                if (setCanShowQuotePanel) setCanShowQuotePanel(true);
+                notification.success({
+                    message: 'Customer Loaded',
+                    description: `${customer.firstName} ${customer.lastName} - ${firstVehicle.vehicleYear} ${firstVehicle.vehicleMake} ${firstVehicle.vehicleModel}`
+                });
+            }
+        } catch (error) {
+            console.error("Error loading customer details:", error);
+            notification.error({
+                message: 'Failed to load customer details',
+                description: error.message
+            });
+        } finally {
+            setLoadingCustomerDetails(false);
+        }
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // If existing customer is selected, just proceed to quote panel
+        if (selectedCustomerId && formData.customerId && formData.vehicleId) {
+            localStorage.setItem("agp_customer_data", JSON.stringify(formData));
+            if (setCanShowQuotePanel) setCanShowQuotePanel(true);
+            if (setPanel) setPanel("quote");
+            return;
+        }
+
+        // Otherwise, create new customer
         setLoading(true);
 
         try {
@@ -66,7 +189,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                         vehicleId: data.vehicleId,
                     };
                     localStorage.setItem("agp_customer_data", JSON.stringify(newData));
-                    
+
                     return newData;
                 });
                 if (setCanShowQuotePanel) setCanShowQuotePanel(true);
@@ -87,8 +210,46 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
     return (
         <div className="mb-8 p-6 bg-white rounded-xl border border-violet-100 shadow-lg max-w-4xl mx-auto">
             <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold text-violet-800">New Customer Profile</h3>
-                <span className="text-xs bg-violet-100 text-violet-700 px-2 py-1 rounded">Draft</span>
+                <h3 className="text-xl font-bold text-violet-800">Customer Profile</h3>
+                <span className="text-xs bg-violet-100 text-violet-700 px-2 py-1 rounded">
+                    {selectedCustomerId ? 'Existing' : 'Draft'}
+                </span>
+            </div>
+
+            {/* Customer Selection Dropdown */}
+            <div className="mb-6 p-4 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-lg border border-violet-200">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    📋 Select Existing Customer (Optional)
+                </label>
+                <Select
+                    showSearch
+                    allowClear
+                    placeholder="Search and select a customer..."
+                    className="w-full"
+                    loading={loadingCustomers}
+                    notFoundContent={loadingCustomers ? <Spin size="small" /> : "No customers found"}
+                    filterOption={(input, option) =>
+                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                    onChange={handleCustomerSelect}
+                    value={selectedCustomerId}
+                    size="large"
+                >
+                    {customers.map((customer) => (
+                        <Option key={customer.customerId} value={customer.customerId}>
+                            {customer.firstName} {customer.lastName} - {customer.phone}
+                        </Option>
+                    ))}
+                </Select>
+                {loadingCustomerDetails && (
+                    <div className="mt-2 text-sm text-violet-600 flex items-center gap-2">
+                        <Spin size="small" />
+                        <span>Loading customer details...</span>
+                    </div>
+                )}
+                <p className="mt-2 text-xs text-gray-500">
+                    Select a customer to auto-fill the form, or leave empty to create a new customer
+                </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -152,7 +313,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                         disabled={loading}
                         className="w-full md:w-auto px-6 py-2.5 rounded-lg bg-violet-600 hover:bg-violet-700 disabled:bg-violet-300 text-white font-semibold shadow-md transition-all"
                     >
-                        {loading ? "Processing..." : "Create Customer & Vehicle"}
+                        {loading ? "Processing..." : selectedCustomerId ? "Continue to Quote" : "Create Customer & Vehicle"}
                     </button>
                 </div>
             </form>

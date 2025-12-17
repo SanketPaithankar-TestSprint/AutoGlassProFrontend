@@ -2,14 +2,14 @@ import urls from "../config";
 import { getValidToken } from "./getValidToken";
 
 /**
- * Accepts a service document (changes status to accepted).
- * @param {string|number} documentId - The ID of the document.
- * @returns {Promise<Object>} - The updated service document.
+ * Accepts (approves) a service document.
+ * @param {string} documentNumber - The document number (e.g., "QT-2025-12-00003").
+ * @returns {Promise<Object>} - The accepted service document.
  */
-export const acceptServiceDocument = async (documentId) => {
+export const acceptServiceDocument = async (documentNumber) => {
     try {
         const token = await getValidToken();
-        const response = await fetch(`${urls.javaApiUrl}/v1/service-documents/${documentId}/accept`, {
+        const response = await fetch(`${urls.javaApiUrl}/v1/service-documents/${documentNumber}/accept`, {
             method: 'POST',
             headers: {
                 'accept': '*/*',

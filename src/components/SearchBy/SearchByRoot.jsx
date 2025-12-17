@@ -58,15 +58,15 @@ const SearchByRoot = () => {
   };
 
   return (
-    <div className="h-screen bg-white flex flex-col items-center px-0 pt-20 pb-2 overflow-hidden">
-      <div className="w-full mx-auto space-y-2 h-full flex flex-col max-w-[98%] 2xl:max-w-[1900px]">
+    <div className="min-h-screen bg-white flex flex-col items-center px-0 pt-20 pb-2">
+      <div className="w-full mx-auto space-y-2 flex flex-col max-w-[98%] 2xl:max-w-[1900px]">
 
         {/* Quote Tab Content -> Renamed to Main Content as it handles everything */}
-        <div className="screen w-full h-full grid gap-4 transition-all duration-300 grid-cols-[350px_1fr] grid-rows-[55%_45%]">
+        <div className="screen w-full h-[calc(100vh-96px)] grid gap-4 transition-all duration-300 grid-cols-[350px_1fr] grid-rows-[55%_45%]">
 
-          <div className="searchby bg-white border border-slate-200 overflow-hidden flex flex-col row-span-2">
+          <div className="searchby bg-white border border-slate-200 overflow-y-auto flex flex-col row-span-2">
             {/* VIN Search Section */}
-            <div className="p-4 border-b border-slate-200">
+            <div className="p-4 border-b border-slate-200 shrink-0">
               <h2 className="text-base font-medium text-slate-800 mb-3">
                 Search by VIN:
               </h2>
@@ -104,7 +104,7 @@ const SearchByRoot = () => {
           </div>
 
           {/* Right Column Top: part selection */}
-          <div className={`part-selection bg-white border border-slate-200 p-2 flex flex-col overflow-hidden min-h-0 ${!modelId ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
+          <div className={`part-selection bg-white border border-slate-200 p-2 flex flex-col overflow-hidden ${!modelId ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
             <h2 className="text-sm font-semibold text-slate-800 mb-2 shrink-0">
               Select Parts
             </h2>
@@ -121,11 +121,11 @@ const SearchByRoot = () => {
           </div>
 
           {/* Right Column Bottom: quote area */}
-          <div className={`quote-area bg-white border border-slate-200 p-3 flex flex-col overflow-hidden min-h-0 ${!modelId ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
+          <div className={`quote-area bg-white border border-slate-200 p-3 flex flex-col overflow-hidden ${!modelId ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
             <h2 className="text-sm font-semibold text-slate-800 mb-2 shrink-0">
               Quote Details
             </h2>
-            <div className="flex-1 overflow-y-auto min-h-0">
+            <div className="flex-1 overflow-y-auto">
               <ErrorBoundary>
                 <QuoteDetails
                   prefill={{

@@ -7,17 +7,19 @@ import {
     DeleteOutlined,
     CheckCircleOutlined,
     DollarOutlined,
-    FileDoneOutlined
+    FileDoneOutlined,
+    EditOutlined
 } from "@ant-design/icons";
 import { getValidToken } from "../../api/getValidToken";
 import { getServiceDocuments } from "../../api/getServiceDocuments";
 import { deleteServiceDocument } from "../../api/deleteServiceDocument";
 import { acceptServiceDocument } from "../../api/acceptServiceDocument";
 import { completeServiceDocument } from "../../api/completeServiceDocument";
-import { exportServiceDocumentPdf } from "../../api/exportServiceDocumentPdf";
+import { generateAndDownloadPDF, generatePDFFilename } from "../../utils/serviceDocumentPdfGenerator";
 import CreateServiceDocumentModal from "./CreateServiceDocumentModal";
 import PaymentModal from "./PaymentModal";
 import EmailDocumentModal from "./EmailDocumentModal";
+import EditDocumentModal from "./EditDocumentModal";
 
 const Work = () => {
     const [loading, setLoading] = useState(true);
@@ -29,6 +31,7 @@ const Work = () => {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [paymentModalState, setPaymentModalState] = useState({ open: false, docId: null, balance: 0 });
     const [emailModalState, setEmailModalState] = useState({ open: false, docId: null, email: "" });
+    const [editModalState, setEditModalState] = useState({ open: false, document: null });
 
     const fetchWork = async () => {
         setLoading(true);
@@ -55,6 +58,7 @@ const Work = () => {
 
     // Action Handlers
     const handleDelete = (docId) => {
+        console.log('Delete called for document:', docId);
         Modal.confirm({
             title: 'Delete Document',
             content: 'Are you sure you want to delete this document? This action cannot be undone.',
@@ -62,11 +66,14 @@ const Work = () => {
             okType: 'danger',
             onOk: async () => {
                 try {
+                    console.log('Calling deleteServiceDocument API for:', docId);
                     await deleteServiceDocument(docId);
+                    console.log('Delete successful, refreshing data...');
                     message.success('Document deleted successfully');
                     fetchWork();
                     if (expandedDoc === docId) setExpandedDoc(null);
                 } catch (err) {
+                    console.error('Delete failed:', err);
                     message.error('Failed to delete: ' + err.message);
                 }
             }
@@ -95,21 +102,59 @@ const Work = () => {
         }
     };
 
-    const handleExportPdf = async (docId, e) => {
+    const handleExportPdf = async (documentNumber, e) => {
         e.stopPropagation();
         try {
-            const blob = await exportServiceDocumentPdf(docId);
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `Document-${docId}.pdf`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-            message.success('PDF downloaded');
+            // Find the document in workItems
+            const doc = workItems.find(d => d.documentNumber === documentNumber);
+            if (!doc) {
+                message.error('Document not found');
+                return;
+            }
+
+            // Prepare data for PDF generator
+            const pdfData = {
+                items: (doc.items || []).map(item => ({
+                    qty: item.quantity || 1,
+                    nagsId: item.nagsGlassId || "",
+                    oemId: "",
+                    description: item.partDescription || "",
+                    unitPrice: item.partPrice || 0,
+                    amount: item.itemTotal || 0,
+                    labor: item.laborHours || 0,
+                    type: item.laborHours > 0 ? "Part" : "Part"
+                })),
+                customerData: {
+                    customerId: doc.customerId,
+                    firstName: doc.customerName?.split(' ')[0] || "",
+                    lastName: doc.customerName?.split(' ').slice(1).join(' ') || "",
+                    addressLine1: "",
+                    addressLine2: "",
+                    city: "",
+                    state: "",
+                    postalCode: "",
+                    vehicleYear: doc.vehicleInfo?.split(' ')[0] || "",
+                    vehicleMake: doc.vehicleInfo?.split(' ')[1] || "",
+                    vehicleModel: doc.vehicleInfo?.split(' ').slice(2).join(' ') || "",
+                    vin: ""
+                },
+                userProfile: JSON.parse(localStorage.getItem('agp_profile_data') || '{}'),
+                subtotal: doc.subtotal || 0,
+                totalTax: doc.taxAmount || 0,
+                totalHours: doc.items?.reduce((sum, item) => sum + (item.laborHours || 0), 0) || 0,
+                discountAmount: doc.discountAmount || 0,
+                total: doc.totalAmount || 0,
+                balance: doc.balanceDue || 0,
+                docType: doc.documentType === "QUOTE" ? "Quote" : doc.documentType === "INVOICE" ? "Invoice" : "Work Order",
+                printableNote: doc.notes || ""
+            };
+
+            // Generate and download PDF
+            generateAndDownloadPDF(pdfData);
+            message.success('PDF downloaded successfully');
         } catch (err) {
-            message.error('Failed to export PDF: ' + err.message);
+            console.error('PDF generation error:', err);
+            message.error('Failed to generate PDF: ' + err.message);
         }
     };
 
@@ -118,17 +163,29 @@ const Work = () => {
         setPaymentModalState({ open: true, docId, balance });
     };
 
-    const openEmailModal = (docId, email, e) => {
+    const openEmailModal = (docNum, email, e) => {
         e.stopPropagation();
-        setEmailModalState({ open: true, docId, email });
+        setEmailModalState({ open: true, docId: docNum, email });
+    };
+
+    const handleEdit = (documentNumber, e) => {
+        e.stopPropagation();
+        const doc = workItems.find(d => d.documentNumber === documentNumber);
+        setEditModalState({ open: true, document: doc });
     };
 
     // Calculate stats
     const stats = {
-        pending: workItems.filter(item => item.status === "pending").length,
-        inProgress: workItems.filter(item => item.status === "in_progress" || item.status === "accepted").length,
-        completed: workItems.filter(item => item.status === "completed").length,
-        totalAmount: workItems.reduce((sum, item) => sum + (item.totalAmount || 0), 0),
+        pending: workItems.filter(item => item.status?.toLowerCase() === "pending").length,
+        inProgress: workItems.filter(item =>
+            ["in_progress", "accepted", "in progress"].includes(item.status?.toLowerCase())
+        ).length,
+        completed: workItems.filter(item =>
+            ["completed", "paid"].includes(item.status?.toLowerCase())
+        ).length,
+        totalAmount: workItems
+            .filter(item => item.status?.toLowerCase() !== "cancelled")
+            .reduce((sum, item) => sum + (item.totalAmount || 0), 0)
     };
 
     // Helpers
@@ -147,24 +204,26 @@ const Work = () => {
     };
 
     const getStatusBadge = (status) => {
+        const normalizedStatus = status?.toLowerCase().replace(/ /g, '_');
         const styles = {
             pending: "bg-amber-100 text-amber-700 border-amber-200",
             in_progress: "bg-blue-100 text-blue-700 border-blue-200",
             accepted: "bg-blue-100 text-blue-700 border-blue-200",
             completed: "bg-green-100 text-green-700 border-green-200",
-            paid: "bg-green-100 text-green-700 border-green-200",
+            paid: "bg-emerald-100 text-emerald-700 border-emerald-200",
             cancelled: "bg-red-100 text-red-700 border-red-200",
         };
-        return styles[status] || "bg-gray-100 text-gray-700 border-gray-200";
+        return styles[normalizedStatus] || "bg-gray-100 text-gray-700 border-gray-200";
     };
 
     const getDocTypeBadge = (type) => {
+        const normalizedType = type?.toLowerCase().replace(/ /g, '_');
         const styles = {
             quote: "bg-violet-100 text-violet-700 border-violet-200",
             invoice: "bg-cyan-100 text-cyan-700 border-cyan-200",
             work_order: "bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200",
         };
-        return styles[type] || "bg-gray-100 text-gray-700 border-gray-200";
+        return styles[normalizedType] || "bg-gray-100 text-gray-700 border-gray-200";
     };
 
     return (
@@ -222,10 +281,10 @@ const Work = () => {
                         ) : (
                             <div className="divide-y divide-gray-100">
                                 {workItems.map((doc) => (
-                                    <div key={doc.documentId} className="group transition-all duration-200">
+                                    <div key={doc.documentNumber} className="group transition-all duration-200">
                                         <div
-                                            onClick={() => setExpandedDoc(expandedDoc === doc.documentId ? null : doc.documentId)}
-                                            className={`p-5 cursor-pointer hover:bg-gray-50 transition-colors ${expandedDoc === doc.documentId ? "bg-gray-50" : "bg-white"}`}
+                                            onClick={() => setExpandedDoc(expandedDoc === doc.documentNumber ? null : doc.documentNumber)}
+                                            className={`p-5 cursor-pointer hover:bg-gray-50 transition-colors ${expandedDoc === doc.documentNumber ? "bg-gray-50" : "bg-white"}`}
                                         >
                                             <div className="flex flex-col md:flex-row gap-4 justify-between">
                                                 <div className="flex-1 space-y-2">
@@ -254,32 +313,33 @@ const Work = () => {
                                                         )}
                                                     </div>
 
-                                                    {expandedDoc !== doc.documentId && (
+                                                    {expandedDoc !== doc.documentNumber && (
                                                         <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                            <Tooltip title="Email"><Button type="text" shape="circle" icon={<MailOutlined />} onClick={(e) => openEmailModal(doc.documentId, doc.email || "", e)} /></Tooltip>
-                                                            <Tooltip title="PDF"><Button type="text" shape="circle" icon={<FilePdfOutlined />} onClick={(e) => handleExportPdf(doc.documentId, e)} /></Tooltip>
+                                                            <Tooltip title="Email"><Button type="text" shape="circle" icon={<MailOutlined />} onClick={(e) => openEmailModal(doc.documentNumber, doc.email || "", e)} /></Tooltip>
+                                                            <Tooltip title="PDF"><Button type="text" shape="circle" icon={<FilePdfOutlined />} onClick={(e) => handleExportPdf(doc.documentNumber, e)} /></Tooltip>
                                                         </div>
                                                     )}
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {expandedDoc === doc.documentId && (
+                                        {expandedDoc === doc.documentNumber && (
                                             <div className="bg-gray-50 px-6 pb-6 border-t border-gray-100 animate-fadeIn">
                                                 {/* Action Bar */}
                                                 <div className="py-4 flex flex-wrap gap-2 justify-end border-b border-gray-200 mb-4">
+                                                    <Button icon={<EditOutlined />} onClick={(e) => handleEdit(doc.documentNumber, e)}>Edit</Button>
                                                     {doc.status === "pending" && (
-                                                        <Button icon={<CheckCircleOutlined />} onClick={(e) => handleAccept(doc.documentId, e)}>Accept Quote</Button>
+                                                        <Button icon={<CheckCircleOutlined />} onClick={(e) => handleAccept(doc.documentNumber, e)}>Accept Quote</Button>
                                                     )}
                                                     {(doc.status === "in_progress" || doc.status === "accepted") && (
-                                                        <Button icon={<FileDoneOutlined />} onClick={(e) => handleComplete(doc.documentId, e)}>Mark Complete</Button>
+                                                        <Button icon={<FileDoneOutlined />} onClick={(e) => handleComplete(doc.documentNumber, e)}>Mark Complete</Button>
                                                     )}
                                                     {doc.balanceDue > 0 && (
-                                                        <Button icon={<DollarOutlined />} onClick={(e) => openPaymentModal(doc.documentId, doc.balanceDue, e)}>Record Payment</Button>
+                                                        <Button icon={<DollarOutlined />} onClick={(e) => openPaymentModal(doc.documentNumber, doc.balanceDue, e)}>Record Payment</Button>
                                                     )}
-                                                    <Button icon={<MailOutlined />} onClick={(e) => openEmailModal(doc.documentId, doc.email || "", e)}>Email</Button>
-                                                    <Button icon={<FilePdfOutlined />} onClick={(e) => handleExportPdf(doc.documentId, e)}>Export PDF</Button>
-                                                    <Button danger icon={<DeleteOutlined />} onClick={() => handleDelete(doc.documentId)}>Delete</Button>
+                                                    <Button icon={<MailOutlined />} onClick={(e) => openEmailModal(doc.documentNumber, doc.email || "", e)}>Email</Button>
+                                                    <Button icon={<FilePdfOutlined />} onClick={(e) => handleExportPdf(doc.documentNumber, e)}>Export PDF</Button>
+                                                    <Button danger icon={<DeleteOutlined />} onClick={() => handleDelete(doc.documentNumber)}>Delete</Button>
                                                 </div>
 
                                                 {/* Details Grid */}
@@ -377,7 +437,7 @@ const Work = () => {
 
             <PaymentModal
                 visible={paymentModalState.open}
-                documentId={paymentModalState.docId}
+                documentNumber={paymentModalState.docId}
                 balanceDue={paymentModalState.balance}
                 onClose={() => setPaymentModalState({ ...paymentModalState, open: false })}
                 onSuccess={fetchWork}
@@ -385,10 +445,17 @@ const Work = () => {
 
             <EmailDocumentModal
                 visible={emailModalState.open}
-                documentId={emailModalState.docId}
+                documentNumber={emailModalState.docId}
                 defaultEmail={emailModalState.email}
                 onClose={() => setEmailModalState({ ...emailModalState, open: false })}
                 onSuccess={fetchWork} // Optional: maybe show persistent success message
+            />
+
+            <EditDocumentModal
+                visible={editModalState.open}
+                document={editModalState.document}
+                onClose={() => setEditModalState({ open: false, document: null })}
+                onSuccess={fetchWork}
             />
         </div>
     );

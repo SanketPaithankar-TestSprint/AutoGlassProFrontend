@@ -14,9 +14,21 @@ export async function getProfile(token) {
         if (!response.ok) {
             throw new Error(`Error: ${response.status}`);
         }
-        return await response.json();
+
+        const profileData = await response.json();
+
+        // Store userId and laborRate in sessionStorage for global access
+        if (profileData.userId) {
+            sessionStorage.setItem('userId', profileData.userId);
+        }
+        if (profileData.laborRate) {
+            sessionStorage.setItem('GlobalLaborRate', profileData.laborRate);
+        }
+
+        return profileData;
     } catch (error) {
         console.error("Failed to fetch profile:", error);
         throw error;
     }
 }
+

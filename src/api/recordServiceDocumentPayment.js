@@ -3,14 +3,14 @@ import { getValidToken } from "./getValidToken";
 
 /**
  * Records a payment for a service document.
- * @param {string|number} documentId - The ID of the document.
- * @param {number} amount - The amount to record.
+ * @param {string} documentNumber - The document number (e.g., "INV-2025-12-00042").
+ * @param {number} amountPaid - The amount paid.
  * @returns {Promise<Object>} - The updated service document.
  */
-export const recordServiceDocumentPayment = async (documentId, amount) => {
+export const recordServiceDocumentPayment = async (documentNumber, amountPaid) => {
     try {
         const token = await getValidToken();
-        const response = await fetch(`${urls.javaApiUrl}/v1/service-documents/${documentId}/payment?amount=${amount}`, {
+        const response = await fetch(`${urls.javaApiUrl}/v1/service-documents/${documentNumber}/payment?amountPaid=${amountPaid}`, {
             method: 'POST',
             headers: {
                 'accept': '*/*',

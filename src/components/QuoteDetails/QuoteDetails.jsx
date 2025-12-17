@@ -106,17 +106,22 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
 
                 // 2. The Labor Item (if applicable)
                 if (Number(info?.labor) > 0) {
+                    // Get globalLaborRate from sessionStorage
+                    const globalLaborRate = parseFloat(sessionStorage.getItem('GlobalLaborRate')) || 100;
+                    const laborHours = Number(info?.labor) || 0;
+
                     items.push({
                         type: "Labor",
                         id: `${uniqueId}_LABOR`,
                         nagsId: "",
                         oemId: "",
-                        labor: Number(info?.labor) || "",
+                        labor: laborHours,
                         description: "Installation Labor",
                         manufacturer: "",
                         qty: 1,
-                        unitPrice: 0,
-                        amount: 0
+                        unitPrice: globalLaborRate,  // Fixed: Set to globalLaborRate instead of 0
+                        amount: globalLaborRate,  // Calculate initial amount
+                        pricingType: "hourly"  // Default to hourly pricing
                     });
                 }
 
@@ -135,7 +140,7 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
         }
     }, [parts]);
     return (
-        <div className="text-slate-900">
+        <div className="text-slate-900 min-h-screen">
             <div className="flex justify-center gap-4 mb-6">
                 <button
                     className={`px-4 py-2 rounded-md font-semibold border transition-all duration-150 ${panel === 'customer' ? 'border-violet-500 text-violet-700 bg-white shadow-sm' : 'border-transparent text-slate-500 bg-slate-50 hover:bg-slate-100'}`}
@@ -159,11 +164,13 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
                 />
             )}
             {panel === 'quote' && canShowQuotePanel && (
-                <QuotePanel
-                    parts={invoiceItems}
-                    onRemovePart={onRemovePart}
-                    customerData={customerData}
-                />
+                <div className="min-h-[600px]">
+                    <QuotePanel
+                        parts={invoiceItems}
+                        onRemovePart={onRemovePart}
+                        customerData={customerData}
+                    />
+                </div>
             )}
         </div>
     );

@@ -2,14 +2,14 @@ import urls from "../config";
 import { getValidToken } from "./getValidToken";
 
 /**
- * Retrieves a specific service document by ID.
- * @param {string|number} documentId - The ID of the document to retrieve.
- * @returns {Promise<Object>} - The service document details.
+ * Fetches a single service document by its document number.
+ * @param {string} documentNumber - The document number (e.g., "QT-2025-12-00003").
+ * @returns {Promise<Object>} - The service document.
  */
-export const getServiceDocumentById = async (documentId) => {
+export const getServiceDocumentById = async (documentNumber) => {
     try {
         const token = await getValidToken();
-        const response = await fetch(`${urls.javaApiUrl}/v1/service-documents/${documentId}`, {
+        const response = await fetch(`${urls.javaApiUrl}/v1/service-documents/${documentNumber}`, {
             method: 'GET',
             headers: {
                 'accept': '*/*',

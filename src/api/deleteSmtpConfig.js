@@ -2,14 +2,14 @@ import urls from "../config";
 import { getValidToken } from "./getValidToken";
 
 /**
- * Deletes (cancels) a service document.
- * @param {string} documentNumber - The document number (e.g., "QT-2025-12-00003").
+ * Deletes an SMTP configuration.
+ * @param {number} configId - The SMTP configuration ID.
  * @returns {Promise<Object>} - The deletion response.
  */
-export const deleteServiceDocument = async (documentNumber) => {
+export const deleteSmtpConfig = async (configId) => {
     try {
         const token = await getValidToken();
-        const response = await fetch(`${urls.javaApiUrl}/v1/service-documents/${documentNumber}`, {
+        const response = await fetch(`${urls.javaApiUrl}/v1/smtp-config/${configId}`, {
             method: 'DELETE',
             headers: {
                 'accept': '*/*',
@@ -18,10 +18,12 @@ export const deleteServiceDocument = async (documentNumber) => {
         });
 
         if (!response.ok) {
-            throw new Error(`Failed to delete service document: ${response.status}`);
+            throw new Error(`Failed to delete SMTP config: ${response.status}`);
         }
+
+        return await response.json();
     } catch (error) {
-        console.error("Error deleting service document:", error);
+        console.error("Error deleting SMTP config:", error);
         throw error;
     }
 };

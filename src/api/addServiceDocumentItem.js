@@ -3,14 +3,14 @@ import { getValidToken } from "./getValidToken";
 
 /**
  * Adds an item to a service document.
- * @param {string|number} documentId - The ID of the document.
- * @param {Object} itemData - The item data to add.
+ * @param {string} documentNumber - The document number (e.g., "QT-2025-12-00003").
+ * @param {Object} itemData - The item data (must include laborRate field).
  * @returns {Promise<Object>} - The added item.
  */
-export const addServiceDocumentItem = async (documentId, itemData) => {
+export const addServiceDocumentItem = async (documentNumber, itemData) => {
     try {
         const token = await getValidToken();
-        const response = await fetch(`${urls.javaApiUrl}/v1/service-documents/${documentId}/items`, {
+        const response = await fetch(`${urls.javaApiUrl}/v1/service-documents/${documentNumber}/items`, {
             method: 'POST',
             headers: {
                 'accept': '*/*',
