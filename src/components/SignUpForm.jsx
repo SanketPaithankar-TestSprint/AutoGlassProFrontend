@@ -20,11 +20,20 @@ import {
     EyeTwoTone
 } from '@ant-design/icons';
 import axios from 'axios';
+import {
+    COUNTRIES,
+    getStatesForCountry,
+    getCitiesForState,
+    getStateLabel,
+    getPostalCodeInfo
+} from '../const/locationData';
 
 const SignUpForm = ({ onSuccess, onCancel }) => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [selectedCountry, setSelectedCountry] = useState(null);
+    const [selectedState, setSelectedState] = useState(null);
 
     const onFinish = async (values) => {
         setLoading(true);
@@ -106,6 +115,24 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
             return Promise.reject(new Error('The two passwords do not match!'));
         },
     });
+
+    const handleCountryChange = (value) => {
+        setSelectedCountry(value);
+        setSelectedState(null);
+        // Reset state and city fields when country changes
+        form.setFieldsValue({
+            state: undefined,
+            city: undefined
+        });
+    };
+
+    const handleStateChange = (value) => {
+        setSelectedState(value);
+        // Reset city field when state changes
+        form.setFieldsValue({
+            city: undefined
+        });
+    };
 
     return (
         <div style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: '10px' }}>
@@ -213,20 +240,37 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                 <Row gutter={16}>
                     <Col xs={24} sm={12}>
                         <Form.Item
-                            name="city"
-                            label="City"
-                            rules={[{ required: true, message: 'Please input city!' }]}
+                            name="state"
+                            label={selectedCountry ? getStateLabel(selectedCountry) : 'State/Province'}
+                            rules={[{ required: true, message: `Please select ${selectedCountry ? getStateLabel(selectedCountry).toLowerCase() : 'state/province'}!` }]}
                         >
-                            <Input placeholder="New York" />
+                            <Select
+                                placeholder={`Select ${selectedCountry ? getStateLabel(selectedCountry).toLowerCase() : 'state/province'}`}
+                                onChange={handleStateChange}
+                                disabled={!selectedCountry}
+                                showSearch
+                                filterOption={(input, option) =>
+                                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                }
+                                options={selectedCountry ? getStatesForCountry(selectedCountry) : []}
+                            />
                         </Form.Item>
                     </Col>
                     <Col xs={24} sm={12}>
                         <Form.Item
-                            name="state"
-                            label="State"
-                            rules={[{ required: true, message: 'Please input state!' }]}
+                            name="city"
+                            label="City"
+                            rules={[{ required: true, message: 'Please select city!' }]}
                         >
-                            <Input placeholder="NY" />
+                            <Select
+                                placeholder="Select city"
+                                disabled={!selectedState}
+                                showSearch
+                                filterOption={(input, option) =>
+                                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                }
+                                options={selectedCountry && selectedState ? getCitiesForState(selectedCountry, selectedState) : []}
+                            />
                         </Form.Item>
                     </Col>
                 </Row>
@@ -235,19 +279,27 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                     <Col xs={24} sm={12}>
                         <Form.Item
                             name="postalCode"
-                            label="Postal Code"
-                            rules={[{ required: true, message: 'Please input postal code!' }]}
+                            label={selectedCountry ? getPostalCodeInfo(selectedCountry).label : 'Postal/ZIP Code'}
+                            rules={[{ required: true, message: `Please input ${selectedCountry ? getPostalCodeInfo(selectedCountry).label.toLowerCase() : 'postal/zip code'}!` }]}
                         >
-                            <Input placeholder="10001" />
+                            <Input placeholder={selectedCountry ? getPostalCodeInfo(selectedCountry).placeholder : '10001 or A1A 1A1'} />
                         </Form.Item>
                     </Col>
                     <Col xs={24} sm={12}>
                         <Form.Item
                             name="country"
                             label="Country"
-                            rules={[{ required: true, message: 'Please input country!' }]}
+                            rules={[{ required: true, message: 'Please select country!' }]}
                         >
-                            <Input placeholder="USA" />
+                            <Select
+                                placeholder="Select country"
+                                onChange={handleCountryChange}
+                                showSearch
+                                filterOption={(input, option) =>
+                                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                }
+                                options={COUNTRIES}
+                            />
                         </Form.Item>
                     </Col>
                 </Row>

@@ -27,6 +27,11 @@ export default function Login({ onLoginSuccess }) {
                     sessionStorage.setItem("ApiToken", tokenStr);
                 }
 
+                // Save laborRate separately for easy access in quote creation
+                if (res.data?.laborRate !== undefined && res.data?.laborRate !== null) {
+                    localStorage.setItem("userLaborRate", res.data.laborRate.toString());
+                }
+
                 notification.success({
                     message: `Welcome, ${res.data.username}!`,
                     description: "Signed in successfully.",

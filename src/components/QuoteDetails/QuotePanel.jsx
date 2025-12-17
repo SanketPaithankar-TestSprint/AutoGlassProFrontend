@@ -5,6 +5,7 @@ import { Modal, Input, Button, message, Dropdown } from "antd";
 import { DownOutlined } from "@ant-design/icons";
 import { createServiceDocument } from "../../api/createServiceDocument";
 import { sendEmail } from "../../api/sendEmail";
+import { getUserLaborRate } from "../../services/laborRateService";
 
 function currency(n) {
     const num = Number.isFinite(n) ? n : 0;
@@ -104,6 +105,48 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, setItems })
         }
     });
 
+<<<<<<< Updated upstream
+=======
+    // Get global labor rate from localStorage
+    const globalLaborRate = getUserLaborRate() || 0;
+    console.log('Global Labor Rate in QuotePanel:', globalLaborRate);
+
+    useEffect(() => {
+        setItems((prevItems) => {
+            // Create a map of existing items that CAME from parts (based on IDs)
+            // Manual items (random IDs) won't be in the parts list, so we keep them if they exist
+            // Actually, a simpler strategy:
+            // 1. Keep manual items (those strictly NOT matching any incoming part ID or generated labor ID)
+            // 2. Overwrite/Add incoming parts
+            // But wait, parts changed means the user selected/deselected something.
+            // When parts prop changes, it sends the "correct" list of managed items.
+            // We should just "merge" manual items back in.
+
+            // Identify managed IDs from the NEW parts list
+            const newPartIds = new Set(parts.map(p => p.id));
+
+            // Keep existing manual items (items NOT in the new managed list, but also check if they were managed before?)
+            // A better way: The parent (QuoteDetails) controls the "managed" items. 
+            // Any item in `prevItems` that is NOT found in `parts` (and wasn't a previously managed item) is manual.
+            // However, we don't track which were managed easily unless we use a flag. 
+            // Let's assume manual items have random IDs not containing pipes `|`. 
+            // Or better: QuoteDetails generates specific ID formats.
+
+            // Simple approach: 
+            // Take all new parts.
+            // Take all existing items that are NOT found in the previous parts set... 
+            // Actually simplest: User adds "Custom Item". It has a random ID.
+            // QuoteDetails sends "Invoice Items". 
+            // We want `items = [...parts, ...manualItems]`.
+
+            const currentManualItems = prevItems.filter(it => it.isManual);
+
+            // Merge: New Parts + Existing Manual Items
+            return [...parts, ...currentManualItems];
+        });
+    }, [parts]);
+
+>>>>>>> Stashed changes
     const [printableNote, setPrintableNote] = useState("");
     const [internalNote, setInternalNote] = useState("");
 
@@ -132,18 +175,39 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, setItems })
             if (key === 'qty' || key === 'unitPrice') {
                 updated.amount = (Number(updated.qty) || 0) * (Number(updated.unitPrice) || 0);
             }
+
             return updated;
         }));
     };
 
     const handleAddRow = (type = "Part") => {
-        setItems(prev => [...prev, {
+        debugger; // BREAKPOINT 1: Start of function
+        console.log('=== ADD ROW DEBUG ===');
+        console.log('Type:', type);
+        console.log('Global Labor Rate:', globalLaborRate);
+
+        const newRow = {
             ...newItem(),
             id: Math.random().toString(36).substring(2, 9),
             isManual: true, // Flag to identify manual items
-            description: type === "Part" ? "Custom Part" : type === "Labor" ? "Custom Labor" : "Service",
+            description: type === "Part" ? "Custom Part" : type === "Labor" ? "Installation Labor" : "Service",
             type: type
-        }]);
+        };
+
+        console.log('New Row Before Labor Check:', newRow);
+
+        // If adding a Labor item and global labor rate is set, pre-populate amount as lump sum
+        if (type === "Labor" && globalLaborRate > 0) {
+            debugger; // BREAKPOINT 2: Inside labor condition
+            console.log('Setting labor rate as lump sum:', globalLaborRate);
+            newRow.amount = globalLaborRate;  // Set as lump sum, not multiplied
+            newRow.unitPrice = globalLaborRate;
+        }
+
+        console.log('New Row After Labor Check:', newRow);
+        console.log('=== END ADD ROW DEBUG ===');
+
+        setItems(prev => [...prev, newRow]);
     };
 
     const subtotal = useMemo(() => items.reduce((sum, it) => sum + (Number(it.amount) || 0), 0), [items]);
@@ -580,8 +644,11 @@ Auto Glass Pro Team`;
                 taxRate: Number(globalTaxRate) || 0,
                 discountAmount: discountAmount,
                 items: items
+<<<<<<< Updated upstream
                     // Filter out Labor items as per user request to avoid backend errors
                     .filter(it => it.type !== 'Labor')
+=======
+>>>>>>> Stashed changes
                     .map((it) => ({
                         prefixCd: it.prefixCd || "",
                         posCd: it.posCd || "",
@@ -589,7 +656,12 @@ Auto Glass Pro Team`;
                         nagsGlassId: it.nagsId || "MISC",
                         partDescription: it.description || "",
                         partPrice: Number(it.unitPrice) || 0,
+<<<<<<< Updated upstream
                         laborAmount: 0, // Set to 0 since we filtered out labor rows
+=======
+                        laborHours: Number(it.labor) || 0,  // API requires laborHours
+                        laborRate: globalLaborRate || 0,    // API requires laborRate
+>>>>>>> Stashed changes
                         quantity: Number(it.qty) || 1
                     }))
             };

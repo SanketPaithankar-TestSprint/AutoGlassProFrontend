@@ -6,7 +6,10 @@ import { createCustomer } from "../../api/createCustomer";
 import { updateCustomer } from "../../api/updateCustomer";
 import { createEmployee } from "../../api/createEmployee";
 import { getValidToken } from "../../api/getValidToken";
-import { UserOutlined, TeamOutlined, IdcardOutlined, ShopOutlined, PhoneOutlined, MailOutlined, EnvironmentOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
+import { setLaborRate } from "../../api/setLaborRate";
+import { setUserLaborRate } from "../../services/laborRateService";
+import { saveEmployees as saveEmployeesToCache } from "../../services/employeeService";
+import { UserOutlined, TeamOutlined, IdcardOutlined, ShopOutlined, PhoneOutlined, MailOutlined, EnvironmentOutlined, EditOutlined, PlusOutlined, DollarOutlined } from "@ant-design/icons";
 import { Modal, Form, Input, Select, Button, notification, message } from "antd";
 
 const Profile = () => {
@@ -24,6 +27,12 @@ const Profile = () => {
     const [isCustomerModalVisible, setIsCustomerModalVisible] = useState(false);
     const [isEmployeeModalVisible, setIsEmployeeModalVisible] = useState(false);
     const [editingCustomer, setEditingCustomer] = useState(null);
+
+    // Labor rate state
+    const [laborRate, setLaborRateState] = useState(null);
+    const [isEditingLaborRate, setIsEditingLaborRate] = useState(false);
+    const [savingLaborRate, setSavingLaborRate] = useState(false);
+    const [tempLaborRate, setTempLaborRate] = useState("");
 
     const [form] = Form.useForm();
     const [employeeForm] = Form.useForm();
@@ -48,6 +57,9 @@ const Profile = () => {
             if (!token) throw new Error("No token found. Please login.");
             const res = await getProfile(token);
             setProfile(res);
+            // Parse laborRate as it may come as string from API
+            const rate = res.laborRate ? parseFloat(res.laborRate) : null;
+            setLaborRateState(rate);
             localStorage.setItem("agp_profile_data", JSON.stringify(res));
         } catch (err) {
             setError(err.message || "Failed to fetch profile.");
@@ -77,7 +89,11 @@ const Profile = () => {
         try {
             if (!token) throw new Error("No token found. Please login.");
             const res = await getEmployees(token);
-            setEmployees(Array.isArray(res) ? res : []);
+            const employeeList = Array.isArray(res) ? res : [];
+            setEmployees(employeeList);
+
+            // Save to localStorage for app-wide access
+            saveEmployeesToCache(employeeList);
         } catch (err) {
             console.error(err);
             // setError(err.message || "Failed to fetch employees.");
@@ -165,6 +181,44 @@ const Profile = () => {
         }
     };
 
+    // Labor Rate Handlers
+    const handleEditLaborRate = () => {
+        setTempLaborRate(laborRate !== null ? laborRate.toString() : "");
+        setIsEditingLaborRate(true);
+    };
+
+    const handleSaveLaborRate = async () => {
+        try {
+            const rate = parseFloat(tempLaborRate);
+            if (isNaN(rate) || rate < 0) {
+                notification.error({ message: "Invalid labor rate", description: "Please enter a valid positive number" });
+                return;
+            }
+
+            setSavingLaborRate(true);
+            if (!token) throw new Error("No token found");
+
+            await setLaborRate(token, rate);
+            setLaborRateState(rate);
+            setIsEditingLaborRate(false);
+
+            // Save to localStorage for use in quote creation
+            setUserLaborRate(rate);
+
+            notification.success({ message: "Labor rate updated successfully" });
+        } catch (err) {
+            console.error(err);
+            notification.error({ message: "Failed to update labor rate", description: err.message });
+        } finally {
+            setSavingLaborRate(false);
+        }
+    };
+
+    const handleCancelLaborRate = () => {
+        setTempLaborRate("");
+        setIsEditingLaborRate(false);
+    };
+
     // Format address helper
     const formatAddress = (p) => {
         if (!p) return "-";
@@ -227,6 +281,54 @@ const Profile = () => {
                         <div className="space-y-1">
                             <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">EIN</span>
                             <p className="text-gray-900 font-mono">{profile.ein || "-"}</p>
+                        </div>
+                        <div className="space-y-1">
+                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Labor Rate</span>
+                            {!isEditingLaborRate ? (
+                                <div className="flex items-center gap-2">
+                                    <p className="text-gray-900 font-semibold text-lg flex items-center gap-1">
+                                        <DollarOutlined className="text-violet-500" />
+                                        {laborRate !== null ? `${Number(laborRate).toFixed(2)}/hr` : "Not Set"}
+                                    </p>
+                                    <Button
+                                        type="text"
+                                        size="small"
+                                        icon={<EditOutlined />}
+                                        onClick={handleEditLaborRate}
+                                        className="text-violet-600 hover:text-violet-700"
+                                    />
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-2">
+                                    <Input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={tempLaborRate}
+                                        onChange={(e) => setTempLaborRate(e.target.value)}
+                                        placeholder="Enter rate"
+                                        prefix={<DollarOutlined />}
+                                        suffix="/hr"
+                                        className="max-w-[180px]"
+                                    />
+                                    <Button
+                                        type="primary"
+                                        size="small"
+                                        onClick={handleSaveLaborRate}
+                                        loading={savingLaborRate}
+                                        className="bg-violet-600 hover:bg-violet-700"
+                                    >
+                                        Save
+                                    </Button>
+                                    <Button
+                                        size="small"
+                                        onClick={handleCancelLaborRate}
+                                        disabled={savingLaborRate}
+                                    >
+                                        Cancel
+                                    </Button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

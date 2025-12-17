@@ -6,6 +6,8 @@ import SignUpForm from "./SignUpForm";
 import Login from "./login";
 import { getValidToken } from "../api/getValidToken";
 import { Link, useNavigate } from "react-router-dom";
+import { clearEmployeesCache } from "../services/employeeService";
+import { clearUserLaborRate } from "../services/laborRateService";
 
 const { Header: AntHeader } = Layout;
 
@@ -19,6 +21,10 @@ const ProfileDropdown = ({ onLogout }) => {
     {
       key: "work",
       label: <Link to="/work">Work</Link>,
+    },
+    {
+      key: "tasks",
+      label: <Link to="/tasks">Tasks</Link>,
     },
     {
       key: "logout",
@@ -194,6 +200,9 @@ const Header = () => {
               onLogout={() => {
                 localStorage.removeItem("ApiToken");
                 sessionStorage.removeItem("ApiToken");
+                localStorage.removeItem("agp_profile_data");
+                clearEmployeesCache();
+                clearUserLaborRate();
                 window.location.href = "/";
               }}
             />
