@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Tag } from "antd";
 
 const Row = ({ label, value }) => (
@@ -8,10 +8,12 @@ const Row = ({ label, value }) => (
     </div>
 );
 
-export default function OrderPage({ data })
-{
-    if (!data)
-    {
+export default function OrderPage({ data }) {
+    useEffect(() => {
+        document.title = "APAI | Orders";
+    }, []);
+
+    if (!data) {
         return <div className="text-gray-500">Enter a VIN to view vehicle details.</div>;
     }
 

@@ -141,7 +141,7 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
     }, [parts]);
     return (
         <div className="text-slate-900 min-h-screen">
-            <div className="flex justify-center gap-4 mb-6">
+            <div className="flex justify-start gap-4 mb-2">
                 <button
                     className={`px-4 py-2 rounded-md font-semibold border transition-all duration-150 ${panel === 'customer' ? 'border-violet-500 text-violet-700 bg-white shadow-sm' : 'border-transparent text-slate-500 bg-slate-50 hover:bg-slate-100'}`}
                     onClick={() => handlePanelSwitch('customer')}

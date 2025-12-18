@@ -1,5 +1,5 @@
 // src/pages/PricingPage.jsx
-import React from "react"
+import React, { useEffect } from "react"
 import { Layout, Row, Col, Card, Button, Tag } from "antd"
 import {
   CheckOutlined,
@@ -10,8 +10,7 @@ import {
 
 const { Content } = Layout
 
-const PricingPage = () =>
-{
+const PricingPage = () => {
   const plans = [
     {
       key: "starter",
@@ -188,10 +187,9 @@ const PricingPage = () =>
                       className={`
                         !mt-1 !h-10 !text-sm !font-semibold
                         !rounded-full
-                        ${
-                          isPro
-                            ? "!bg-gradient-to-r !from-violet-500 !to-fuchsia-500 hover:!from-violet-400 hover:!to-fuchsia-400 !border-0 !text-white shadow-lg shadow-violet-800/60"
-                            : "!bg-slate-900/80 hover:!bg-slate-800/90 !border-slate-600 !text-slate-100"
+                        ${isPro
+                          ? "!bg-gradient-to-r !from-violet-500 !to-fuchsia-500 hover:!from-violet-400 hover:!to-fuchsia-400 !border-0 !text-white shadow-lg shadow-violet-800/60"
+                          : "!bg-slate-900/80 hover:!bg-slate-800/90 !border-slate-600 !text-slate-100"
                         }
                         transition-transform duration-150 hover:scale-[1.02]
                       `}

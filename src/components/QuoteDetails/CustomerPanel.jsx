@@ -254,20 +254,20 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Section 1: Personal Details */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <FormInput label="First Name" name="firstName" value={formData.firstName} onChange={handleChange} required />
                     <FormInput label="Last Name" name="lastName" value={formData.lastName} onChange={handleChange} required />
                     <FormInput label="Email" name="email" value={formData.email} onChange={handleChange} required type="email" />
                     <FormInput label="Phone" name="phone" value={formData.phone} onChange={handleChange} required type="tel" />
-                    <FormInput label="Alt Phone" name="alternatePhone" value={formData.alternatePhone} onChange={handleChange} />
 
+                    <FormInput label="Alt Phone" name="alternatePhone" value={formData.alternatePhone} onChange={handleChange} />
                     <div className="flex flex-col gap-1">
                         <label className="text-xs font-semibold text-gray-500 uppercase">Contact Method</label>
                         <select
                             name="preferredContactMethod"
                             value={formData.preferredContactMethod}
                             onChange={handleChange}
-                            className="border border-gray-300 rounded-lg px-3 py-2 bg-white"
+                            className="border border-gray-300 rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-violet-500 outline-none transition-all"
                         >
                             <option value="phone">Phone</option>
                             <option value="email">Email</option>
@@ -279,11 +279,13 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                 <hr className="border-gray-100" />
 
                 {/* Section 2: Address */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div className="md:col-span-2">
                         <FormInput label="Address Line 1" name="addressLine1" value={formData.addressLine1} onChange={handleChange} required />
                     </div>
-                    <FormInput label="Address Line 2" name="addressLine2" value={formData.addressLine2} onChange={handleChange} />
+                    <div className="md:col-span-2">
+                        <FormInput label="Address Line 2" name="addressLine2" value={formData.addressLine2} onChange={handleChange} />
+                    </div>
                     <FormInput label="City" name="city" value={formData.city} onChange={handleChange} required />
                     <FormInput label="State" name="state" value={formData.state} onChange={handleChange} required />
                     <FormInput label="Zip Code" name="postalCode" value={formData.postalCode} onChange={handleChange} required />
@@ -294,14 +296,15 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
                 {/* Section 3: Vehicle Details */}
                 <h4 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Vehicle Information</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <FormInput label="Year" name="vehicleYear" value={formData.vehicleYear} onChange={handleChange} required type="number" />
                     <FormInput label="Make" name="vehicleMake" value={formData.vehicleMake} onChange={handleChange} required />
                     <FormInput label="Model" name="vehicleModel" value={formData.vehicleModel} onChange={handleChange} required />
                     <FormInput label="Style/Body" name="vehicleStyle" value={formData.vehicleStyle} onChange={handleChange} />
+
                     <FormInput label="License Plate" name="licensePlateNumber" value={formData.licensePlateNumber} onChange={handleChange} />
                     <FormInput label="VIN" name="vin" value={formData.vin} onChange={handleChange} />
-                    <div className="md:col-span-3">
+                    <div className="md:col-span-2">
                         <FormInput label="Vehicle Notes" name="vehicleNotes" value={formData.vehicleNotes} onChange={handleChange} />
                     </div>
                 </div>

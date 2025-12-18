@@ -21,10 +21,11 @@ export default function CarGlassViewer({
   const [glassData, setGlassData] = useState([]);
   const [glassGroups, setGlassGroups] = useState({});
   const [error, setError] = useState(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Active viewing state (master-detail pattern)
-  const [activeGlassTypeCode, setActiveGlassTypeCode] = useState(null);
-  const [activeGlassParts, setActiveGlassParts] = useState({ loading: false, error: null, data: [] });
+  const [selectedGlassCodes, setSelectedGlassCodes] = useState([]); // Array of strings (codes)
+  const [loadedPartsMap, setLoadedPartsMap] = useState({}); // { [code]: { loading, error, data } }
 
   // 3) Selected parts + extra info (bottom)
   const [selectedParts, setSelectedParts] = useState([]); // Array of { glass, part, glassInfo }
@@ -62,6 +63,46 @@ export default function CarGlassViewer({
     return parts.join(" ");
   };
 
+  // Helper to format glass name to match Mega Menu logic
+  const getFormattedLabel = (code) => {
+    const item = glassData.find(g => g.code === code);
+    if (!item) return code;
+
+    // 1. Determine Group
+    let groupName = "Other";
+    for (const [name, items] of Object.entries(glassGroups)) {
+      if (items.some(i => i.code === code)) {
+        groupName = name;
+        break;
+      }
+    }
+
+    // 2. Base Label
+    let label = item.description || item.code;
+    const codeObj = GLASS_CODE_NAMES.find(obj => obj.code === item.code);
+    if (codeObj) label = codeObj.name;
+    else if (label.includes("DQ")) label = label.replace("DQ", "Quarter");
+    else if (label.includes("DD")) label = label.replace("DD", "Door");
+    else if (label.includes("DV")) label = label.replace("DV", "Vent");
+
+    // 3. Remove underscores
+    label = label.replace(/_/g, " ");
+
+    // 4. Group-specific rules
+    // Side Glass(1), Vent Glass(2), Quarter Glass(3) in menu mapping
+    // "Primary Glass" is 0, "Roof Glass" is 4
+    if (groupName === "Vent Glass") {
+      label = label.replace(/Door/gi, "").trim();
+    }
+
+    if (["Side Glass", "Vent Glass", "Quarter Glass"].includes(groupName)) {
+      label = label.replace(/Glass/gi, "").trim();
+    }
+
+    // Clean up double spaces
+    return label.replace(/\s+/g, " ").trim();
+  };
+
   // ---------- 1) load glass types for this model ----------
   useEffect(() => {
     if (!modelId) return;
@@ -81,57 +122,54 @@ export default function CarGlassViewer({
         setGlassData(rawTypes);
 
         // Custom Grouping Logic
-        // Primary: DW (Windshield), DB (Back Glass)
-        // Side: DD (Door), DV (Vent), DQ (Quarter)
-        // Roof: DR (Roof)
+        // Primary: Automatic Windshield, Back Glass, etc (DW, DB)
+        // Side Glass: Door Glass (DD)
+        // Vent Glass: Vent (DV)
+        // Quarter Glass: Quarter (DQ)
+        // Roof Glass: Roof (DR, Sunroof)
+
         const newGroups = {
           "Primary Glass": [],
           "Side Glass": [],
+          "Vent Glass": [],
+          "Quarter Glass": [],
           "Roof Glass": []
         };
-        const others = [];
 
         rawTypes.forEach(t => {
-          const code = t.code; // e.g. "DW"
+          const code = (t.code || "").toUpperCase();
           const desc = (t.description || "").toLowerCase();
+          const type = (t.type || "").toUpperCase();
 
-          if (
-            ["DW", "DB"].includes(code) ||
-            (t.type && ["DW", "DB"].includes(t.type)) ||
-            desc.includes("windshield") ||
-            desc.includes("back glass")
-          ) {
+          // 1. Primary
+          if (["DW", "DB"].includes(code) || ["DW", "DB"].includes(type) || desc.includes("windshield") || desc.includes("back glass")) {
             newGroups["Primary Glass"].push(t);
-          } else if (
-            ["DR"].includes(code) ||
-            code.startsWith("DR") ||
-            (t.type === "DR") ||
-            desc.includes("roof") ||
-            desc.includes("sunroof") ||
-            desc.includes("moonroof") ||
-            desc.includes("panoramic") ||
-            desc.includes("glass panel") ||
-            desc.includes("center glass")
-          ) {
+          }
+          // 2. Door (Side)
+          else if (code.startsWith("DD") || type === "DD" || desc.includes("door glass") || desc.includes("front door") || desc.includes("rear door")) {
+            newGroups["Side Glass"].push(t);
+          }
+          // 3. Vent
+          else if (code.startsWith("DV") || type === "DV" || desc.includes("vent")) {
+            newGroups["Vent Glass"].push(t);
+          }
+          // 4. Quarter
+          else if (code.startsWith("DQ") || type === "DQ" || desc.includes("quarter")) {
+            newGroups["Quarter Glass"].push(t);
+          }
+          // 5. Roof
+          else if (code.startsWith("DR") || type === "DR" || desc.includes("roof") || desc.includes("sunroof") || desc.includes("moonroof")) {
             newGroups["Roof Glass"].push(t);
-          } else {
-            // "Side Glass" is the catch-all for DD, DV, DQ and everything else (Door, Vent, Quarter, etc.)
+          }
+          // Fallbacks
+          else {
+            // If completely unknown, maybe check common words or default to Side?
+            // Let's default to Side Glass as a safe "Other" for generic side windows
             newGroups["Side Glass"].push(t);
           }
         });
 
-        // "Other" bucket logic completely removed to enforce the 3 user categories.
-        // Fallback catch-all is now "Side Glass".
-
-        // Filter out empty groups
-        const finalGroups = {};
-        Object.keys(newGroups).forEach(key => {
-          if (newGroups[key].length > 0) {
-            finalGroups[key] = newGroups[key];
-          }
-        });
-
-        setGlassGroups(finalGroups);
+        setGlassGroups(newGroups);
 
       } catch (err) {
         console.error(err);
@@ -145,11 +183,31 @@ export default function CarGlassViewer({
   }, [modelId]);
 
   // ---------- 2) when a glass is selected, load its parts ----------
-  const handleSelectGlassType = async (glass) => {
+  const toggleGlassSelection = async (glass) => {
     if (!glass) return;
+    const code = glass.code;
 
-    setActiveGlassTypeCode(glass.code);
-    setActiveGlassParts({ loading: true, error: null, data: [] });
+    // Check if currently selected
+    const isSelected = selectedGlassCodes.includes(code);
+
+    if (isSelected) {
+      // Deselect: Remove from selected list
+      setSelectedGlassCodes(prev => prev.filter(c => c !== code));
+    } else {
+      // Select: Add to list
+      setSelectedGlassCodes(prev => [...prev, code]);
+
+      // If data not loaded yet, fetch it
+      if (!loadedPartsMap[code] || loadedPartsMap[code].error) {
+        fetchGlassParts(glass);
+      }
+    }
+  };
+
+  const fetchGlassParts = async (glass) => {
+    const code = glass.code;
+    // Set loading state for this glass
+    setLoadedPartsMap(prev => ({ ...prev, [code]: { loading: true, error: null, data: [] } }));
 
     try {
       const prefix_cd = getPrefixCd(glass);
@@ -171,11 +229,11 @@ export default function CarGlassViewer({
           ? data
           : [];
 
-      setActiveGlassParts({ loading: false, error: null, data: glassParts });
+      setLoadedPartsMap(prev => ({ ...prev, [code]: { loading: false, error: null, data: glassParts } }));
 
     } catch (e) {
       console.error(e);
-      setActiveGlassParts({ loading: false, error: e.message || "Failed to fetch parts", data: [] });
+      setLoadedPartsMap(prev => ({ ...prev, [code]: { loading: false, error: e.message || "Failed to fetch parts", data: [] } }));
     }
   };
 
@@ -245,90 +303,116 @@ export default function CarGlassViewer({
 
 
   const renderPartsColumn = () => {
-    if (!activeGlassTypeCode) {
+    if (selectedGlassCodes.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center h-full text-slate-400 italic p-4 text-center">
           <p className="text-sm">
-            Select a glass type from the left to view available parts.
+            Select one or more glass types from the left to view available parts.
           </p>
         </div>
       );
     }
 
-    const { loading, error, data } = activeGlassParts;
-    // Find glass object for passing to handlers
-    const activeGlassObj = glassData.find(g => g.code === activeGlassTypeCode);
-
-    if (loading) {
-      return <div className="p-4 text-slate-500 text-sm text-center">Loading parts...</div>;
-    }
-    if (error) {
-      return <div className="p-4 text-red-500 text-sm text-center">{error}</div>;
-    }
-    if (!data || data.length === 0) {
-      return <div className="p-4 text-slate-400 text-sm text-center">No parts available for this glass type.</div>;
-    }
-
     return (
-      <div className="flex flex-col p-2 space-y-2">
-        {data.map((part, index) => {
-          const partId = part.nags_glass_id || part.oem_glass_id;
-          const partKey = `${part.nags_glass_id || ""}|${part.oem_glass_id || ""}|${activeGlassTypeCode}`;
-          const isSelected = selectedParts.some(
-            (p) =>
-              p.part.nags_glass_id === part.nags_glass_id &&
-              p.part.oem_glass_id === part.oem_glass_id &&
-              p.glass.code === activeGlassTypeCode
-          );
+      <div className="flex flex-col space-y-4 p-2">
+        {selectedGlassCodes.map(code => {
+          const glassState = loadedPartsMap[code];
+          const glassObj = glassData.find(g => g.code === code);
+          const label = getFormattedLabel(code);
+
+          if (!glassState || glassState.loading) {
+            return (
+              <div key={code} className="border border-slate-200 rounded p-4 text-center bg-slate-50">
+                <p className="text-xs font-bold text-slate-700 mb-2">{label}</p>
+                <div className="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin mx-auto" />
+              </div>
+            );
+          }
+          if (glassState.error) {
+            return (
+              <div key={code} className="border border-red-200 rounded p-4 text-center bg-red-50">
+                <p className="text-xs font-bold text-red-700 mb-2">{label}</p>
+                <p className="text-xs text-red-500">{glassState.error}</p>
+              </div>
+            );
+          }
+
+          const parts = glassState.data || [];
+          if (parts.length === 0) {
+            return (
+              <div key={code} className="border border-slate-100 rounded p-4 text-center bg-slate-50">
+                <p className="text-xs font-bold text-slate-500">{label} - No Parts Found</p>
+              </div>
+            );
+          }
 
           return (
-            <div
-              key={`${partId}_${index}`}
-              onClick={() => {
-                if (isSelected) {
-                  handleRemoveSelectedPart(partKey);
-                } else {
-                  handleSelectPart(part, activeGlassObj);
-                }
-              }}
-              className={`
-                    group flex items-center gap-3 p-2 cursor-pointer transition-colors border border-slate-200 rounded
-                    ${isSelected ? "bg-blue-50/50 border-blue-300" : "hover:bg-slate-50 bg-white"}
-                  `}
-            >
-              {/* Checkbox */}
-              <div
-                className={`
-                      w-4 h-4 rounded border flex items-center justify-center transition-colors shrink-0
-                      ${isSelected
-                    ? "bg-blue-600 border-blue-600"
-                    : "bg-white border-slate-300 group-hover:border-blue-400"
-                  }
-                    `}
-              >
-                {isSelected && (
-                  <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
+            <div key={code} className="flex flex-col space-y-1">
+              <div className="flex items-center gap-2 pb-1 border-b border-slate-100">
+                <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded uppercase tracking-wide">{label}</span>
               </div>
+              {parts.map((part, index) => {
+                const partId = part.nags_glass_id || part.oem_glass_id;
+                const partKey = `${part.nags_glass_id || ""}|${part.oem_glass_id || ""}|${code}`;
 
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2">
-                  <span className={`font-bold text-xs ${isSelected ? "text-blue-900" : "text-slate-800"}`}>
-                    {part.nags_glass_id || "Unknown ID"}{part.glass_info?.ta ? ` ${part.glass_info.ta}` : ""}
-                  </span>
-                  {part.oem_glass_id && (
-                    <span className="text-[10px] font-mono bg-slate-100 text-slate-500 px-1 py-0.5 rounded shrink-0">
-                      OEM: {part.oem_glass_id}
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-slate-500 mt-0.5 truncate">
-                  {part.part_description || "Glass Part"}
-                </p>
-              </div>
+                const isSelected = selectedParts.some(
+                  (p) =>
+                    p.part.nags_glass_id === part.nags_glass_id &&
+                    p.part.oem_glass_id === part.oem_glass_id &&
+                    p.glass.code === code
+                );
+
+                return (
+                  <div
+                    key={`${partId}_${index}`}
+                    onClick={() => {
+                      if (isSelected) {
+                        handleRemoveSelectedPart(partKey);
+                      } else {
+                        handleSelectPart(part, glassObj);
+                      }
+                    }}
+                    className={`
+                                group flex items-center gap-3 p-1 cursor-pointer transition-colors border border-slate-200 rounded
+                                ${isSelected ? "bg-blue-50/50 border-blue-300" : "hover:bg-slate-50 bg-white"}
+                            `}
+                  >
+                    {/* Checkbox */}
+                    <div
+                      className={`
+                                w-4 h-4 rounded border flex items-center justify-center transition-colors shrink-0
+                                ${isSelected
+                          ? "bg-blue-600 border-blue-600"
+                          : "bg-white border-slate-300 group-hover:border-blue-400"
+                        }
+                                `}
+                    >
+                      {isSelected && (
+                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className={`font-bold text-xs ${isSelected ? "text-blue-900" : "text-slate-800"}`}>
+                          {part.nags_glass_id || "Unknown ID"}{part.glass_info?.ta ? ` ${part.glass_info.ta}` : ""}
+                        </span>
+                        {part.oem_glass_id && (
+                          <span className="text-[10px] font-mono bg-slate-100 text-slate-500 px-1 py-0.5 rounded shrink-0">
+                            OEM: {part.oem_glass_id}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5 truncate">
+                        {part.part_description || "Glass Part"}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           );
         })}
@@ -361,68 +445,115 @@ export default function CarGlassViewer({
 
       <div className="flex flex-col md:flex-row gap-2 h-full overflow-hidden">
         {/* Left column: Diagram */}
-        <div className="flex flex-col items-center justify-start border-r border-slate-100 pr-0 md:pr-2 w-full md:w-1/3 shrink-0">
-          <div className="w-full mb-2">
-            <label className="block text-xs font-medium text-slate-700 mb-1">Select Glass Type</label>
-            <Select
-              className="w-full"
-              placeholder="Select Glass Type"
-              onChange={(code) => {
-                const selectedGlass = glassData.find(g => g.code === code);
-                if (selectedGlass) handleSelectGlassType(selectedGlass);
-              }}
-              showSearch
-              optionFilterProp="children"
+        {/* Left column: Diagram & Glass Selection */}
+        <div className="flex flex-col items-center justify-start border-r border-slate-100 pr-0 md:pr-2 w-full md:w-1/3 shrink-0 relative z-10">
+          <div className="w-full mb-2 relative pl-2 pt-2">
+            <label className="block text-sm font-bold text-slate-800 mb-2">Select Glass Type</label>
+
+            {/* Custom Mega Menu Trigger */}
+            <div
+              className="w-full border border-slate-300 rounded px-3 py-2 bg-white cursor-pointer flex items-center justify-between hover:border-violet-500 transition-colors"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              {Object.entries(glassGroups).map(([type, items]) => {
-                // Format Group Label logic
-                let groupLabel = type.replace(/_/g, " ");
-                // Try to replace codes in group label too
-                GLASS_CODE_NAMES.forEach(mapping => {
-                  const regex = new RegExp(`\\b${mapping.code}\\b`, 'g'); // Replace whole word code
-                  groupLabel = groupLabel.replace(regex, mapping.name);
-                });
+              <span className="text-sm text-slate-700 truncate">
+                {selectedGlassCodes.length > 0
+                  ? selectedGlassCodes.map(c => getFormattedLabel(c)).join(", ")
+                  : "Select Glass Type"
+                }
+              </span>
+              <svg className={`w-4 h-4 text-slate-400 transition-transform ${isMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
 
+            {/* Mega Menu Overlay */}
+            {isMenuOpen && (
+              <div className="absolute top-full left-0 w-[800px] bg-white border border-slate-200 shadow-xl rounded-lg mt-1 z-50 flex flex-col max-h-[500px] overflow-hidden">
+                <div className="grid grid-cols-5 divide-x divide-slate-100 bg-slate-50 border-b border-slate-100">
+                  {["Primary", "Side Glass", "Vent", "Quarter", "Roof"].map(header => (
+                    <div key={header} className="p-2 text-xs font-bold text-slate-700 uppercase tracking-wide text-center">
+                      {header}
+                    </div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-5 divide-x divide-slate-100 overflow-y-auto p-0">
+                  {/* Render Columns */}
+                  {[
+                    glassGroups["Primary Glass"] || [],
+                    glassGroups["Side Glass"] || [],
+                    glassGroups["Vent Glass"] || [],
+                    glassGroups["Quarter Glass"] || [],
+                    glassGroups["Roof Glass"] || []
+                  ].map((columnItems, colIndex) => (
+                    <div key={colIndex} className="p-2 flex flex-col gap-1">
+                      {columnItems.length > 0 ? (
+                        columnItems.map(item => {
+                          const isSelected = selectedGlassCodes.includes(item.code);
+                          // Label cleanup
+                          let label = item.description || item.code;
+                          const codeObj = GLASS_CODE_NAMES.find(obj => obj.code === item.code);
+                          if (codeObj) label = codeObj.name;
+                          // Fallback replacements
+                          else if (label.includes("DQ")) label = label.replace("DQ", "Quarter");
+                          else if (label.includes("DD")) label = label.replace("DD", "Door");
+                          else if (label.includes("DV")) label = label.replace("DV", "Vent");
 
-                return (
-                  <OptGroup key={type} label={groupLabel}>
-                    {items.map(item => {
-                      let label = item.description || item.code;
+                          // 1. Remove underscores
+                          label = label.replace(/_/g, " ");
 
-                      // 1. Exact match lookup
-                      const codeObj = GLASS_CODE_NAMES.find(obj => obj.code === item.code);
-                      if (codeObj) {
-                        label = codeObj.name;
-                      } else {
-                        // 2. Replacement fallback: "Left DQ" -> "Left Quarter Glass"
-                        GLASS_CODE_NAMES.forEach(mapping => {
-                          // Use word boundary to avoid partial replacement if codes were substrings (e.g. DQQ)
-                          // But strict 2-letter codes: check if label contains it
-                          if (label.includes(mapping.code)) {
-                            // Replace "DQ" with "Quarter Glass"
-                            label = label.replace(mapping.code, mapping.name);
+                          // 2. Specific fix for Vent Glass (colIndex 2): Remove "Door"
+                          if (colIndex === 2) {
+                            label = label.replace(/Door/gi, "").trim();
                           }
-                        });
-                      }
 
-                      // Clean underscores
-                      if (label) {
-                        label = label.replace(/_/g, " ");
-                      }
+                          // 3. Remove "Glass" from Side (1), Vent (2), and Quarter (3) columns
+                          if ([1, 2, 3].includes(colIndex)) {
+                            label = label.replace(/Glass/gi, "").trim();
+                          }
 
-                      return (
-                        <Option key={item.code} value={item.code}>
-                          {label}
-                        </Option>
-                      );
-                    })}
-                  </OptGroup>
-                )
-              })}
-            </Select>
+                          // Clean up double spaces
+                          label = label.replace(/\s+/g, " ").trim();
+
+                          return (
+                            <div
+                              key={item.code}
+                              onClick={() => {
+                                toggleGlassSelection(item);
+                                // setIsMenuOpen(false); // Kept open for multiple selection
+                              }}
+                              className={`
+                                flex items-start gap-2 p-2 rounded cursor-pointer transition-colors text-xs
+                                ${isSelected ? "bg-blue-50 text-blue-800" : "hover:bg-slate-50 text-slate-600"}
+                              `}
+                            >
+                              <div className={`mt-0.5 w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 ${isSelected ? "bg-blue-600 border-blue-600" : "border-slate-300"}`}>
+                                {isSelected && (
+                                  <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                )}
+                              </div>
+                              <span className="leading-tight">{label}</span>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <div className="text-[10px] text-slate-300 italic text-center py-4">None</div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* Click Outside Handler (Invisible fixed overlay when menu is open) */}
+          {isMenuOpen && (
+            <div className="fixed inset-0 z-0" onClick={() => setIsMenuOpen(false)} />
+          )}
+
           {imageSrc && (
-            <div className="flex flex-col items-center w-full mt-2">
+            <div className="flex flex-col items-center w-full mt-1 relative z-0">
               <div className="relative w-full h-32 md:h-40 lg:h-48 flex items-center justify-center">
                 <img
                   src={imageSrc}
@@ -444,8 +575,8 @@ export default function CarGlassViewer({
         <div className="flex flex-col flex-1 bg-white border border-slate-200 overflow-hidden min-h-0">
           <div className="p-2 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
             <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wide">
-              {activeGlassTypeCode
-                ? `Available Options - ${glassData.find(g => g.code === activeGlassTypeCode)?.description || activeGlassTypeCode}`
+              {selectedGlassCodes.length > 0
+                ? `Available Options (${selectedGlassCodes.length} Selected)`
                 : "Available Options"
               }
             </h4>

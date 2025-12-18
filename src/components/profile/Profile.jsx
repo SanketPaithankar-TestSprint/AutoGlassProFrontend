@@ -40,6 +40,7 @@ const Profile = () => {
     const token = getValidToken();
 
     useEffect(() => {
+        document.title = "APAI | Profile";
         fetchProfile();
     }, []);
 

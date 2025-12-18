@@ -53,6 +53,7 @@ const Work = () => {
     };
 
     useEffect(() => {
+        document.title = "APAI | Work";
         fetchWork();
     }, []);
 

@@ -21,6 +21,7 @@ const Home = () => {
     }, []);
     useEffect(() => {
         setMounted(true)
+        document.title = "APAI | Home";
     }, [])
 
     return (

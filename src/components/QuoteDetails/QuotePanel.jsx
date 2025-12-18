@@ -398,10 +398,10 @@ Auto Glass Pro Team`;
         <div>
             {/* Header */}
             <div className="flex items-center justify-between mb-4 max-w-7xl">
-                <div className="flex items-center gap-3">
-                    <h2 className="text-lg font-semibold">Quote Details</h2>
-                    <span className={`inline-flex items-center rounded-full px-3 py-0.5 text-[11px] font-medium border ${docType === "Quote" ? "border-sky-500/60 bg-sky-500/10 text-sky-200" : docType === "Work Order" ? "border-amber-400/70 bg-amber-400/10 text-amber-100" : "border-emerald-400/70 bg-emerald-400/10 text-emerald-100"}`}>{docType}</span>
-                </div>
+                <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-fuchsia-600">
+                    Quote Details
+                </h3>
+                <span className={`inline-flex items-center rounded-full px-3 py-0.5 text-[11px] font-medium border ${docType === "Quote" ? "border-sky-500/60 bg-sky-500/10 text-sky-200" : docType === "Work Order" ? "border-amber-400/70 bg-amber-400/10 text-amber-100" : "border-emerald-400/70 bg-emerald-400/10 text-emerald-100"}`}>{docType}</span>
             </div>
 
             {/* Line Items Table */}
@@ -409,10 +409,8 @@ Auto Glass Pro Team`;
                 <table className="min-w-full divide-y divide-slate-200">
                     <thead className="bg-slate-50">
                         <tr className="text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                            <th className="px-3 py-2 min-w-[80px]">Type</th>
-                            <th className="px-3 py-2 min-w-[90px]">NAGS ID</th>
+                            <th className="px-3 py-2 min-w-[120px]">Part</th>
                             <th className="px-3 py-2 min-w-[90px]">OEM ID</th>
-                            <th className="px-3 py-2 min-w-[70px]">Labor (Hrs)</th>
                             <th className="px-3 py-2 min-w-[180px]">Description</th>
                             <th className="px-3 py-2 min-w-[120px]">Manufacturer</th>
                             <th className="px-3 py-2 text-right min-w-[70px]">Qty</th>
@@ -425,50 +423,36 @@ Auto Glass Pro Team`;
                         {items.map((it) => (
                             <tr key={it.id} className="hover:bg-slate-50 transition group">
                                 <td className="px-3 py-2">
-                                    <span className={`text-xs font-medium px-2 py-1 rounded ${it.type === 'Labor' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'}`}>
-                                        {it.type || "Part"}
-                                    </span>
-                                </td>
-                                <td className="px-3 py-2">
                                     <input
-                                        value={it.nagsId}
-                                        onChange={(e) => updateItem(it.id, "nagsId", e.target.value)}
-                                        className={`w-full h-8 rounded border border-slate-300 px-2 text-xs focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none ${(!it.isManual && it.type === 'Labor') ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : ''}`}
-                                        placeholder="NAGS"
-                                        disabled={!it.isManual && it.type === 'Labor'}
+                                        value={it.type === 'Labor' ? "LABOR" : it.nagsId}
+                                        onChange={(e) => it.type !== 'Labor' && updateItem(it.id, "nagsId", e.target.value)}
+                                        className={`w-full h-8 rounded border border-slate-300 px-2 text-xs focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none ${it.type === 'Labor' ? 'bg-slate-100 text-slate-500' : ''}`}
+                                        placeholder="Part No"
+                                        disabled={it.type === 'Labor'}
                                     />
                                 </td>
                                 <td className="px-3 py-2">
                                     <input
                                         value={it.oemId}
                                         onChange={(e) => updateItem(it.id, "oemId", e.target.value)}
-                                        className={`w-full h-8 rounded border border-slate-300 px-2 text-xs focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none ${(!it.isManual && it.type === 'Labor') ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : ''}`}
+                                        className={`w-full h-8 rounded border border-slate-300 px-2 text-xs focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none ${(!it.isManual && it.type === 'Labor') ? 'bg-slate-100 text-slate-500' : ''}`}
                                         placeholder="OEM"
                                         disabled={!it.isManual && it.type === 'Labor'}
                                     />
                                 </td>
                                 <td className="px-3 py-2">
                                     <input
-                                        value={it.labor}
-                                        onChange={(e) => updateItem(it.id, "labor", e.target.value)}
-                                        className={`w-full h-8 rounded border border-slate-300 px-2 text-xs focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none ${(!it.isManual && it.type === 'Labor') ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : ''}`}
-                                        placeholder="Hrs"
-                                        disabled={!it.isManual && it.type === 'Labor'}
-                                    />
-                                </td>
-                                <td className="px-3 py-2">
-                                    <input
-                                        value={it.description}
+                                        value={it.type === 'Labor' ? `Labor ${it.labor || 0} hours` : it.description}
                                         onChange={(e) => updateItem(it.id, "description", e.target.value)}
-                                        className={`w-full h-8 rounded border border-slate-300 px-2 text-xs focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none ${(!it.isManual && it.type === 'Labor') ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : ''}`}
-                                        disabled={!it.isManual && it.type === 'Labor'}
+                                        className={`w-full h-8 rounded border border-slate-300 px-2 text-xs focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none ${it.type === 'Labor' ? 'bg-slate-100 text-slate-500' : ''}`}
+                                        disabled={it.type === 'Labor'}
                                     />
                                 </td>
                                 <td className="px-3 py-2">
                                     <input
                                         value={it.manufacturer}
                                         onChange={(e) => updateItem(it.id, "manufacturer", e.target.value)}
-                                        className={`w-full h-8 rounded border border-slate-300 px-2 text-xs focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none ${(!it.isManual && it.type === 'Labor') ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : ''}`}
+                                        className={`w-full h-8 rounded border border-slate-300 px-2 text-xs focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none ${(!it.isManual && it.type === 'Labor') ? 'bg-slate-100 text-slate-500' : ''}`}
                                         disabled={!it.isManual && it.type === 'Labor'}
                                     />
                                 </td>

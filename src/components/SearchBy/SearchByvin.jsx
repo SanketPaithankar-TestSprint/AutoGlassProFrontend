@@ -85,42 +85,41 @@ export default function SearchByVin({
         Enter VIN
       </label>
 
-      <Input
-        id="vin-inline"
-        value={vin}
-        onChange={handleChange}
-        maxLength={17}
-        size="large"
-        placeholder="17-character VIN"
-        aria-label="Vehicle Identification Number"
-        prefix={<SearchOutlined className="text-violet-500" />}
-        className="
-          !h-11 !rounded-xl
-          !bg-white
-          !border-slate-200 hover:!border-violet-400 focus:!border-violet-500
-          focus:!shadow-[0_0_0_1px_rgba(139,92,246,0.7)]
-          !text-black !font-bold placeholder:!text-slate-400
-          transition-all duration-200
-        "
-        status={error ? "error" : undefined}
-        disabled={loading}
-      />
+      <div className="flex items-center gap-2 mt-1">
+        <Input
+          id="vin-inline"
+          value={vin}
+          onChange={handleChange}
+          maxLength={17}
+          size="large"
+          placeholder="17-character VIN"
+          aria-label="Vehicle Identification Number"
+          prefix={<SearchOutlined className="text-violet-500" />}
+          className="
+            !h-11 !rounded-xl
+            !bg-white
+            !border-slate-200 hover:!border-violet-400 focus:!border-violet-500
+            focus:!shadow-[0_0_0_1px_rgba(139,92,246,0.7)]
+            !text-black !font-bold placeholder:!text-slate-400
+            transition-all duration-200
+            flex-1
+          "
+          status={error ? "error" : undefined}
+          disabled={loading}
+        />
 
-      <button
-        type="button"
-        className="mt-2 px-4 py-2 rounded bg-violet-600 text-white font-semibold disabled:opacity-60"
-        onClick={handleDecode}
-        disabled={loading || !isValid}
-      >
-        {loading ? "Decoding…" : "Decode VIN"}
-      </button>
+        <button
+          type="button"
+          className="h-11 px-6 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-medium text-sm transition-colors disabled:opacity-60 whitespace-nowrap"
+          onClick={handleDecode}
+          disabled={loading || !isValid}
+        >
+          {loading ? "..." : "Decode"}
+        </button>
+      </div>
 
-      <div className="h-5 text-xs md:text-sm">
-        {vin.length === 0 && (
-          <span className="text-slate-500">
-            The VIN is a 17-character code containing letters and numbers.
-          </span>
-        )}
+      <div className="text-xs md:text-sm mt-1">
+
         {vin.length > 0 && !isValid && (
           <span className="text-rose-400">
             VIN must be 17 characters and cannot contain I, O, or Q.

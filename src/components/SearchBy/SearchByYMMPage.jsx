@@ -42,25 +42,21 @@ const SearchByYMMPage = () => {
   };
 
   return (
-    <div className="w-full mx-auto space-y-6 text-slate-50">
+    <div className="w-full mx-auto space-y-2 text-slate-50">
       {/* Main YMM search header + control */}
       <div
         className="
           rounded-2xl border border-slate-200
           bg-white/70 backdrop-blur-lg
           shadow-xl shadow-slate-200/70
-          p-4 md:p-6
+          p-3
           text-slate-900
         "
       >
-        <div className="mb-4">
-          <h1 className="text-xl md:text-2xl font-semibold">
+        <div className="mb-2">
+          <h1 className="text-lg md:text-xl font-semibold">
             Search by Year, Make, and Model
           </h1>
-          <p className="mt-1 text-sm text-slate-500 max-w-2xl">
-            Select a year, make, and model to explore glass diagrams and build
-            an accurate invoice from the exact parts you choose.
-          </p>
         </div>
 
         <SearchByYMM
@@ -77,7 +73,7 @@ const SearchByYMMPage = () => {
             rounded-2xl border border-slate-200
             bg-white/70 backdrop-blur-lg
             shadow-xl shadow-slate-200/70
-            p-4 md:p-6
+            p-2
             text-slate-900
           "
         >
@@ -101,17 +97,11 @@ const SearchByYMMPage = () => {
           rounded-2xl border border-slate-200
           bg-white/70 backdrop-blur-lg
           shadow-xl shadow-slate-200/70
-          p-4 md:p-6
+          shadow-xl shadow-slate-200/70
+          p-1
           text-slate-900
         "
       >
-        <h2 className="text-lg font-semibold mb-3">
-          Quote Preview
-        </h2>
-        <p className="text-xs md:text-sm text-slate-500 mb-4">
-          Review vehicle details and selected parts before sending a quote or
-          creating a final invoice.
-        </p>
         <div className="text-slate-700 text-sm">
           <QuoteDetails
             prefill={vehicleInfo}

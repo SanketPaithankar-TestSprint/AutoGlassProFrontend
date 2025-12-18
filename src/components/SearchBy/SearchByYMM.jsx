@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Select, Spin, message } from "antd";
+import { Select, Spin, message, Button } from "antd";
 import { getModelId } from "../../api/getModel"; // Import the API function
 import CarGlassViewer from "../carGlassViewer/CarGlassViewer";
 
@@ -151,42 +151,37 @@ export default function SearchByYMM({
     };
   }, [year, make]);
 
-  // Fetch model ID when year, make, and model are selected
-  useEffect(() => {
-    const fetchModelId = async () => {
-      if (!year || !make || !model) return;
+  // Fetch model ID when "Find Parts" is clicked
+  const handleFindParts = async () => {
+    if (!year || !make || !model) return;
 
-      setLoadingModelId(true);
-      try {
-        const data = await getModelId(year, make, model);
-        const modelId = data?.model_id || null;
-        setModelId(modelId);
-        setModelImage(data?.image || null);
-        setModelDescription(data?.description || null);
+    setLoadingModelId(true);
+    try {
+      const data = await getModelId(year, make, model);
+      const modelId = data?.model_id || null;
+      setModelId(modelId);
+      setModelImage(data?.image || null);
+      setModelDescription(data?.description || null);
 
-        onModelIdFetched?.(modelId); // Pass modelId to parent
-        onVehicleInfoUpdate?.({
-          year,
-          make,
-          model,
-          image: data?.image || null,
-          description: data?.description || null
-        }); // Pass vehicle info to parent
-        message.success(`Model ID fetched: ${modelId}`);
-      } catch (error) {
-        console.error("Failed to fetch model ID:", error);
-        message.error("Failed to fetch model ID. Please try again.");
-        message.error("Failed to fetch model ID. Please try again.");
-        setModelId(null);
-        setModelImage(null);
-        setModelDescription(null);
-      } finally {
-        setLoadingModelId(false);
-      }
-    };
-
-    fetchModelId();
-  }, [year, make, model]);
+      onModelIdFetched?.(modelId); // Pass modelId to parent
+      onVehicleInfoUpdate?.({
+        year,
+        make,
+        model,
+        image: data?.image || null,
+        description: data?.description || null
+      }); // Pass vehicle info to parent
+      message.success(`Model ID fetched: ${modelId}`);
+    } catch (error) {
+      console.error("Failed to fetch model ID:", error);
+      message.error("Failed to fetch model ID. Please try again.");
+      setModelId(null);
+      setModelImage(null);
+      setModelDescription(null);
+    } finally {
+      setLoadingModelId(false);
+    }
+  };
 
   const handleYear = (v) => {
     setYear(v);
@@ -214,45 +209,48 @@ export default function SearchByYMM({
 
   return (
     <div className={className}>
-      {/* Grid: Year / Make / Model - STACKED */}
-      <div className="flex flex-col gap-3 w-full">
-        {/* Year */}
-        <div className="w-full">
-          <label className="block text-gray-800 text-sm font-medium mb-1">Year</label>
-          <Select
-            size="middle"
-            className="w-full"
-            placeholder="Year"
-            value={year}
-            onChange={handleYear}
-            disabled={disabled}
-            options={years.map((y) => ({ label: y.toString(), value: y }))}
-            showSearch={showSearch}
-          />
+      {/* Grid: Year / Make / Model - Customized Layout */}
+      <div className="flex flex-col gap-2 w-full">
+        {/* Row 1: Year & Make */}
+        <div className="grid grid-cols-2 gap-2">
+          {/* Year */}
+          <div className="w-full">
+            <label className="block text-gray-800 text-xs font-medium mb-1">Year</label>
+            <Select
+              size="middle"
+              className="w-full !rounded-lg"
+              placeholder="Year"
+              value={year}
+              onChange={handleYear}
+              disabled={disabled}
+              options={years.map((y) => ({ label: y.toString(), value: y }))}
+              showSearch={showSearch}
+            />
+          </div>
+
+          {/* Make */}
+          <div className="w-full">
+            <label className="block text-gray-800 text-xs font-medium mb-1">Make</label>
+            <Select
+              size="middle"
+              className="w-full !rounded-lg"
+              placeholder="Make"
+              value={make}
+              onChange={handleMake}
+              disabled={disabled || !year}
+              notFoundContent={loadingMakes ? <Spin size="small" /> : null}
+              options={toOptions(makes, "MakeName", "MakeName")}
+              showSearch={showSearch}
+            />
+          </div>
         </div>
 
-        {/* Make */}
+        {/* Row 2: Model */}
         <div className="w-full">
-          <label className="block text-gray-800 text-sm font-medium mb-1">Make</label>
+          <label className="block text-gray-800 text-xs font-medium mb-1">Model</label>
           <Select
             size="middle"
-            className="w-full"
-            placeholder="Make"
-            value={make}
-            onChange={handleMake}
-            disabled={disabled || !year}
-            notFoundContent={loadingMakes ? <Spin size="small" /> : null}
-            options={toOptions(makes, "MakeName", "MakeName")}
-            showSearch={showSearch}
-          />
-        </div>
-
-        {/* Model */}
-        <div className="w-full">
-          <label className="block text-gray-800 text-sm font-medium mb-1">Model</label>
-          <Select
-            size="middle"
-            className="w-full"
+            className="w-full !rounded-lg"
             placeholder="Model"
             value={model}
             onChange={handleModel}
@@ -261,6 +259,17 @@ export default function SearchByYMM({
             options={toOptions(models, "ModelName", "ModelName")}
             showSearch={showSearch}
           />
+          <div className="mt-6">
+            <Button
+              onClick={handleFindParts}
+              disabled={disabled || !model || !year || !make}
+              loading={loadingModelId}
+              block
+              className="w-full py-3 bg-white border border-slate-800 text-slate-900 font-semibold text-sm hover:!bg-slate-50 hover:!text-slate-900 transition-colors !rounded-none !h-auto shadow-sm"
+            >
+              Find Parts
+            </Button>
+          </div>
         </div>
 
         {/* Find Parts Button Placeholder - Logic relies on auto-fetch but wireframe shows button. We can add a visual button if needed or keep auto. 
