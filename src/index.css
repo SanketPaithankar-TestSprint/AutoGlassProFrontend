@@ -55,8 +55,15 @@ body,
 
 @import "tailwindcss";
 
+/* Base font configuration - Applied globally */
+html,
+body,
+#root {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -99,6 +106,13 @@ button {
   font-family: inherit;
   cursor: pointer;
   transition: border-color 0.25s;
+}
+
+/* Ensure all form elements use the same font */
+input,
+textarea,
+select {
+  font-family: inherit;
 }
 
 button:hover {

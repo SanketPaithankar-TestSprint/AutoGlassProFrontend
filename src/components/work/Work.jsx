@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Modal, message, Tooltip, Empty } from "antd";
+import { Button, Tooltip, Empty, App } from "antd";
 import {
     PlusOutlined,
     FilePdfOutlined,
@@ -8,7 +8,9 @@ import {
     CheckCircleOutlined,
     DollarOutlined,
     FileDoneOutlined,
-    EditOutlined
+    EditOutlined,
+    ReloadOutlined,
+    SwapOutlined
 } from "@ant-design/icons";
 import { getValidToken } from "../../api/getValidToken";
 import { getServiceDocuments } from "../../api/getServiceDocuments";
@@ -16,12 +18,15 @@ import { deleteServiceDocument } from "../../api/deleteServiceDocument";
 import { acceptServiceDocument } from "../../api/acceptServiceDocument";
 import { completeServiceDocument } from "../../api/completeServiceDocument";
 import { generateAndDownloadPDF, generatePDFFilename } from "../../utils/serviceDocumentPdfGenerator";
+import { convertToWorkOrder } from "../../api/convertToWorkOrder";
+import { convertToInvoice } from "../../api/convertToInvoice";
 import CreateServiceDocumentModal from "./CreateServiceDocumentModal";
 import PaymentModal from "./PaymentModal";
 import EmailDocumentModal from "./EmailDocumentModal";
 import EditDocumentModal from "./EditDocumentModal";
 
 const Work = () => {
+    const { modal, message } = App.useApp();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [workItems, setWorkItems] = useState([]);
@@ -60,7 +65,7 @@ const Work = () => {
     // Action Handlers
     const handleDelete = (docId) => {
         console.log('Delete called for document:', docId);
-        Modal.confirm({
+        modal.confirm({
             title: 'Delete Document',
             content: 'Are you sure you want to delete this document? This action cannot be undone.',
             okText: 'Delete',
@@ -101,6 +106,44 @@ const Work = () => {
         } catch (err) {
             message.error('Failed to complete: ' + err.message);
         }
+    };
+
+    const handleConvertToWorkOrder = (docNumber, e) => {
+        e.stopPropagation();
+        modal.confirm({
+            title: 'Convert to Work Order',
+            content: 'Are you sure you want to convert this Quote to a Work Order? This action cannot be undone.',
+            okText: 'Convert',
+            okType: 'primary',
+            onOk: async () => {
+                try {
+                    await convertToWorkOrder(docNumber);
+                    message.success('Document converted to Work Order');
+                    fetchWork();
+                } catch (err) {
+                    message.error('Failed to convert: ' + err.message);
+                }
+            }
+        });
+    };
+
+    const handleConvertToInvoice = (docNumber, e) => {
+        e.stopPropagation();
+        modal.confirm({
+            title: 'Convert to Invoice',
+            content: 'Are you sure you want to convert this Work Order to an Invoice? This action cannot be undone.',
+            okText: 'Convert',
+            okType: 'primary',
+            onOk: async () => {
+                try {
+                    await convertToInvoice(docNumber);
+                    message.success('Document converted to Invoice');
+                    fetchWork();
+                } catch (err) {
+                    message.error('Failed to convert: ' + err.message);
+                }
+            }
+        });
     };
 
     const handleExportPdf = async (documentNumber, e) => {
@@ -228,22 +271,32 @@ const Work = () => {
     };
 
     return (
-        <div className="max-w-6xl mx-auto h-screen overflow-y-auto px-4 md:px-8 py-6 pt-24 pb-24 font-sans">
+        <div className="max-w-6xl mx-auto h-screen overflow-y-auto px-4 md:px-8 py-6 pt-24 pb-24">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                 <div>
                     <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Work Management</h1>
                     <p className="text-gray-500 mt-1">Manage quotes, work orders, and invoices</p>
                 </div>
-                <Button
-                    type="primary"
-                    size="large"
-                    icon={<PlusOutlined />}
-                    className="bg-violet-600 hover:bg-violet-700 shadow-md"
-                    onClick={() => setIsCreateModalOpen(true)}
-                >
-                    Create New
-                </Button>
+                <div className="flex gap-2">
+                    <Tooltip title="Reload">
+                        <Button
+                            size="large"
+                            icon={<ReloadOutlined spin={loading} />}
+                            onClick={fetchWork}
+                            disabled={loading}
+                        />
+                    </Tooltip>
+                    <Button
+                        type="primary"
+                        size="large"
+                        icon={<PlusOutlined />}
+                        className="bg-violet-600 hover:bg-violet-700 shadow-md"
+                        onClick={() => setIsCreateModalOpen(true)}
+                    >
+                        Create New
+                    </Button>
+                </div>
             </div>
 
             {loading && !workItems.length ? (
@@ -331,6 +384,12 @@ const Work = () => {
                                                     <Button icon={<EditOutlined />} onClick={(e) => handleEdit(doc.documentNumber, e)}>Edit</Button>
                                                     {doc.status === "pending" && (
                                                         <Button icon={<CheckCircleOutlined />} onClick={(e) => handleAccept(doc.documentNumber, e)}>Accept Quote</Button>
+                                                    )}
+                                                    {doc.documentType?.toUpperCase() === "QUOTE" && (
+                                                        <Button type="primary" icon={<SwapOutlined />} onClick={(e) => handleConvertToWorkOrder(doc.documentNumber, e)}>Convert to Work Order</Button>
+                                                    )}
+                                                    {doc.documentType?.toUpperCase() === "WORK_ORDER" && (
+                                                        <Button type="primary" icon={<SwapOutlined />} onClick={(e) => handleConvertToInvoice(doc.documentNumber, e)}>Convert to Invoice</Button>
                                                     )}
                                                     {(doc.status === "in_progress" || doc.status === "accepted") && (
                                                         <Button icon={<FileDoneOutlined />} onClick={(e) => handleComplete(doc.documentNumber, e)}>Mark Complete</Button>

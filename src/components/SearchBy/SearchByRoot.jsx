@@ -144,14 +144,14 @@ const SearchByRoot = () => {
 
 
   return (
-    <div className="min-h-screen bg-white flex flex-col px-0 pt-20 pb-2">
-      <div className="w-full mx-auto space-y-4 flex flex-col max-w-[98%] 2xl:max-w-[1900px] flex-1">
+    <div className="min-h-screen bg-white flex flex-col px-0 pt-16 pb-1">
+      <div className="w-full mx-auto space-y-2 flex flex-col max-w-[98%] 2xl:max-w-[1900px] flex-1">
 
         {/* TABS */}
-        <div className="flex justify-start gap-0 border-b border-slate-200">
+        <div className="flex justify-start gap-0 border-b border-slate-200 mb-1">
           <button
             onClick={() => setActiveTab('quote')}
-            className={`px-8 py-3 font-bold text-sm tracking-wide transition-all border-b-2 ${activeTab === 'quote'
+            className={`px-6 py-2 font-bold text-sm tracking-wide transition-all border-b-2 ${activeTab === 'quote'
               ? 'border-gray-900 text-gray-900'
               : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
@@ -160,7 +160,7 @@ const SearchByRoot = () => {
           </button>
           <button
             onClick={() => setActiveTab('customer')}
-            className={`px-8 py-3 font-bold text-sm tracking-wide transition-all border-b-2 ${activeTab === 'customer'
+            className={`px-6 py-2 font-bold text-sm tracking-wide transition-all border-b-2 ${activeTab === 'customer'
               ? 'border-gray-900 text-gray-900'
               : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
@@ -174,7 +174,7 @@ const SearchByRoot = () => {
 
           {/* CUSTOMER TAB */}
           {activeTab === 'customer' && (
-            <div className="w-full max-w-4xl mx-auto p-4">
+            <div className="w-full p-2">
               <CustomerPanel
                 formData={customerData}
                 setFormData={setCustomerData}
@@ -186,16 +186,16 @@ const SearchByRoot = () => {
 
           {/* QUOTE TAB */}
           {activeTab === 'quote' && (
-            <div className="flex flex-col gap-4 h-full">
+            <div className="flex flex-col gap-2 h-full">
 
               {/* TOP ROW: Search (Left) + Graphic/Parts (Right) */}
-              <div className="grid grid-cols-[380px_1fr] gap-4 h-[380px]">
+              <div className="grid grid-cols-[320px_1fr] gap-2 h-[340px]">
 
                 {/* LEFT: SEARCH */}
-                <div className="border border-slate-200 bg-white p-3 flex flex-col gap-2 overflow-y-auto shadow-sm rounded-lg">
+                <div className="border border-slate-200 bg-white p-2 flex flex-col gap-1 overflow-y-auto shadow-sm rounded-lg">
                   {/* VIN */}
                   <div>
-                    <h2 className="text-sm font-bold text-slate-800 mb-2 uppercase tracking-wide">Search by VIN:</h2>
+                    <h2 className="text-xs font-bold text-slate-800 mb-1 uppercase tracking-wide">Search by VIN:</h2>
                     <ErrorBoundary>
                       <SearchByVin autoDecode delayMs={500} onDecoded={handleVinDecoded} />
                     </ErrorBoundary>
@@ -203,7 +203,7 @@ const SearchByRoot = () => {
                   <hr className="border-slate-100" />
                   {/* YMM */}
                   <div>
-                    <h2 className="text-sm font-bold text-slate-800 mb-2 uppercase tracking-wide">Search by Year Make Model:</h2>
+                    <h2 className="text-xs font-bold text-slate-800 mb-1 uppercase tracking-wide">Search by Year Make Model:</h2>
                     <ErrorBoundary>
                       <SearchByYMM
                         value={vehicleInfo}
@@ -234,8 +234,8 @@ const SearchByRoot = () => {
               </div>
 
               {/* BOTTOM ROW: QUOTE DETAILS */}
-              <div className={`border-t-4 border-slate-800 bg-white shadow-sm ${!modelId && invoiceItems.length === 0 ? 'opacity-50' : ''}`}>
-                <div className="p-4">
+              <div className={`border-t-2 border-slate-800 bg-white shadow-sm ${!modelId && invoiceItems.length === 0 ? 'opacity-50' : ''}`}>
+                <div className="p-2">
                   <QuotePanel
                     parts={invoiceItems}
                     onRemovePart={handleRemovePart}

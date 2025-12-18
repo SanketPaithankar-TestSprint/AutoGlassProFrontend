@@ -78,13 +78,6 @@ export default function SearchByVin({
           transition: background-color 5000s ease-in-out 0s;
         }
       `}</style>
-      <label
-        htmlFor="vin-inline"
-        className="text-sm text-slate-600 font-medium"
-      >
-        Enter VIN
-      </label>
-
       <div className="flex items-center gap-2 mt-1">
         <Input
           id="vin-inline"

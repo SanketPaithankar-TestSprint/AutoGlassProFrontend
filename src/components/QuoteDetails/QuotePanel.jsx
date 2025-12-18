@@ -318,29 +318,49 @@ Auto Glass Pro Team`;
         try {
             setEmailLoading(true);
 
-            // 1. Create Backend Document
-            // Filter out labor items and map labor hours to corresponding part items
+            // 1. Separate Parts and Labor
+            // We differentiate them by type
             const partItems = items.filter(it => it.type !== 'Labor');
             const laborItems = items.filter(it => it.type === 'Labor');
 
-            // Create a map of labor hours by part ID (for parts that have associated labor)
-            const laborMap = {};
-            laborItems.forEach(labor => {
-                // Extract the base ID from labor (e.g., "uniqueId_LABOR" -> "uniqueId")
-                const baseId = labor.id.replace('_LABOR', '');
-                laborMap[baseId] = Number(labor.labor) || 0;
-            });
-
-            // Calculate total labor amount from all labor items
+            // 2. Calculate Total Global Labor (Sum of all labor row amounts)
+            // As per your request: simple sum of the flat rates (amounts)
             const totalLaborAmount = laborItems.reduce((sum, labor) => sum + (Number(labor.amount) || 0), 0);
 
+            // 3. Create the Merged Items Payload
+            // We loop through parts and try to find their "partner" labor row
+            const payloadItems = partItems.map((part) => {
+                // Find the linked labor row. 
+                // Logic: matches if labor.id equals "partID_LABOR"
+                const linkedLabor = laborItems.find(l => l.id === `${part.id}_LABOR`);
+
+                return {
+                    itemType: "part", // Fixed value or dynamic based on logic
+                    prefixCd: part.prefixCd || "",
+                    posCd: part.posCd || "",
+                    sideCd: part.sideCd || "",
+                    nagsGlassId: part.nagsId || "MISC",
+                    partDescription: part.description || "",
+
+                    // PART PRICING
+                    partPrice: Number(part.unitPrice) || 0,
+                    quantity: Number(part.qty) || 1,
+
+                    // LABOR MERGING (The critical fix)
+                    // We take the flat rate (amount) from the linked labor row
+                    laborRate: linkedLabor ? (Number(linkedLabor.amount) || 0) : 0,
+                    laborHours: linkedLabor ? (Number(linkedLabor.labor) || 0) : 0,
+                };
+            });
+
+            // 4. Construct the Final Payload
             const payload = {
                 documentType: docType.toLowerCase().replace(" ", "") === "workorder" ? "invoice" : docType.toLowerCase(),
-                customerId: customerData.customerId,
-                vehicleId: customerData.vehicleId,
-                employeeId: 0,
+                customerId: customerData.customerId || 0,
+                vehicleId: customerData.vehicleId || 0,
+                employeeId: 0, // Set default or dynamic
                 serviceLocation: "mobile",
-                serviceAddress: `${customerData.addressLine1}, ${customerData.city}, ${customerData.state} ${customerData.postalCode}`,
+                serviceAddress: `${customerData.addressLine1 || ''}, ${customerData.city || ''}, ${customerData.state || ''} ${customerData.postalCode || ''}`,
                 documentDate: new Date().toISOString(),
                 scheduledDate: new Date().toISOString(),
                 estimatedCompletion: new Date().toISOString(),
@@ -348,36 +368,30 @@ Auto Glass Pro Team`;
                 paymentTerms: "Due upon receipt",
                 notes: printableNote,
                 termsConditions: "Warranty valid for 12 months on workmanship.",
+
+                // Financial Totals
                 taxRate: Number(globalTaxRate) || 0,
-                discountAmount: discountAmount,
-                laborAmount: totalLaborAmount,  // Total labor cost from all labor items
-                items: partItems.map((it) => ({
-                    prefixCd: it.prefixCd || "",
-                    posCd: it.posCd || "",
-                    sideCd: it.sideCd || "",
-                    nagsGlassId: it.nagsId || "MISC",
-                    partDescription: it.description || "",
-                    partPrice: Number(it.unitPrice) || 0,
-                    laborHours: laborMap[it.id] || (Number(it.labor) || 0),  // Map labor hours from corresponding labor item
-                    quantity: Number(it.qty) || 1
-                }))
+                discountAmount: discountAmount, // Derived from your existing memo
+                laborAmount: totalLaborAmount,  // The global sum we calculated in step 2
+
+                // The Merged Items List
+                items: payloadItems
             };
+
+            console.log("Sending Payload:", payload); // Debugging
 
             await createServiceDocument(payload);
             message.success("Service Document Created!");
 
-            // 2. Send Email
+            // 5. Handle Email (Existing logic preserved)
             if (pdfBlob) {
                 const file = new File([pdfBlob], getFilename(), { type: "application/pdf" });
                 const emailResponse = await sendEmail(emailForm.to, emailForm.subject, emailForm.body, file);
 
-                // Check if email was sent successfully
                 if (emailResponse && emailResponse.status === "success") {
                     message.success("Email Sent Successfully!");
                     handleCloseModal();
                     downloadPdf();
-
-                    // Navigate to /work after successful email
                     setTimeout(() => {
                         navigate('/work');
                     }, 1000);
@@ -397,7 +411,7 @@ Auto Glass Pro Team`;
     return (
         <div>
             {/* Header */}
-            <div className="flex items-center justify-between mb-4 max-w-7xl">
+            <div className="flex items-center justify-between mb-2 max-w-7xl">
                 <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-fuchsia-600">
                     Quote Details
                 </h3>
@@ -518,7 +532,7 @@ Auto Glass Pro Team`;
             </div>
 
             {/* Totals & Notes */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 <div className="space-y-2">
                     <div>
                         <label className="text-xs text-slate-500 mb-0.5 block">Printable Note</label>
