@@ -6,10 +6,11 @@ import { createCustomer } from "../../api/createCustomer";
 import { updateCustomer } from "../../api/updateCustomer";
 import { createEmployee } from "../../api/createEmployee";
 import { getValidToken } from "../../api/getValidToken";
-import { setLaborRate } from "../../api/setLaborRate";
-import { UserOutlined, TeamOutlined, IdcardOutlined, ShopOutlined, PhoneOutlined, MailOutlined, EnvironmentOutlined, EditOutlined, PlusOutlined, CheckOutlined, CloseOutlined, DollarOutlined, ThunderboltOutlined } from "@ant-design/icons";
-import { Modal, Form, Input, Select, Button, notification, message } from "antd";
+import { UserOutlined, TeamOutlined, IdcardOutlined, ShopOutlined, PhoneOutlined, EnvironmentOutlined, EditOutlined, PlusOutlined, DollarOutlined, ThunderboltOutlined, PercentageOutlined } from "@ant-design/icons";
+import { Modal, Form, Input, Select, Button, notification } from "antd";
 import SmtpConfiguration from "./SmtpConfiguration";
+import LaborRateConfiguration from "./LaborRateConfiguration";
+import TaxRateConfiguration from "./TaxRateConfiguration";
 
 const Profile = () => {
     const [activeTab, setActiveTab] = useState('profile');
@@ -22,10 +23,7 @@ const Profile = () => {
     const [loadingEmployees, setLoadingEmployees] = useState(false);
     const [saving, setSaving] = useState(false);
 
-    // Labor rate editing state
-    const [isEditingLaborRate, setIsEditingLaborRate] = useState(false);
-    const [editedLaborRate, setEditedLaborRate] = useState('');
-    const [savingLaborRate, setSavingLaborRate] = useState(false);
+
 
     // Modals state
     const [isCustomerModalVisible, setIsCustomerModalVisible] = useState(false);
@@ -173,44 +171,6 @@ const Profile = () => {
         }
     };
 
-    // Labor Rate Handlers
-    const handleEditLaborRate = () => {
-        setEditedLaborRate(profile?.laborRate || '');
-        setIsEditingLaborRate(true);
-    };
-
-    const handleSaveLaborRate = async () => {
-        try {
-            setSavingLaborRate(true);
-            const numericRate = parseFloat(editedLaborRate);
-
-            if (isNaN(numericRate) || numericRate <= 0) {
-                notification.error({ message: 'Please enter a valid labor rate' });
-                return;
-            }
-
-            const token = await getValidToken();
-            const result = await setLaborRate(numericRate);
-
-            notification.success({ message: 'Labor rate updated successfully' });
-
-            // Update profile and sessionStorage
-            setProfile(prev => ({ ...prev, laborRate: String(numericRate) }));
-            sessionStorage.setItem('GlobalLaborRate', String(numericRate));
-
-            setIsEditingLaborRate(false);
-        } catch (error) {
-            console.error('Error updating labor rate:', error);
-            notification.error({ message: 'Failed to update labor rate', description: error.message });
-        } finally {
-            setSavingLaborRate(false);
-        }
-    };
-
-    const handleCancelEditLaborRate = () => {
-        setIsEditingLaborRate(false);
-        setEditedLaborRate('');
-    };
 
 
     // Format address helper
@@ -275,51 +235,6 @@ const Profile = () => {
                         <div className="space-y-1">
                             <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">EIN</span>
                             <p className="text-gray-900 font-mono">{profile.ein || "-"}</p>
-                        </div>
-                        <div className="space-y-1">
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
-                                <DollarOutlined className="text-green-600" />
-                                Labor Rate (per hour)
-                            </span>
-                            {isEditingLaborRate ? (
-                                <div className="flex items-center gap-2">
-                                    <Input
-                                        type="number"
-                                        value={editedLaborRate}
-                                        onChange={(e) => setEditedLaborRate(e.target.value)}
-                                        onPressEnter={handleSaveLaborRate}
-                                        prefix="$"
-                                        className="w-40"
-                                        autoFocus
-                                    />
-                                    <Button
-                                        type="primary"
-                                        icon={<CheckOutlined />}
-                                        onClick={handleSaveLaborRate}
-                                        loading={savingLaborRate}
-                                        size="small"
-                                    />
-                                    <Button
-                                        icon={<CloseOutlined />}
-                                        onClick={handleCancelEditLaborRate}
-                                        size="small"
-                                        disabled={savingLaborRate}
-                                    />
-                                </div>
-                            ) : (
-                                <div className="flex items-center gap-2">
-                                    <p className="text-gray-900 font-bold text-xl text-green-600">
-                                        ${profile.laborRate || "0"}
-                                    </p>
-                                    <Button
-                                        type="text"
-                                        icon={<EditOutlined />}
-                                        onClick={handleEditLaborRate}
-                                        size="small"
-                                        className="text-violet-600 hover:text-violet-700"
-                                    />
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>
@@ -559,6 +474,8 @@ const Profile = () => {
                         {renderMenuItem('profile', 'Profile', <UserOutlined />)}
                         {renderMenuItem('customers', 'Customers', <TeamOutlined />)}
                         {renderMenuItem('employees', 'Employees', <IdcardOutlined />)}
+                        {renderMenuItem('laborRate', 'Labor Rate', <DollarOutlined />)}
+                        {renderMenuItem('taxRates', 'Tax Rates', <PercentageOutlined />)}
                         {renderMenuItem('smtp', 'Email (SMTP)', <ThunderboltOutlined />)}
                     </div>
                 </div>
@@ -570,6 +487,8 @@ const Profile = () => {
                     {activeTab === 'profile' && renderProfileContent()}
                     {activeTab === 'customers' && renderCustomersContent()}
                     {activeTab === 'employees' && renderEmployeesContent()}
+                    {activeTab === 'laborRate' && <LaborRateConfiguration />}
+                    {activeTab === 'taxRates' && <TaxRateConfiguration />}
                     {activeTab === 'smtp' && <SmtpConfiguration />}
                 </div>
             </div>

@@ -156,18 +156,42 @@ const Work = () => {
                 return;
             }
 
-            // Prepare data for PDF generator
-            const pdfData = {
-                items: (doc.items || []).map(item => ({
+            // Prepare data for PDF generator - split each item into Part row + Labor row
+            const splitItems = [];
+            (doc.items || []).forEach((item, index) => {
+                const itemId = `item_${index + 1}`;
+
+                // Row 1: The Part
+                splitItems.push({
+                    id: itemId,
                     qty: item.quantity || 1,
                     nagsId: item.nagsGlassId || "",
                     oemId: "",
                     description: item.partDescription || "",
                     unitPrice: item.partPrice || 0,
-                    amount: item.itemTotal || 0,
-                    labor: item.laborHours || 0,
-                    type: item.laborHours > 0 ? "Part" : "Part"
-                })),
+                    amount: item.partPrice || 0,
+                    labor: 0,
+                    type: "Part"
+                });
+
+                // Row 2: The Labor (only if laborRate exists)
+                if (item.laborRate && item.laborRate > 0) {
+                    splitItems.push({
+                        id: `${itemId}_LABOR`,
+                        qty: 1,
+                        nagsId: "",
+                        oemId: "",
+                        description: `Installation Labor - ${item.partDescription || "Glass Part"}`,
+                        unitPrice: item.laborRate || 0,
+                        amount: item.laborRate || 0,
+                        labor: item.laborHours || 0,
+                        type: "Labor"
+                    });
+                }
+            });
+
+            const pdfData = {
+                items: splitItems,
                 customerData: {
                     customerId: doc.customerId,
                     firstName: doc.customerName?.split(' ')[0] || "",
@@ -436,18 +460,42 @@ const Work = () => {
                                                                 </tr>
                                                             </thead>
                                                             <tbody className="divide-y divide-gray-100">
-                                                                {doc.items.map((item, idx) => (
-                                                                    <tr key={idx}>
-                                                                        <td className="px-4 py-3">
-                                                                            <div className="font-medium text-gray-900">{item.partDescription}</div>
-                                                                            <div className="text-xs text-gray-500 font-mono mt-0.5">{item.nagsGlassId}</div>
-                                                                        </td>
-                                                                        <td className="px-4 py-3 text-right text-gray-600">{formatCurrency(item.partPrice)}</td>
-                                                                        <td className="px-4 py-3 text-right text-gray-600">{formatCurrency(item.laborAmount)}</td>
-                                                                        <td className="px-4 py-3 text-center text-gray-900">{item.quantity}</td>
-                                                                        <td className="px-4 py-3 text-right font-bold text-gray-900">{formatCurrency(item.itemTotal)}</td>
-                                                                    </tr>
-                                                                ))}
+                                                                {doc.items.flatMap((item, idx) => {
+                                                                    const rows = [];
+                                                                    const itemId = `item_${idx + 1}`;
+
+                                                                    // Row 1: The Part
+                                                                    rows.push(
+                                                                        <tr key={itemId}>
+                                                                            <td className="px-4 py-3">
+                                                                                <div className="font-medium text-gray-900">{item.partDescription}</div>
+                                                                                <div className="text-xs text-gray-500 font-mono mt-0.5">{item.nagsGlassId}</div>
+                                                                            </td>
+                                                                            <td className="px-4 py-3 text-right text-gray-600">{formatCurrency(item.partPrice)}</td>
+                                                                            <td className="px-4 py-3 text-right text-gray-400">-</td>
+                                                                            <td className="px-4 py-3 text-center text-gray-900">{item.quantity}</td>
+                                                                            <td className="px-4 py-3 text-right font-bold text-gray-900">{formatCurrency(item.partPrice * (item.quantity || 1))}</td>
+                                                                        </tr>
+                                                                    );
+
+                                                                    // Row 2: The Labor (only if laborRate exists)
+                                                                    if (item.laborRate && item.laborRate > 0) {
+                                                                        rows.push(
+                                                                            <tr key={`${itemId}_LABOR`} className="bg-blue-50/50">
+                                                                                <td className="px-4 py-3">
+                                                                                    <div className="font-medium text-blue-700">Installation Labor</div>
+                                                                                    <div className="text-xs text-blue-500 mt-0.5">{item.laborHours || 0} hrs</div>
+                                                                                </td>
+                                                                                <td className="px-4 py-3 text-right text-blue-600">{formatCurrency(item.laborRate)}</td>
+                                                                                <td className="px-4 py-3 text-right text-blue-600">{item.laborHours || 0} hrs</td>
+                                                                                <td className="px-4 py-3 text-center text-blue-700">1</td>
+                                                                                <td className="px-4 py-3 text-right font-bold text-blue-700">{formatCurrency(item.laborRate)}</td>
+                                                                            </tr>
+                                                                        );
+                                                                    }
+
+                                                                    return rows;
+                                                                })}
                                                             </tbody>
                                                         </table>
                                                     </div>
