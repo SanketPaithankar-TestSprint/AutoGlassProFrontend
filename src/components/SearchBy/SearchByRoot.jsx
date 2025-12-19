@@ -143,109 +143,153 @@ const SearchByRoot = () => {
   }, [selectedParts]);
 
 
+  // Lifted Notes State
+  const [printableNote, setPrintableNote] = useState("");
+  const [internalNote, setInternalNote] = useState("");
+
+  const tabs = [
+    { id: 'quote', label: 'Quote' },
+    { id: 'customer', label: 'Customer Information' },
+    { id: 'insurance', label: 'Insurance' },
+    { id: 'attachment', label: 'Attachment' },
+    { id: 'notes', label: 'Notes' },
+  ];
+
   return (
-    <div className="min-h-screen bg-white flex flex-col px-0 pt-16 pb-1">
+    <div className="min-h-screen bg-white flex flex-col px-0 pt-0 pb-1">
       <div className="w-full mx-auto space-y-2 flex flex-col max-w-[98%] 2xl:max-w-[1900px] flex-1">
 
         {/* TABS */}
         <div className="flex justify-start gap-0 border-b border-slate-200 mb-1">
-          <button
-            onClick={() => setActiveTab('quote')}
-            className={`px-6 py-2 font-bold text-sm tracking-wide transition-all border-b-2 ${activeTab === 'quote'
-              ? 'border-gray-900 text-gray-900'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-          >
-            Quote
-          </button>
-          <button
-            onClick={() => setActiveTab('customer')}
-            className={`px-6 py-2 font-bold text-sm tracking-wide transition-all border-b-2 ${activeTab === 'customer'
-              ? 'border-gray-900 text-gray-900'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-          >
-            Customer Information
-          </button>
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-6 py-2 font-bold text-sm tracking-wide transition-all border-b-2 ${activeTab === tab.id
+                ? 'border-gray-900 text-gray-900'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         {/* CONTENT AREA */}
         <div className="flex-1 flex flex-col min-h-0">
 
-          {/* CUSTOMER TAB */}
-          {activeTab === 'customer' && (
-            <div className="w-full p-2">
-              <CustomerPanel
-                formData={customerData}
-                setFormData={setCustomerData}
-                setCanShowQuotePanel={() => { }}
-                setPanel={() => setActiveTab('quote')}
-              />
-            </div>
-          )}
+          <div className="flex-1 flex flex-col gap-2 min-h-0">
+            {/* DYNAMIC TOP CONTENT BASED ON TAB */}
+            <div className="flex-1 overflow-y-auto">
 
-          {/* QUOTE TAB */}
-          {activeTab === 'quote' && (
-            <div className="flex flex-col gap-2 h-full">
+              <div className={activeTab === 'quote' ? 'block' : 'hidden'}>
+                <div className="grid grid-cols-[380px_1fr] gap-2 h-[280px]">
+                  {/* LEFT: SEARCH */}
+                  <div className="border border-slate-200 bg-white p-2 flex flex-col gap-1 overflow-y-auto shadow-sm rounded-lg">
+                    {/* VIN */}
+                    <div>
+                      <h2 className="text-xs font-bold text-slate-800 mb-1 uppercase tracking-wide">Search by VIN:</h2>
+                      <ErrorBoundary>
+                        <SearchByVin autoDecode delayMs={500} onDecoded={handleVinDecoded} />
+                      </ErrorBoundary>
+                    </div>
+                    <hr className="border-slate-100" />
+                    {/* YMM */}
+                    <div className="flex-1 flex flex-col">
+                      <h2 className="text-xs font-bold text-slate-800 mb-1 uppercase tracking-wide">Search by Year Make Model:</h2>
+                      <ErrorBoundary>
+                        <SearchByYMM
+                          value={vehicleInfo}
+                          onModelIdFetched={(id) => setModelId(id)}
+                          onVehicleInfoUpdate={handleVehicleInfoUpdate}
+                          className="w-full h-full"
+                          showSearch={true}
+                        />
+                      </ErrorBoundary>
+                    </div>
 
-              {/* TOP ROW: Search (Left) + Graphic/Parts (Right) */}
-              <div className="grid grid-cols-[320px_1fr] gap-2 h-[340px]">
-
-                {/* LEFT: SEARCH */}
-                <div className="border border-slate-200 bg-white p-2 flex flex-col gap-1 overflow-y-auto shadow-sm rounded-lg">
-                  {/* VIN */}
-                  <div>
-                    <h2 className="text-xs font-bold text-slate-800 mb-1 uppercase tracking-wide">Search by VIN:</h2>
-                    <ErrorBoundary>
-                      <SearchByVin autoDecode delayMs={500} onDecoded={handleVinDecoded} />
-                    </ErrorBoundary>
-                  </div>
-                  <hr className="border-slate-100" />
-                  {/* YMM */}
-                  <div>
-                    <h2 className="text-xs font-bold text-slate-800 mb-1 uppercase tracking-wide">Search by Year Make Model:</h2>
-                    <ErrorBoundary>
-                      <SearchByYMM
-                        value={vehicleInfo}
-                        onModelIdFetched={(id) => setModelId(id)}
-                        onVehicleInfoUpdate={handleVehicleInfoUpdate}
-                        className="w-full"
-                        showSearch={true}
-                      />
-                    </ErrorBoundary>
                   </div>
 
-                </div>
-
-                {/* RIGHT: GRAPHIC & PARTS */}
-                <div className={`border border-slate-200 bg-white p-0 overflow-hidden shadow-sm rounded-lg flex flex-col ${!modelId ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
-
-                  <div className="flex-1 overflow-hidden relative">
-                    <ErrorBoundary>
-                      <CarGlassViewer
-                        modelId={modelId}
-                        vehicleInfo={vehicleInfo}
-                        onPartSelect={handleAddPart}
-                        onPartDeselect={handleRemovePart}
-                      />
-                    </ErrorBoundary>
+                  {/* RIGHT: GRAPHIC & PARTS */}
+                  <div className={`border border-slate-200 bg-white p-0 overflow-hidden shadow-sm rounded-lg flex flex-col ${!modelId ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
+                    <div className="flex-1 overflow-hidden relative">
+                      <ErrorBoundary>
+                        <CarGlassViewer
+                          modelId={modelId}
+                          vehicleInfo={vehicleInfo}
+                          onPartSelect={handleAddPart}
+                          onPartDeselect={handleRemovePart}
+                        />
+                      </ErrorBoundary>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* BOTTOM ROW: QUOTE DETAILS */}
-              <div className={`border-t-2 border-slate-800 bg-white shadow-sm ${!modelId && invoiceItems.length === 0 ? 'opacity-50' : ''}`}>
+              {activeTab === 'customer' && (
+                <div className="w-full p-2">
+                  <CustomerPanel
+                    formData={customerData}
+                    setFormData={setCustomerData}
+                    setCanShowQuotePanel={() => { }}
+                    setPanel={() => setActiveTab('quote')}
+                  />
+                </div>
+              )}
+
+              {activeTab === 'insurance' && (
+                <div className="p-8 text-center text-slate-400 italic">
+                  Insurance information form will appear here.
+                </div>
+              )}
+
+              {activeTab === 'attachment' && (
+                <div className="p-8 text-center text-slate-400 italic">
+                  Attachments upload will appear here.
+                </div>
+              )}
+
+              {activeTab === 'notes' && (
+                <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700">Printable Note</label>
+                    <textarea
+                      rows={6}
+                      value={printableNote}
+                      onChange={(e) => setPrintableNote(e.target.value)}
+                      className="w-full rounded border border-slate-300 p-2 text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none"
+                      placeholder="Notes visible to the customer on the quote/invoice..."
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700">Internal Note</label>
+                    <textarea
+                      rows={6}
+                      value={internalNote}
+                      onChange={(e) => setInternalNote(e.target.value)}
+                      className="w-full rounded border border-slate-300 p-2 text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none bg-yellow-50"
+                      placeholder="Internal notes for office use only..."
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* BOTTOM ROW: QUOTE DETAILS (ALWAYS VISIBLE) */}
+              <div className={`flex-shrink-0 border-t-2 border-slate-800 bg-white shadow-sm mt-2 ${!modelId && invoiceItems.length === 0 ? 'opacity-50' : ''}`}>
                 <div className="p-2">
                   <QuotePanel
                     parts={invoiceItems}
                     onRemovePart={handleRemovePart}
                     customerData={customerData}
+                    printableNote={printableNote}
+                    internalNote={internalNote}
                   />
                 </div>
               </div>
 
             </div>
-          )}
+          </div>
+
         </div>
 
       </div>

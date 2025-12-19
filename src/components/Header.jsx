@@ -74,7 +74,7 @@ const useIsMobile = () => {
   return isMobile;
 };
 
-const Header = () => {
+const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
   const isMobile = useIsMobile();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -105,7 +105,11 @@ const Header = () => {
   const handleLoginSuccess = () => {
     setIsAuthed(true);
     setLoginModalOpen(false);
-    navigate("/search-by-root");
+    if (onParentLoginSuccess) {
+      onParentLoginSuccess();
+    } else {
+      navigate("/search-by-root");
+    }
   };
 
   const menuItems = [

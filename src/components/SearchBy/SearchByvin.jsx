@@ -84,16 +84,17 @@ export default function SearchByVin({
           value={vin}
           onChange={handleChange}
           maxLength={17}
-          size="large"
+          size="middle"
           placeholder="17-character VIN"
           aria-label="Vehicle Identification Number"
-          prefix={<SearchOutlined className="text-violet-500" />}
+          prefix={<SearchOutlined className="text-violet-400" />}
           className="
-            !h-11 !rounded-xl
+            !h-9 !rounded-lg
             !bg-white
             !border-slate-200 hover:!border-violet-400 focus:!border-violet-500
-            focus:!shadow-[0_0_0_1px_rgba(139,92,246,0.7)]
-            !text-black !font-bold placeholder:!text-slate-400
+            focus:!shadow-[0_0_0_1px_rgba(139,92,246,0.5)]
+            !text-black !font-medium placeholder:!text-slate-400
+            !text-sm
             transition-all duration-200
             flex-1
           "
@@ -103,7 +104,7 @@ export default function SearchByVin({
 
         <button
           type="button"
-          className="h-11 px-6 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-medium text-sm transition-colors disabled:opacity-60 whitespace-nowrap"
+          className="h-9 px-4 rounded-lg bg-violet-500 hover:bg-violet-600 text-white font-medium text-sm transition-colors disabled:opacity-60 whitespace-nowrap"
           onClick={handleDecode}
           disabled={loading || !isValid}
         >

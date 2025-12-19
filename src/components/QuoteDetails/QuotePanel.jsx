@@ -32,7 +32,7 @@ function NumberRow({ label, value, setter }) {
                 type="number"
                 value={value}
                 onChange={(e) => setter(e.target.value)}
-                className="w-24 rounded border border-slate-300 px-2 py-1 text-right"
+                className="w-20 rounded border border-slate-300 px-2 py-1 text-right text-sm"
             />
         </div>
     );
@@ -94,7 +94,7 @@ class ErrorBoundary extends React.Component {
     }
 }
 
-function QuotePanelContent({ parts = [], onRemovePart, customerData }) {
+function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNote, internalNote }) {
     const navigate = useNavigate();
     const [items, setItems] = useState(parts.length ? parts : [newItem()]);
     const [userProfile, setUserProfile] = useState(() => {
@@ -115,52 +115,18 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData }) {
 
     useEffect(() => {
         setItems((prevItems) => {
-            // Create a map of existing items that CAME from parts (based on IDs)
-            // Manual items (random IDs) won't be in the parts list, so we keep them if they exist
-            // Actually, a simpler strategy:
-            // 1. Keep manual items (those strictly NOT matching any incoming part ID or generated labor ID)
-            // 2. Overwrite/Add incoming parts
-            // But wait, parts changed means the user selected/deselected something.
-            // When parts prop changes, it sends the "correct" list of managed items.
-            // We should just "merge" manual items back in.
-
-            // Identify managed IDs from the NEW parts list
-            const newPartIds = new Set(parts.map(p => p.id));
-
-            // Keep existing manual items (items NOT in the new managed list, but also check if they were managed before?)
-            // A better way: The parent (QuoteDetails) controls the "managed" items. 
-            // Any item in `prevItems` that is NOT found in `parts` (and wasn't a previously managed item) is manual.
-            // However, we don't track which were managed easily unless we use a flag. 
-            // Let's assume manual items have random IDs not containing pipes `|`. 
-            // Or better: QuoteDetails generates specific ID formats.
-
-            // Simple approach: 
-            // Take all new parts.
-            // Take all existing items that are NOT found in the previous parts set... 
-            // Actually simplest: User adds "Custom Item". It has a random ID.
-            // QuoteDetails sends "Invoice Items". 
-            // We want `items = [...parts, ...manualItems]`.
-
             const currentManualItems = prevItems.filter(it => it.isManual);
-
-            // Merge: New Parts + Existing Manual Items
             return [...parts, ...currentManualItems];
         });
     }, [parts]);
 
-    const [printableNote, setPrintableNote] = useState("");
-    const [internalNote, setInternalNote] = useState("");
+    // Local State Deleted: Notes are now passed as props
 
     const handleDeleteItem = (id) => {
-        // 1. Notify parent to remove (if it's a managed part)
         onRemovePart?.(id);
-
-        // 2. Optimistically remove from local state
-        // This handles "TOTAL_LABOR" (which parent ignores) and gives instant feedback for parts
         setItems((prev) => prev.filter((it) => it.id !== id));
     };
 
-    // Labor cost is now just the sum of items with type 'Labor'
     const laborCostDisplay = items.filter(it => it.type === 'Labor').reduce((sum, it) => sum + (Number(it.amount) || 0), 0);
 
     const [globalTaxRate, setGlobalTaxRate] = useState(0);
@@ -171,14 +137,11 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData }) {
         setItems((prev) => prev.map((it) => {
             if (it.id !== id) return it;
             const updated = { ...it, [key]: value };
-
-            // For Labor items: Amount = Unit Price (lump sum, ignore hours)
             if (it.type === 'Labor') {
                 if (key === 'unitPrice') {
                     updated.amount = Number(value) || 0;
                 }
             } else {
-                // Standard behavior for Parts: Auto-calc amount if qty or unitPrice changes
                 if (key === 'qty' || key === 'unitPrice') {
                     updated.amount = (Number(updated.qty) || 0) * (Number(updated.unitPrice) || 0);
                 }
@@ -196,20 +159,17 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData }) {
             type: type
         };
 
-        // Auto-populate labor rate for Labor items
         if (type === "Labor") {
             newItemData.unitPrice = globalLaborRate;
-            newItemData.labor = 1; // Default 1 hour
-            newItemData.pricingType = "hourly"; // Default to hourly pricing
-            newItemData.amount = globalLaborRate; // 1 hour × rate
+            newItemData.labor = 1;
+            newItemData.pricingType = "hourly";
+            newItemData.amount = globalLaborRate;
         }
 
         setItems(prev => [...prev, newItemData]);
     };
 
     const subtotal = useMemo(() => items.reduce((sum, it) => sum + (Number(it.amount) || 0), 0), [items]);
-    // Only sum labor hours from Labor-type items to avoid double counting
-    // (Part items also have a labor field for reference, but shouldn't be counted in total hours)
     const totalHours = useMemo(() =>
         items
             .filter(it => it.type === 'Labor')
@@ -220,7 +180,6 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData }) {
     const discountAmount = useMemo(() => {
         return (subtotal * (Number(discountPercent) || 0)) / 100;
     }, [subtotal, discountPercent]);
-    // Labor is now in subtotal, so don't add it again
     const total = useMemo(() => Math.max(0, subtotal + totalTax - discountAmount), [subtotal, totalTax, discountAmount]);
     const numericPayment = Number(payment) || 0;
     const balance = useMemo(() => Math.max(0, total - numericPayment), [total, numericPayment]);
@@ -243,7 +202,7 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData }) {
             total,
             balance,
             docType,
-            printableNote
+            printableNote // Passed from props
         });
     };
 
@@ -274,7 +233,6 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData }) {
             return;
         }
 
-        // Validation: Check for 0 amounts
         const invalidItems = items.filter(it => !Number(it.amount) || Number(it.amount) === 0);
         if (invalidItems.length > 0) {
             message.error(`Please enter a valid amount for: ${invalidItems.map(it => it.type === 'Labor' ? 'Labor' : (it.description || 'Item')).join(', ')}`);
@@ -288,7 +246,6 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData }) {
         setPreviewUrl(url);
         setShowEmailModal(true);
 
-        // precise default values for email
         const subject = `Your Auto Glass ${docType} - ${customerData.vehicleYear} ${customerData.vehicleMake} ${customerData.vehicleModel}`;
         const body = `Dear ${customerData.firstName} ${customerData.lastName},
 
@@ -313,27 +270,16 @@ Auto Glass Pro Team`;
         setPdfBlob(null);
     };
 
-    // Replaced legacy handleGenerateAndSend with handleOpenPreview via render at bottom
     const handleConfirmAndSend = async () => {
         try {
             setEmailLoading(true);
 
-            // 1. Separate Parts and Labor
-            // We differentiate them by type
             const partItems = items.filter(it => it.type !== 'Labor');
             const laborItems = items.filter(it => it.type === 'Labor');
-
-            // 2. Calculate Total Global Labor (Sum of all labor row amounts)
-            // As per your request: simple sum of the flat rates (amounts)
             const totalLaborAmount = laborItems.reduce((sum, labor) => sum + (Number(labor.amount) || 0), 0);
 
-            // 3. Create the Merged Items Payload
-            // We loop through parts and try to find their "partner" labor row
             const payloadItems = partItems.map((part) => {
-                // Find the linked labor row. 
-                // Logic: matches if labor.id equals "partID_LABOR"
                 const linkedLabor = laborItems.find(l => l.id === `${part.id}_LABOR`);
-
                 return {
                     itemType: "part", // Fixed value or dynamic based on logic
                     prefixCd: part.prefixCd || "",
@@ -341,24 +287,18 @@ Auto Glass Pro Team`;
                     sideCd: part.sideCd || "",
                     nagsGlassId: part.nagsId || "MISC",
                     partDescription: part.description || "",
-
-                    // PART PRICING
                     partPrice: Number(part.unitPrice) || 0,
                     quantity: Number(part.qty) || 1,
-
-                    // LABOR MERGING (The critical fix)
-                    // We take the flat rate (amount) from the linked labor row
                     laborRate: linkedLabor ? (Number(linkedLabor.amount) || 0) : 0,
                     laborHours: linkedLabor ? (Number(linkedLabor.labor) || 0) : 0,
                 };
             });
 
-            // 4. Construct the Final Payload
             const payload = {
                 documentType: docType.toLowerCase().replace(" ", "") === "workorder" ? "invoice" : docType.toLowerCase(),
                 customerId: customerData.customerId || 0,
                 vehicleId: customerData.vehicleId || 0,
-                employeeId: 0, // Set default or dynamic
+                employeeId: 0,
                 serviceLocation: "mobile",
                 serviceAddress: `${customerData.addressLine1 || ''}, ${customerData.city || ''}, ${customerData.state || ''} ${customerData.postalCode || ''}`,
                 documentDate: new Date().toISOString(),
@@ -366,24 +306,19 @@ Auto Glass Pro Team`;
                 estimatedCompletion: new Date().toISOString(),
                 dueDate: new Date().toISOString().split('T')[0],
                 paymentTerms: "Due upon receipt",
-                notes: printableNote,
+                notes: printableNote, // Use prop
                 termsConditions: "Warranty valid for 12 months on workmanship.",
-
-                // Financial Totals
                 taxRate: Number(globalTaxRate) || 0,
-                discountAmount: discountAmount, // Derived from your existing memo
-                laborAmount: totalLaborAmount,  // The global sum we calculated in step 2
-
-                // The Merged Items List
+                discountAmount: discountAmount,
+                laborAmount: totalLaborAmount,
                 items: payloadItems
             };
 
-            console.log("Sending Payload:", payload); // Debugging
+            console.log("Sending Payload:", payload);
 
             await createServiceDocument(payload);
             message.success("Service Document Created!");
 
-            // 5. Handle Email (Existing logic preserved)
             if (pdfBlob) {
                 const file = new File([pdfBlob], getFilename(), { type: "application/pdf" });
                 const emailResponse = await sendEmail(emailForm.to, emailForm.subject, emailForm.body, file);
@@ -415,96 +350,85 @@ Auto Glass Pro Team`;
                 <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-fuchsia-600">
                     Quote Details
                 </h3>
-                <span className={`inline-flex items-center rounded-full px-3 py-0.5 text-[11px] font-medium border ${docType === "Quote" ? "border-sky-500/60 bg-sky-500/10 text-sky-200" : docType === "Work Order" ? "border-amber-400/70 bg-amber-400/10 text-amber-100" : "border-emerald-400/70 bg-emerald-400/10 text-emerald-100"}`}>{docType}</span>
             </div>
 
             {/* Line Items Table */}
-            <div className="overflow-x-auto mb-2 border border-slate-200 bg-white">
-                <table className="min-w-full divide-y divide-slate-200">
-                    <thead className="bg-slate-50">
-                        <tr className="text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                            <th className="px-3 py-2 min-w-[120px]">Part</th>
-                            <th className="px-3 py-2 min-w-[90px]">OEM ID</th>
-                            <th className="px-3 py-2 min-w-[180px]">Description</th>
-                            <th className="px-3 py-2 min-w-[120px]">Manufacturer</th>
-                            <th className="px-3 py-2 text-right min-w-[70px]">Qty</th>
-                            <th className="px-3 py-2 text-right min-w-[90px]">List Price</th>
-                            <th className="px-3 py-2 text-right min-w-[90px]">Amount</th>
-                            <th className="px-2 py-2 w-8"></th>
+            <div className="overflow-x-auto overflow-y-auto max-h-[180px] mb-2 border border-slate-300 bg-white shadow-sm rounded-sm">
+                <table className="min-w-full divide-y divide-slate-300">
+                    <thead className="bg-slate-50 sticky top-0 z-10 shadow-sm">
+                        <tr className="text-left text-[11px] font-semibold text-slate-800 tracking-tight">
+                            <th className="px-1 py-0.5 min-w-[60px] border-r border-slate-300 bg-slate-50">Part</th>
+                            <th className="px-1 py-0.5 min-w-[400px] border-r border-slate-300 bg-slate-50">Description</th>
+                            <th className="px-1 py-0.5 min-w-[60px] border-r border-slate-300 bg-slate-50">Manufacturer</th>
+                            <th className="px-1 py-0.5 text-right min-w-[50px] border-r border-slate-300 bg-slate-50">Quantity</th>
+                            <th className="px-1 py-0.5 text-right min-w-[50px] border-r border-slate-300 bg-slate-50">List</th>
+                            <th className="px-1 py-0.5 text-right min-w-[50px] border-r border-slate-300 bg-slate-50">Amount</th>
+                            <th className="px-1 py-0.5 w-5 bg-slate-50"></th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-slate-100">
+                    <tbody className="bg-white divide-y divide-slate-300">
                         {items.map((it) => (
                             <tr key={it.id} className="hover:bg-slate-50 transition group">
-                                <td className="px-3 py-2">
+                                <td className="px-1 py-0.5 border-r border-slate-300">
                                     <input
                                         value={it.type === 'Labor' ? "LABOR" : it.nagsId}
                                         onChange={(e) => it.type !== 'Labor' && updateItem(it.id, "nagsId", e.target.value)}
-                                        className={`w-full h-8 rounded border border-slate-300 px-2 text-xs focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none ${it.type === 'Labor' ? 'bg-slate-100 text-slate-500' : ''}`}
+                                        className={`w-full h-5 rounded px-1 text-[11px] outline-none focus:bg-white bg-transparent ${it.type === 'Labor' ? 'text-slate-500' : 'text-slate-900 font-medium'}`}
                                         placeholder="Part No"
                                         disabled={it.type === 'Labor'}
                                     />
                                 </td>
-                                <td className="px-3 py-2">
-                                    <input
-                                        value={it.oemId}
-                                        onChange={(e) => updateItem(it.id, "oemId", e.target.value)}
-                                        className={`w-full h-8 rounded border border-slate-300 px-2 text-xs focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none ${(!it.isManual && it.type === 'Labor') ? 'bg-slate-100 text-slate-500' : ''}`}
-                                        placeholder="OEM"
-                                        disabled={!it.isManual && it.type === 'Labor'}
-                                    />
-                                </td>
-                                <td className="px-3 py-2">
+                                <td className="px-1 py-0.5 border-r border-slate-300">
                                     <input
                                         value={it.type === 'Labor' ? `Labor ${it.labor || 0} hours` : it.description}
                                         onChange={(e) => updateItem(it.id, "description", e.target.value)}
-                                        className={`w-full h-8 rounded border border-slate-300 px-2 text-xs focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none ${it.type === 'Labor' ? 'bg-slate-100 text-slate-500' : ''}`}
+                                        className={`w-full h-5 rounded px-1 text-[11px] outline-none focus:bg-white bg-transparent ${it.type === 'Labor' ? 'text-slate-500' : 'text-slate-700'}`}
                                         disabled={it.type === 'Labor'}
                                     />
                                 </td>
-                                <td className="px-3 py-2">
+                                <td className="px-1 py-0.5 border-r border-slate-300">
                                     <input
                                         value={it.manufacturer}
                                         onChange={(e) => updateItem(it.id, "manufacturer", e.target.value)}
-                                        className={`w-full h-8 rounded border border-slate-300 px-2 text-xs focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none ${(!it.isManual && it.type === 'Labor') ? 'bg-slate-100 text-slate-500' : ''}`}
+                                        className={`w-full h-5 rounded px-1 text-[11px] outline-none focus:bg-white bg-transparent ${(!it.isManual && it.type === 'Labor') ? 'text-slate-400' : 'text-slate-600'}`}
                                         disabled={!it.isManual && it.type === 'Labor'}
                                     />
                                 </td>
-                                <td className="px-3 py-2 text-right">
+                                <td className="px-1 py-0.5 text-right border-r border-slate-300">
                                     <input
                                         type="number"
                                         value={it.qty}
                                         onChange={(e) => updateItem(it.id, "qty", e.target.value)}
-                                        className={`w-full h-8 rounded border border-slate-300 px-2 text-xs text-right focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none ${(!it.isManual && it.type === 'Labor') ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : ''}`}
+                                        className={`w-full h-5 rounded px-1 text-[11px] text-right outline-none focus:bg-white bg-transparent ${(!it.isManual && it.type === 'Labor') ? 'text-slate-400 cursor-not-allowed' : 'text-slate-700'}`}
                                         disabled={!it.isManual && it.type === 'Labor'}
                                     />
                                 </td>
-                                <td className="px-3 py-2 text-right">
+                                <td className="px-1 py-0.5 text-right border-r border-slate-300">
                                     <input
                                         type="number"
                                         value={it.unitPrice}
                                         onChange={(e) => updateItem(it.id, "unitPrice", e.target.value)}
-                                        className={`w-full h-8 rounded border border-slate-300 px-2 text-xs text-right focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none ${(!it.isManual && it.type === 'Labor') ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : ''}`}
+                                        className={`w-full h-5 rounded px-1 text-[11px] text-right outline-none focus:bg-white bg-transparent ${(!it.isManual && it.type === 'Labor') ? 'text-slate-400 cursor-not-allowed' : 'text-slate-700'}`}
                                         disabled={!it.isManual && it.type === 'Labor'}
                                     />
                                 </td>
-                                <td className="px-3 py-2 text-right font-medium text-xs">
-                                    <div className="flex flex-col items-end gap-1">
+                                <td className="px-1 py-0.5 text-right font-medium text-[11px] border-r border-slate-300">
+                                    <div className="flex flex-col items-end gap-0 h-full justify-center">
                                         <input
                                             type="number"
                                             value={it.amount}
                                             onChange={(e) => updateItem(it.id, "amount", e.target.value)}
-                                            className={`w-24 rounded border px-2 py-1 text-right text-xs outline-none focus:ring-1 ${(!Number(it.amount) || Number(it.amount) === 0) ? 'border-red-500 focus:border-red-500 bg-red-50 text-red-700' : 'border-slate-300 focus:border-violet-500 focus:ring-violet-500'}`}
+                                            className={`w-full rounded px-1 py-0 text-right text-[11px] outline-none h-5 focus:bg-white bg-transparent ${(!Number(it.amount) || Number(it.amount) === 0) ? 'text-red-600 font-bold bg-red-50' : 'text-slate-900 bg-sky-50'}`}
                                         />
                                         {(!Number(it.amount) || Number(it.amount) === 0) && (
-                                            <span className="text-[10px] text-red-500 font-semibold">Required</span>
+                                            <span className="hidden">Required</span>
                                         )}
                                     </div>
                                 </td>
-                                <td className="px-2 py-2 text-center">
-                                    <button type="button" onClick={() => handleDeleteItem(it.id)} className="text-slate-300 hover:text-red-500 transition-colors p-1 rounded-full hover:bg-red-50" title="Remove Item">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                <td className="px-1 py-0.5 text-center">
+                                    <button type="button" onClick={() => handleDeleteItem(it.id)} className="text-slate-300 hover:text-red-500 transition-colors p-0.5 rounded hover:bg-red-50" title="Remove Item">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                                         </svg>
                                     </button>
                                 </td>
@@ -518,49 +442,45 @@ Auto Glass Pro Team`;
                 <Dropdown
                     menu={{
                         items: [
-                            { key: 'Part', label: 'Add Part' },
-                            { key: 'Labor', label: 'Add Labor' },
-                            { key: 'Service', label: 'Add Service' }
+                            { key: 'Part', label: <span className="text-[11px]">Add Part</span> },
+                            { key: 'Labor', label: <span className="text-[11px]">Add Labor</span> },
+                            { key: 'Service', label: <span className="text-[11px]">Add Service</span> }
                         ],
                         onClick: (e) => handleAddRow(e.key)
                     }}
                 >
-                    <button className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-sm font-medium transition-colors">
-                        Add Item <DownOutlined />
+                    <button className="flex items-center gap-1 px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded text-[11px] font-medium transition-colors">
+                        Add <DownOutlined className="text-[9px]" />
                     </button>
                 </Dropdown>
             </div>
 
-            {/* Totals & Notes */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <div className="space-y-2">
-                    <div>
-                        <label className="text-xs text-slate-500 mb-0.5 block">Printable Note</label>
-                        <textarea rows={2} value={printableNote} onChange={(e) => setPrintableNote(e.target.value)} className="w-full rounded border border-slate-300 px-2 py-1 text-xs" placeholder="Notes for the customer..." />
-                    </div>
-                    <div>
-                        <label className="text-xs text-slate-500 mb-0.5 block">Internal Note</label>
-                        <textarea rows={2} value={internalNote} onChange={(e) => setInternalNote(e.target.value)} className="w-full rounded border border-slate-300 px-2 py-1 text-xs" placeholder="Internal use only..." />
-                    </div>
-                </div>
-                <div className="bg-slate-50 border border-slate-200 p-2 space-y-2">
+            {/* Totals & Actions (Notes removed) */}
+            <div className="flex justify-end gap-4 mt-2">
+                <div className="bg-slate-50 border border-slate-200 p-3 space-y-2 w-full md:w-1/2 lg:w-1/3 rounded-lg shadow-sm">
                     <Row label="Subtotal" value={currency(subtotal)} />
-                    <Row label="Subtotal" value={currency(subtotal)} />
-                    {/* Labor is now in subtotal, but show hours for reference */}
-                    <div className="flex justify-between text-xs text-slate-400 px-1">
-                        <span>Total Labor Hours</span>
-                        <span>{totalHours.toFixed(1)} hrs</span>
-                    </div>
-                    <NumberRow label="Tax %" value={globalTaxRate} setter={setGlobalTaxRate} />
-                    <Row label="Tax Total" value={currency(totalTax)} />
+
+                    {/* Tax % Removed as requested, assuming Tax Amount is 0 or calculated elsewhere if needed */}
+                    <Row label="Tax" value={currency(totalTax)} />
+
                     <NumberRow label="Discount %" value={discountPercent} setter={setDiscountPercent} />
-                    {Number(discountPercent) > 0 && <Row label="Discount Amount" value={`- ${currency(discountAmount)}`} />}
+                    {Number(discountPercent) > 0 && <Row label="Discount" value={`- ${currency(discountAmount)}`} />}
+
+                    <div className="my-1 border-t border-slate-200"></div>
+
                     <Row label="Total" value={currency(total)} bold />
-                    <NumberRow label="Payment Received" value={payment} setter={setPayment} />
-                    <Row label="Balance Due" value={currency(balance)} bold />
-                    <div className="pt-4 flex justify-end">
-                        <button onClick={handleOpenPreview} className="px-4 py-2 rounded-lg bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white text-sm font-semibold shadow-md hover:from-violet-400 hover:to-fuchsia-400 transition">
-                            Generate & Send {docType}
+                    <NumberRow label="Paid" value={payment} setter={setPayment} />
+
+                    <div className="my-1 border-t border-slate-200"></div>
+
+                    <Row label="Balance" value={currency(balance)} bold />
+
+                    <div className="pt-2 flex justify-between items-center bg-white rounded-lg p-2">
+                        <span className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium border ${docType === "Quote" ? "border-sky-500/60 bg-sky-500/10 text-emerald-600" : docType === "Work Order" ? "border-amber-400/70 bg-amber-400/10 text-amber-600" : "border-emerald-400/70 bg-emerald-400/10 text-emerald-600"}`}>
+                            {docType}
+                        </span>
+                        <button onClick={handleOpenPreview} className="px-4 py-2 rounded bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-sm font-semibold shadow hover:from-violet-500 hover:to-fuchsia-500 transition">
+                            Generate {docType}
                         </button>
                     </div>
                 </div>

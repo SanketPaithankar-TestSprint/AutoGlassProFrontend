@@ -151,36 +151,69 @@ export default function SearchByYMM({
     };
   }, [year, make]);
 
-  // Fetch model ID when "Find Parts" is clicked
-  const handleFindParts = async () => {
-    if (!year || !make || !model) return;
+  const lastFetchedYMM = useRef(""); // Track last fetched key to prevent loops
+
+  // Reusable fetch function
+  const fetchModelId = async (y, m, mod) => {
+    if (!y || !m || !mod) return;
+
+    // Prevent Fetch Loop: If we are already loading or already fetched this exact combo, maybe skip? 
+    // But we need to allow "Retry" if user clicks button. 
+    // We update the ref mainly to stop the EFFECT from triggering.
+    const key = `${y}|${m}|${mod}`;
+    lastFetchedYMM.current = key;
 
     setLoadingModelId(true);
     try {
-      const data = await getModelId(year, make, model);
-      const modelId = data?.model_id || null;
-      setModelId(modelId);
+      const data = await getModelId(y, m, mod);
+      const mId = data?.model_id || null;
+      setModelId(mId);
       setModelImage(data?.image || null);
       setModelDescription(data?.description || null);
 
-      onModelIdFetched?.(modelId); // Pass modelId to parent
+      onModelIdFetched?.(mId);
       onVehicleInfoUpdate?.({
-        year,
-        make,
-        model,
+        year: y,
+        make: m,
+        model: mod,
         image: data?.image || null,
         description: data?.description || null
-      }); // Pass vehicle info to parent
-      message.success(`Model ID fetched: ${modelId}`);
+      });
+      message.success(`Model ID fetched: ${mId}`);
     } catch (error) {
       console.error("Failed to fetch model ID:", error);
       message.error("Failed to fetch model ID. Please try again.");
       setModelId(null);
       setModelImage(null);
       setModelDescription(null);
+      lastFetchedYMM.current = ""; // Reset on failure so we can retry or effect can retry
     } finally {
       setLoadingModelId(false);
     }
+  };
+
+  // Sync state with value prop and AUTO-FETCH if complete
+  useEffect(() => {
+    if (value) {
+      const { year: y, make: m, model: mod } = value;
+      setYear(y || null);
+      setMake(m || null);
+      setModel(mod || null);
+
+      // Auto-trigger if we have all 3 parts from a likely VIN decode or external update
+      if (y && m && mod) {
+        const key = `${y}|${m}|${mod}`;
+        // Only fetch if it's a NEW combination we haven't just fetched
+        if (key !== lastFetchedYMM.current) {
+          fetchModelId(y, m, mod);
+        }
+      }
+    }
+  }, [value]);
+
+  // Fetch model ID when "Find Parts" is clicked
+  const handleFindParts = () => {
+    fetchModelId(year, make, model);
   };
 
   const handleYear = (v) => {
@@ -208,9 +241,9 @@ export default function SearchByYMM({
   };
 
   return (
-    <div className={className}>
+    <div className={`${className} flex flex-col h-full`}>
       {/* Grid: Year / Make / Model - Customized Layout */}
-      <div className="flex flex-col gap-2 w-full">
+      <div className="flex flex-col gap-2 w-full flex-1">
         {/* Row 1: Year & Make */}
         <div className="grid grid-cols-2 gap-2">
           {/* Year */}
@@ -245,8 +278,8 @@ export default function SearchByYMM({
           </div>
         </div>
 
-        {/* Row 2: Model */}
-        <div className="w-full">
+        {/* Row 2: Model & Button */}
+        <div className="w-full flex-1 flex flex-col">
           <label className="block text-gray-800 text-xs font-medium mb-1">Model</label>
           <Select
             size="middle"
@@ -259,13 +292,13 @@ export default function SearchByYMM({
             options={toOptions(models, "ModelName", "ModelName")}
             showSearch={showSearch}
           />
-          <div className="mt-6">
+          <div className="mt-2 flex-1 flex flex-col">
             <Button
               onClick={handleFindParts}
               disabled={disabled || !model || !year || !make}
               loading={loadingModelId}
               block
-              className="w-full py-3 bg-white border border-slate-800 text-slate-900 font-semibold text-sm hover:!bg-slate-50 hover:!text-slate-900 transition-colors !rounded-none !h-auto shadow-sm"
+              className="w-full bg-white border border-slate-800 text-slate-900 font-semibold text-sm hover:!bg-slate-50 hover:!text-slate-900 transition-colors !rounded-none shadow-sm flex-1 h-full min-h-[40px]"
             >
               Find Parts
             </Button>

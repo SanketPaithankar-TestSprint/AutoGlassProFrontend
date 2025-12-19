@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Select } from "antd";
+import { Select, Modal } from "antd";
 import config from "../../config";
 
 const { Option, OptGroup } = Select;
@@ -22,6 +22,7 @@ export default function CarGlassViewer({
   const [glassGroups, setGlassGroups] = useState({});
   const [error, setError] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
 
   // Active viewing state (master-detail pattern)
   const [selectedGlassCodes, setSelectedGlassCodes] = useState([]); // Array of strings (codes)
@@ -275,11 +276,12 @@ export default function CarGlassViewer({
   };
 
   // Remove entire glass type selection
+  // Remove entire glass type selection
   const handleRemoveGlassType = (e, glassCode) => {
-    e.stopPropagation(); // prevent accordion toggle
+    e.stopPropagation();
 
-    // 1. Remove from selectedGlassTypes
-    setSelectedGlassTypes((prev) => prev.filter(item => item.glass.code !== glassCode));
+    // 1. Remove from selectedGlassCodes
+    setSelectedGlassCodes((prev) => prev.filter(c => c !== glassCode));
 
     // 2. Identify parts to remove
     const partsToRemove = selectedParts.filter(p => p.glass.code === glassCode);
@@ -348,8 +350,17 @@ export default function CarGlassViewer({
 
           return (
             <div key={code} className="flex flex-col space-y-1">
-              <div className="flex items-center gap-2 pb-1 border-b border-slate-100">
+              <div className="flex items-center justify-between gap-2 pb-1 border-b border-slate-100 group/header">
                 <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded uppercase tracking-wide">{label}</span>
+                <button
+                  onClick={(e) => handleRemoveGlassType(e, code)}
+                  className="text-slate-400 hover:text-red-500 transition-colors p-1 rounded hover:bg-red-50"
+                  title="Remove this glass type"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
               {parts.map((part, index) => {
                 const partId = part.nags_glass_id || part.oem_glass_id;
@@ -373,7 +384,7 @@ export default function CarGlassViewer({
                       }
                     }}
                     className={`
-                                group flex items-center gap-3 p-1 cursor-pointer transition-colors border border-slate-200 rounded
+                                group flex items-center gap-2 p-0.5 px-2 cursor-pointer transition-colors border border-slate-200 rounded
                                 ${isSelected ? "bg-blue-50/50 border-blue-300" : "hover:bg-slate-50 bg-white"}
                             `}
                   >
@@ -401,12 +412,12 @@ export default function CarGlassViewer({
                           {part.nags_glass_id || "Unknown ID"}{part.glass_info?.ta ? ` ${part.glass_info.ta}` : ""}
                         </span>
                         {part.oem_glass_id && (
-                          <span className="text-[10px] font-mono bg-slate-100 text-slate-500 px-1 py-0.5 rounded shrink-0">
+                          <span className="text-xs font-mono font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded shrink-0 border border-slate-200">
                             OEM: {part.oem_glass_id}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5 truncate">
+                      <p className="text-[10px] text-slate-500 mt-0 truncate leading-tight">
                         {part.part_description || "Glass Part"}
                       </p>
                     </div>
@@ -553,21 +564,39 @@ export default function CarGlassViewer({
           )}
 
           {imageSrc && (
-            <div className="flex flex-col items-center w-full mt-1 relative z-0">
-              <div className="relative w-full h-32 md:h-40 lg:h-48 flex items-center justify-center">
-                <img
-                  src={imageSrc}
-                  alt="Vehicle Graphic"
-                  className="max-w-full max-h-full w-auto h-auto object-contain p-1"
-                />
+            <>
+              <div
+                className="flex flex-col items-center w-full mt-4 relative z-0 cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => setImageModalOpen(true)}
+                title="Click to enlarge"
+              >
+                <div className="relative w-32 h-24 flex items-center justify-center border border-slate-100 rounded-lg p-1">
+                  <img
+                    src={imageSrc}
+                    alt="Vehicle Graphic"
+                    className="max-w-full max-h-full w-auto h-auto object-contain"
+                  />
+                </div>
               </div>
-              <h3 className="text-sm font-bold text-slate-900 text-center mt-1">
-                {vehicleInfo?.description}
-              </h3>
-              <p className="text-slate-500 text-xs text-center">
-                Select a glass part from the dropdown
-              </p>
-            </div>
+
+              <Modal
+                open={imageModalOpen}
+                footer={null}
+                onCancel={() => setImageModalOpen(false)}
+                width={800}
+                centered
+                bodyStyle={{ padding: 0 }}
+                destroyOnClose
+              >
+                <div className="p-4 flex items-center justify-center bg-white rounded-lg">
+                  <img
+                    src={imageSrc}
+                    alt="Vehicle Graphic Large"
+                    className="max-w-full max-h-[80vh] w-auto h-auto object-contain"
+                  />
+                </div>
+              </Modal>
+            </>
           )}
         </div>
 
