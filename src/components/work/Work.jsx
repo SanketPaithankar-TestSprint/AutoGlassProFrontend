@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Tooltip, Empty, App } from "antd";
+import { Button, Tooltip, Empty, App, Modal } from "antd";
 import {
     PlusOutlined,
     FilePdfOutlined,
@@ -24,6 +24,8 @@ import CreateServiceDocumentModal from "./CreateServiceDocumentModal";
 import PaymentModal from "./PaymentModal";
 import EmailDocumentModal from "./EmailDocumentModal";
 import EditDocumentModal from "./EditDocumentModal";
+import { getAttachmentsByDocumentNumber } from "../../api/getAttachmentsByDocumentNumber";
+import { deleteAttachment } from "../../api/deleteAttachment";
 
 const Work = () => {
     const { modal, message } = App.useApp();
@@ -31,6 +33,13 @@ const Work = () => {
     const [error, setError] = useState(null);
     const [workItems, setWorkItems] = useState([]);
     const [expandedDoc, setExpandedDoc] = useState(null);
+    const [attachmentsCache, setAttachmentsCache] = useState({});
+    const [attachmentsLoading, setAttachmentsLoading] = useState({});
+
+    // Preview Modal State
+    const [previewAttachment, setPreviewAttachment] = useState(null);
+
+
 
     // Modal States
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -242,6 +251,21 @@ const Work = () => {
         setEditModalState({ open: true, document: doc });
     };
 
+    const handleDeleteAttachment = async (attachmentId, docNumber) => {
+        try {
+            await deleteAttachment(attachmentId);
+            message.success("Attachment deleted successfully");
+
+            // Update cache to remove the deleted item
+            setAttachmentsCache(prev => ({
+                ...prev,
+                [docNumber]: prev[docNumber].filter(a => a.attachmentId !== attachmentId)
+            }));
+        } catch (err) {
+            message.error("Failed to delete attachment");
+        }
+    };
+
     // Calculate stats
     const stats = {
         pending: workItems.filter(item => item.status?.toLowerCase() === "pending").length,
@@ -361,7 +385,25 @@ const Work = () => {
                                 {workItems.map((doc) => (
                                     <div key={doc.documentNumber} className="group transition-all duration-200">
                                         <div
-                                            onClick={() => setExpandedDoc(expandedDoc === doc.documentNumber ? null : doc.documentNumber)}
+                                            onClick={() => {
+                                                const isExpanding = expandedDoc !== doc.documentNumber;
+                                                setExpandedDoc(isExpanding ? doc.documentNumber : null);
+
+                                                if (isExpanding && !attachmentsCache[doc.documentNumber]) {
+                                                    // Fetch attachments if not cached
+                                                    setAttachmentsLoading(prev => ({ ...prev, [doc.documentNumber]: true }));
+                                                    getAttachmentsByDocumentNumber(doc.documentNumber)
+                                                        .then(data => {
+                                                            setAttachmentsCache(prev => ({ ...prev, [doc.documentNumber]: data }));
+                                                        })
+                                                        .catch(err => {
+                                                            console.error("Failed to fetch attachments", err);
+                                                        })
+                                                        .finally(() => {
+                                                            setAttachmentsLoading(prev => ({ ...prev, [doc.documentNumber]: false }));
+                                                        });
+                                                }
+                                            }}
                                             className={`p-5 cursor-pointer hover:bg-gray-50 transition-colors ${expandedDoc === doc.documentNumber ? "bg-gray-50" : "bg-white"}`}
                                         >
                                             <div className="flex flex-col md:flex-row gap-4 justify-between">
@@ -526,6 +568,79 @@ const Work = () => {
                                                         </div>
                                                     </div>
                                                 </div>
+                                                {/* Attachments Section */}
+                                                <div className="mt-6 border-t border-gray-100 pt-4">
+                                                    <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                                        <FilePdfOutlined /> Attachments
+                                                    </h4>
+                                                    {attachmentsLoading[doc.documentNumber] ? (
+                                                        <div className="text-xs text-gray-500 italic">Loading attachments...</div>
+                                                    ) : (
+                                                        <div className="flex flex-wrap gap-4">
+                                                            {attachmentsCache[doc.documentNumber] && attachmentsCache[doc.documentNumber].length > 0 ? (
+                                                                attachmentsCache[doc.documentNumber].map(att => (
+                                                                    <div key={att.attachmentId} className="relative group border border-gray-200 rounded-lg overflow-hidden w-32 h-32 bg-gray-50 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                                                                        onClick={() => {
+                                                                            if (att.contentType?.startsWith('image/')) {
+                                                                                setPreviewAttachment({ ...att, docNumber: doc.documentNumber });
+                                                                            } else {
+                                                                                window.open(att.s3Url, '_blank');
+                                                                            }
+                                                                        }}
+                                                                    >
+                                                                        {/* Image Preview */}
+                                                                        <div className="w-full h-full flex items-center justify-center p-2">
+                                                                            {att.contentType?.startsWith('image/') ? (
+                                                                                <img
+                                                                                    src={att.s3Url}
+                                                                                    alt={att.originalFileName}
+                                                                                    className="max-w-full max-h-full object-contain"
+                                                                                />
+                                                                            ) : (
+                                                                                <div className="flex flex-col items-center text-gray-400">
+                                                                                    <FilePdfOutlined style={{ fontSize: '24px' }} />
+                                                                                    <span className="text-[10px] mt-1 text-center truncate w-24">{att.fileExtension}</span>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+
+                                                                        {/* Overlay Actions */}
+                                                                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                                            <Tooltip title="View">
+                                                                                <div className="text-white hover:text-violet-300">
+                                                                                    {att.contentType?.startsWith('image/') ? (
+                                                                                        <span className="text-xs font-semibold">Preview</span>
+                                                                                    ) : (
+                                                                                        <FilePdfOutlined style={{ fontSize: '18px' }} />
+                                                                                    )}
+                                                                                </div>
+                                                                            </Tooltip>
+                                                                            <Tooltip title="Delete">
+                                                                                <button
+                                                                                    onClick={(e) => {
+                                                                                        e.stopPropagation();
+                                                                                        modal.confirm({
+                                                                                            title: 'Delete Attachment',
+                                                                                            content: 'Are you sure you want to delete this attachment?',
+                                                                                            okText: 'Delete',
+                                                                                            okType: 'danger',
+                                                                                            onOk: () => handleDeleteAttachment(att.attachmentId, doc.documentNumber)
+                                                                                        });
+                                                                                    }}
+                                                                                    className="text-white hover:text-red-400"
+                                                                                >
+                                                                                    <DeleteOutlined style={{ fontSize: '18px' }} />
+                                                                                </button>
+                                                                            </Tooltip>
+                                                                        </div>
+                                                                    </div>
+                                                                ))
+                                                            ) : (
+                                                                <span className="text-xs text-gray-400 italic">No attachments found.</span>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         )}
                                     </div>
@@ -565,6 +680,44 @@ const Work = () => {
                 onClose={() => setEditModalState({ open: false, document: null })}
                 onSuccess={fetchWork}
             />
+
+            {/* Image Preview Modal */}
+            <Modal
+                open={!!previewAttachment}
+                title={previewAttachment?.originalFileName}
+                footer={[
+                    <Button key="delete" danger icon={<DeleteOutlined />} onClick={() => {
+                        modal.confirm({
+                            title: 'Delete Attachment',
+                            content: 'Are you sure you want to delete this attachment?',
+                            okText: 'Delete',
+                            okType: 'danger',
+                            onOk: async () => {
+                                await handleDeleteAttachment(previewAttachment.attachmentId, previewAttachment.docNumber);
+                                setPreviewAttachment(null);
+                            }
+                        });
+                    }}>
+                        Delete
+                    </Button>,
+                    <Button key="close" onClick={() => setPreviewAttachment(null)}>
+                        Close
+                    </Button>
+                ]}
+                onCancel={() => setPreviewAttachment(null)}
+                width={800}
+                centered
+            >
+                {previewAttachment && (
+                    <div className="flex justify-center bg-gray-50 p-4 rounded-lg">
+                        <img
+                            src={previewAttachment.s3Url}
+                            alt={previewAttachment.originalFileName}
+                            className="max-h-[70vh] max-w-full object-contain shadow-sm"
+                        />
+                    </div>
+                )}
+            </Modal>
         </div>
     );
 };

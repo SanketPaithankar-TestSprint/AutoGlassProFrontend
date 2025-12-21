@@ -2,7 +2,8 @@ import React, { useMemo, useState, useEffect } from "react";
 import { Modal, Input, Button, message, Dropdown } from "antd";
 import { DownOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { createServiceDocument } from "../../api/createServiceDocument";
+import { createCompositeServiceDocument } from "../../api/createCompositeServiceDocument";
+
 import { sendEmail } from "../../api/sendEmail";
 import {
     generateServiceDocumentPDF,
@@ -94,7 +95,7 @@ class ErrorBoundary extends React.Component {
     }
 }
 
-function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNote, internalNote }) {
+function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNote, internalNote, insuranceData, includeInsurance, attachmentFile }) {
     const navigate = useNavigate();
     const [items, setItems] = useState(parts.length ? parts : [newItem()]);
     const [userProfile, setUserProfile] = useState(() => {
@@ -228,9 +229,14 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
     });
 
     const handleOpenPreview = () => {
-        if (!customerData?.customerId || !customerData?.vehicleId) {
-            message.error("Please save/create the customer profile before generating a quote.");
-            return;
+        if (!customerData?.customerId && !customerData?.firstName) {
+            // Note: with Composite API, we don't necessarily have a customerId yet,
+            // but we need at least some customer data to proceed.
+            // Changed check to be more lenient on ID, but strict on data existence.
+            if (!customerData || (!customerData.firstName && !customerData.lastName)) {
+                message.error("Please provide customer details before generating a quote.");
+                return;
+            }
         }
 
         const invalidItems = items.filter(it => !Number(it.amount) || Number(it.amount) === 0);
@@ -246,10 +252,10 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
         setPreviewUrl(url);
         setShowEmailModal(true);
 
-        const subject = `Your Auto Glass ${docType} - ${customerData.vehicleYear} ${customerData.vehicleMake} ${customerData.vehicleModel}`;
-        const body = `Dear ${customerData.firstName} ${customerData.lastName},
+        const subject = `Your Auto Glass ${docType} - ${customerData.vehicleYear || ''} ${customerData.vehicleMake || ''} ${customerData.vehicleModel || ''}`;
+        const body = `Dear ${customerData.firstName || 'Customer'} ${customerData.lastName || ''},
 
-Please find attached the ${docType.toLowerCase()} for your ${customerData.vehicleYear} ${customerData.vehicleMake} ${customerData.vehicleModel}.
+Please find attached the ${docType.toLowerCase()} for your ${customerData.vehicleYear || ''} ${customerData.vehicleMake || ''} ${customerData.vehicleModel || ''}.
 
 If you have any questions, please don't hesitate to contact us.
 
@@ -274,14 +280,15 @@ Auto Glass Pro Team`;
         try {
             setEmailLoading(true);
 
+            // 1. Construct Service Document Items
             const partItems = items.filter(it => it.type !== 'Labor');
             const laborItems = items.filter(it => it.type === 'Labor');
             const totalLaborAmount = laborItems.reduce((sum, labor) => sum + (Number(labor.amount) || 0), 0);
 
-            const payloadItems = partItems.map((part) => {
+            const serviceDocumentItems = partItems.map((part) => {
                 const linkedLabor = laborItems.find(l => l.id === `${part.id}_LABOR`);
                 return {
-                    itemType: "part", // Fixed value or dynamic based on logic
+                    itemType: "part",
                     prefixCd: part.prefixCd || "",
                     posCd: part.posCd || "",
                     sideCd: part.sideCd || "",
@@ -294,10 +301,60 @@ Auto Glass Pro Team`;
                 };
             });
 
-            const payload = {
+            // Add purely manual labor/service items as well if they aren't linked to parts
+            // logic: manual labor items are in laborItems. If they aren't linked (id doesn't match PART_LABOR pattern), add them?
+            // For now, retaining existing logic which mapped parts. 
+            // If there are standalone service items, we might need to handle them.
+            // Looking at existing logic: `const payloadItems = partItems.map...`
+            // Only parts were being sent. Any standalone labor/service added via "Add Row" 
+            // should ideally be treated as a "MISC" part with type "labor" or "service" in the backend if the backend supports it.
+            // The current backend DTO `ServiceItemRequest` has `itemType`.
+
+            // Mapping standalone manual items (Labor/Service) that are NOT linked to a part.
+            const manualItems = items.filter(it => (it.type === 'Labor' || it.type === 'Service') && !it.id.includes('_LABOR'));
+            manualItems.forEach(manualIt => {
+                serviceDocumentItems.push({
+                    itemType: manualIt.type.toLowerCase(), // 'labor' or 'service'
+                    partDescription: manualIt.description,
+                    partPrice: Number(manualIt.amount) || 0, // treating amount as price for simple items
+                    quantity: 1,
+                    laborRate: 0,
+                    laborHours: 0
+                });
+            });
+
+
+            // 2. Construct CustomerWithVehicle DTO
+            const customerWithVehicle = {
+                organizationId: 0, // Default or from context
+                customerType: "individual", // Default
+                firstName: customerData.firstName || "",
+                lastName: customerData.lastName || "",
+                email: customerData.email || "",
+                phone: customerData.phone || "",
+                alternatePhone: customerData.alternatePhone || "",
+                addressLine1: customerData.addressLine1 || "",
+                addressLine2: "",
+                city: customerData.city || "",
+                state: customerData.state || "",
+                postalCode: customerData.postalCode || "",
+                country: customerData.country || "USA",
+                preferredContactMethod: "email",
+                notes: customerData.notes || "",
+
+                // Vehicle Details
+                vehicleYear: Number(customerData.vehicleYear) || 2020,
+                vehicleMake: customerData.vehicleMake || "",
+                vehicleModel: customerData.vehicleModel || "",
+                vehicleStyle: customerData.vehicleStyle || "",
+                licensePlateNumber: customerData.licensePlateNumber || "",
+                vin: customerData.vin || "",
+                vehicleNotes: ""
+            };
+
+            // 3. Construct ServiceDocument DTO
+            const serviceDocument = {
                 documentType: docType.toLowerCase().replace(" ", "") === "workorder" ? "invoice" : docType.toLowerCase(),
-                customerId: customerData.customerId || 0,
-                vehicleId: customerData.vehicleId || 0,
                 employeeId: 0,
                 serviceLocation: "mobile",
                 serviceAddress: `${customerData.addressLine1 || ''}, ${customerData.city || ''}, ${customerData.state || ''} ${customerData.postalCode || ''}`,
@@ -306,34 +363,48 @@ Auto Glass Pro Team`;
                 estimatedCompletion: new Date().toISOString(),
                 dueDate: new Date().toISOString().split('T')[0],
                 paymentTerms: "Due upon receipt",
-                notes: printableNote, // Use prop
+                notes: printableNote,
                 termsConditions: "Warranty valid for 12 months on workmanship.",
                 taxRate: Number(globalTaxRate) || 0,
                 discountAmount: discountAmount,
                 laborAmount: totalLaborAmount,
-                items: payloadItems
+                items: serviceDocumentItems
             };
 
-            console.log("Sending Payload:", payload);
+            // 4. Construct Composite Payload
+            const compositePayload = {
+                customerWithVehicle: customerWithVehicle,
+                serviceDocument: serviceDocument,
+                insurance: includeInsurance ? insuranceData : null,
+                attachmentDescription: attachmentFile ? "Quote Attachment" : ""
+            };
 
-            await createServiceDocument(payload);
-            message.success("Service Document Created!");
+            console.log("Sending Composite Payload:", compositePayload);
 
-            if (pdfBlob) {
+            // 5. Call Composite API
+            const response = await createCompositeServiceDocument(compositePayload, attachmentFile);
+
+            message.success("Service Document Created Successfully!");
+            const createdDocNumber = response.serviceDocument?.documentNumber;
+
+            // 6. Send Email if PDF is generated
+            if (pdfBlob && createdDocNumber) {
                 const file = new File([pdfBlob], getFilename(), { type: "application/pdf" });
                 const emailResponse = await sendEmail(emailForm.to, emailForm.subject, emailForm.body, file);
 
                 if (emailResponse && emailResponse.status === "success") {
                     message.success("Email Sent Successfully!");
-                    handleCloseModal();
-                    downloadPdf();
-                    setTimeout(() => {
-                        navigate('/work');
-                    }, 1000);
                 } else {
-                    message.error("Email failed to send");
+                    message.warning("Document created, but email failed to send.");
                 }
             }
+
+            handleCloseModal();
+            downloadPdf();
+            setTimeout(() => {
+                navigate('/work');
+            }, 1000);
+
         } catch (err) {
             console.error(err);
             message.error("Operation failed: " + err.message);
@@ -456,8 +527,9 @@ Auto Glass Pro Team`;
             </div>
 
             {/* Totals & Actions (Notes removed) */}
-            <div className="flex justify-end gap-4 mt-2">
-                <div className="bg-slate-50 border border-slate-200 p-3 space-y-2 w-full md:w-1/2 lg:w-1/3 rounded-lg shadow-sm">
+            {/* Totals & Actions */}
+            <div className="flex justify-end mt-4">
+                <div className="bg-slate-50 border border-slate-200 p-3 space-y-2 w-full max-w-sm rounded-lg shadow-sm">
                     <Row label="Subtotal" value={currency(subtotal)} />
 
                     {/* Tax % Removed as requested, assuming Tax Amount is 0 or calculated elsewhere if needed */}
