@@ -18,22 +18,23 @@ const SearchByRoot = () => {
   const [activeTab, setActiveTab] = useState('quote');
   const [invoiceItems, setInvoiceItems] = useState([]);
 
+  // Initial Customer State Definition
+  const initialCustomerData = {
+    firstName: "", lastName: "", email: "", phone: "", alternatePhone: "",
+    addressLine1: "", addressLine2: "", city: "", state: "", postalCode: "", country: "",
+    preferredContactMethod: "phone", notes: "",
+    vehicleYear: "", vehicleMake: "", vehicleModel: "", vehicleStyle: "",
+    licensePlateNumber: "", vin: "", vehicleNotes: "",
+  };
+
   // Lifted Customer State
   const [customerData, setCustomerData] = useState(() => {
     const saved = localStorage.getItem("agp_customer_data");
-    const initial = {
-      firstName: "", lastName: "", email: "", phone: "", alternatePhone: "",
-      addressLine1: "", addressLine2: "", city: "", state: "", postalCode: "", country: "",
-      preferredContactMethod: "phone", notes: "",
-      vehicleYear: "", vehicleMake: "", vehicleModel: "", vehicleStyle: "",
-      licensePlateNumber: "", vin: "", vehicleNotes: "",
-    };
-
     if (saved) {
-      try { return { ...initial, ...JSON.parse(saved) }; }
+      try { return { ...initialCustomerData, ...JSON.parse(saved) }; }
       catch (e) { console.error("Failed to parse saved customer data", e); }
     }
-    return initial;
+    return initialCustomerData;
   });
 
   useEffect(() => {
@@ -328,6 +329,16 @@ const SearchByRoot = () => {
                     insuranceData={insuranceData}
                     includeInsurance={includeInsurance}
                     attachmentFile={attachmentFile}
+                    onClear={() => {
+                      setSelectedParts([]);
+                      setPrintableNote("");
+                      setInternalNote("");
+                      setInsuranceData({});
+                      setIncludeInsurance(false);
+                      setAttachmentFile(null);
+                      setInvoiceItems([]); // Explicitly clear items as well to be safe
+                      setCustomerData(initialCustomerData); // Clears customer data
+                    }}
                   />
                 </div>
               </div>
