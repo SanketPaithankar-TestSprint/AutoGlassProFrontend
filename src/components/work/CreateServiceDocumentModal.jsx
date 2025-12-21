@@ -3,6 +3,7 @@ import { Modal, Form, Input, Select, DatePicker, InputNumber, Button, message } 
 import { createServiceDocument } from "../../api/createServiceDocument";
 import { getCustomers } from "../../api/getCustomers";
 import { getValidToken } from "../../api/getValidToken";
+import { getActiveTaxRates, getDefaultTaxRate } from "../../api/taxRateApi";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -11,25 +12,39 @@ const CreateServiceDocumentModal = ({ visible, onClose, onSuccess }) => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
     const [customers, setCustomers] = useState([]);
+    const [taxRates, setTaxRates] = useState([]);
 
     useEffect(() => {
         if (visible) {
-            fetchCustomers();
+            fetchInitialData();
         } else {
             form.resetFields();
         }
     }, [visible]);
 
-    const fetchCustomers = async () => {
+    const fetchInitialData = async () => {
         try {
             const token = await getValidToken();
-            const data = await getCustomers(token);
-            // Handle different variations of customer API response if needed
-            const customerList = Array.isArray(data) ? data : (data?.data || []);
+            const [customersData, ratesData, defaultRate] = await Promise.all([
+                getCustomers(token),
+                getActiveTaxRates().catch(() => []),
+                getDefaultTaxRate().catch(() => null)
+            ]);
+
+            // Handle customers
+            const customerList = Array.isArray(customersData) ? customersData : (customersData?.data || []);
             setCustomers(customerList);
+
+            // Handle tax rates
+            setTaxRates(Array.isArray(ratesData) ? ratesData : []);
+
+            // Set default tax rate if not already set by form interaction
+            if (defaultRate && defaultRate.taxPercent) {
+                form.setFieldsValue({ taxRate: defaultRate.taxPercent });
+            }
         } catch (error) {
-            console.error("Failed to fetch customers:", error);
-            message.error("Failed to load customers");
+            console.error("Failed to fetch initial data:", error);
+            message.error("Failed to load data");
         }
     };
 
@@ -119,15 +134,26 @@ const CreateServiceDocumentModal = ({ visible, onClose, onSuccess }) => {
                     </Form.Item>
 
                     <Form.Item name="serviceLocation" label="Service Location">
-                        <Input placeholder="e.g. Shop, Mobile" />
+                        <Select placeholder="Select location">
+                            <Option value="SHOP">Shop</Option>
+                            <Option value="MOBILE">Mobile</Option>
+                            <Option value="CUSTOMER_LOCATION">Customer Location</Option>
+                        </Select>
                     </Form.Item>
 
                     <Form.Item name="paymentTerms" label="Payment Terms">
                         <Input placeholder="e.g. Due on Receipt, Net 30" />
                     </Form.Item>
 
-                    <Form.Item name="taxRate" label="Tax Rate (%)">
-                        <InputNumber min={0} max={100} className="w-full" />
+                    <Form.Item name="taxRate" label="Tax Rate">
+                        <Select placeholder="Select Tax Rate">
+                            {taxRates.map(rate => (
+                                <Option key={rate.taxRateId} value={rate.taxPercent}>
+                                    {rate.stateName || rate.stateCode} ({rate.taxPercent}%)
+                                </Option>
+                            ))}
+                            <Option value={0}>No Tax (0%)</Option>
+                        </Select>
                     </Form.Item>
                 </div>
 

@@ -23,7 +23,8 @@ export const getTaxRates = async () => {
         throw new Error(errorData.message || `Failed to fetch tax rates: ${response.status}`);
     }
 
-    return response.json();
+    const result = await response.json();
+    return result.data || result;
 };
 
 /**

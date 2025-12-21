@@ -1,8 +1,9 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { Modal, Input, Button, message, Dropdown } from "antd";
-import { DownOutlined } from "@ant-design/icons";
+import { Modal, Input, Button, message, Dropdown, Select, InputNumber } from "antd";
+import { DownOutlined, UnorderedListOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { createCompositeServiceDocument } from "../../api/createCompositeServiceDocument";
+import { getActiveTaxRates, getDefaultTaxRate } from "../../api/taxRateApi";
 
 import { sendEmail } from "../../api/sendEmail";
 import {
@@ -131,8 +132,32 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
     const laborCostDisplay = items.filter(it => it.type === 'Labor').reduce((sum, it) => sum + (Number(it.amount) || 0), 0);
 
     const [globalTaxRate, setGlobalTaxRate] = useState(0);
+    const [isManualTax, setIsManualTax] = useState(false);
     const [discountPercent, setDiscountPercent] = useState(0);
     const [payment, setPayment] = useState(0);
+    const [manualDocType, setManualDocType] = useState("");
+
+    const [taxRates, setTaxRates] = useState([]);
+
+    useEffect(() => {
+        const fetchTaxData = async () => {
+            try {
+                const [rates, defaultRate] = await Promise.all([
+                    getActiveTaxRates().catch(() => []),
+                    getDefaultTaxRate().catch(() => null)
+                ]);
+                setTaxRates(Array.isArray(rates) ? rates : []);
+
+                // If a default exists, use it
+                if (defaultRate && defaultRate.taxPercent) {
+                    setGlobalTaxRate(defaultRate.taxPercent);
+                }
+            } catch (err) {
+                console.error("Failed to fetch tax rates", err);
+            }
+        };
+        fetchTaxData();
+    }, []);
 
     const updateItem = (id, key, value) => {
         setItems((prev) => prev.map((it) => {
@@ -185,9 +210,11 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
     const numericPayment = Number(payment) || 0;
     const balance = useMemo(() => Math.max(0, total - numericPayment), [total, numericPayment]);
 
-    let docType = "Invoice";
-    if (numericPayment <= 0) docType = "Quote";
-    else if (numericPayment < total) docType = "Work Order";
+    let calculatedDocType = "Invoice";
+    if (numericPayment <= 0) calculatedDocType = "Quote";
+    else if (numericPayment < total) calculatedDocType = "Work Order";
+
+    const currentDocType = manualDocType || calculatedDocType;
 
 
     // Generate PDF using utility function
@@ -202,13 +229,13 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
             discountAmount,
             total,
             balance,
-            docType,
+            docType: currentDocType,
             printableNote // Passed from props
         });
     };
 
     const getFilename = () => {
-        return generatePDFFilename(docType, customerData);
+        return generatePDFFilename(currentDocType, customerData);
     };
 
     const downloadPdf = () => {
@@ -228,45 +255,82 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
         body: ""
     });
 
+    // Validated Modal Context
+    const [modal, contextHolder] = Modal.useModal();
+
     const handleOpenPreview = () => {
-        if (!customerData?.customerId && !customerData?.firstName) {
-            // Note: with Composite API, we don't necessarily have a customerId yet,
-            // but we need at least some customer data to proceed.
-            // Changed check to be more lenient on ID, but strict on data existence.
-            if (!customerData || (!customerData.firstName && !customerData.lastName)) {
-                message.error("Please provide customer details before generating a quote.");
+        try {
+            // Validation: Customer Data
+            const hasCustomerIdentity = customerData && (
+                (customerData.firstName && customerData.firstName.trim() !== "") ||
+                (customerData.lastName && customerData.lastName.trim() !== "") ||
+                (customerData.companyName && customerData.companyName.trim() !== "")
+            );
+
+            if (!hasCustomerIdentity) {
+                modal.warning({
+                    title: 'Missing Customer',
+                    content: 'Please select or enter a customer before generating a quote.',
+                    okText: 'OK',
+                });
                 return;
             }
-        }
 
-        const invalidItems = items.filter(it => !Number(it.amount) || Number(it.amount) === 0);
-        if (invalidItems.length > 0) {
-            message.error(`Please enter a valid amount for: ${invalidItems.map(it => it.type === 'Labor' ? 'Labor' : (it.description || 'Item')).join(', ')}`);
-            return;
-        }
+            // Validation: Vehicle Data
+            const missingVehicleInfo = [];
+            if (!customerData.vehicleYear || customerData.vehicleYear === 0) missingVehicleInfo.push("Year");
+            if (!customerData.vehicleMake || customerData.vehicleMake.trim() === "") missingVehicleInfo.push("Make");
+            if (!customerData.vehicleModel || customerData.vehicleModel.trim() === "") missingVehicleInfo.push("Model");
 
-        const doc = generatePdfDoc();
-        const blob = doc.output('blob');
-        const url = URL.createObjectURL(blob);
-        setPdfBlob(blob);
-        setPreviewUrl(url);
-        setShowEmailModal(true);
+            if (missingVehicleInfo.length > 0) {
+                modal.warning({
+                    title: 'Missing Vehicle Details',
+                    content: `Please provide the following vehicle details: ${missingVehicleInfo.join(', ')}.`,
+                    okText: 'OK',
+                });
+                return;
+            }
 
-        const subject = `Your Auto Glass ${docType} - ${customerData.vehicleYear || ''} ${customerData.vehicleMake || ''} ${customerData.vehicleModel || ''}`;
-        const body = `Dear ${customerData.firstName || 'Customer'} ${customerData.lastName || ''},
+            // Validation: Items
+            const invalidItems = items.filter(it => !Number(it.amount) || Number(it.amount) === 0);
+            if (invalidItems.length > 0) {
+                modal.warning({
+                    title: 'Invalid Items',
+                    content: `Please enter a valid amount for: ${invalidItems.map(it => it.type === 'Labor' ? 'Labor' : (it.description || 'Item')).join(', ')}`,
+                    okText: 'OK',
+                });
+                return;
+            }
 
-Please find attached the ${docType.toLowerCase()} for your ${customerData.vehicleYear || ''} ${customerData.vehicleMake || ''} ${customerData.vehicleModel || ''}.
+            const doc = generatePdfDoc();
+            const blob = doc.output('blob');
+            const url = URL.createObjectURL(blob);
+            setPdfBlob(blob);
+            setPreviewUrl(url);
+            setShowEmailModal(true);
+
+            const subject = `Your Auto Glass ${currentDocType} - ${customerData.vehicleYear || ''} ${customerData.vehicleMake || ''} ${customerData.vehicleModel || ''}`;
+            const body = `Dear ${customerData.firstName || 'Customer'} ${customerData.lastName || ''},
+
+Please find attached the ${currentDocType.toLowerCase()} for your ${customerData.vehicleYear || ''} ${customerData.vehicleMake || ''} ${customerData.vehicleModel || ''}.
 
 If you have any questions, please don't hesitate to contact us.
 
 Best regards,
 Auto Glass Pro Team`;
 
-        setEmailForm({
-            to: customerData?.email || "",
-            subject: subject,
-            body: body
-        });
+            setEmailForm({
+                to: customerData?.email || "",
+                subject: subject,
+                body: body
+            });
+        } catch (error) {
+            console.error("Error in handleOpenPreview:", error);
+            modal.error({
+                title: 'Error',
+                content: "An unexpected error occurred: " + error.message,
+            });
+        }
     };
 
     const handleCloseModal = () => {
@@ -302,15 +366,6 @@ Auto Glass Pro Team`;
             });
 
             // Add purely manual labor/service items as well if they aren't linked to parts
-            // logic: manual labor items are in laborItems. If they aren't linked (id doesn't match PART_LABOR pattern), add them?
-            // For now, retaining existing logic which mapped parts. 
-            // If there are standalone service items, we might need to handle them.
-            // Looking at existing logic: `const payloadItems = partItems.map...`
-            // Only parts were being sent. Any standalone labor/service added via "Add Row" 
-            // should ideally be treated as a "MISC" part with type "labor" or "service" in the backend if the backend supports it.
-            // The current backend DTO `ServiceItemRequest` has `itemType`.
-
-            // Mapping standalone manual items (Labor/Service) that are NOT linked to a part.
             const manualItems = items.filter(it => (it.type === 'Labor' || it.type === 'Service') && !it.id.includes('_LABOR'));
             manualItems.forEach(manualIt => {
                 serviceDocumentItems.push({
@@ -354,7 +409,7 @@ Auto Glass Pro Team`;
 
             // 3. Construct ServiceDocument DTO
             const serviceDocument = {
-                documentType: docType.toLowerCase().replace(" ", "") === "workorder" ? "invoice" : docType.toLowerCase(),
+                documentType: currentDocType.toLowerCase().replace(" ", "") === "workorder" ? "invoice" : currentDocType.toLowerCase(),
                 employeeId: 0,
                 serviceLocation: "mobile",
                 serviceAddress: `${customerData.addressLine1 || ''}, ${customerData.city || ''}, ${customerData.state || ''} ${customerData.postalCode || ''}`,
@@ -416,6 +471,7 @@ Auto Glass Pro Team`;
 
     return (
         <div>
+            {contextHolder}
             {/* Header */}
             <div className="flex items-center justify-between mb-2 max-w-7xl">
                 <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-fuchsia-600">
@@ -532,8 +588,62 @@ Auto Glass Pro Team`;
                 <div className="bg-slate-50 border border-slate-200 p-3 space-y-2 w-full max-w-sm rounded-lg shadow-sm">
                     <Row label="Subtotal" value={currency(subtotal)} />
 
-                    {/* Tax % Removed as requested, assuming Tax Amount is 0 or calculated elsewhere if needed */}
-                    <Row label="Tax" value={currency(totalTax)} />
+                    {/* Tax Rate Selection */}
+                    <div className="flex justify-between items-center text-sm">
+                        <span className="text-slate-500">Tax</span>
+                        <div className="flex items-center gap-2">
+                            {isManualTax ? (
+                                <div className="flex items-center gap-1">
+                                    <InputNumber
+                                        value={globalTaxRate}
+                                        onChange={setGlobalTaxRate}
+                                        min={0}
+                                        max={100}
+                                        padding="0"
+                                        size="small"
+                                        className="w-20 text-right"
+                                        formatter={value => `${value}`}
+                                        parser={value => value.replace('%', '')}
+                                    />
+                                    <span className="text-slate-400 text-xs">%</span>
+                                    <Button
+                                        size="small"
+                                        type="text"
+                                        icon={<UnorderedListOutlined />}
+                                        onClick={() => setIsManualTax(false)}
+                                        title="Select from list"
+                                        className="text-slate-400 hover:text-violet-600"
+                                    />
+                                </div>
+                            ) : (
+                                <Select
+                                    value={globalTaxRate}
+                                    onChange={(val) => {
+                                        if (val === 'MANUAL') {
+                                            setIsManualTax(true);
+                                        } else {
+                                            setGlobalTaxRate(val);
+                                        }
+                                    }}
+                                    className="w-32"
+                                    size="small"
+                                    placeholder="Select Tax"
+                                    dropdownMatchSelectWidth={false}
+                                >
+                                    {taxRates.map(rate => (
+                                        <Select.Option key={rate.taxRateId} value={rate.taxPercent}>
+                                            {rate.stateCode} ({rate.taxPercent}%)
+                                        </Select.Option>
+                                    ))}
+                                    <Select.Option value={0}>No Tax (0%)</Select.Option>
+                                    <Select.Option value="MANUAL" className="text-violet-600 font-medium border-t border-slate-100 mt-1">
+                                        Custom Rate...
+                                    </Select.Option>
+                                </Select>
+                            )}
+                            <span className="text-slate-900 w-16 text-right">{currency(totalTax)}</span>
+                        </div>
+                    </div>
 
                     <NumberRow label="Discount %" value={discountPercent} setter={setDiscountPercent} />
                     {Number(discountPercent) > 0 && <Row label="Discount" value={`- ${currency(discountAmount)}`} />}
@@ -548,11 +658,18 @@ Auto Glass Pro Team`;
                     <Row label="Balance" value={currency(balance)} bold />
 
                     <div className="pt-2 flex justify-between items-center bg-white rounded-lg p-2">
-                        <span className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium border ${docType === "Quote" ? "border-sky-500/60 bg-sky-500/10 text-emerald-600" : docType === "Work Order" ? "border-amber-400/70 bg-amber-400/10 text-amber-600" : "border-emerald-400/70 bg-emerald-400/10 text-emerald-600"}`}>
-                            {docType}
-                        </span>
+                        <select
+                            value={manualDocType}
+                            onChange={(e) => setManualDocType(e.target.value)}
+                            className={`appearance-none outline-none cursor-pointer inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium border ${currentDocType === "Quote" ? "border-sky-500/60 bg-sky-500/10 text-emerald-600" : currentDocType === "Work Order" ? "border-amber-400/70 bg-amber-400/10 text-amber-600" : "border-emerald-400/70 bg-emerald-400/10 text-emerald-600"}`}
+                        >
+                            <option value="">Auto ({calculatedDocType})</option>
+                            <option value="Quote">Quote</option>
+                            <option value="Work Order">Work Order</option>
+                            <option value="Invoice">Invoice</option>
+                        </select>
                         <button onClick={handleOpenPreview} className="px-4 py-2 rounded bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-sm font-semibold shadow hover:from-violet-500 hover:to-fuchsia-500 transition">
-                            Generate {docType}
+                            Generate {currentDocType}
                         </button>
                     </div>
                 </div>
@@ -560,7 +677,7 @@ Auto Glass Pro Team`;
 
             {/* Email Preview Modal */}
             <Modal
-                title={`Send ${docType}`}
+                title={`Send ${currentDocType}`}
                 open={showEmailModal}
                 onCancel={handleCloseModal}
                 footer={[
