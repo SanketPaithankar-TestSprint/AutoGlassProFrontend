@@ -19,8 +19,12 @@ export const createCompositeServiceDocument = async (data, file) => {
         const jsonBlob = new Blob([JSON.stringify(data)], { type: 'application/json' });
         formData.append("data", jsonBlob);
 
-        // Append file if it exists
-        if (file) {
+        // Append files
+        if (Array.isArray(file)) {
+            file.forEach(f => {
+                if (f) formData.append("file", f);
+            });
+        } else if (file) {
             formData.append("file", file);
         }
 

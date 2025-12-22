@@ -96,7 +96,7 @@ class ErrorBoundary extends React.Component {
     }
 }
 
-function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNote, internalNote, insuranceData, includeInsurance, attachmentFile, attachmentDescription, onClear }) {
+function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNote, internalNote, insuranceData, includeInsurance, attachments = [], onClear }) {
     const navigate = useNavigate();
     const [items, setItems] = useState(parts.length ? parts : [newItem()]);
     const [userProfile, setUserProfile] = useState(() => {
@@ -427,17 +427,24 @@ Auto Glass Pro Team`;
             };
 
             // 4. Construct Composite Payload
+            // Combine all attachment descriptions
+            const combinedDescription = attachments.map(att =>
+                `${att.file.name}: ${att.description || "No description"}`
+            ).join('\n');
+
             const compositePayload = {
                 customerWithVehicle: customerWithVehicle,
                 serviceDocument: serviceDocument,
                 insurance: includeInsurance ? insuranceData : null,
-                attachmentDescription: attachmentFile ? (attachmentDescription || "Quote Attachment") : ""
+                attachmentDescription: combinedDescription
             };
 
             console.log("Sending Composite Payload:", compositePayload);
 
+            const files = attachments.map(a => a.file);
+
             // 5. Call Composite API
-            const response = await createCompositeServiceDocument(compositePayload, attachmentFile);
+            const response = await createCompositeServiceDocument(compositePayload, files);
 
             message.success("Service Document Created Successfully!");
             const createdDocNumber = response.serviceDocument?.documentNumber;

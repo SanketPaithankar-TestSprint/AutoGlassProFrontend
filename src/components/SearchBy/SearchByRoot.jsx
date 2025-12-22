@@ -153,8 +153,7 @@ const SearchByRoot = () => {
   // Lifted Insurance & Attachment State
   const [insuranceData, setInsuranceData] = useState({});
   const [includeInsurance, setIncludeInsurance] = useState(false);
-  const [attachmentFile, setAttachmentFile] = useState(null);
-  const [attachmentDescription, setAttachmentDescription] = useState("");
+  const [attachments, setAttachments] = useState([]); // Array { id, file, description }
 
   const tabs = [
     { id: 'quote', label: 'Quote' },
@@ -260,10 +259,8 @@ const SearchByRoot = () => {
               {activeTab === 'attachment' && (
                 <div className="p-4">
                   <AttachmentDetails
-                    attachmentFile={attachmentFile}
-                    setAttachmentFile={setAttachmentFile}
-                    attachmentDescription={attachmentDescription}
-                    setAttachmentDescription={setAttachmentDescription}
+                    attachments={attachments}
+                    setAttachments={setAttachments}
                   />
                 </div>
               )}
@@ -304,19 +301,17 @@ const SearchByRoot = () => {
                     internalNote={internalNote}
                     insuranceData={insuranceData}
                     includeInsurance={includeInsurance}
-                    attachmentFile={attachmentFile}
-                    attachmentDescription={attachmentDescription}
                     onClear={() => {
                       setSelectedParts([]);
                       setPrintableNote("");
                       setInternalNote("");
                       setInsuranceData({});
                       setIncludeInsurance(false);
-                      setAttachmentFile(null);
-                      setAttachmentDescription("");
+                      setAttachments([]);
                       setInvoiceItems([]); // Explicitly clear items as well to be safe
                       setCustomerData(initialCustomerData); // Clears customer data
                     }}
+                    attachments={attachments}
                   />
                 </div>
               </div>

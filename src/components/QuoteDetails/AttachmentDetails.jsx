@@ -1,63 +1,94 @@
 import React from "react";
-import { UploadOutlined } from "@ant-design/icons";
+import { UploadOutlined, FileTextOutlined, DeleteOutlined } from "@ant-design/icons";
 
 const AttachmentDetails = ({
-    attachmentFile,
-    setAttachmentFile,
-    attachmentDescription,
-    setAttachmentDescription
+    attachments = [],
+    setAttachments
 }) => {
-    return (
-        <div className="bg-slate-50 border border-slate-200 rounded-lg p-6 max-w-xl mx-auto text-center">
-            <h4 className="text-sm font-semibold text-slate-700 mb-4 flex items-center justify-center gap-2">
-                <UploadOutlined className="text-xl text-violet-600" />
-                <span>Upload Attachment</span>
-            </h4>
 
-            <div className="flex flex-col items-center gap-4 w-full">
-                {/* File Input */}
-                <label className="cursor-pointer bg-white border border-slate-300 hover:border-violet-500 rounded-md px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors">
-                    <span>Choose File</span>
+    const handleFilesSelected = (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+            const newFiles = Array.from(e.target.files).map(file => ({
+                id: Math.random().toString(36).substring(2, 9),
+                file: file,
+                description: ""
+            }));
+
+            // Append new files to existing ones
+            setAttachments(prev => [...prev, ...newFiles]);
+
+            // Reset input so same file can be selected again if needed
+            e.target.value = null;
+        }
+    };
+
+    const handleRemove = (id) => {
+        setAttachments(prev => prev.filter(att => att.id !== id));
+    };
+
+    const handleDescriptionChange = (id, newDesc) => {
+        setAttachments(prev => prev.map(att =>
+            att.id === id ? { ...att, description: newDesc } : att
+        ));
+    };
+
+    return (
+        <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 max-w-4xl mx-auto">
+            {/* Upload Area */}
+            <div className="text-center mb-6">
+                <label className="cursor-pointer bg-white border border-dashed border-slate-300 hover:border-violet-500 hover:bg-slate-50 rounded-lg px-6 py-8 flex flex-col items-center gap-2 transition-all group w-full">
+                    <div className="p-3 bg-slate-100 rounded-full group-hover:scale-110 transition-transform">
+                        <UploadOutlined className="text-2xl text-slate-400 group-hover:text-violet-500 transition-colors" />
+                    </div>
+                    <span className="font-semibold text-slate-700">Click to Upload Files</span>
+                    <span className="text-xs text-slate-400">Support for single or multiple files</span>
                     <input
                         type="file"
-                        onChange={(e) => setAttachmentFile(e.target.files[0])}
+                        multiple
+                        onChange={handleFilesSelected}
                         className="hidden"
                     />
                 </label>
-
-                {/* File Preview */}
-                {attachmentFile ? (
-                    <div className="flex items-center gap-2 text-sm text-slate-600 bg-violet-50 px-3 py-1 rounded-full border border-violet-100 animate-fadeIn">
-                        <span className="font-medium text-violet-700">{attachmentFile.name}</span>
-                        <button
-                            onClick={() => {
-                                setAttachmentFile(null);
-                                setAttachmentDescription(""); // Clear description on file remove
-                            }}
-                            className="text-slate-400 hover:text-red-500 ml-2"
-                            title="Remove"
-                        >
-                            ✕
-                        </button>
-                    </div>
-                ) : (
-                    <span className="text-xs text-slate-400">No file chosen</span>
-                )}
-
-                {/* Description Input */}
-                {attachmentFile && (
-                    <div className="w-full max-w-sm mt-2 space-y-1 text-left">
-                        <label className="text-xs font-semibold text-slate-600 block pl-1">Description</label>
-                        <input
-                            type="text"
-                            value={attachmentDescription}
-                            onChange={(e) => setAttachmentDescription(e.target.value)}
-                            placeholder="Enter description for this file..."
-                            className="w-full text-sm border border-slate-300 rounded-md px-3 py-2 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all"
-                        />
-                    </div>
-                )}
             </div>
+
+            {/* File List */}
+            {attachments.length > 0 && (
+                <div className="space-y-2">
+                    {attachments.map((att) => (
+                        <div key={att.id} className="flex items-center gap-3 bg-white p-3 rounded-md border border-slate-200 shadow-sm animate-fadeIn">
+                            {/* Icon & Name */}
+                            <div className="flex items-center gap-3 w-1/3 min-w-[150px]">
+                                <div className="w-8 h-8 rounded bg-slate-100 flex items-center justify-center text-slate-500 flex-shrink-0">
+                                    <FileTextOutlined />
+                                </div>
+                                <span className="text-sm font-medium text-slate-700 truncate" title={att.file.name}>
+                                    {att.file.name}
+                                </span>
+                            </div>
+
+                            {/* Description Input */}
+                            <div className="flex-1">
+                                <input
+                                    type="text"
+                                    value={att.description}
+                                    onChange={(e) => handleDescriptionChange(att.id, e.target.value)}
+                                    placeholder="Add a description..."
+                                    className="w-full text-sm border-b border-slate-200 focus:border-violet-500 outline-none py-1 px-1 bg-transparent transition-colors"
+                                />
+                            </div>
+
+                            {/* Remove Button */}
+                            <button
+                                onClick={() => handleRemove(att.id)}
+                                className="text-slate-400 hover:text-red-500 p-2 rounded-full hover:bg-red-50 transition-colors"
+                                title="Remove file"
+                            >
+                                <DeleteOutlined />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 };
