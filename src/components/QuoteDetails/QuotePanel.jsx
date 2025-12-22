@@ -96,7 +96,7 @@ class ErrorBoundary extends React.Component {
     }
 }
 
-function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNote, internalNote, insuranceData, includeInsurance, attachmentFile, onClear }) {
+function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNote, internalNote, insuranceData, includeInsurance, attachmentFile, attachmentDescription, onClear }) {
     const navigate = useNavigate();
     const [items, setItems] = useState(parts.length ? parts : [newItem()]);
     const [userProfile, setUserProfile] = useState(() => {
@@ -431,7 +431,7 @@ Auto Glass Pro Team`;
                 customerWithVehicle: customerWithVehicle,
                 serviceDocument: serviceDocument,
                 insurance: includeInsurance ? insuranceData : null,
-                attachmentDescription: attachmentFile ? "Quote Attachment" : ""
+                attachmentDescription: attachmentFile ? (attachmentDescription || "Quote Attachment") : ""
             };
 
             console.log("Sending Composite Payload:", compositePayload);
