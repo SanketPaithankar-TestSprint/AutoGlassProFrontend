@@ -2,8 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Layout, Button, Space, Drawer, Modal, Dropdown } from "antd";
 import { MenuOutlined, UserOutlined, DownOutlined } from "@ant-design/icons";
 import Logo from "./logo";
-import SignUpForm from "./SignUpForm";
-import Login from "./login";
 import { getValidToken } from "../api/getValidToken";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -77,8 +75,6 @@ const useIsMobile = () => {
 const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
   const isMobile = useIsMobile();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [isAuthed, setIsAuthed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [scrolled, setScrolled] = useState(false);
@@ -102,15 +98,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const handleLoginSuccess = () => {
-    setIsAuthed(true);
-    setLoginModalOpen(false);
-    if (onParentLoginSuccess) {
-      onParentLoginSuccess();
-    } else {
-      navigate("/search-by-root");
-    }
-  };
+
 
   const menuItems = [
     { key: "home", label: "Home", href: "/" },
@@ -181,13 +169,13 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
               <Button
                 type="text"
                 className="!h-9 !px-2 sm:!px-3 !text-slate-200/90 hover:!text-white !bg-transparent hover:!bg-transparent !border-0 focus:!outline-none focus:!ring-0 focus:!shadow-none hover:!shadow-none active:!shadow-none"
-                onClick={() => setLoginModalOpen(true)}
+                onClick={() => navigate('/auth')}
               >
                 Login
               </Button>
               <Button
                 type="primary"
-                onClick={() => setModalOpen(true)}
+                onClick={() => navigate('/auth', { state: { mode: 'signup' } })}
                 className="relative !h-9 !px-3 sm:!px-5 !rounded-full !border-0 !bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:!from-violet-400 hover:!to-fuchsia-400 !text-white shadow-lg shadow-violet-700/40 transition-transform duration-150 hover:scale-105"
               >
                 <span className="relative">Sign Up</span>
@@ -259,7 +247,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
                   className="w-full !h-10 !text-slate-700 !bg-transparent hover:!bg-violet-100 !border-0 text-base"
                   onClick={() => {
                     setDrawerOpen(false);
-                    setLoginModalOpen(true);
+                    navigate('/auth');
                   }}
                 >
                   Login
@@ -268,7 +256,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
                   type="primary"
                   onClick={() => {
                     setDrawerOpen(false);
-                    setModalOpen(true);
+                    navigate('/auth', { state: { mode: 'signup' } });
                   }}
                   className="w-full !h-10 !mt-2 !rounded-full !bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:!from-violet-400 hover:!to-fuchsia-400 !border-0 !text-white text-base shadow-lg shadow-violet-800/40"
                 >
@@ -280,28 +268,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
         </Drawer>
       )}
 
-      {/* Modals */}
-      <Modal
-        title="Create your APAi account"
-        open={modalOpen}
-        onCancel={() => setModalOpen(false)}
-        footer={null}
-        destroyOnClose
-        className="signup-modal"
-      >
-        <SignUpForm />
-      </Modal>
 
-      <Modal
-        title="Login to APAi"
-        open={loginModalOpen}
-        onCancel={() => setLoginModalOpen(false)}
-        footer={null}
-        destroyOnClose
-        className="login-modal"
-      >
-        <Login onLoginSuccess={handleLoginSuccess} />
-      </Modal>
     </>
   );
 };

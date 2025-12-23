@@ -11,6 +11,7 @@ import Work from './components/work/Work.jsx';
 import PricingPage from './components/PricingPage.jsx';
 import Chatbot from './components/Chatbot';
 import Sidebar from './components/Sidebar';
+import AuthPage from './components/AuthPage';
 import { getValidToken } from './api/getValidToken';
 
 const { Content } = Layout;
@@ -87,6 +88,7 @@ function AppContent() {
               <Route path="/work" element={<Work />} />
               <Route path="/Order" element={<OrderPage />} />
               <Route path="/Pricing" element={<PricingPage />} />
+              <Route path="/auth" element={<AuthPage />} />
             </Routes>
             <Footer />
           </Content>

@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { Form, Input, Button, Checkbox, Alert, Divider, Space, notification } from "antd";
-import { UserOutlined, LockOutlined, GoogleOutlined, FacebookOutlined } from "@ant-design/icons";
+import { Form, Input, Button, Checkbox, Alert, Space, notification } from "antd";
+import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { login } from "../api/homepage";
 
-export default function Login({ onLoginSuccess }) {
+export default function Login({ onLoginSuccess, onSignUpClick }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -118,20 +118,6 @@ export default function Login({ onLoginSuccess }) {
                     </Button>
                 </Form.Item>
 
-                <Divider plain>Or continue with</Divider>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                    <Button icon={<GoogleOutlined />}>
-                        Google
-                    </Button>
-                    <Button icon={<FacebookOutlined />}>
-                        Facebook
-                    </Button>
-                </div>
-
-                <div style={{ marginTop: '24px', textAlign: 'center' }}>
-                    Don't have an account? <a href="" onClick={(e) => e.preventDefault()}>Sign up</a>
-                </div>
             </Form>
         </div>
     );
