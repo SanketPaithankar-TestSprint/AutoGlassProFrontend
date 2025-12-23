@@ -61,7 +61,7 @@ function AppContent() {
           />
           <Layout className="flex flex-col h-full bg-slate-50 transition-all duration-300 overflow-hidden">
             <Content className="flex-1 overflow-y-auto custom-scrollbar">
-              <div className="p-4 md:p-6">
+              <div className="m-1">
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/search-by-root" element={<SearchByRoot />} />

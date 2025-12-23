@@ -96,7 +96,11 @@ class ErrorBoundary extends React.Component {
     }
 }
 
+<<<<<<< Updated upstream
 function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNote, internalNote, insuranceData, includeInsurance, attachmentFile, onClear }) {
+=======
+function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNote, internalNote, insuranceData, includeInsurance, attachments = [], onClear, onDocumentCreated }) {
+>>>>>>> Stashed changes
     const navigate = useNavigate();
     const [items, setItems] = useState(parts.length ? parts : [newItem()]);
     const [userProfile, setUserProfile] = useState(() => {
@@ -382,7 +386,7 @@ Auto Glass Pro Team`;
             // 2. Construct CustomerWithVehicle DTO
             const customerWithVehicle = {
                 organizationId: 0, // Default or from context
-                customerType: "individual", // Default
+                customerType: "INDIVIDUAL", // Default
                 firstName: customerData.firstName || "",
                 lastName: customerData.lastName || "",
                 email: customerData.email || "",
@@ -394,7 +398,7 @@ Auto Glass Pro Team`;
                 state: customerData.state || "",
                 postalCode: customerData.postalCode || "",
                 country: customerData.country || "USA",
-                preferredContactMethod: "email",
+                preferredContactMethod: "EMAIL",
                 notes: customerData.notes || "",
 
                 // Vehicle Details
@@ -409,9 +413,9 @@ Auto Glass Pro Team`;
 
             // 3. Construct ServiceDocument DTO
             const serviceDocument = {
-                documentType: currentDocType.toLowerCase().replace(" ", "") === "workorder" ? "invoice" : currentDocType.toLowerCase(),
+                documentType: (currentDocType.toLowerCase().replace(" ", "") === "workorder" ? "invoice" : currentDocType.toLowerCase()).toUpperCase(),
                 employeeId: 0,
-                serviceLocation: "mobile",
+                serviceLocation: "MOBILE",
                 serviceAddress: `${customerData.addressLine1 || ''}, ${customerData.city || ''}, ${customerData.state || ''} ${customerData.postalCode || ''}`,
                 documentDate: new Date().toISOString(),
                 scheduledDate: new Date().toISOString(),
@@ -427,6 +431,7 @@ Auto Glass Pro Team`;
             };
 
             // 4. Construct Composite Payload
+<<<<<<< Updated upstream
             const compositePayload = {
                 customerWithVehicle: customerWithVehicle,
                 serviceDocument: serviceDocument,
@@ -438,6 +443,19 @@ Auto Glass Pro Team`;
 
             // 5. Call Composite API
             const response = await createCompositeServiceDocument(compositePayload, attachmentFile);
+=======
+            // Legacy: Combine all attachment descriptions for the JSON payload if needed by backend (optional but safe to keep)
+
+
+            const compositePayload = {
+                customerWithVehicle: customerWithVehicle,
+                serviceDocument: serviceDocument,
+                insurance: includeInsurance ? insuranceData : null
+            };
+
+            // 5. Call Composite API - STEP 1 (No files)
+            const response = await createCompositeServiceDocument(compositePayload, [], []);
+>>>>>>> Stashed changes
 
             message.success("Service Document Created Successfully!");
             const createdDocNumber = response.serviceDocument?.documentNumber;
@@ -454,11 +472,24 @@ Auto Glass Pro Team`;
                 }
             }
 
+            // Close Email Modal and Download PDF
             handleCloseModal();
             downloadPdf();
-            setTimeout(() => {
-                navigate('/work');
-            }, 1000);
+
+            // STEP 2: Initiate Upload Workflow
+            if (createdDocNumber && onDocumentCreated) {
+                onDocumentCreated({
+                    documentNumber: createdDocNumber,
+                    customerId: customerWithVehicle.organizationId || response.customerWithVehicle?.customerId || 0,
+                    userId: userProfile?.id || 0
+                });
+            } else if (createdDocNumber) {
+                // Fallback if no callback provided
+                message.success("Document created, but navigation handler missing.");
+                setTimeout(() => navigate('/work'), 1000);
+            } else {
+                message.error("Could not retrieve document number.");
+            }
 
         } catch (err) {
             console.error(err);
@@ -757,6 +788,8 @@ Auto Glass Pro Team`;
                     </div>
                 </div>
             </Modal>
+
+
         </div >
     );
 }

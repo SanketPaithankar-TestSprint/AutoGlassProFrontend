@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import CustomerPanel from "./CustomerPanel";
 import QuotePanel from "./QuotePanel";
+import AttachmentDetails from "./AttachmentDetails";
 import config from "../../config";
 import { getPrefixCd, getPosCd, getSideCd } from "../carGlassViewer/carGlassHelpers";
 
@@ -19,6 +20,15 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
         } else {
             setInternalPanel(newPanel);
         }
+    };
+
+    // Sub-Workflow State
+    const [createdDocContext, setCreatedDocContext] = useState(null);
+    const [attachments, setAttachments] = useState([]); // Lifted state for attachments
+
+    const handleDocumentCreated = (docContext) => {
+        setCreatedDocContext(docContext);
+        handlePanelSwitch('attachments');
     };
 
     // Lifted Customer State
@@ -154,6 +164,12 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
                 >
                     Quote Information
                 </button>
+                <button
+                    className={`px-4 py-2 rounded-md font-semibold border transition-all duration-150 ${panel === 'attachments' ? 'border-violet-500 text-violet-700 bg-white' : 'border-transparent text-slate-500 bg-slate-50 hover:bg-slate-100'}`}
+                    onClick={() => handlePanelSwitch('attachments')}
+                >
+                    Attachments
+                </button>
             </div>
             {panel === 'customer' && (
                 <CustomerPanel
@@ -169,8 +185,16 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
                         parts={invoiceItems}
                         onRemovePart={onRemovePart}
                         customerData={customerData}
+                        onDocumentCreated={handleDocumentCreated}
                     />
                 </div>
+            )}
+            {panel === 'attachments' && (
+                <AttachmentDetails
+                    attachments={attachments}
+                    setAttachments={setAttachments}
+                    documentDetails={createdDocContext}
+                />
             )}
         </div>
     );
