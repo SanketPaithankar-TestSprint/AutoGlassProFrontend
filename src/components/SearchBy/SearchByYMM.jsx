@@ -294,6 +294,7 @@ export default function SearchByYMM({
           />
           <div className="mt-2 flex-1 flex flex-col">
             <Button
+              htmlType="button"
               onClick={handleFindParts}
               disabled={disabled || !model || !year || !make}
               loading={loadingModelId}

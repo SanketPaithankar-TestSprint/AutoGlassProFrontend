@@ -100,6 +100,7 @@ export default function SearchByVin({
           "
           status={error ? "error" : undefined}
           disabled={loading}
+          onPressEnter={handleDecode}
         />
 
         <button

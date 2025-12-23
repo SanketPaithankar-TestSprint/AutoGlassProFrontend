@@ -3,6 +3,7 @@ import { Modal, Input, Button, message, Dropdown, Select, InputNumber } from "an
 import { DownOutlined, UnorderedListOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { createCompositeServiceDocument } from "../../api/createCompositeServiceDocument";
+import { updateCompositeServiceDocument } from "../../api/updateCompositeServiceDocument";
 import { getActiveTaxRates, getDefaultTaxRate } from "../../api/taxRateApi";
 
 import { sendEmail } from "../../api/sendEmail";
@@ -96,8 +97,15 @@ class ErrorBoundary extends React.Component {
     }
 }
 
-function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNote, internalNote, insuranceData, includeInsurance, attachments = [], onClear }) {
+function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNote, internalNote, insuranceData, includeInsurance, attachments = [], onClear, docMetadata, isSaved, isEditMode, onEditModeChange }) {
     const navigate = useNavigate();
+    const formatDate = (dateStr) => {
+        if (!dateStr) return '-';
+        try {
+            const date = new Date(dateStr);
+            return isNaN(date.getTime()) ? '-' : date.toLocaleDateString();
+        } catch { return '-'; }
+    };
     const [items, setItems] = useState(parts.length ? parts : [newItem()]);
     const [userProfile, setUserProfile] = useState(() => {
         try {
@@ -117,7 +125,9 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
 
     useEffect(() => {
         setItems((prevItems) => {
-            const currentManualItems = prevItems.filter(it => it.isManual);
+            // Deduplicate: Only keep manual items that are NOT in the incoming parts list
+            const incomingIds = new Set(parts.map(p => p.id));
+            const currentManualItems = prevItems.filter(it => it.isManual && !incomingIds.has(it.id));
             return [...parts, ...currentManualItems];
         });
     }, [parts]);
@@ -132,10 +142,11 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
     const laborCostDisplay = items.filter(it => it.type === 'Labor').reduce((sum, it) => sum + (Number(it.amount) || 0), 0);
 
     const [globalTaxRate, setGlobalTaxRate] = useState(0);
+
     const [isManualTax, setIsManualTax] = useState(false);
     const [discountPercent, setDiscountPercent] = useState(0);
     const [payment, setPayment] = useState(0);
-    const [manualDocType, setManualDocType] = useState("");
+    const [manualDocType, setManualDocType] = useState("Quote"); // Default to Quote, no Auto
 
     const [taxRates, setTaxRates] = useState([]);
 
@@ -211,10 +222,8 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
     const balance = useMemo(() => Math.max(0, total - numericPayment), [total, numericPayment]);
 
     let calculatedDocType = "Invoice";
-    if (numericPayment <= 0) calculatedDocType = "Quote";
-    else if (numericPayment < total) calculatedDocType = "Work Order";
-
-    const currentDocType = manualDocType || calculatedDocType;
+    // Auto-calculation removed per request, strict manual selection
+    const currentDocType = manualDocType;
 
 
     // Generate PDF using utility function
@@ -443,10 +452,18 @@ Auto Glass Pro Team`;
 
             const files = attachments.map(a => a.file);
 
-            // 5. Call Composite API
-            const response = await createCompositeServiceDocument(compositePayload, files);
+            let response;
+            if (isSaved && docMetadata && docMetadata.documentNumber) {
+                // UPDATE existing document
+                console.log("Updating Composite Document:", docMetadata.documentNumber);
+                response = await updateCompositeServiceDocument(docMetadata.documentNumber, compositePayload, files);
+                message.success("Service Document Updated Successfully!");
+            } else {
+                // CREATE new document
+                response = await createCompositeServiceDocument(compositePayload, files);
+                message.success("Service Document Created Successfully!");
+            }
 
-            message.success("Service Document Created Successfully!");
             const createdDocNumber = response.serviceDocument?.documentNumber;
 
             // 6. Send Email if PDF is generated
@@ -476,44 +493,60 @@ Auto Glass Pro Team`;
     };
 
 
-    const handleClear = () => {
-        if (window.confirm("Are you sure you want to clear all details? This action cannot be undone.")) {
-            // Reset Local State
-            setItems([]);
-            setGlobalTaxRate(0); // Optional: could reset to default if preferred
-            setIsManualTax(false);
-            setDiscountPercent(0);
-            setPayment(0);
-            setManualDocType("");
 
-            // Trigger Parent Clear
-            if (onClear) {
-                onClear();
-            }
-
-            message.info("Quote details cleared.");
-        }
-    };
 
 
     return (
         <div>
             {contextHolder}
-            {/* Header */}
-            <div className="flex items-center justify-between mb-2 max-w-7xl">
-                <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-fuchsia-600">
-                    Quote Details
-                </h3>
-                <button
-                    onClick={handleClear}
-                    className="text-xs font-semibold text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded transition-colors flex items-center gap-1"
-                    title="Clear all details"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                    </svg>
-                    Clear
-                </button>
+            {/* Header / Metadata */}
+            <div className="mb-2">
+                {isSaved && docMetadata ? (
+                    <div className="bg-sky-50 border border-sky-200 rounded-md px-4 py-2 flex justify-between items-center shadow-sm">
+                        <div className="flex gap-6 items-center text-sm">
+                            <div className="flex flex-col">
+                                <span className="text-xs font-bold text-sky-800 uppercase tracking-wider">Document #</span>
+                                <span className="font-mono font-bold text-slate-800 text-base">{docMetadata.documentNumber}</span>
+                            </div>
+                            <div className="h-8 w-px bg-sky-200"></div>
+                            <div className="flex gap-4">
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] text-sky-700 font-semibold uppercase">Date</span>
+                                    <span className="text-slate-700 font-medium">{formatDate(docMetadata.documentDate)}</span>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] text-sky-700 font-semibold uppercase">Created</span>
+                                    <span className="text-slate-700 font-medium">{formatDate(docMetadata.createdAt)}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                            <div className="flex flex-col items-end">
+                                <span className="text-[10px] text-sky-700 font-semibold uppercase">Updated</span>
+                                <span className="text-slate-700 font-medium text-xs">{formatDate(docMetadata.updatedAt)}</span>
+                            </div>
+                            {onEditModeChange && (
+                                <button
+                                    onClick={() => onEditModeChange(!isEditMode)}
+                                    className={`px-4 py-1.5 rounded text-sm font-semibold transition-colors shadow-sm border ${isEditMode
+                                        ? 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
+                                        : 'bg-indigo-600 text-white border-transparent hover:bg-indigo-700'
+                                        }`}
+                                >
+                                    {isEditMode ? "Cancel Edit" : "Edit Document"}
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                ) : (
+                    <div className="flex items-center justify-between max-w-7xl">
+                        <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-fuchsia-600">
+                            Quote Details
+                        </h3>
+                    </div>
+                )}
+
             </div>
 
             {/* Line Items Table */}
@@ -700,13 +733,12 @@ Auto Glass Pro Team`;
                             onChange={(e) => setManualDocType(e.target.value)}
                             className={`appearance-none outline-none cursor-pointer inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium border ${currentDocType === "Quote" ? "border-sky-500/60 bg-sky-500/10 text-emerald-600" : currentDocType === "Work Order" ? "border-amber-400/70 bg-amber-400/10 text-amber-600" : "border-emerald-400/70 bg-emerald-400/10 text-emerald-600"}`}
                         >
-                            <option value="">Auto ({calculatedDocType})</option>
                             <option value="Quote">Quote</option>
                             <option value="Work Order">Work Order</option>
                             <option value="Invoice">Invoice</option>
                         </select>
                         <button onClick={handleOpenPreview} className="px-4 py-2 rounded bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-sm font-semibold shadow hover:from-violet-500 hover:to-fuchsia-500 transition">
-                            Generate {currentDocType}
+                            {isSaved ? `Edit ${currentDocType}` : `Generate ${currentDocType}`}
                         </button>
                     </div>
                 </div>
