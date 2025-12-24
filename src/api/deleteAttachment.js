@@ -6,7 +6,7 @@ export const deleteAttachment = async (attachmentId) => {
         const token = getValidToken();
         if (!token) throw new Error("No valid authentication token found.");
 
-        const response = await fetch(`${urls.javaApiUrl}/v1/attachments/${attachmentId}`, {
+        const response = await fetch(`${urls.javaApiUrl}/attachments/${attachmentId}`, {
             method: "DELETE",
             headers: {
                 "Authorization": `Bearer ${token}`,

@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { createCompositeServiceDocument } from "../../api/createCompositeServiceDocument";
 import { updateCompositeServiceDocument } from "../../api/updateCompositeServiceDocument";
 import { getActiveTaxRates, getDefaultTaxRate } from "../../api/taxRateApi";
+import { getAttachmentsByDocumentNumber } from "../../api/getAttachmentsByDocumentNumber";
 
 import { sendEmail } from "../../api/sendEmail";
 import {
@@ -466,6 +467,19 @@ Auto Glass Pro Team`;
 
             const createdDocNumber = response.serviceDocument?.documentNumber;
 
+            // Fetch attachments from backend after document is saved
+            if (createdDocNumber) {
+                try {
+                    const fetchedAttachments = await getAttachmentsByDocumentNumber(createdDocNumber);
+                    console.log("Fetched attachments for document", createdDocNumber, ":", fetchedAttachments);
+                    // You can store these attachments in state or use them as needed
+                    // For example: setAttachments(fetchedAttachments);
+                } catch (attachmentError) {
+                    console.error("Failed to fetch attachments:", attachmentError);
+                    // Don't fail the entire operation if attachment fetch fails
+                }
+            }
+
             // 6. Send Email if PDF is generated
             if (pdfBlob && createdDocNumber) {
                 const file = new File([pdfBlob], getFilename(), { type: "application/pdf" });
@@ -481,7 +495,7 @@ Auto Glass Pro Team`;
             handleCloseModal();
             downloadPdf();
             setTimeout(() => {
-                navigate('/work');
+                navigate('/open');
             }, 1000);
 
         } catch (err) {

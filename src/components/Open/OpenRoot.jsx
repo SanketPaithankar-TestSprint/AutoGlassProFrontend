@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Layout, message, App } from 'antd';
+import { Layout, message, App, Pagination } from 'antd';
 import Header from '../Header';
 import SearchBar from './SearchBar';
 import DocumentList from './DocumentList';
@@ -16,6 +16,9 @@ const OpenRoot = () => {
     const [filteredDocuments, setFilteredDocuments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+    const [currentPage, setCurrentPage] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
+    const [totalElements, setTotalElements] = useState(0);
     const { message } = App.useApp(); // Use App context for messages if possible, or standard message
 
     // Fetch API Data
@@ -28,15 +31,14 @@ const OpenRoot = () => {
                     setLoading(false);
                     return; // Or redirect
                 }
-                const data = await getServiceDocuments(token);
-                // API returns array directly or { data: [] }
-                const docs = Array.isArray(data) ? data : (data?.data || []);
-
-                // Sort roughly if needed, or rely on backend
-                docs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                const data = await getServiceDocuments(token, currentPage, pageSize);
+                // API returns paginated response: { content: [], totalElements: 0, ... }
+                const docs = data?.content || [];
+                const total = data?.totalElements || 0;
 
                 setDocuments(docs);
                 setFilteredDocuments(docs);
+                setTotalElements(total);
             } catch (error) {
                 console.error("Failed to fetch documents", error);
                 message.error("Failed to load documents.");
@@ -46,7 +48,7 @@ const OpenRoot = () => {
         };
 
         fetchDocuments();
-    }, []);
+    }, [currentPage, pageSize]);
 
     // Handle Search
     useEffect(() => {
@@ -96,6 +98,24 @@ const OpenRoot = () => {
                     loading={loading}
                     onDocumentClick={handleDocumentClick}
                 />
+
+                {/* Pagination */}
+                {!loading && totalElements > 0 && (
+                    <div className="flex justify-center mt-8">
+                        <Pagination
+                            current={currentPage + 1}
+                            pageSize={pageSize}
+                            total={totalElements}
+                            onChange={(page, size) => {
+                                setCurrentPage(page - 1);
+                                setPageSize(size);
+                            }}
+                            showSizeChanger
+                            showTotal={(total, range) => `${range[0]}-${range[1]} of ${total} documents`}
+                            pageSizeOptions={['10', '20', '50', '100']}
+                        />
+                    </div>
+                )}
             </div>
         </div>
     );

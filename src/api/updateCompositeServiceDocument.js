@@ -19,17 +19,8 @@ export const updateCompositeServiceDocument = async (documentNumber, data, file)
         const jsonBlob = new Blob([JSON.stringify(data)], { type: 'application/json' });
         formData.append("data", jsonBlob);
 
-        // Append files
-        if (Array.isArray(file)) {
-            file.forEach(f => {
-                if (f) formData.append("file", f);
-            });
-        } else if (file) {
-            formData.append("file", file);
-        }
-
-        // Additional fields required by backend for updates
-        formData.append("descriptions", data.attachmentDescription || "");
+        // DO NOT include file attachments in PUT request
+        // Attachments should be managed separately via attachment endpoints
 
         const response = await fetch(`${urls.javaApiUrl}/v1/composite/${documentNumber}`, {
             method: 'PUT',

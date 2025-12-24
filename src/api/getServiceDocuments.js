@@ -1,8 +1,8 @@
 // src/api/getServiceDocuments.js
 import urls from "../config";
 
-export async function getServiceDocuments(token) {
-    const url = `${urls.javaApiUrl}/v1/service-documents/my`;
+export async function getServiceDocuments(token, page = 0, size = 10) {
+    const url = `${urls.javaApiUrl}/v1/service-documents/my?page=${page}&size=${size}`;
     try {
         const response = await fetch(url, {
             method: "GET",

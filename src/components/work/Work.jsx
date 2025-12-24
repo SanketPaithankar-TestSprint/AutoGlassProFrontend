@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Tooltip, Empty, App, Modal } from "antd";
+import { Button, Tooltip, Empty, App, Modal, Pagination } from "antd";
 import {
     PlusOutlined,
     FilePdfOutlined,
@@ -35,6 +35,9 @@ const Work = () => {
     const [expandedDoc, setExpandedDoc] = useState(null);
     const [attachmentsCache, setAttachmentsCache] = useState({});
     const [attachmentsLoading, setAttachmentsLoading] = useState({});
+    const [currentPage, setCurrentPage] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
+    const [totalElements, setTotalElements] = useState(0);
 
     // Preview Modal State
     const [previewAttachment, setPreviewAttachment] = useState(null);
@@ -54,11 +57,13 @@ const Work = () => {
             const token = getValidToken();
             if (!token) throw new Error("No token found. Please login.");
 
-            const res = await getServiceDocuments(token);
-            const documents = Array.isArray(res) ? res : (res?.data || res?.documents || []);
-            // Sort by createdAt descending
-            documents.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            const res = await getServiceDocuments(token, currentPage, pageSize);
+            // API returns paginated response: { content: [], totalElements: 0, ... }
+            const documents = res?.content || [];
+            const total = res?.totalElements || 0;
+
             setWorkItems(documents);
+            setTotalElements(total);
         } catch (err) {
             setError(err.message || "Failed to fetch work data.");
         } finally {
@@ -69,7 +74,7 @@ const Work = () => {
     useEffect(() => {
         document.title = "APAI | Work";
         fetchWork();
-    }, []);
+    }, [currentPage, pageSize]);
 
     // Action Handlers
     const handleDelete = (docId) => {
@@ -648,6 +653,25 @@ const Work = () => {
                             </div>
                         )}
                     </div>
+
+                    {/* Pagination */}
+                    {!loading && totalElements > 0 && (
+                        <div className="flex justify-center mt-6">
+                            <Pagination
+                                current={currentPage + 1}
+                                pageSize={pageSize}
+                                total={totalElements}
+                                onChange={(page, size) => {
+                                    setCurrentPage(page - 1);
+                                    setPageSize(size);
+                                    setExpandedDoc(null); // Collapse any expanded document on page change
+                                }}
+                                showSizeChanger
+                                showTotal={(total, range) => `${range[0]}-${range[1]} of ${total} documents`}
+                                pageSizeOptions={['10', '20', '50', '100']}
+                            />
+                        </div>
+                    )}
                 </div>
             )}
 

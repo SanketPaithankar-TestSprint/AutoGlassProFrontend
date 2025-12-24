@@ -11,6 +11,7 @@ import config from "../../config";
 import { getPrefixCd, getPosCd, getSideCd } from "../carGlassViewer/carGlassHelpers";
 import InsuranceDetails from "../QuoteDetails/InsuranceDetails";
 import AttachmentDetails from "../QuoteDetails/AttachmentDetails";
+import { getAttachmentsByDocumentNumber } from "../../api/getAttachmentsByDocumentNumber";
 
 const SearchByRoot = () => {
   const [vinData, setVinData] = useState(null);
@@ -167,6 +168,19 @@ const SearchByRoot = () => {
         setInsuranceData(insurance);
         setIncludeInsurance(true);
       }
+
+      // 5. Fetch Saved Attachments
+      if (serviceDocument?.documentNumber) {
+        getAttachmentsByDocumentNumber(serviceDocument.documentNumber)
+          .then(fetchedAttachments => {
+            console.log("Fetched attachments for edit mode:", fetchedAttachments);
+            setSavedAttachments(fetchedAttachments || []);
+          })
+          .catch(err => {
+            console.error("Failed to fetch attachments:", err);
+            setSavedAttachments([]);
+          });
+      }
     }
   }, [location.state]);
 
@@ -291,6 +305,7 @@ const SearchByRoot = () => {
         setInsuranceData({});
         setIncludeInsurance(false);
         setAttachments([]);
+        setSavedAttachments([]);
         setAttachments([]);
         setEditItems([]);
         setViewerItems([]);
@@ -317,6 +332,7 @@ const SearchByRoot = () => {
   const [insuranceData, setInsuranceData] = useState({});
   const [includeInsurance, setIncludeInsurance] = useState(false);
   const [attachments, setAttachments] = useState([]); // Array { id, file, description }
+  const [savedAttachments, setSavedAttachments] = useState([]); // Array of saved attachments from backend
 
   const tabs = [
     { id: 'quote', label: 'Quote' },
@@ -442,6 +458,8 @@ const SearchByRoot = () => {
                   <AttachmentDetails
                     attachments={attachments}
                     setAttachments={setAttachments}
+                    savedAttachments={savedAttachments}
+                    setSavedAttachments={setSavedAttachments}
                   />
                 </div>
               )}
