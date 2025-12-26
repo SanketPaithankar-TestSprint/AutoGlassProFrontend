@@ -52,7 +52,7 @@ function AppContent() {
   }
 
   return (
-    <Layout className="h-screen overflow-hidden">
+    <Layout className={isAuthed ? "h-screen overflow-hidden" : "min-h-screen overflow-x-hidden"}>
       {isAuthed ? (
         // Authenticated Layout: Sidebar + Content Area
         <Layout hasSider className="h-full">
@@ -62,8 +62,8 @@ function AppContent() {
             onCollapse={setCollapsed}
           />
           <Layout className="flex flex-col h-full bg-slate-50 transition-all duration-300 overflow-hidden">
-            <Content className="flex-1 overflow-y-auto custom-scrollbar">
-              <div className="p-4 md:p-6">
+            <Content className="flex-1 flex flex-col overflow-y-auto custom-scrollbar">
+              <div className="min-h-full p-4 md:p-6 flex-col flex">
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/search-by-root" element={<SearchByRoot />} />
@@ -80,18 +80,20 @@ function AppContent() {
         </Layout>
       ) : (
         // Public Layout: Header + Content Area
-        <Layout className="min-h-screen bg-white">
+        <Layout className="min-h-screen bg-white flex flex-col">
           <Header onLoginSuccess={handleLoginSuccess} />
-          <Content className="flex flex-col pt-20"> {/* pt-20 for fixed header */}
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/search-by-root" element={<SearchByRoot />} />
-              <Route path="/Profile" element={<Profile />} />
-              <Route path="/work" element={<Work />} />
-              <Route path="/Order" element={<OrderPage />} />
-              <Route path="/Pricing" element={<PricingPage />} />
-              <Route path="/auth" element={<AuthPage />} />
-            </Routes>
+          <Content className="flex-1 flex flex-col pt-20"> {/* pt-20 for fixed header */}
+            <div className="min-h-[calc(100vh-80px)] flex flex-col">
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/search-by-root" element={<SearchByRoot />} />
+                <Route path="/Profile" element={<Profile />} />
+                <Route path="/work" element={<Work />} />
+                <Route path="/Order" element={<OrderPage />} />
+                <Route path="/Pricing" element={<PricingPage />} />
+                <Route path="/auth" element={<AuthPage />} />
+              </Routes>
+            </div>
             <Footer />
           </Content>
         </Layout>

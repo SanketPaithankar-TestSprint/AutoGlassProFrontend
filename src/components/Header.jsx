@@ -41,7 +41,7 @@ const ProfileDropdown = ({ onLogout }) => {
       <Button
         type="text"
         icon={<UserOutlined />}
-        className="!h-9 !px-4 !text-slate-100 hover:!text-white !bg-transparent hover:!bg-transparent !border-0 focus:!outline-none focus:!ring-0"
+        className="!h-9 !px-4 !text-slate-700 hover:!text-slate-900 !bg-transparent hover:!bg-transparent !border-0 focus:!outline-none focus:!ring-0"
       >
         <span className="inline-flex items-center gap-1">
           <span>Profile</span>
@@ -135,27 +135,27 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
           glass-navbar
           fixed top-0 left-0 right-0 z-40
           flex items-center
-          px-2 sm:px-4 md:px-6
+          px-4 sm:px-6 md:px-8
           transition-all duration-300
           ${scrolled ? "h-16" : "h-20"}
         `}
         style={{ paddingInline: 0, boxShadow: scrolled ? '0 2px 8px rgba(0,0,0,0.12)' : 'none', minWidth: 0 }}
       >
         {/* Left: Logo + small tag */}
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 ml-4">
           <Link
             to="/"
             className="flex items-center gap-2 hover:scale-[1.02] transition-transform duration-150 min-w-0"
           >
-            <Logo className="w-24 sm:w-32 h-auto min-w-0" />
+            <Logo className="w-20 sm:w-24 h-auto min-w-0" />
           </Link>
         </div>
 
         {/* Center: Navigation */}
         <nav className="hidden lg:flex flex-1 justify-center min-w-0">
-          <ul className="flex items-center gap-4 sm:gap-8 xl:gap-12 group/navlink min-w-0">
+          <ul className="flex items-center gap-4 sm:gap-8 xl:gap-12 group/navlink min-w-0 m-0 p-0">
             {menuItems.map((item) => (
-              <li key={item.key} className="list-none min-w-0">
+              <li key={item.key} className="list-none min-w-0 flex items-center h-full">
                 <NavLink label={item.label} href={item.href} />
               </li>
             ))}
@@ -164,23 +164,21 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
 
         {/* Right: Buttons / Profile */}
         {!isAuthed ? (
-          <div className="hidden lg:block ml-auto min-w-0">
-            <Space>
-              <Button
-                type="text"
-                className="!h-9 !px-2 sm:!px-3 !text-slate-200/90 hover:!text-white !bg-transparent hover:!bg-transparent !border-0 focus:!outline-none focus:!ring-0 focus:!shadow-none hover:!shadow-none active:!shadow-none"
-                onClick={() => navigate('/auth')}
-              >
-                Login
-              </Button>
-              <Button
-                type="primary"
-                onClick={() => navigate('/auth', { state: { mode: 'signup' } })}
-                className="relative !h-9 !px-3 sm:!px-5 !rounded-full !border-0 !bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:!from-violet-400 hover:!to-fuchsia-400 !text-white shadow-lg shadow-violet-700/40 transition-transform duration-150 hover:scale-105"
-              >
-                <span className="relative">Sign Up</span>
-              </Button>
-            </Space>
+          <div className="hidden lg:block ml-auto min-w-0 flex items-center gap-2 sm:gap-4 pr-6">
+            <Button
+              type="text"
+              className="!h-9 !px-2 sm:!px-3 !text-slate-700 hover:!text-[#7E5CFE] !bg-transparent hover:!bg-transparent !border-0 focus:!outline-none focus:!ring-0 focus:!shadow-none hover:!shadow-none active:!shadow-none transition-colors duration-300 !text-[1.1rem]"
+              onClick={() => navigate('/auth')}
+            >
+              Login
+            </Button>
+            <Button
+              type="primary"
+              onClick={() => navigate('/auth', { state: { mode: 'signup' } })}
+              className="relative !h-9 !px-6 !rounded-full !border-0 !bg-gradient-to-r from-[#7E5CFE] to-[#00A8E4] hover:!from-[#6b4ce6] hover:!to-[#008dc2] !text-white shadow-lg shadow-purple-500/30 transition-all duration-300 hover:scale-105"
+            >
+              <span className="relative font-semibold text-[1.1rem]">Sign Up</span>
+            </Button>
           </div>
         ) : (
           <div className="hidden lg:flex items-center gap-2 sm:gap-3 ml-auto min-w-0">
@@ -202,7 +200,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
               aria-label="Open navigation"
               icon={<MenuOutlined />}
               onClick={() => setDrawerOpen(true)}
-              className="!flex lg:!hidden !items-center !justify-center !h-9 !w-9 !rounded-full !text-slate-100 !bg-slate-900/60 hover:!bg-slate-800/80 !border border-slate-700/70 shadow-sm shadow-slate-900/60 focus:!outline-none focus:!ring-0 focus:!shadow-none"
+              className="!flex lg:!hidden !items-center !justify-center !h-9 !w-9 !rounded-full !text-slate-700 !bg-slate-100 hover:!bg-slate-200 !border border-slate-200 shadow-sm focus:!outline-none focus:!ring-0 focus:!shadow-none"
             />
           </div>
         )}
