@@ -1,22 +1,23 @@
 /* Glassmorphism Navbar */
 .ant-layout-header.glass-navbar {
-  background: rgba(10, 15, 34, 0.55) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  color: #fff !important;
+  color: #0f172a !important;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 /* Clean light background for main page */
 body,
 .ant-layout {
-  background: #F8F9FC !important;
+  background: #ffffff !important;
 }
 
 /* Navbar and Footer custom styles */
 .ant-layout-header {
   background: transparent !important;
   /* Default to transparent, let specific classes override */
-  color: #fff !important;
+  color: #0f172a !important;
 }
 
 .footer-gradient {
@@ -25,20 +26,43 @@ body,
 }
 
 .nav-link {
-  color: #fff !important;
+  color: #334155 !important;
   text-decoration: none;
   font-weight: 500;
-  font-size: 1rem;
-  padding: 0.5rem 0.75rem;
+  font-size: 1.1rem;
+  padding: 0.5rem 0.2rem;
+  margin: 0 0.5rem;
+  position: relative;
+  transition: color 0.3s ease;
   border-radius: 4px;
   transition: color 0.2s, background 0.2s;
+  display: block;
 }
 
+
 .nav-link:hover,
-.nav-link:focus {
-  color: #60a5fa !important;
-  /* Tailwind's blue-400 */
+.nav-link:focus,
+.nav-link.active {
+  color: #7E5CFE !important;
   background: none;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 3px;
+  background-color: #7E5CFE;
+  transition: width 0.3s ease;
+  border-radius: 2px;
+}
+
+.nav-link:hover::after,
+.nav-link:focus::after,
+.nav-link.active::after {
+  width: 100%;
 }
 
 .footer-link {
@@ -165,4 +189,16 @@ button:hover {
 
 .animate-fadeIn {
   animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

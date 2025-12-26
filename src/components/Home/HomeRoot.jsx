@@ -25,7 +25,7 @@ const Home = () => {
     }, [])
 
     return (
-        <div className="min-h-screen bg-[#F8F9FC] text-slate-900 pb-24">
+        <div className="min-h-screen bg-white text-slate-900 pb-24">
             {/* Spacer for sticky header if you have one */}
             <div className="h-16" />
 
@@ -45,7 +45,7 @@ const Home = () => {
             </div>
 
             {/* Workflow Section */}
-            <div className="mt-12 bg-slate-50">
+            <div className="mt-12">
                 <WorkflowSection />
             </div>
 

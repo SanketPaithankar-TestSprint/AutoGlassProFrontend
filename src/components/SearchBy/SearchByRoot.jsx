@@ -95,7 +95,7 @@ const SearchByRoot = () => {
         vehicleStyle: vehicle?.vehicleStyle || "",
         licensePlateNumber: vehicle?.licensePlateNumber || "",
         vin: vehicle?.vin || "",
-        vin: vehicle?.vin || "",
+
         vehicleNotes: vehicle?.notes || ""
       };
       setCustomerData(prev => ({ ...prev, ...newCustomerData }));
