@@ -420,6 +420,7 @@ const SearchByRoot = () => {
                     <div className="flex-1 overflow-hidden relative">
                       <ErrorBoundary>
                         <CarGlassViewer
+                          key={`${modelId || 'empty'}-${resetKey}`}
                           modelId={modelId}
                           vehicleInfo={vehicleInfo}
                           onPartSelect={handleAddPart}
