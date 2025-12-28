@@ -8,6 +8,7 @@ import { getActiveTaxRates, getDefaultTaxRate } from "../../api/taxRateApi";
 import { getAttachmentsByDocumentNumber } from "../../api/getAttachmentsByDocumentNumber";
 
 import { sendEmail } from "../../api/sendEmail";
+import { extractGlassInfo } from "../carGlassViewer/carGlassHelpers";
 import {
     generateServiceDocumentPDF,
     generatePDFFilename,
@@ -177,22 +178,34 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
     useEffect(() => {
         const fetchTaxData = async () => {
             try {
+                // If user profile has a tax rate, use it directly
+                if (userProfile && userProfile.taxRate !== undefined && userProfile.taxRate !== null) {
+                    setGlobalTaxRate(userProfile.taxRate);
+                    return;
+                }
+
                 const [rates, defaultRate] = await Promise.all([
                     getActiveTaxRates().catch(() => []),
                     getDefaultTaxRate().catch(() => null)
                 ]);
-                setTaxRates(Array.isArray(rates) ? rates : []);
+                const validRates = Array.isArray(rates) ? rates : [];
+                setTaxRates(validRates);
 
-                // If a default exists, use it
-                if (defaultRate && defaultRate.taxPercent) {
+                // Hierarchy: Profile -> Default -> First Active
+                if (userProfile && userProfile.taxRate !== undefined && userProfile.taxRate !== null) {
+                    setGlobalTaxRate(userProfile.taxRate);
+                } else if (defaultRate && defaultRate.taxPercent) {
                     setGlobalTaxRate(defaultRate.taxPercent);
+                } else if (validRates.length > 0) {
+                    // Fallback to the first active rate if no default is explicitly set
+                    setGlobalTaxRate(validRates[0].taxPercent);
                 }
             } catch (err) {
                 console.error("Failed to fetch tax rates", err);
             }
         };
         fetchTaxData();
-    }, []);
+    }, [userProfile]);
 
     const updateItem = (id, key, value) => {
         setItems((prev) => prev.map((it) => {
@@ -230,6 +243,7 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
         setItems(prev => [...prev, newItemData]);
     };
 
+
     const handlePartNoBlur = async (id, partNo) => {
         if (!partNo) return;
         try {
@@ -241,12 +255,14 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
             if (data) {
                 setItems(prev => prev.map(it => {
                     if (it.id === id) {
-                        const price = data.list_price || 0;
+                        const { listPrice, netPrice, description, manufacturer } = extractGlassInfo(data, it.description);
                         return {
                             ...it,
-                            description: data.description || it.description,
-                            unitPrice: price,
-                            amount: (Number(it.qty) || 0) * price
+                            description: description,
+                            manufacturer: manufacturer,
+                            listPrice: listPrice,
+                            unitPrice: netPrice, // Use Net Price for calculation
+                            amount: (Number(it.qty) || 0) * netPrice
                         };
                     }
                     return it;
@@ -257,6 +273,8 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
         }
     };
 
+
+
     const subtotal = useMemo(() => items.reduce((sum, it) => sum + (Number(it.amount) || 0), 0), [items]);
     const totalHours = useMemo(() =>
         items
@@ -264,7 +282,12 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
             .reduce((sum, it) => sum + (Number(it.labor) || 0), 0),
         [items]
     );
-    const totalTax = useMemo(() => (subtotal * (Number(globalTaxRate) || 0)) / 100, [subtotal, globalTaxRate]);
+    const totalTax = useMemo(() => {
+        const taxableSubtotal = items
+            .filter(it => it.type !== 'Labor')
+            .reduce((sum, it) => sum + (Number(it.amount) || 0), 0);
+        return (taxableSubtotal * (Number(globalTaxRate) || 0)) / 100;
+    }, [items, globalTaxRate]);
     const discountAmount = useMemo(() => {
         return (subtotal * (Number(discountPercent) || 0)) / 100;
     }, [subtotal, discountPercent]);
@@ -578,9 +601,9 @@ Auto Glass Pro Team`;
                 <table className="min-w-full divide-y divide-slate-300">
                     <thead className="bg-slate-50 sticky top-0 z-10 shadow-sm">
                         <tr className="text-left text-[11px] font-semibold text-slate-800 tracking-tight">
-                            <th className="px-1 py-0.5 min-w-[60px] border-r border-slate-300 bg-slate-50">Part</th>
-                            <th className="px-1 py-0.5 min-w-[400px] border-r border-slate-300 bg-slate-50">Description</th>
-                            <th className="px-1 py-0.5 min-w-[60px] border-r border-slate-300 bg-slate-50">Manufacturer</th>
+                            <th className="px-1 py-0.5 w-[120px] border-r border-slate-300 bg-slate-50">Part</th>
+                            <th className="px-1 py-0.5 border-r border-slate-300 bg-slate-50">Description</th>
+                            <th className="px-1 py-0.5 w-[90px] border-r border-slate-300 bg-slate-50">Manufacturer</th>
                             <th className="px-1 py-0.5 text-right w-[60px] border-r border-slate-300 bg-slate-50">Quantity</th>
                             <th className="px-1 py-0.5 text-right w-[90px] border-r border-slate-300 bg-slate-50">List</th>
                             <th className="px-1 py-0.5 text-right w-[90px] border-r border-slate-300 bg-slate-50">Amount</th>
@@ -633,8 +656,8 @@ Auto Glass Pro Team`;
                                 <td className="px-1 py-0.5 text-right border-r border-slate-300">
                                     <input
                                         type="text"
-                                        value={it.unitPrice ? `$${it.unitPrice}` : ''}
-                                        onChange={(e) => updateItem(it.id, "unitPrice", e.target.value.replace(/[^0-9.]/g, ''))}
+                                        value={it.listPrice ? `$${it.listPrice}` : ''}
+                                        onChange={(e) => updateItem(it.id, "listPrice", e.target.value.replace(/[^0-9.]/g, ''))}
                                         className={`w-full h-5 rounded px-1 text-[11px] text-right outline-none focus:bg-white bg-transparent ${(!it.isManual && it.type === 'Labor') ? 'text-slate-400 cursor-not-allowed' : 'text-slate-700'}`}
                                         disabled={!it.isManual && it.type === 'Labor'}
                                         placeholder="$0.00"
@@ -732,55 +755,7 @@ Auto Glass Pro Team`;
                     <div className="flex justify-between items-center text-sm">
                         <span className="text-slate-500">Tax</span>
                         <div className="flex items-center gap-2">
-                            {isManualTax ? (
-                                <div className="flex items-center gap-1">
-                                    <InputNumber
-                                        value={globalTaxRate}
-                                        onChange={setGlobalTaxRate}
-                                        min={0}
-                                        max={100}
-                                        padding="0"
-                                        size="small"
-                                        className="w-20 text-right"
-                                        formatter={value => `${value}`}
-                                        parser={value => value.replace('%', '')}
-                                    />
-                                    <span className="text-slate-400 text-xs">%</span>
-                                    <Button
-                                        size="small"
-                                        type="text"
-                                        icon={<UnorderedListOutlined />}
-                                        onClick={() => setIsManualTax(false)}
-                                        title="Select from list"
-                                        className="text-slate-400 hover:text-violet-600"
-                                    />
-                                </div>
-                            ) : (
-                                <Select
-                                    value={globalTaxRate}
-                                    onChange={(val) => {
-                                        if (val === 'MANUAL') {
-                                            setIsManualTax(true);
-                                        } else {
-                                            setGlobalTaxRate(val);
-                                        }
-                                    }}
-                                    className="w-32"
-                                    size="small"
-                                    placeholder="Select Tax"
-                                    dropdownMatchSelectWidth={false}
-                                >
-                                    {taxRates.map(rate => (
-                                        <Select.Option key={rate.taxRateId} value={rate.taxPercent}>
-                                            {rate.stateCode} ({rate.taxPercent}%)
-                                        </Select.Option>
-                                    ))}
-                                    <Select.Option value={0}>No Tax (0%)</Select.Option>
-                                    <Select.Option value="MANUAL" className="text-violet-600 font-medium border-t border-slate-100 mt-1">
-                                        Custom Rate...
-                                    </Select.Option>
-                                </Select>
-                            )}
+                            <span className="text-slate-500 text-xs mr-2">({globalTaxRate}%)</span>
                             <span className="text-slate-900 w-16 text-right">{currency(totalTax)}</span>
                         </div>
                     </div>

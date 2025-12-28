@@ -8,7 +8,7 @@ import QuotePanel from "../QuoteDetails/QuotePanel";
 import CustomerPanel from "../QuoteDetails/CustomerPanel";
 import ErrorBoundary from "../common/ErrorBoundary";
 import config from "../../config";
-import { getPrefixCd, getPosCd, getSideCd } from "../carGlassViewer/carGlassHelpers";
+import { getPrefixCd, getPosCd, getSideCd, extractGlassInfo } from "../carGlassViewer/carGlassHelpers";
 import InsuranceDetails from "../QuoteDetails/InsuranceDetails";
 import AttachmentDetails from "../QuoteDetails/AttachmentDetails";
 import { getAttachmentsByDocumentNumber } from "../../api/getAttachmentsByDocumentNumber";
@@ -249,32 +249,37 @@ const SearchByRoot = () => {
       const result = await Promise.all(selectedParts.map(async (p) => {
         const uniqueId = `${p.part.nags_glass_id || ""}|${p.part.oem_glass_id || ""}|${p.glass.code}`;
 
-        let info = p.glassInfo;
-        if (!info && p.part.nags_glass_id) {
+        let rawInfo = p.glassInfo;
+        if (!rawInfo && p.part.nags_glass_id) {
           try {
             const res = await fetch(`${config.pythonApiUrl}agp/v1/glass-info?nags_glass_id=${p.part.nags_glass_id}`);
-            if (res.ok) info = await res.json();
+            if (res.ok) rawInfo = await res.json();
           } catch (err) { console.error("Failed to fetch glass info", err); }
         }
 
+        // Use helper to extract data (prioritizing Pilkington)
+        const { listPrice, netPrice, description, labor, manufacturer, ta } = extractGlassInfo(rawInfo, p.part.part_description);
+
         const items = [];
         // Part Item
-        const fullPartNumber = `${p.part.nags_glass_id || ""}${info?.ta ? " " + info.ta : ""}`.trim();
+        const fullPartNumber = `${p.part.nags_glass_id || ""}${ta ? " " + ta : ""}`.trim();
+
         items.push({
           type: "Part", id: uniqueId,
           prefixCd: getPrefixCd(p.glass), posCd: getPosCd(p.glass), sideCd: getSideCd(p.glass),
           nagsId: fullPartNumber, oemId: p.part.oem_glass_id || "",
-          labor: Number(info?.labor) || "", description: p.part.part_description || "",
-          manufacturer: info?.manufacturer || "", qty: 1,
-          unitPrice: info?.list_price || 0, amount: info?.list_price || 0
+          labor: labor, description: description,
+          manufacturer: manufacturer, qty: 1,
+          listPrice: listPrice,
+          unitPrice: netPrice, amount: netPrice
         });
 
         // Labor Item
-        if (Number(info?.labor) > 0) {
+        if (Number(labor) > 0) {
           const globalLaborRate = parseFloat(sessionStorage.getItem('GlobalLaborRate')) || 100;
           items.push({
             type: "Labor", id: `${uniqueId}_LABOR`,
-            nagsId: "", oemId: "", labor: Number(info?.labor) || 0,
+            nagsId: "", oemId: "", labor: labor,
             description: "Installation Labor", manufacturer: "", qty: 1,
             unitPrice: globalLaborRate, amount: globalLaborRate, pricingType: "hourly"
           });
@@ -286,7 +291,6 @@ const SearchByRoot = () => {
 
     if (selectedParts.length > 0) fetchGlassInfo();
     else setViewerItems([]);
-
 
   }, [selectedParts]);
 

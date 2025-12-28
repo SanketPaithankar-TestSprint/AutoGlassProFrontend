@@ -147,3 +147,77 @@ export const GLASS_ZONES_CONFIG = [
         path: "M228,383 L232,400 C242,395 245,390 246,383 Z",
     },
 ];
+
+/**
+ * Helper to extract pricing and description from glass API response.
+ * Prioritizes Pilkington data if available.
+ * 
+ * @param {Object} apiData - The JSON response from the glass-info API
+ * @param {string} originalDescription - Fallback description if none found
+ * @returns {Object} - { listPrice, netPrice, description, labor, manufacturer }
+ */
+export const extractGlassInfo = (apiData, originalDescription = "") => {
+    if (!apiData) return { listPrice: 0, netPrice: 0, description: originalDescription, labor: 0, manufacturer: "" };
+
+    // 1. Check for nested 'glass_parts' array (New Structure)
+    if (apiData.glass_parts && Array.isArray(apiData.glass_parts) && apiData.glass_parts.length > 0) {
+        // Use the first part found
+        const part = apiData.glass_parts[0];
+        const info = part.glass_info || {};
+
+        let description = info.description || originalDescription;
+        let manufacturer = info.manufacturer || "";
+        let netPrice = Number(info.list_price) || 0; // Default Net to List if no Pilkington
+
+        if (info.pilkington && Array.isArray(info.pilkington) && info.pilkington.length > 0) {
+            const pilk = info.pilkington[0];
+            description = pilk.Description || description;
+
+            // Remove IndustryCode from description if it starts with it
+            if (pilk.IndustryCode && description.startsWith(pilk.IndustryCode)) {
+                description = description.substring(pilk.IndustryCode.length).trim();
+            }
+
+            manufacturer = "Pilkington";
+            // Net Price comes from Pilkington
+            netPrice = Number(pilk.UnitPrice) || Number(pilk.NetPrice) || netPrice;
+        }
+
+        return {
+            listPrice: Number(info.list_price) || 0,
+            netPrice: netPrice,
+            description: description,
+            labor: Number(info.labor) || 0,
+            manufacturer: manufacturer,
+            ta: info.ta || ""
+        };
+    }
+
+    // 2. Fallback for Old Structure (Direct Properties)
+    let description = apiData.description || originalDescription;
+    let manufacturer = apiData.manufacturer || "";
+    let listPrice = Number(apiData.list_price) || 0;
+    let netPrice = listPrice;
+
+    if (apiData.pilkington && Array.isArray(apiData.pilkington) && apiData.pilkington.length > 0) {
+        const pilk = apiData.pilkington[0];
+        description = pilk.Description || description;
+
+        // Remove IndustryCode from description if it starts with it
+        if (pilk.IndustryCode && description.startsWith(pilk.IndustryCode)) {
+            description = description.substring(pilk.IndustryCode.length).trim();
+        }
+
+        manufacturer = "Pilkington";
+        netPrice = Number(pilk.UnitPrice) || Number(pilk.NetPrice) || netPrice;
+    }
+
+    return {
+        listPrice: listPrice,
+        netPrice: netPrice,
+        description: description,
+        labor: Number(apiData.labor) || 0,
+        manufacturer: manufacturer,
+        ta: apiData.ta || ""
+    };
+};
