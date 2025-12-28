@@ -28,14 +28,28 @@ function Row({ label, value, bold }) {
     );
 }
 
-function NumberRow({ label, value, setter }) {
+function NumberRow({ label, value, setter, isCurrency }) {
+    // Helper to format display value
+    const displayValue = isCurrency && value !== '' && value !== null && value !== undefined
+        ? `$${value}`
+        : value;
+
+    const handleChange = (e) => {
+        let val = e.target.value;
+        if (isCurrency) {
+            // Allow only numbers and decimals, strip $
+            val = val.replace(/[^0-9.]/g, '');
+        }
+        setter(val);
+    };
+
     return (
         <div className="flex justify-between items-center text-sm">
             <span className="text-slate-500">{label}</span>
             <input
-                type="number"
-                value={value}
-                onChange={(e) => setter(e.target.value)}
+                type={isCurrency ? "text" : "number"}
+                value={displayValue}
+                onChange={handleChange}
                 className="w-20 rounded border border-slate-300 px-2 py-1 text-right text-sm"
             />
         </div>
@@ -104,7 +118,7 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
         if (!dateStr) return '-';
         try {
             const date = new Date(dateStr);
-            return isNaN(date.getTime()) ? '-' : date.toLocaleDateString();
+            return isNaN(date.getTime()) ? '-' : date.toLocaleString('sv-SE');
         } catch { return '-'; }
     };
     const [items, setItems] = useState(parts.length ? parts : [newItem()]);
@@ -129,7 +143,16 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
             // Deduplicate: Only keep manual items that are NOT in the incoming parts list
             const incomingIds = new Set(parts.map(p => p.id));
             const currentManualItems = prevItems.filter(it => it.isManual && !incomingIds.has(it.id));
-            return [...parts, ...currentManualItems];
+
+            // Enrich parts with default description for Labor if missing
+            const enrichedParts = parts.map(p => {
+                if (p.type === 'Labor' && !p.description) {
+                    return { ...p, description: `Labor ${p.labor || 0} hours` };
+                }
+                return p;
+            });
+
+            return [...enrichedParts, ...currentManualItems];
         });
     }, [parts]);
 
@@ -205,6 +228,33 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
         }
 
         setItems(prev => [...prev, newItemData]);
+    };
+
+    const handlePartNoBlur = async (id, partNo) => {
+        if (!partNo) return;
+        try {
+            const res = await fetch(`https://api.autopaneai.com/agp/v1/glass-info?nags_glass_id=${partNo}`);
+            // If 404 or other error, just ignore or log
+            if (!res.ok) return;
+
+            const data = await res.json();
+            if (data) {
+                setItems(prev => prev.map(it => {
+                    if (it.id === id) {
+                        const price = data.list_price || 0;
+                        return {
+                            ...it,
+                            description: data.description || it.description,
+                            unitPrice: price,
+                            amount: (Number(it.qty) || 0) * price
+                        };
+                    }
+                    return it;
+                }));
+            }
+        } catch (error) {
+            console.error("Error fetching glass info:", error);
+        }
     };
 
     const subtotal = useMemo(() => items.reduce((sum, it) => sum + (Number(it.amount) || 0), 0), [items]);
@@ -514,54 +564,14 @@ Auto Glass Pro Team`;
         <div>
             {contextHolder}
             {/* Header / Metadata */}
-            <div className="mb-2">
-                {isSaved && docMetadata ? (
-                    <div className="bg-sky-50 border border-sky-200 rounded-md px-4 py-2 flex justify-between items-center shadow-sm">
-                        <div className="flex gap-6 items-center text-sm">
-                            <div className="flex flex-col">
-                                <span className="text-xs font-bold text-sky-800 uppercase tracking-wider">Document #</span>
-                                <span className="font-mono font-bold text-slate-800 text-base">{docMetadata.documentNumber}</span>
-                            </div>
-                            <div className="h-8 w-px bg-sky-200"></div>
-                            <div className="flex gap-4">
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] text-sky-700 font-semibold uppercase">Date</span>
-                                    <span className="text-slate-700 font-medium">{formatDate(docMetadata.documentDate)}</span>
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] text-sky-700 font-semibold uppercase">Created</span>
-                                    <span className="text-slate-700 font-medium">{formatDate(docMetadata.createdAt)}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                            <div className="flex flex-col items-end">
-                                <span className="text-[10px] text-sky-700 font-semibold uppercase">Updated</span>
-                                <span className="text-slate-700 font-medium text-xs">{formatDate(docMetadata.updatedAt)}</span>
-                            </div>
-                            {onEditModeChange && (
-                                <button
-                                    onClick={() => onEditModeChange(!isEditMode)}
-                                    className={`px-4 py-1.5 rounded text-sm font-semibold transition-colors shadow-sm border ${isEditMode
-                                        ? 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
-                                        : 'bg-indigo-600 text-white border-transparent hover:bg-indigo-700'
-                                        }`}
-                                >
-                                    {isEditMode ? "Cancel Edit" : "Edit Document"}
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                ) : (
-                    <div className="flex items-center justify-between max-w-7xl">
-                        <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-fuchsia-600">
-                            Quote Details
-                        </h3>
-                    </div>
-                )}
-
-            </div>
+            {/* Header / Metadata removed from here and moved to bottom */}
+            {!isSaved && (
+                <div className="flex items-center justify-between max-w-7xl mb-2">
+                    <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-fuchsia-600">
+                        Quote Details
+                    </h3>
+                </div>
+            )}
 
             {/* Line Items Table */}
             <div className="overflow-x-auto overflow-y-auto max-h-[180px] mb-2 border border-slate-300 bg-white shadow-sm rounded-sm">
@@ -571,9 +581,9 @@ Auto Glass Pro Team`;
                             <th className="px-1 py-0.5 min-w-[60px] border-r border-slate-300 bg-slate-50">Part</th>
                             <th className="px-1 py-0.5 min-w-[400px] border-r border-slate-300 bg-slate-50">Description</th>
                             <th className="px-1 py-0.5 min-w-[60px] border-r border-slate-300 bg-slate-50">Manufacturer</th>
-                            <th className="px-1 py-0.5 text-right min-w-[50px] border-r border-slate-300 bg-slate-50">Quantity</th>
-                            <th className="px-1 py-0.5 text-right min-w-[50px] border-r border-slate-300 bg-slate-50">List</th>
-                            <th className="px-1 py-0.5 text-right min-w-[50px] border-r border-slate-300 bg-slate-50">Amount</th>
+                            <th className="px-1 py-0.5 text-right w-[60px] border-r border-slate-300 bg-slate-50">Quantity</th>
+                            <th className="px-1 py-0.5 text-right w-[90px] border-r border-slate-300 bg-slate-50">List</th>
+                            <th className="px-1 py-0.5 text-right w-[90px] border-r border-slate-300 bg-slate-50">Amount</th>
                             <th className="px-1 py-0.5 w-5 bg-slate-50"></th>
                         </tr>
                     </thead>
@@ -584,6 +594,13 @@ Auto Glass Pro Team`;
                                     <input
                                         value={it.type === 'Labor' ? "LABOR" : it.nagsId}
                                         onChange={(e) => it.type !== 'Labor' && updateItem(it.id, "nagsId", e.target.value)}
+                                        onBlur={(e) => it.type !== 'Labor' && handlePartNoBlur(it.id, e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && it.type !== 'Labor') {
+                                                handlePartNoBlur(it.id, e.currentTarget.value);
+                                                e.currentTarget.blur();
+                                            }
+                                        }}
                                         className={`w-full h-5 rounded px-1 text-[11px] outline-none focus:bg-white bg-transparent ${it.type === 'Labor' ? 'text-slate-500' : 'text-slate-900 font-medium'}`}
                                         placeholder="Part No"
                                         disabled={it.type === 'Labor'}
@@ -591,10 +608,9 @@ Auto Glass Pro Team`;
                                 </td>
                                 <td className="px-1 py-0.5 border-r border-slate-300">
                                     <input
-                                        value={it.type === 'Labor' ? `Labor ${it.labor || 0} hours` : it.description}
+                                        value={it.description || ''}
                                         onChange={(e) => updateItem(it.id, "description", e.target.value)}
-                                        className={`w-full h-5 rounded px-1 text-[11px] outline-none focus:bg-white bg-transparent ${it.type === 'Labor' ? 'text-slate-500' : 'text-slate-700'}`}
-                                        disabled={it.type === 'Labor'}
+                                        className="w-full h-5 rounded px-1 text-[11px] outline-none focus:bg-white bg-transparent text-slate-700"
                                     />
                                 </td>
                                 <td className="px-1 py-0.5 border-r border-slate-300">
@@ -616,20 +632,22 @@ Auto Glass Pro Team`;
                                 </td>
                                 <td className="px-1 py-0.5 text-right border-r border-slate-300">
                                     <input
-                                        type="number"
-                                        value={it.unitPrice}
-                                        onChange={(e) => updateItem(it.id, "unitPrice", e.target.value)}
+                                        type="text"
+                                        value={it.unitPrice ? `$${it.unitPrice}` : ''}
+                                        onChange={(e) => updateItem(it.id, "unitPrice", e.target.value.replace(/[^0-9.]/g, ''))}
                                         className={`w-full h-5 rounded px-1 text-[11px] text-right outline-none focus:bg-white bg-transparent ${(!it.isManual && it.type === 'Labor') ? 'text-slate-400 cursor-not-allowed' : 'text-slate-700'}`}
                                         disabled={!it.isManual && it.type === 'Labor'}
+                                        placeholder="$0.00"
                                     />
                                 </td>
                                 <td className="px-1 py-0.5 text-right font-medium text-[11px] border-r border-slate-300">
-                                    <div className="flex flex-col items-end gap-0 h-full justify-center">
+                                    <div className="flex flex-col items-end gap-0 h-full justify-center w-full">
                                         <input
-                                            type="number"
-                                            value={it.amount}
-                                            onChange={(e) => updateItem(it.id, "amount", e.target.value)}
+                                            type="text"
+                                            value={it.amount ? `$${it.amount}` : ''}
+                                            onChange={(e) => updateItem(it.id, "amount", e.target.value.replace(/[^0-9.]/g, ''))}
                                             className={`w-full rounded px-1 py-0 text-right text-[11px] outline-none h-5 focus:bg-white bg-transparent ${(!Number(it.amount) || Number(it.amount) === 0) ? 'text-red-600 font-bold bg-red-50' : 'text-slate-900 bg-sky-50'}`}
+                                            placeholder="$0.00"
                                         />
                                         {(!Number(it.amount) || Number(it.amount) === 0) && (
                                             <span className="hidden">Required</span>
@@ -668,7 +686,45 @@ Auto Glass Pro Team`;
 
             {/* Totals & Actions (Notes removed) */}
             {/* Totals & Actions */}
-            <div className="flex justify-end mt-4">
+            {/* Totals & Actions */}
+            <div className="flex justify-end items-end mt-4 gap-6">
+                {/* Left side Metadata */}
+                <div className="flex flex-col gap-4 min-w-[200px]">
+                    {docMetadata && (
+                        <>
+                            {/* Document # */}
+                            <div className="flex flex-col">
+                                <span className="text-[10px] text-sky-700 font-bold uppercase tracking-wider mb-0.5">Document #</span>
+                                <span className="font-mono text-lg font-bold text-slate-800">{docMetadata.documentNumber}</span>
+                            </div>
+
+                            {/* Created / Updated Grid */}
+                            <div className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
+                                <span className="uppercase text-[10px] font-bold text-slate-400 tracking-wider self-center">Created</span>
+                                <span className="font-medium text-slate-700">{formatDate(docMetadata.createdAt)}</span>
+
+                                <span className="uppercase text-[10px] font-bold text-slate-400 tracking-wider self-center">Updated</span>
+                                <span className="font-medium text-slate-700">{formatDate(docMetadata.updatedAt)}</span>
+                            </div>
+
+                            {/* Edit Button */}
+                            {onEditModeChange && (
+                                <div className="mt-1">
+                                    <button
+                                        onClick={() => onEditModeChange(!isEditMode)}
+                                        className={`w-full py-2 rounded-md text-sm font-semibold transition-colors shadow-sm ${isEditMode
+                                            ? 'bg-slate-100 text-slate-600 border border-slate-300 hover:bg-slate-200'
+                                            : 'bg-[#5b4dfe] text-white hover:bg-[#4b3dce]'
+                                            }`}
+                                    >
+                                        {isEditMode ? "Cancel Edit" : "Edit Document"}
+                                    </button>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
+
                 <div className="bg-slate-50 border border-slate-200 p-3 space-y-2 w-full max-w-sm rounded-lg shadow-sm">
                     <Row label="Subtotal" value={currency(subtotal)} />
 
@@ -735,7 +791,7 @@ Auto Glass Pro Team`;
                     <div className="my-1 border-t border-slate-200"></div>
 
                     <Row label="Total" value={currency(total)} bold />
-                    <NumberRow label="Paid" value={payment} setter={setPayment} />
+                    <NumberRow label="Paid" value={payment} setter={setPayment} isCurrency />
 
                     <div className="my-1 border-t border-slate-200"></div>
 

@@ -10,8 +10,8 @@ import { getMyOrganizations, getOrganizationWithDetails, createOrganization } fr
 const { Option } = Select;
 
 // Reusable Input Component
-const FormInput = ({ label, name, value, onChange, required = false, type = "text", ...props }) => (
-    <div className="flex flex-col gap-1">
+const FormInput = ({ label, name, value, onChange, required = false, type = "text", className = "", ...props }) => (
+    <div className={`flex flex-col gap-1 ${className}`}>
         <label className="text-xs font-medium text-gray-500">{label}</label>
         <input
             name={name}
@@ -23,6 +23,47 @@ const FormInput = ({ label, name, value, onChange, required = false, type = "tex
             placeholder={label}
             {...props}
         />
+    </div>
+);
+
+const US_STATES = [
+    { value: "AL", label: "Alabama" }, { value: "AK", label: "Alaska" }, { value: "AZ", label: "Arizona" },
+    { value: "AR", label: "Arkansas" }, { value: "CA", label: "California" }, { value: "CO", label: "Colorado" },
+    { value: "CT", label: "Connecticut" }, { value: "DE", label: "Delaware" }, { value: "DC", label: "District Of Columbia" },
+    { value: "FL", label: "Florida" }, { value: "GA", label: "Georgia" }, { value: "HI", label: "Hawaii" },
+    { value: "ID", label: "Idaho" }, { value: "IL", label: "Illinois" }, { value: "IN", label: "Indiana" },
+    { value: "IA", label: "Iowa" }, { value: "KS", label: "Kansas" }, { value: "KY", label: "Kentucky" },
+    { value: "LA", label: "Louisiana" }, { value: "ME", label: "Maine" }, { value: "MD", label: "Maryland" },
+    { value: "MA", label: "Massachusetts" }, { value: "MI", label: "Michigan" }, { value: "MN", label: "Minnesota" },
+    { value: "MS", label: "Mississippi" }, { value: "MO", label: "Missouri" }, { value: "MT", label: "Montana" },
+    { value: "NE", label: "Nebraska" }, { value: "NV", label: "Nevada" }, { value: "NH", label: "New Hampshire" },
+    { value: "NJ", label: "New Jersey" }, { value: "NM", label: "New Mexico" }, { value: "NY", label: "New York" },
+    { value: "NC", label: "North Carolina" }, { value: "ND", label: "North Dakota" }, { value: "OH", label: "Ohio" },
+    { value: "OK", label: "Oklahoma" }, { value: "OR", label: "Oregon" }, { value: "PA", label: "Pennsylvania" },
+    { value: "RI", label: "Rhode Island" }, { value: "SC", label: "South Carolina" }, { value: "SD", label: "South Dakota" },
+    { value: "TN", label: "Tennessee" }, { value: "TX", label: "Texas" }, { value: "UT", label: "Utah" },
+    { value: "VT", label: "Vermont" }, { value: "VA", label: "Virginia" }, { value: "WA", label: "Washington" },
+    { value: "WV", label: "West Virginia" }, { value: "WI", label: "Wisconsin" }, { value: "WY", label: "Wyoming" }
+];
+
+const FormSelect = ({ label, name, value, onChange, options, required = false, className = "", ...props }) => (
+    <div className={`flex flex-col gap-1 ${className}`}>
+        <label className="text-xs font-medium text-gray-500">{label}</label>
+        <select
+            name={name}
+            value={value}
+            onChange={onChange}
+            required={required}
+            className="border border-gray-200 rounded px-2 py-1.5 text-sm focus:ring-1 focus:ring-violet-500 focus:border-violet-500 focus:outline-none transition-all bg-white"
+            {...props}
+        >
+            <option value="">Select State</option>
+            {options.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                </option>
+            ))}
+        </select>
     </div>
 );
 
@@ -55,6 +96,12 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
     useEffect(() => {
         fetchOrganizations();
         fetchCustomers();
+
+        // Fix: Ensure customerType defaults to INDIVIDUAL if not set, 
+        // preventing the "Waiting for Selection" state on initial load
+        if (!formData.customerType) {
+            setFormData(prev => ({ ...prev, customerType: "INDIVIDUAL" }));
+        }
     }, []);
 
     // Also re-fetch customers if a new one is created via other means (optional, but good practice)
@@ -254,14 +301,34 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
         });
     };
 
+    // Helper to format phone number as (XXX) XXX-XXXX
+    const formatPhoneNumber = (value) => {
+        if (!value) return value;
+        const phoneNumber = value.replace(/[^\d]/g, '');
+        const phoneNumberLength = phoneNumber.length;
+        if (phoneNumberLength < 4) return phoneNumber;
+        if (phoneNumberLength < 7) {
+            return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
+        }
+        return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+    };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        let finalValue = value;
+        if (name === 'phone' || name === 'alternatePhone') {
+            finalValue = formatPhoneNumber(value);
+        }
+        setFormData(prev => ({ ...prev, [name]: finalValue }));
     };
 
     const handleOrgChange = (e) => {
         const { name, value } = e.target;
-        setOrgFormData(prev => ({ ...prev, [name]: value }));
+        let finalValue = value;
+        if (name === 'phone' || name === 'alternatePhone') {
+            finalValue = formatPhoneNumber(value);
+        }
+        setOrgFormData(prev => ({ ...prev, [name]: finalValue }));
     };
 
     const handleCreateOrganization = async () => {
@@ -272,7 +339,12 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
         try {
             setCreatingOrg(true);
-            const newOrg = await createOrganization(orgFormData);
+            const payload = {
+                ...orgFormData,
+                phone: orgFormData.phone.replace(/[^\d]/g, ''),
+                alternatePhone: orgFormData.alternatePhone ? orgFormData.alternatePhone.replace(/[^\d]/g, '') : ''
+            };
+            const newOrg = await createOrganization(payload);
             notification.success({ message: 'Organization Created', description: `${newOrg.companyName} created successfully!` });
 
             // Refresh organizations list and select the new one
@@ -323,6 +395,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                 },
                 body: JSON.stringify({
                     ...formData,
+                    phone: formData.phone.replace(/[^\d]/g, ''), // Strip formatting
+                    alternatePhone: formData.alternatePhone ? formData.alternatePhone.replace(/[^\d]/g, '') : '', // Strip formatting
                     vehicleYear: Number(formData.vehicleYear) || 0,
                     customerType: selectedOrganizationId ? "ORGANIZATION_CONTACT" : "INDIVIDUAL",
                     organizationId: selectedOrganizationId || null
@@ -516,7 +590,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                     <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Location Details</p>
                                     <div className="grid grid-cols-4 gap-3 mb-3">
                                         <FormInput label="City *" name="city" value={orgFormData.city} onChange={handleOrgChange} required />
-                                        <FormInput label="State *" name="state" value={orgFormData.state} onChange={handleOrgChange} required />
+                                        <FormSelect label="State *" name="state" value={orgFormData.state} onChange={handleOrgChange} options={US_STATES} required />
                                         <FormInput label="Postal Code *" name="postalCode" value={orgFormData.postalCode} onChange={handleOrgChange} required />
                                         <FormInput label="Country" name="country" value={orgFormData.country} onChange={handleOrgChange} />
                                     </div>
@@ -589,7 +663,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                     <div className="grid grid-cols-4 gap-3 mb-3">
                                         <FormInput label="Address Line 1" name="addressLine1" value={formData.addressLine1} onChange={handleChange} className="col-span-2" />
                                         <FormInput label="City" name="city" value={formData.city} onChange={handleChange} />
-                                        <FormInput label="State" name="state" value={formData.state} onChange={handleChange} />
+                                        <FormSelect label="State" name="state" value={formData.state} onChange={handleChange} options={US_STATES} />
                                     </div>
                                     <div className="grid grid-cols-4 gap-3">
                                         <FormInput label="Zip Code" name="postalCode" value={formData.postalCode} onChange={handleChange} />

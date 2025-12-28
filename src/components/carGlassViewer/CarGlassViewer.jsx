@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import ReactDOM from "react-dom";
 import { Select, Modal } from "antd";
 import config from "../../config";
 
@@ -23,6 +24,22 @@ export default function CarGlassViewer({
   const [error, setError] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [imageModalOpen, setImageModalOpen] = useState(false);
+
+  const triggerRef = useRef(null);
+  const [dropdownCoords, setDropdownCoords] = useState({ top: 0, left: 0 });
+
+  // Update coords when menu opens
+  useEffect(() => {
+    if (isMenuOpen && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      const scrollY = window.scrollY || document.documentElement.scrollTop;
+      const scrollX = window.scrollX || document.documentElement.scrollLeft;
+      setDropdownCoords({
+        top: rect.bottom + scrollY + 4,
+        left: rect.left + scrollX
+      });
+    }
+  }, [isMenuOpen]);
 
   // Active viewing state (master-detail pattern)
   const [selectedGlassCodes, setSelectedGlassCodes] = useState([]); // Array of strings (codes)
@@ -461,8 +478,12 @@ export default function CarGlassViewer({
           <div className="w-full mb-2 relative pl-2 pt-2">
             <label className="block text-sm font-bold text-slate-800 mb-2">Select Glass Type</label>
 
+
+            {/* ... inside CarGlassViewer component ... */}
+
             {/* Custom Mega Menu Trigger */}
             <div
+              ref={triggerRef}
               className="w-full border border-slate-300 rounded px-3 py-2 bg-white cursor-pointer flex items-center justify-between hover:border-violet-500 transition-colors"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
@@ -477,127 +498,134 @@ export default function CarGlassViewer({
               </svg>
             </div>
 
-            {/* Mega Menu Overlay */}
-            {isMenuOpen && (
-              <div className="absolute top-full left-0 w-[800px] bg-white border border-slate-200 shadow-xl rounded-lg mt-1 z-50 flex flex-col max-h-[500px] overflow-hidden">
-                <div className="grid grid-cols-5 divide-x divide-slate-100 bg-slate-50 border-b border-slate-100">
-                  {["Primary", "Side Glass", "Vent", "Quarter", "Roof"].map(header => (
-                    <div key={header} className="p-2 text-xs font-bold text-slate-700 uppercase tracking-wide text-center">
-                      {header}
-                    </div>
-                  ))}
+            {/* Mega Menu Overlay (Portal) */}
+            {isMenuOpen && ReactDOM.createPortal(
+              <div
+                className="fixed inset-0 z-[9999]"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {/* Dropdown Content */}
+                <div
+                  className="absolute bg-white border border-slate-200 shadow-xl rounded-lg flex flex-col max-h-[500px] overflow-hidden"
+                  style={{
+                    top: dropdownCoords.top,
+                    left: dropdownCoords.left,
+                    width: '480px', // Adjusted width significantly smaller
+                  }}
+                  onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
+                >
+                  <div className="grid grid-cols-3 gap-x-2 gap-y-3 p-3 overflow-y-auto">
+                    {[
+                      { name: "Primary", items: glassGroups["Primary Glass"] || [] },
+                      { name: "Side Glass", items: glassGroups["Side Glass"] || [] },
+                      { name: "Vent", items: glassGroups["Vent Glass"] || [] },
+                      { name: "Quarter", items: glassGroups["Quarter Glass"] || [] },
+                      { name: "Roof", items: glassGroups["Roof Glass"] || [] }
+                    ].map((group, groupIndex) => (
+                      <div key={group.name} className="flex flex-col gap-1.5">
+                        <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-100 pb-1 mb-0.5">
+                          {group.name}
+                        </h3>
+                        <div className="flex flex-col gap-0.5">
+                          {group.items.length > 0 ? (
+                            group.items.map(item => {
+                              const isSelected = selectedGlassCodes.includes(item.code);
+                              // Label cleanup
+                              let label = item.description || item.code;
+                              const codeObj = GLASS_CODE_NAMES.find(obj => obj.code === item.code);
+                              if (codeObj) label = codeObj.name;
+                              // Fallback replacements
+                              else if (label.includes("DQ")) label = label.replace("DQ", "Quarter");
+                              else if (label.includes("DD")) label = label.replace("DD", "Door");
+                              else if (label.includes("DV")) label = label.replace("DV", "Vent");
+
+                              // 1. Remove underscores
+                              label = label.replace(/_/g, " ");
+
+                              // 2. Specific fix for Vent Glass: Remove "Door" logic was based on index previously, do safe check
+                              if (group.name === "Vent") {
+                                label = label.replace(/Door/gi, "").trim();
+                              }
+
+                              // 3. Remove "Glass" from Side, Vent, Quarter
+                              if (["Side Glass", "Vent", "Quarter"].includes(group.name)) {
+                                label = label.replace(/Glass/gi, "").trim();
+                              }
+
+                              // Clean up double spaces
+                              label = label.replace(/\s+/g, " ").trim();
+
+                              return (
+                                <div
+                                  key={item.code}
+                                  onClick={() => {
+                                    toggleGlassSelection(item);
+                                  }}
+                                  className={`
+                                    flex items-start gap-2 p-1.5 rounded cursor-pointer transition-colors text-xs
+                                    ${isSelected ? "bg-blue-50 text-blue-800" : "hover:bg-slate-50 text-slate-600"}
+                                  `}
+                                >
+                                  <div className={`mt-0.5 w-3 h-3 rounded border flex items-center justify-center shrink-0 ${isSelected ? "bg-blue-600 border-blue-600" : "border-slate-300"}`}>
+                                    {isSelected && (
+                                      <svg className="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                      </svg>
+                                    )}
+                                  </div>
+                                  <span className="leading-tight">{label}</span>
+                                </div>
+                              );
+                            })
+                          ) : (
+                            <div className="text-[10px] text-slate-300 italic py-0.5">None</div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="grid grid-cols-5 divide-x divide-slate-100 overflow-y-auto p-0">
-                  {/* Render Columns */}
-                  {[
-                    glassGroups["Primary Glass"] || [],
-                    glassGroups["Side Glass"] || [],
-                    glassGroups["Vent Glass"] || [],
-                    glassGroups["Quarter Glass"] || [],
-                    glassGroups["Roof Glass"] || []
-                  ].map((columnItems, colIndex) => (
-                    <div key={colIndex} className="p-2 flex flex-col gap-1">
-                      {columnItems.length > 0 ? (
-                        columnItems.map(item => {
-                          const isSelected = selectedGlassCodes.includes(item.code);
-                          // Label cleanup
-                          let label = item.description || item.code;
-                          const codeObj = GLASS_CODE_NAMES.find(obj => obj.code === item.code);
-                          if (codeObj) label = codeObj.name;
-                          // Fallback replacements
-                          else if (label.includes("DQ")) label = label.replace("DQ", "Quarter");
-                          else if (label.includes("DD")) label = label.replace("DD", "Door");
-                          else if (label.includes("DV")) label = label.replace("DV", "Vent");
+              </div>,
+              document.body
+            )}
 
-                          // 1. Remove underscores
-                          label = label.replace(/_/g, " ");
-
-                          // 2. Specific fix for Vent Glass (colIndex 2): Remove "Door"
-                          if (colIndex === 2) {
-                            label = label.replace(/Door/gi, "").trim();
-                          }
-
-                          // 3. Remove "Glass" from Side (1), Vent (2), and Quarter (3) columns
-                          if ([1, 2, 3].includes(colIndex)) {
-                            label = label.replace(/Glass/gi, "").trim();
-                          }
-
-                          // Clean up double spaces
-                          label = label.replace(/\s+/g, " ").trim();
-
-                          return (
-                            <div
-                              key={item.code}
-                              onClick={() => {
-                                toggleGlassSelection(item);
-                                // setIsMenuOpen(false); // Kept open for multiple selection
-                              }}
-                              className={`
-                                flex items-start gap-2 p-2 rounded cursor-pointer transition-colors text-xs
-                                ${isSelected ? "bg-blue-50 text-blue-800" : "hover:bg-slate-50 text-slate-600"}
-                              `}
-                            >
-                              <div className={`mt-0.5 w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 ${isSelected ? "bg-blue-600 border-blue-600" : "border-slate-300"}`}>
-                                {isSelected && (
-                                  <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                  </svg>
-                                )}
-                              </div>
-                              <span className="leading-tight">{label}</span>
-                            </div>
-                          );
-                        })
-                      ) : (
-                        <div className="text-[10px] text-slate-300 italic text-center py-4">None</div>
-                      )}
-                    </div>
-                  ))}
+            {/* Old Overlay removed */}
+            {imageSrc && (
+              <>
+                <div
+                  className="flex flex-col items-center w-full mt-4 relative z-0 cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => setImageModalOpen(true)}
+                  title="Click to enlarge"
+                >
+                  <div className="relative w-full h-48 flex items-center justify-center border border-slate-100 rounded-lg p-2">
+                    <img
+                      src={imageSrc}
+                      alt="Vehicle Graphic"
+                      className="max-w-full max-h-full w-auto h-auto object-contain"
+                    />
+                  </div>
                 </div>
-              </div>
+
+                <Modal
+                  open={imageModalOpen}
+                  footer={null}
+                  onCancel={() => setImageModalOpen(false)}
+                  width={800}
+                  centered
+                  bodyStyle={{ padding: 0 }}
+                  destroyOnClose
+                >
+                  <div className="p-4 flex items-center justify-center bg-white rounded-lg">
+                    <img
+                      src={imageSrc}
+                      alt="Vehicle Graphic Large"
+                      className="max-w-full max-h-[80vh] w-auto h-auto object-contain"
+                    />
+                  </div>
+                </Modal>
+              </>
             )}
           </div>
-
-          {/* Click Outside Handler (Invisible fixed overlay when menu is open) */}
-          {isMenuOpen && (
-            <div className="fixed inset-0 z-0" onClick={() => setIsMenuOpen(false)} />
-          )}
-
-          {imageSrc && (
-            <>
-              <div
-                className="flex flex-col items-center w-full mt-4 relative z-0 cursor-pointer hover:opacity-80 transition-opacity"
-                onClick={() => setImageModalOpen(true)}
-                title="Click to enlarge"
-              >
-                <div className="relative w-32 h-24 flex items-center justify-center border border-slate-100 rounded-lg p-1">
-                  <img
-                    src={imageSrc}
-                    alt="Vehicle Graphic"
-                    className="max-w-full max-h-full w-auto h-auto object-contain"
-                  />
-                </div>
-              </div>
-
-              <Modal
-                open={imageModalOpen}
-                footer={null}
-                onCancel={() => setImageModalOpen(false)}
-                width={800}
-                centered
-                bodyStyle={{ padding: 0 }}
-                destroyOnClose
-              >
-                <div className="p-4 flex items-center justify-center bg-white rounded-lg">
-                  <img
-                    src={imageSrc}
-                    alt="Vehicle Graphic Large"
-                    className="max-w-full max-h-[80vh] w-auto h-auto object-contain"
-                  />
-                </div>
-              </Modal>
-            </>
-          )}
         </div>
 
         {/* Right column: Parts Selection */}
