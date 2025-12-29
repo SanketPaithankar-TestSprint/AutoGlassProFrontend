@@ -560,6 +560,7 @@ export default function CarGlassViewer({
                                   key={item.code}
                                   onClick={() => {
                                     toggleGlassSelection(item);
+                                    setIsMenuOpen(false);
                                   }}
                                   className={`
                                     flex items-start gap-2 p-1.5 rounded cursor-pointer transition-colors text-xs

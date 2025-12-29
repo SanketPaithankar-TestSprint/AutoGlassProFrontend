@@ -242,6 +242,14 @@ export default function SearchByYMM({
 
   return (
     <div className={`${className} flex flex-col h-full`}>
+      <style>{`
+        .ant-select .ant-select-selector {
+          border-radius: 2px !important;
+        }
+        .ant-select:hover .ant-select-selector {
+          border-color: #7E5CFE !important;
+        }
+      `}</style>
       {/* Grid: Year / Make / Model - Customized Layout */}
       <div className="flex flex-col gap-2 w-full flex-1">
         {/* Row 1: Year & Make */}
@@ -299,7 +307,7 @@ export default function SearchByYMM({
               disabled={disabled || !model || !year || !make}
               loading={loadingModelId}
               block
-              className="w-full bg-white border border-slate-800 text-slate-900 font-semibold text-sm hover:!bg-slate-50 hover:!text-slate-900 transition-colors !rounded-none shadow-sm flex-1 h-full min-h-[40px]"
+              className="w-full bg-white border border-slate-800 text-slate-900 font-semibold text-sm hover:!border-[#7E5CFE] hover:!text-[#7E5CFE] transition-colors !rounded-md shadow-sm flex-1 h-full min-h-[40px]"
             >
               Find Parts
             </Button>

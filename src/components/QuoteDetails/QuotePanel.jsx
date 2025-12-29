@@ -661,7 +661,7 @@ Auto Glass Pro Team`;
             <div className="overflow-x-auto overflow-y-auto max-h-[180px] mb-2 border border-slate-300 bg-white shadow-sm rounded-sm">
                 <table className="min-w-full divide-y divide-slate-300">
                     <thead className="bg-slate-50 sticky top-0 z-10 shadow-sm">
-                        <tr className="text-left text-[11px] font-semibold text-slate-800 tracking-tight">
+                        <tr className="text-left text-sm font-semibold text-slate-800 tracking-tight">
                             <th className="px-1 py-0.5 w-[120px] border-r border-slate-300 bg-slate-50">Part</th>
                             <th className="px-1 py-0.5 border-r border-slate-300 bg-slate-50">Description</th>
                             <th className="px-1 py-0.5 w-[90px] border-r border-slate-300 bg-slate-50">Manufacturer</th>
@@ -685,7 +685,7 @@ Auto Glass Pro Team`;
                                                 e.currentTarget.blur();
                                             }
                                         }}
-                                        className={`w-full h-5 rounded px-1 text-[11px] outline-none focus:bg-white bg-transparent ${it.type === 'Labor' ? 'text-slate-500' : 'text-slate-900 font-medium'}`}
+                                        className={`w-full h-5 rounded px-1 text-sm outline-none focus:bg-white bg-transparent ${it.type === 'Labor' ? 'text-slate-500' : 'text-slate-900 font-medium'}`}
                                         placeholder="Part No"
                                         disabled={it.type === 'Labor'}
                                     />
@@ -694,14 +694,14 @@ Auto Glass Pro Team`;
                                     <input
                                         value={it.description || ''}
                                         onChange={(e) => updateItem(it.id, "description", e.target.value)}
-                                        className="w-full h-5 rounded px-1 text-[11px] outline-none focus:bg-white bg-transparent text-slate-700"
+                                        className="w-full h-5 rounded px-1 text-sm outline-none focus:bg-white bg-transparent text-slate-700"
                                     />
                                 </td>
                                 <td className="px-1 py-0.5 border-r border-slate-300">
                                     <input
                                         value={it.manufacturer}
                                         onChange={(e) => updateItem(it.id, "manufacturer", e.target.value)}
-                                        className={`w-full h-5 rounded px-1 text-[11px] outline-none focus:bg-white bg-transparent ${(!it.isManual && it.type === 'Labor') ? 'text-slate-400' : 'text-slate-600'}`}
+                                        className={`w-full h-5 rounded px-1 text-sm outline-none focus:bg-white bg-transparent ${(!it.isManual && it.type === 'Labor') ? 'text-slate-400' : 'text-slate-600'}`}
                                         disabled={!it.isManual && it.type === 'Labor'}
                                     />
                                 </td>
@@ -710,7 +710,7 @@ Auto Glass Pro Team`;
                                         type="number"
                                         value={it.qty}
                                         onChange={(e) => updateItem(it.id, "qty", e.target.value)}
-                                        className={`w-full h-5 rounded px-1 text-[11px] text-right outline-none focus:bg-white bg-transparent ${(!it.isManual && it.type === 'Labor') ? 'text-slate-400 cursor-not-allowed' : 'text-slate-700'}`}
+                                        className={`w-full h-5 rounded px-1 text-sm text-right outline-none focus:bg-white bg-transparent ${(!it.isManual && it.type === 'Labor') ? 'text-slate-400 cursor-not-allowed' : 'text-slate-700'}`}
                                         disabled={!it.isManual && it.type === 'Labor'}
                                     />
                                 </td>
@@ -719,18 +719,18 @@ Auto Glass Pro Team`;
                                         type="text"
                                         value={it.listPrice ? `$${it.listPrice}` : ''}
                                         onChange={(e) => updateItem(it.id, "listPrice", e.target.value.replace(/[^0-9.]/g, ''))}
-                                        className={`w-full h-5 rounded px-1 text-[11px] text-right outline-none focus:bg-white bg-transparent ${(!it.isManual && it.type === 'Labor') ? 'text-slate-400 cursor-not-allowed' : 'text-slate-700'}`}
+                                        className={`w-full h-5 rounded px-1 text-sm text-right outline-none focus:bg-white bg-transparent ${(!it.isManual && it.type === 'Labor') ? 'text-slate-400 cursor-not-allowed' : 'text-slate-700'}`}
                                         disabled={!it.isManual && it.type === 'Labor'}
                                         placeholder="$0.00"
                                     />
                                 </td>
-                                <td className="px-1 py-0.5 text-right font-medium text-[11px] border-r border-slate-300">
+                                <td className="px-1 py-0.5 text-right font-medium text-sm border-r border-slate-300">
                                     <div className="flex flex-col items-end gap-0 h-full justify-center w-full">
                                         <input
                                             type="text"
                                             value={it.amount ? `$${it.amount}` : ''}
                                             onChange={(e) => updateItem(it.id, "amount", e.target.value.replace(/[^0-9.]/g, ''))}
-                                            className={`w-full rounded px-1 py-0 text-right text-[11px] outline-none h-5 focus:bg-white bg-transparent ${(!Number(it.amount) || Number(it.amount) === 0) ? 'text-red-600 font-bold bg-red-50' : 'text-slate-900 bg-sky-50'}`}
+                                            className={`w-full rounded px-1 py-0 text-right text-sm outline-none h-5 focus:bg-white bg-transparent ${(!Number(it.amount) || Number(it.amount) === 0) ? 'text-red-600 font-bold bg-red-50' : 'text-slate-900 bg-sky-50'}`}
                                             placeholder="$0.00"
                                         />
                                         {(!Number(it.amount) || Number(it.amount) === 0) && (
@@ -755,14 +755,14 @@ Auto Glass Pro Team`;
                 <Dropdown
                     menu={{
                         items: [
-                            { key: 'Part', label: <span className="text-[11px]">Add Part</span> },
-                            { key: 'Labor', label: <span className="text-[11px]">Add Labor</span> },
-                            { key: 'Service', label: <span className="text-[11px]">Add Service</span> }
+                            { key: 'Part', label: <span className="text-xs">Add Part</span> },
+                            { key: 'Labor', label: <span className="text-xs">Add Labor</span> },
+                            { key: 'Service', label: <span className="text-xs">Add Service</span> }
                         ],
                         onClick: (e) => handleAddRow(e.key)
                     }}
                 >
-                    <button className="flex items-center gap-1 px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded text-[11px] font-medium transition-colors">
+                    <button className="flex items-center gap-1 px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded text-xs font-medium transition-colors">
                         Add <DownOutlined className="text-[9px]" />
                     </button>
                 </Dropdown>
@@ -809,7 +809,7 @@ Auto Glass Pro Team`;
                     )}
                 </div>
 
-                <div className="bg-slate-50 border border-slate-200 p-3 space-y-2 w-full max-w-sm rounded-lg shadow-sm">
+                <div className="bg-slate-50 border border-slate-200 p-2 space-y-1 w-full max-w-sm rounded-lg shadow-sm">
                     <Row label="Subtotal" value={currency(subtotal)} />
 
                     {/* Tax Rate Selection */}
@@ -833,12 +833,12 @@ Auto Glass Pro Team`;
 
                     <Row label="Balance" value={currency(balance)} bold />
 
-                    <div className="pt-2 flex flex-col gap-2 bg-white rounded-lg p-2">
+                    <div className="pt-1 flex flex-col gap-2 bg-white rounded-lg p-1">
                         {/* Document Type Selector */}
                         <select
                             value={manualDocType}
                             onChange={(e) => setManualDocType(e.target.value)}
-                            className={`appearance-none outline-none cursor-pointer inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium border ${currentDocType === "Quote" ? "border-sky-500/60 bg-sky-500/10 text-emerald-600" : currentDocType === "Work Order" ? "border-amber-400/70 bg-amber-400/10 text-amber-600" : "border-emerald-400/70 bg-emerald-400/10 text-emerald-600"}`}
+                            className="appearance-none outline-none cursor-pointer inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium border border-[#00A8E4]/30 bg-[#00A8E4]/5 text-[#00A8E4]"
                         >
                             <option value="Quote">Quote</option>
                             <option value="Work Order">Work Order</option>
@@ -851,7 +851,7 @@ Auto Glass Pro Team`;
                             <button
                                 onClick={handleSave}
                                 disabled={saveLoading}
-                                className="flex-1 px-4 py-2 rounded bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-sm font-semibold shadow hover:from-violet-500 hover:to-fuchsia-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex-1 px-4 py-1.5 rounded bg-[#7E5CFE] text-white text-xs font-semibold shadow hover:bg-[#6b4ce6] transition disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {saveLoading ? 'Saving...' : (isSaved ? `Update ${currentDocType}` : `Save ${currentDocType}`)}
                             </button>
@@ -860,7 +860,7 @@ Auto Glass Pro Team`;
                             <button
                                 onClick={handlePreview}
                                 disabled={previewLoading}
-                                className="px-4 py-2 rounded bg-blue-600 text-white text-sm font-semibold shadow hover:bg-blue-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-4 py-1.5 rounded bg-[#00A8E4] text-white text-xs font-semibold shadow hover:bg-[#0096cc] transition disabled:opacity-50 disabled:cursor-not-allowed"
                                 title="Preview PDF"
                             >
                                 {previewLoading ? 'Loading...' : 'Preview'}
@@ -870,7 +870,7 @@ Auto Glass Pro Team`;
                             <button
                                 onClick={handleEmail}
                                 disabled={!isSaved || emailLoading}
-                                className="px-4 py-2 rounded bg-green-600 text-white text-sm font-semibold shadow hover:bg-green-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-4 py-1.5 rounded bg-[#00A8E4] text-white text-xs font-semibold shadow hover:bg-[#0096cc] transition disabled:opacity-50 disabled:cursor-not-allowed"
                                 title={!isSaved ? "Save document first" : "Send via email"}
                             >
                                 {emailLoading ? 'Sending...' : 'Email'}
