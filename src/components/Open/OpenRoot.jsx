@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Layout, message, App, Pagination } from 'antd';
+import { Layout, message, App, Pagination, List, Segmented, Card, Tag, Empty } from 'antd';
+import { AppstoreOutlined, UnorderedListOutlined, FileTextOutlined, UserOutlined, CarOutlined, CalendarOutlined } from '@ant-design/icons';
 import Header from '../Header';
 import SearchBar from './SearchBar';
-import DocumentList from './DocumentList';
 import { getValidToken } from '../../api/getValidToken';
 import { getServiceDocuments } from '../../api/getServiceDocuments';
 import { getCompositeServiceDocument } from '../../api/getCompositeServiceDocument';
@@ -17,6 +17,7 @@ const OpenRoot = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [documentTypeFilter, setDocumentTypeFilter] = useState("all"); // New filter state
+    const [viewMode, setViewMode] = useState('grid'); // 'list' or 'grid'
     const [currentPage, setCurrentPage] = useState(0);
     const [pageSize, setPageSize] = useState(10);
     const [totalElements, setTotalElements] = useState(0);
@@ -91,6 +92,120 @@ const OpenRoot = () => {
         }
     };
 
+    // Helper functions for colors
+    const getStatusColor = (status) => {
+        switch (status?.toLowerCase()) {
+            case 'pending': return 'gold';
+            case 'in_progress': return 'blue';
+            case 'completed': return 'green';
+            case 'paid': return 'purple';
+            case 'cancelled': return 'red';
+            default: return 'default';
+        }
+    };
+
+    const getTypeColor = (type) => {
+        switch (type?.toLowerCase()) {
+            case 'quote': return 'purple';
+            case 'work_order': return 'orange';
+            case 'workorder': return 'orange';
+            case 'invoice': return 'cyan';
+            default: return 'default';
+        }
+    };
+
+    // Render document card (grid view)
+    const renderDocumentCard = (doc) => {
+        const { documentNumber, documentType, status, customerName, vehicleInfo, totalAmount, createdAt } = doc;
+
+        // List view - horizontal layout
+        if (viewMode === 'list') {
+            return (
+                <div
+                    onClick={() => handleDocumentClick(doc)}
+                    className="w-full cursor-pointer hover:bg-slate-50 transition-colors p-4 border border-slate-200 rounded-lg mb-2"
+                >
+                    <div className="flex items-center justify-between gap-6">
+                        {/* Left side - ID, Type, Name */}
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <FileTextOutlined className="text-slate-600 text-base flex-shrink-0" />
+                            <span className="font-bold text-slate-900 text-sm whitespace-nowrap">{documentNumber}</span>
+                            <Tag color={getTypeColor(documentType)} className="uppercase font-bold text-[10px] m-0 flex-shrink-0">
+                                {documentType?.replace('_', ' ')}
+                            </Tag>
+                            <div className="flex items-center gap-2 text-slate-600 text-sm min-w-0">
+                                <UserOutlined className="text-slate-400 flex-shrink-0" />
+                                <span className="truncate">{customerName}</span>
+                            </div>
+                        </div>
+
+                        {/* Right side - Vehicle, Date, Status, Price */}
+                        <div className="flex items-center gap-6 flex-shrink-0">
+                            <div className="flex items-center gap-2 text-slate-600 text-sm">
+                                <CarOutlined className="text-slate-400" />
+                                <span className="whitespace-nowrap">{vehicleInfo}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-slate-600 text-sm">
+                                <CalendarOutlined className="text-slate-400" />
+                                <span className="whitespace-nowrap">{new Date(createdAt).toLocaleDateString()}</span>
+                            </div>
+                            <Tag color={getStatusColor(status)} className="capitalize m-0 min-w-[80px] text-center">
+                                {status?.replace('_', ' ')}
+                            </Tag>
+                            <span className="font-bold text-slate-900 text-base whitespace-nowrap min-w-[100px] text-right">
+                                {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalAmount || 0)}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Grid view - card layout
+        return (
+            <Card
+                hoverable
+                onClick={() => handleDocumentClick(doc)}
+                className="w-full transition-all duration-300 hover:shadow-lg border border-slate-200 rounded-xl"
+                bodyStyle={{ padding: '16px' }}
+            >
+                <div className="flex justify-between items-start mb-3">
+                    <div className="flex items-center gap-2">
+                        <FileTextOutlined className="text-violet-600 text-lg" />
+                        <span className="font-bold text-slate-800 text-base">{documentNumber}</span>
+                    </div>
+                    <Tag color={getTypeColor(documentType)} className="uppercase font-bold text-[10px] m-0">
+                        {documentType?.replace('_', ' ')}
+                    </Tag>
+                </div>
+
+                <div className="space-y-2 mb-4">
+                    <div className="flex items-center gap-2 text-slate-600 text-sm">
+                        <UserOutlined className="text-slate-400" />
+                        <span className="truncate">{customerName}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-slate-600 text-sm">
+                        <CarOutlined className="text-slate-400" />
+                        <span className="truncate">{vehicleInfo}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-slate-600 text-sm">
+                        <CalendarOutlined className="text-slate-400" />
+                        <span>{new Date(createdAt).toLocaleDateString()}</span>
+                    </div>
+                </div>
+
+                <div className="flex justify-between items-center pt-3 border-t border-slate-100">
+                    <Tag color={getStatusColor(status)} className="capitalize m-0">
+                        {status?.replace('_', ' ')}
+                    </Tag>
+                    <span className="font-bold text-slate-900 text-lg">
+                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalAmount || 0)}
+                    </span>
+                </div>
+            </Card>
+        );
+    };
+
     return (
         <div className="min-h-screen bg-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
@@ -101,6 +216,24 @@ const OpenRoot = () => {
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-3">
+                        {/* View Mode Toggle */}
+                        <Segmented
+                            value={viewMode}
+                            onChange={setViewMode}
+                            options={[
+                                {
+                                    label: 'Grid',
+                                    value: 'grid',
+                                    icon: <AppstoreOutlined />,
+                                },
+                                {
+                                    label: 'List',
+                                    value: 'list',
+                                    icon: <UnorderedListOutlined />,
+                                },
+                            ]}
+                        />
+
                         {/* Document Type Filter */}
                         <select
                             value={documentTypeFilter}
@@ -118,10 +251,23 @@ const OpenRoot = () => {
                     </div>
                 </div>
 
-                <DocumentList
-                    documents={filteredDocuments}
+                {/* Document List with Ant Design */}
+                <List
+                    grid={viewMode === 'grid' ? { gutter: 16, column: 4, xs: 1, sm: 2, md: 3, lg: 4 } : null}
+                    dataSource={filteredDocuments}
                     loading={loading}
-                    onDocumentClick={handleDocumentClick}
+                    locale={{
+                        emptyText: (
+                            <div className="flex flex-col items-center justify-center py-20 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                                <Empty description="No documents found" />
+                            </div>
+                        )
+                    }}
+                    renderItem={(doc) => (
+                        <List.Item style={{ border: 'none' }}>
+                            {renderDocumentCard(doc)}
+                        </List.Item>
+                    )}
                 />
 
                 {/* Pagination */}
