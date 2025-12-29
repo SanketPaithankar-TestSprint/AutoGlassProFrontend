@@ -74,7 +74,7 @@ export default function SearchByVin({
         #vin-inline:-webkit-autofill:active {
           -webkit-box-shadow: 0 0 0 30px white inset !important;
           -webkit-text-fill-color: black !important;
-          font-weight: bold !important;
+          font-weight: normal !important;
           transition: background-color 5000s ease-in-out 0s;
         }
       `}</style>
@@ -89,11 +89,11 @@ export default function SearchByVin({
           aria-label="Vehicle Identification Number"
           prefix={<SearchOutlined className="text-violet-400" />}
           className="
-            !h-9 !rounded-lg
+            !h-9 !rounded-md
             !bg-white
-            !border-slate-200 hover:!border-violet-400 focus:!border-violet-500
+            !border-slate-200 hover:!border-[#7E5CFE] focus:!border-violet-500
             focus:!shadow-[0_0_0_1px_rgba(139,92,246,0.5)]
-            !text-black !font-medium placeholder:!text-slate-400
+            !text-black !font-normal placeholder:!text-slate-400
             !text-sm
             transition-all duration-200
             flex-1
@@ -105,7 +105,7 @@ export default function SearchByVin({
 
         <button
           type="button"
-          className="h-9 px-4 rounded-lg bg-violet-500 hover:bg-violet-600 text-white font-medium text-sm transition-colors disabled:opacity-60 whitespace-nowrap"
+          className="h-9 px-4 rounded-md bg-white border border-slate-300 text-slate-900 font-medium text-sm transition-colors hover:border-[#7E5CFE] hover:text-[#7E5CFE] disabled:opacity-60 whitespace-nowrap"
           onClick={handleDecode}
           disabled={loading || !isValid}
         >
