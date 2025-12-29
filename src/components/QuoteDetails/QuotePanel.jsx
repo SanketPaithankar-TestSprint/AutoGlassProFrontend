@@ -330,6 +330,8 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
     // --- Email / Modal State ---
     const [showEmailModal, setShowEmailModal] = useState(false);
     const [emailLoading, setEmailLoading] = useState(false);
+    const [saveLoading, setSaveLoading] = useState(false);
+    const [previewLoading, setPreviewLoading] = useState(false);
     const [pdfBlob, setPdfBlob] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
     const [emailForm, setEmailForm] = useState({
@@ -341,50 +343,236 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
     // Validated Modal Context
     const [modal, contextHolder] = Modal.useModal();
 
-    const handleOpenPreview = () => {
+    // Validation helper function
+    const validateDocumentData = () => {
+        // Validation: Customer Data
+        const hasCustomerIdentity = customerData && (
+            (customerData.firstName && customerData.firstName.trim() !== "") ||
+            (customerData.lastName && customerData.lastName.trim() !== "") ||
+            (customerData.companyName && customerData.companyName.trim() !== "")
+        );
+
+        if (!hasCustomerIdentity) {
+            modal.warning({
+                title: 'Missing Customer',
+                content: 'Please select or enter a customer before saving.',
+                okText: 'OK',
+            });
+            return false;
+        }
+
+        // Validation: Vehicle Data
+        const missingVehicleInfo = [];
+        if (!customerData.vehicleYear || customerData.vehicleYear === 0) missingVehicleInfo.push("Year");
+        if (!customerData.vehicleMake || customerData.vehicleMake.trim() === "") missingVehicleInfo.push("Make");
+        if (!customerData.vehicleModel || customerData.vehicleModel.trim() === "") missingVehicleInfo.push("Model");
+
+        if (missingVehicleInfo.length > 0) {
+            modal.warning({
+                title: 'Missing Vehicle Details',
+                content: `Please provide the following vehicle details: ${missingVehicleInfo.join(', ')}.`,
+                okText: 'OK',
+            });
+            return false;
+        }
+
+        // Validation: Items
+        const invalidItems = items.filter(it => !Number(it.amount) || Number(it.amount) === 0);
+        if (invalidItems.length > 0) {
+            modal.warning({
+                title: 'Invalid Items',
+                content: `Please enter a valid amount for: ${invalidItems.map(it => it.type === 'Labor' ? 'Labor' : (it.description || 'Item')).join(', ')}`,
+                okText: 'OK',
+            });
+            return false;
+        }
+
+        return true;
+    };
+
+    // Handler 1: Save Document
+    const handleSave = async () => {
+        if (!validateDocumentData()) return;
+
+        setSaveLoading(true);
         try {
-            // Validation: Customer Data
-            const hasCustomerIdentity = customerData && (
-                (customerData.firstName && customerData.firstName.trim() !== "") ||
-                (customerData.lastName && customerData.lastName.trim() !== "") ||
-                (customerData.companyName && customerData.companyName.trim() !== "")
-            );
+            // Build payload (same logic as before)
+            const totalLaborAmount = items
+                .filter(it => it.type === 'Labor')
+                .reduce((sum, it) => sum + (Number(it.amount) || 0), 0);
 
-            if (!hasCustomerIdentity) {
-                modal.warning({
-                    title: 'Missing Customer',
-                    content: 'Please select or enter a customer before generating a quote.',
-                    okText: 'OK',
+            const serviceDocumentItems = [];
+            items.forEach(it => {
+                if (it.type === 'Part') {
+                    serviceDocumentItems.push({
+                        itemType: 'part',
+                        nagsGlassId: it.nagsId || "",
+                        oemGlassId: it.oemId || "",
+                        partDescription: it.description || "",
+                        partPrice: Number(it.unitPrice) || 0,
+                        quantity: Number(it.qty) || 1,
+                        laborRate: 0,
+                        laborHours: Number(it.labor) || 0
+                    });
+                } else if (it.type === 'Labor') {
+                    const linkedPartId = it.id.replace('_LABOR', '');
+                    const linkedPart = items.find(p => p.id === linkedPartId && p.type === 'Part');
+                    if (linkedPart) {
+                        const existingPart = serviceDocumentItems.find(sdi =>
+                            sdi.nagsGlassId === linkedPart.nagsId && sdi.oemGlassId === linkedPart.oemId
+                        );
+                        if (existingPart) {
+                            existingPart.laborRate = Number(it.unitPrice) || 0;
+                            existingPart.laborHours = Number(it.labor) || 0;
+                        }
+                    }
+                }
+            });
+
+            const manualItems = items.filter(it => (it.type === 'Labor' || it.type === 'Service') && !it.id.includes('_LABOR'));
+            manualItems.forEach(manualIt => {
+                serviceDocumentItems.push({
+                    itemType: manualIt.type.toLowerCase(),
+                    partDescription: manualIt.description,
+                    partPrice: Number(manualIt.amount) || 0,
+                    quantity: 1,
+                    laborRate: 0,
+                    laborHours: 0
                 });
-                return;
+            });
+
+            const customerWithVehicle = {
+                organizationId: 0,
+                customerType: "individual",
+                firstName: customerData.firstName || "",
+                lastName: customerData.lastName || "",
+                email: customerData.email || "",
+                phone: customerData.phone || "",
+                alternatePhone: customerData.alternatePhone || "",
+                addressLine1: customerData.addressLine1 || "",
+                addressLine2: "",
+                city: customerData.city || "",
+                state: customerData.state || "",
+                postalCode: customerData.postalCode || "",
+                country: customerData.country || "USA",
+                preferredContactMethod: "email",
+                notes: customerData.notes || "",
+                vehicleYear: Number(customerData.vehicleYear) || 2020,
+                vehicleMake: customerData.vehicleMake || "",
+                vehicleModel: customerData.vehicleModel || "",
+                vehicleStyle: customerData.vehicleStyle || "",
+                licensePlateNumber: customerData.licensePlateNumber || "",
+                vin: customerData.vin || "",
+                vehicleNotes: ""
+            };
+
+            const serviceDocument = {
+                documentType: currentDocType.toLowerCase().replace(" ", "") === "workorder" ? "invoice" : currentDocType.toLowerCase(),
+                employeeId: 0,
+                serviceLocation: "mobile",
+                serviceAddress: `${customerData.addressLine1 || ''}, ${customerData.city || ''}, ${customerData.state || ''} ${customerData.postalCode || ''}`,
+                documentDate: new Date().toISOString(),
+                scheduledDate: new Date().toISOString(),
+                estimatedCompletion: new Date().toISOString(),
+                dueDate: new Date().toISOString().split('T')[0],
+                paymentTerms: "Due upon receipt",
+                notes: printableNote,
+                termsConditions: "Warranty valid for 12 months on workmanship.",
+                taxRate: Number(globalTaxRate) || 0,
+                discountAmount: discountAmount,
+                laborAmount: totalLaborAmount,
+                items: serviceDocumentItems
+            };
+
+            const combinedDescription = attachments.map(att =>
+                `${att.file.name}: ${att.description || "No description"}`
+            ).join('\n');
+
+            const compositePayload = {
+                customerWithVehicle: customerWithVehicle,
+                serviceDocument: serviceDocument,
+                insurance: includeInsurance ? insuranceData : null,
+                attachmentDescription: combinedDescription
+            };
+
+            console.log("Sending Composite Payload:", compositePayload);
+
+            const files = attachments.map(a => a.file);
+
+            let response;
+            if (isSaved && docMetadata && docMetadata.documentNumber) {
+                console.log("Updating Composite Document:", docMetadata.documentNumber);
+                response = await updateCompositeServiceDocument(docMetadata.documentNumber, compositePayload, files);
+                message.success("Service Document Updated Successfully!");
+            } else {
+                response = await createCompositeServiceDocument(compositePayload, files);
+                message.success("Service Document Created Successfully!");
             }
 
-            // Validation: Vehicle Data
-            const missingVehicleInfo = [];
-            if (!customerData.vehicleYear || customerData.vehicleYear === 0) missingVehicleInfo.push("Year");
-            if (!customerData.vehicleMake || customerData.vehicleMake.trim() === "") missingVehicleInfo.push("Make");
-            if (!customerData.vehicleModel || customerData.vehicleModel.trim() === "") missingVehicleInfo.push("Model");
+            const createdDocNumber = response.serviceDocument?.documentNumber;
 
-            if (missingVehicleInfo.length > 0) {
-                modal.warning({
-                    title: 'Missing Vehicle Details',
-                    content: `Please provide the following vehicle details: ${missingVehicleInfo.join(', ')}.`,
-                    okText: 'OK',
-                });
-                return;
+            // Fetch attachments from backend after document is saved
+            if (createdDocNumber) {
+                try {
+                    const fetchedAttachments = await getAttachmentsByDocumentNumber(createdDocNumber);
+                    console.log("Fetched attachments for document", createdDocNumber, ":", fetchedAttachments);
+                } catch (attachmentError) {
+                    console.error("Failed to fetch attachments:", attachmentError);
+                }
             }
 
-            // Validation: Items
-            const invalidItems = items.filter(it => !Number(it.amount) || Number(it.amount) === 0);
-            if (invalidItems.length > 0) {
-                modal.warning({
-                    title: 'Invalid Items',
-                    content: `Please enter a valid amount for: ${invalidItems.map(it => it.type === 'Labor' ? 'Labor' : (it.description || 'Item')).join(', ')}`,
-                    okText: 'OK',
-                });
-                return;
-            }
+            // Navigate to open page after save
+            setTimeout(() => {
+                navigate('/open');
+            }, 1000);
 
+        } catch (err) {
+            console.error(err);
+            message.error("Save failed: " + err.message);
+        } finally {
+            setSaveLoading(false);
+        }
+    };
+
+    // Handler 2: Preview Document
+    const handlePreview = () => {
+        if (!validateDocumentData()) return;
+
+        setPreviewLoading(true);
+        try {
+            const doc = generatePdfDoc();
+            const blob = doc.output('blob');
+            const url = URL.createObjectURL(blob);
+
+            // Open in new tab for preview
+            window.open(url, '_blank');
+
+            message.success('Preview opened in new tab');
+        } catch (error) {
+            console.error("Error in handlePreview:", error);
+            modal.error({
+                title: 'Preview Error',
+                content: "Failed to generate preview: " + error.message,
+            });
+        } finally {
+            setPreviewLoading(false);
+        }
+    };
+
+    // Handler 3: Email Document
+    const handleEmail = () => {
+        if (!isSaved) {
+            modal.warning({
+                title: 'Document Not Saved',
+                content: 'Please save the document before sending email.',
+                okText: 'OK',
+            });
+            return;
+        }
+
+        if (!validateDocumentData()) return;
+
+        try {
             const doc = generatePdfDoc();
             const blob = doc.output('blob');
             const url = URL.createObjectURL(blob);
@@ -408,13 +596,14 @@ Auto Glass Pro Team`;
                 body: body
             });
         } catch (error) {
-            console.error("Error in handleOpenPreview:", error);
+            console.error("Error in handleEmail:", error);
             modal.error({
                 title: 'Error',
                 content: "An unexpected error occurred: " + error.message,
             });
         }
     };
+
 
     const handleCloseModal = () => {
         setShowEmailModal(false);
@@ -427,157 +616,29 @@ Auto Glass Pro Team`;
         try {
             setEmailLoading(true);
 
-            // 1. Construct Service Document Items
-            const partItems = items.filter(it => it.type !== 'Labor');
-            const laborItems = items.filter(it => it.type === 'Labor');
-            const totalLaborAmount = laborItems.reduce((sum, labor) => sum + (Number(labor.amount) || 0), 0);
-
-            const serviceDocumentItems = partItems.map((part) => {
-                const linkedLabor = laborItems.find(l => l.id === `${part.id}_LABOR`);
-                return {
-                    itemType: "part",
-                    prefixCd: part.prefixCd || "",
-                    posCd: part.posCd || "",
-                    sideCd: part.sideCd || "",
-                    nagsGlassId: part.nagsId || "MISC",
-                    partDescription: part.description || "",
-                    partPrice: Number(part.unitPrice) || 0,
-                    quantity: Number(part.qty) || 1,
-                    laborRate: linkedLabor ? (Number(linkedLabor.amount) || 0) : 0,
-                    laborHours: linkedLabor ? (Number(linkedLabor.labor) || 0) : 0,
-                };
-            });
-
-            // Add purely manual labor/service items as well if they aren't linked to parts
-            const manualItems = items.filter(it => (it.type === 'Labor' || it.type === 'Service') && !it.id.includes('_LABOR'));
-            manualItems.forEach(manualIt => {
-                serviceDocumentItems.push({
-                    itemType: manualIt.type.toLowerCase(), // 'labor' or 'service'
-                    partDescription: manualIt.description,
-                    partPrice: Number(manualIt.amount) || 0, // treating amount as price for simple items
-                    quantity: 1,
-                    laborRate: 0,
-                    laborHours: 0
-                });
-            });
-
-
-            // 2. Construct CustomerWithVehicle DTO
-            const customerWithVehicle = {
-                organizationId: 0, // Default or from context
-                customerType: "individual", // Default
-                firstName: customerData.firstName || "",
-                lastName: customerData.lastName || "",
-                email: customerData.email || "",
-                phone: customerData.phone || "",
-                alternatePhone: customerData.alternatePhone || "",
-                addressLine1: customerData.addressLine1 || "",
-                addressLine2: "",
-                city: customerData.city || "",
-                state: customerData.state || "",
-                postalCode: customerData.postalCode || "",
-                country: customerData.country || "USA",
-                preferredContactMethod: "email",
-                notes: customerData.notes || "",
-
-                // Vehicle Details
-                vehicleYear: Number(customerData.vehicleYear) || 2020,
-                vehicleMake: customerData.vehicleMake || "",
-                vehicleModel: customerData.vehicleModel || "",
-                vehicleStyle: customerData.vehicleStyle || "",
-                licensePlateNumber: customerData.licensePlateNumber || "",
-                vin: customerData.vin || "",
-                vehicleNotes: ""
-            };
-
-            // 3. Construct ServiceDocument DTO
-            const serviceDocument = {
-                documentType: currentDocType.toLowerCase().replace(" ", "") === "workorder" ? "invoice" : currentDocType.toLowerCase(),
-                employeeId: 0,
-                serviceLocation: "mobile",
-                serviceAddress: `${customerData.addressLine1 || ''}, ${customerData.city || ''}, ${customerData.state || ''} ${customerData.postalCode || ''}`,
-                documentDate: new Date().toISOString(),
-                scheduledDate: new Date().toISOString(),
-                estimatedCompletion: new Date().toISOString(),
-                dueDate: new Date().toISOString().split('T')[0],
-                paymentTerms: "Due upon receipt",
-                notes: printableNote,
-                termsConditions: "Warranty valid for 12 months on workmanship.",
-                taxRate: Number(globalTaxRate) || 0,
-                discountAmount: discountAmount,
-                laborAmount: totalLaborAmount,
-                items: serviceDocumentItems
-            };
-
-            // 4. Construct Composite Payload
-            // Combine all attachment descriptions
-            const combinedDescription = attachments.map(att =>
-                `${att.file.name}: ${att.description || "No description"}`
-            ).join('\n');
-
-            const compositePayload = {
-                customerWithVehicle: customerWithVehicle,
-                serviceDocument: serviceDocument,
-                insurance: includeInsurance ? insuranceData : null,
-                attachmentDescription: combinedDescription
-            };
-
-            console.log("Sending Composite Payload:", compositePayload);
-
-            const files = attachments.map(a => a.file);
-
-            let response;
-            if (isSaved && docMetadata && docMetadata.documentNumber) {
-                // UPDATE existing document
-                console.log("Updating Composite Document:", docMetadata.documentNumber);
-                response = await updateCompositeServiceDocument(docMetadata.documentNumber, compositePayload, files);
-                message.success("Service Document Updated Successfully!");
-            } else {
-                // CREATE new document
-                response = await createCompositeServiceDocument(compositePayload, files);
-                message.success("Service Document Created Successfully!");
-            }
-
-            const createdDocNumber = response.serviceDocument?.documentNumber;
-
-            // Fetch attachments from backend after document is saved
-            if (createdDocNumber) {
-                try {
-                    const fetchedAttachments = await getAttachmentsByDocumentNumber(createdDocNumber);
-                    console.log("Fetched attachments for document", createdDocNumber, ":", fetchedAttachments);
-                    // You can store these attachments in state or use them as needed
-                    // For example: setAttachments(fetchedAttachments);
-                } catch (attachmentError) {
-                    console.error("Failed to fetch attachments:", attachmentError);
-                    // Don't fail the entire operation if attachment fetch fails
-                }
-            }
-
-            // 6. Send Email if PDF is generated
-            if (pdfBlob && createdDocNumber) {
+            // Send Email with PDF attachment
+            if (pdfBlob) {
                 const file = new File([pdfBlob], getFilename(), { type: "application/pdf" });
                 const emailResponse = await sendEmail(emailForm.to, emailForm.subject, emailForm.body, file);
 
                 if (emailResponse && emailResponse.status === "success") {
                     message.success("Email Sent Successfully!");
                 } else {
-                    message.warning("Document created, but email failed to send.");
+                    message.warning("Email failed to send.");
                 }
+            } else {
+                message.error("No PDF available to send.");
             }
 
             handleCloseModal();
-            downloadPdf();
-            setTimeout(() => {
-                navigate('/open');
-            }, 1000);
-
         } catch (err) {
             console.error(err);
-            message.error("Operation failed: " + err.message);
+            message.error("Email failed: " + err.message);
         } finally {
             setEmailLoading(false);
         }
     };
+
 
 
 
@@ -772,7 +833,8 @@ Auto Glass Pro Team`;
 
                     <Row label="Balance" value={currency(balance)} bold />
 
-                    <div className="pt-2 flex justify-between items-center bg-white rounded-lg p-2">
+                    <div className="pt-2 flex flex-col gap-2 bg-white rounded-lg p-2">
+                        {/* Document Type Selector */}
                         <select
                             value={manualDocType}
                             onChange={(e) => setManualDocType(e.target.value)}
@@ -782,9 +844,38 @@ Auto Glass Pro Team`;
                             <option value="Work Order">Work Order</option>
                             <option value="Invoice">Invoice</option>
                         </select>
-                        <button onClick={handleOpenPreview} className="px-4 py-2 rounded bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-sm font-semibold shadow hover:from-violet-500 hover:to-fuchsia-500 transition">
-                            {isSaved ? `Edit ${currentDocType}` : `Generate ${currentDocType}`}
-                        </button>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-2">
+                            {/* Save Button */}
+                            <button
+                                onClick={handleSave}
+                                disabled={saveLoading}
+                                className="flex-1 px-4 py-2 rounded bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-sm font-semibold shadow hover:from-violet-500 hover:to-fuchsia-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {saveLoading ? 'Saving...' : (isSaved ? `Update ${currentDocType}` : `Save ${currentDocType}`)}
+                            </button>
+
+                            {/* Preview Button */}
+                            <button
+                                onClick={handlePreview}
+                                disabled={previewLoading}
+                                className="px-4 py-2 rounded bg-blue-600 text-white text-sm font-semibold shadow hover:bg-blue-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                title="Preview PDF"
+                            >
+                                {previewLoading ? 'Loading...' : 'Preview'}
+                            </button>
+
+                            {/* Email Button */}
+                            <button
+                                onClick={handleEmail}
+                                disabled={!isSaved || emailLoading}
+                                className="px-4 py-2 rounded bg-green-600 text-white text-sm font-semibold shadow hover:bg-green-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                title={!isSaved ? "Save document first" : "Send via email"}
+                            >
+                                {emailLoading ? 'Sending...' : 'Email'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -16,6 +16,7 @@ const OpenRoot = () => {
     const [filteredDocuments, setFilteredDocuments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+    const [documentTypeFilter, setDocumentTypeFilter] = useState("all"); // New filter state
     const [currentPage, setCurrentPage] = useState(0);
     const [pageSize, setPageSize] = useState(10);
     const [totalElements, setTotalElements] = useState(0);
@@ -50,21 +51,30 @@ const OpenRoot = () => {
         fetchDocuments();
     }, [currentPage, pageSize]);
 
-    // Handle Search
+    // Handle Search and Filter
     useEffect(() => {
-        if (!searchTerm.trim()) {
-            setFilteredDocuments(documents);
-            return;
+        let filtered = documents;
+
+        // Filter by search term
+        if (searchTerm.trim()) {
+            const lowerTerm = searchTerm.toLowerCase();
+            filtered = filtered.filter(doc =>
+                doc.documentNumber.toLowerCase().includes(lowerTerm) ||
+                doc.customerName.toLowerCase().includes(lowerTerm) ||
+                doc.vehicleInfo.toLowerCase().includes(lowerTerm)
+            );
         }
 
-        const lowerTerm = searchTerm.toLowerCase();
-        const filtered = documents.filter(doc =>
-            doc.documentNumber.toLowerCase().includes(lowerTerm) ||
-            doc.customerName.toLowerCase().includes(lowerTerm) ||
-            doc.vehicleInfo.toLowerCase().includes(lowerTerm)
-        );
+        // Filter by document type
+        if (documentTypeFilter !== "all") {
+            filtered = filtered.filter(doc => {
+                const docType = doc.documentType?.toLowerCase();
+                return docType === documentTypeFilter.toLowerCase();
+            });
+        }
+
         setFilteredDocuments(filtered);
-    }, [searchTerm, documents]);
+    }, [searchTerm, documentTypeFilter, documents]);
 
     // Handle Document Click (Fetch Full Details & Navigate)
     const handleDocumentClick = async (doc) => {
@@ -90,7 +100,22 @@ const OpenRoot = () => {
                         <p className="text-slate-500 mt-1">Manage and track your service documents.</p>
                     </div>
 
-                    <SearchBar value={searchTerm} onChange={setSearchTerm} />
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        {/* Document Type Filter */}
+                        <select
+                            value={documentTypeFilter}
+                            onChange={(e) => setDocumentTypeFilter(e.target.value)}
+                            className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent bg-white text-slate-700"
+                        >
+                            <option value="all">All Documents</option>
+                            <option value="quote">Quote</option>
+                            <option value="invoice">Invoice</option>
+                            <option value="workorder">Work Order</option>
+                        </select>
+
+                        {/* Search Bar */}
+                        <SearchBar value={searchTerm} onChange={setSearchTerm} />
+                    </div>
                 </div>
 
                 <DocumentList
