@@ -12,9 +12,9 @@ const LaborRateConfiguration = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Load labor rate from localStorage profile data or sessionStorage
+        // Load labor rate from localStorage profile data or localStorage GlobalLaborRate
         const profileData = JSON.parse(localStorage.getItem('agp_profile_data') || '{}');
-        const storedRate = sessionStorage.getItem('GlobalLaborRate') || profileData.laborRate || '0';
+        const storedRate = localStorage.getItem('GlobalLaborRate') || profileData.laborRate || '0';
         setLaborRateValue(storedRate);
         setLoading(false);
     }, []);
@@ -46,9 +46,9 @@ const LaborRateConfiguration = () => {
 
             notification.success({ message: 'Labor rate updated successfully' });
 
-            // Update localStorage and sessionStorage
+            // Update localStorage for GlobalLaborRate and profile data
             setLaborRateValue(String(numericRate));
-            sessionStorage.setItem('GlobalLaborRate', String(numericRate));
+            localStorage.setItem('GlobalLaborRate', String(numericRate));
 
             // Update profile data in localStorage
             const profileData = JSON.parse(localStorage.getItem('agp_profile_data') || '{}');

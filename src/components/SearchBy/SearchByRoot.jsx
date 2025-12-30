@@ -276,7 +276,7 @@ const SearchByRoot = () => {
 
         // Labor Item
         if (Number(labor) > 0) {
-          const globalLaborRate = parseFloat(sessionStorage.getItem('GlobalLaborRate')) || 100;
+          const globalLaborRate = parseFloat(localStorage.getItem('GlobalLaborRate')) || 0;
           items.push({
             type: "Labor", id: `${uniqueId}_LABOR`,
             nagsId: "", oemId: "", labor: labor,

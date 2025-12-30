@@ -106,8 +106,8 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
 
                 // 2. The Labor Item (if applicable)
                 if (Number(info?.labor) > 0) {
-                    // Get globalLaborRate from sessionStorage
-                    const globalLaborRate = parseFloat(sessionStorage.getItem('GlobalLaborRate')) || 100;
+                    // Get globalLaborRate from localStorage
+                    const globalLaborRate = parseFloat(localStorage.getItem('GlobalLaborRate')) || 0;
                     const laborHours = Number(info?.labor) || 0;
 
                     items.push({

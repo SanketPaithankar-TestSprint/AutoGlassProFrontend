@@ -12,11 +12,11 @@ export const getUserId = () => {
 };
 
 /**
- * Get the global labor rate from session storage
+ * Get the global labor rate from local storage
  * @returns {number|null} - The labor rate or null if not found
  */
 export const getGlobalLaborRate = () => {
-    const laborRate = sessionStorage.getItem('GlobalLaborRate');
+    const laborRate = localStorage.getItem('GlobalLaborRate');
     return laborRate ? parseFloat(laborRate) : null;
 };
 
@@ -29,11 +29,11 @@ export const setUserId = (userId) => {
 };
 
 /**
- * Set the global labor rate in session storage
+ * Set the global labor rate in local storage
  * @param {number|string} laborRate - The labor rate to store
  */
 export const setGlobalLaborRate = (laborRate) => {
-    sessionStorage.setItem('GlobalLaborRate', laborRate);
+    localStorage.setItem('GlobalLaborRate', laborRate);
 };
 
 /**
@@ -41,5 +41,5 @@ export const setGlobalLaborRate = (laborRate) => {
  */
 export const clearUserSession = () => {
     sessionStorage.removeItem('userId');
-    sessionStorage.removeItem('GlobalLaborRate');
+    // Note: GlobalLaborRate is now in localStorage and persists across sessions
 };

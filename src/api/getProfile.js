@@ -17,12 +17,12 @@ export async function getProfile(token) {
 
         const profileData = await response.json();
 
-        // Store userId and laborRate in sessionStorage for global access
+        // Store userId in sessionStorage and laborRate in localStorage for global access
         if (profileData.userId) {
             sessionStorage.setItem('userId', profileData.userId);
         }
         if (profileData.laborRate) {
-            sessionStorage.setItem('GlobalLaborRate', profileData.laborRate);
+            localStorage.setItem('GlobalLaborRate', profileData.laborRate);
         }
 
         return profileData;

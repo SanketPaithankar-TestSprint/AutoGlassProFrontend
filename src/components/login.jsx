@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Form, Input, Button, Checkbox, Alert, Space, notification } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
-import { login } from "../api/homepage";
+import { loginUser, handleLoginSuccess } from "../api/login";
 
 export default function Login({ onLoginSuccess, onSignUpClick }) {
     const [loading, setLoading] = useState(false);
@@ -12,7 +12,7 @@ export default function Login({ onLoginSuccess, onSignUpClick }) {
         setError(null);
 
         try {
-            const res = await login({
+            const res = await loginUser({
                 usernameOrEmail: values.email,
                 password: values.password,
                 deviceType: "WEB",
@@ -20,18 +20,15 @@ export default function Login({ onLoginSuccess, onSignUpClick }) {
             });
 
             if (res && res.success) {
-                const tokenStr = JSON.stringify(res);
-                if (values.remember) {
-                    localStorage.setItem("ApiToken", tokenStr);
-                } else {
-                    sessionStorage.setItem("ApiToken", tokenStr);
-                }
+                // Handle post-login storage
+                handleLoginSuccess(res, values.remember);
 
                 notification.success({
                     message: `Welcome, ${res.data.username}!`,
                     description: "Signed in successfully.",
                     placement: "topRight",
                 });
+
                 if (onLoginSuccess) {
                     onLoginSuccess();
                 } else {

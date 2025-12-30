@@ -133,10 +133,10 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
         }
     });
 
-    // Get Global Labor Rate from sessionStorage
+    // Get Global Labor Rate from localStorage
     const globalLaborRate = useMemo(() => {
-        const rate = sessionStorage.getItem('GlobalLaborRate');
-        return rate ? parseFloat(rate) : 100; // Default to 100 if not set
+        const rate = localStorage.getItem('GlobalLaborRate');
+        return rate ? parseFloat(rate) : 0; // Default to 0 if not set
     }, []);
 
     useEffect(() => {

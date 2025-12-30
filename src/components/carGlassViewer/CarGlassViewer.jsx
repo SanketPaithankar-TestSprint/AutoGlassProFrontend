@@ -470,11 +470,10 @@ export default function CarGlassViewer({
   return (
     <div className="bg-white p-0 h-full flex flex-col">
       {/* Top header removed, description moved below image */}
-
       <div className="flex flex-col md:flex-row gap-2 h-full overflow-hidden">
         {/* Left column: Diagram */}
         {/* Left column: Diagram & Glass Selection */}
-        <div className="flex flex-col items-center justify-start border-r border-slate-100 pr-0 md:pr-2 w-full md:w-1/3 shrink-0 relative z-10">
+        <div className="flex flex-col items-center justify-start border-r border-slate-100 pr-0 md:pr-2 w-full md:w-1/3 shrink-0 relative z-0">
           <div className="w-full mb-2 relative pl-2 pt-2">
             <label className="block text-sm font-bold text-slate-800 mb-2">Select Glass Type</label>
 
@@ -594,7 +593,7 @@ export default function CarGlassViewer({
             {imageSrc && (
               <>
                 <div
-                  className="flex flex-col items-center w-full mt-4 relative z-0 cursor-pointer hover:opacity-80 transition-opacity"
+                  className="flex flex-col items-center w-full mt-4 relative z-1 cursor-pointer hover:opacity-80 transition-opacity"
                   onClick={() => setImageModalOpen(true)}
                   title="Click to enlarge"
                 >
