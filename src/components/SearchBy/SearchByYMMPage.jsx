@@ -6,6 +6,7 @@ import QuoteDetails from "../QuoteDetails";
 
 const SearchByYMMPage = () => {
   const [modelId, setModelId] = useState(null);
+  const [vehId, setVehId] = useState(null);
   const [selectedParts, setSelectedParts] = useState([]); // Array of { glass, part, glassInfo }
   const [vehicleInfo, setVehicleInfo] = useState({});
 
@@ -39,6 +40,10 @@ const SearchByYMMPage = () => {
   // Handle vehicle info update from SearchByYMM
   const handleVehicleInfoUpdate = (info) => {
     setVehicleInfo(info);
+    // Extract veh_id if present
+    if (info.veh_id) {
+      setVehId(info.veh_id);
+    }
   };
 
   return (
@@ -86,6 +91,7 @@ const SearchByYMMPage = () => {
           </p>
           <CarGlassViewer
             modelId={modelId}
+            vehId={vehId}
             vehicleInfo={vehicleInfo}
             onPartSelect={handleAddPart}
           />
@@ -96,8 +102,7 @@ const SearchByYMMPage = () => {
         className="
           rounded-2xl border border-slate-200
           bg-white/70 backdrop-blur-lg
-          shadow-xl shadow-slate-200/70
-          shadow-xl shadow-slate-200/70
+          shadow-xl 
           p-1
           text-slate-900
         "

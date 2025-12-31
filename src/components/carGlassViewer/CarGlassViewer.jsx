@@ -13,6 +13,7 @@ import {
 
 export default function CarGlassViewer({
   modelId,
+  vehId,
   vehicleInfo,
   onPartSelect,
   onPartDeselect,
@@ -86,39 +87,26 @@ export default function CarGlassViewer({
     const item = glassData.find(g => g.code === code);
     if (!item) return code;
 
-    // 1. Determine Group
-    let groupName = "Other";
-    for (const [name, items] of Object.entries(glassGroups)) {
-      if (items.some(i => i.code === code)) {
-        groupName = name;
-        break;
-      }
+    // Build label from API fields: [Side] [Position] [Type]
+    const parts = [];
+
+    // Add side if present
+    if (item.side) {
+      parts.push(item.side);
     }
 
-    // 2. Base Label
-    let label = item.description || item.code;
-    const codeObj = GLASS_CODE_NAMES.find(obj => obj.code === item.code);
-    if (codeObj) label = codeObj.name;
-    else if (label.includes("DQ")) label = label.replace("DQ", "Quarter");
-    else if (label.includes("DD")) label = label.replace("DD", "Door");
-    else if (label.includes("DV")) label = label.replace("DV", "Vent");
-
-    // 3. Remove underscores
-    label = label.replace(/_/g, " ");
-
-    // 4. Group-specific rules
-    // Side Glass(1), Vent Glass(2), Quarter Glass(3) in menu mapping
-    // "Primary Glass" is 0, "Roof Glass" is 4
-    if (groupName === "Vent Glass") {
-      label = label.replace(/Door/gi, "").trim();
+    // Add position if present
+    if (item.position) {
+      parts.push(item.position);
     }
 
-    if (["Side Glass", "Vent Glass", "Quarter Glass"].includes(groupName)) {
-      label = label.replace(/Glass/gi, "").trim();
+    // Add type (always present)
+    if (item.type) {
+      parts.push(item.type);
     }
 
-    // Clean up double spaces
-    return label.replace(/\s+/g, " ").trim();
+    // Join parts with spaces, or fallback to code
+    return parts.length > 0 ? parts.join(" ") : code;
   };
 
   // ---------- 1) load glass types for this model ----------
@@ -129,22 +117,34 @@ export default function CarGlassViewer({
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch(
-          `${config.pythonApiUrl}agp/v1/glass-types?model=${modelId}`,
-          { headers: { accept: "application/json" } }
-        );
+
+        // Build URL with veh_id and make_model_id parameters
+        const params = new URLSearchParams();
+        if (vehId) params.append("veh_id", vehId);
+        params.append("make_model_id", modelId);
+
+        const url = `${config.pythonApiUrl}agp/v1/glass-types?${params.toString()}`;
+        const res = await fetch(url, { headers: { accept: "application/json" } });
+
         if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
         const data = await res.json();
 
-        const rawTypes = data?.glass_types || [];
-        setGlassData(rawTypes);
-
-        // Custom Grouping Logic
-        // Primary: Automatic Windshield, Back Glass, etc (DW, DB)
-        // Side Glass: Door Glass (DD)
-        // Vent Glass: Vent (DV)
-        // Quarter Glass: Quarter (DQ)
-        // Roof Glass: Roof (DR, Sunroof)
+        // New API returns data already grouped by type
+        // Map API group names to frontend display names
+        const groupMapping = {
+          "Windshield": "Primary Glass",
+          "Back Window": "Primary Glass",
+          "Flat Windshield": "Primary Glass",
+          "Door": "Side Glass",
+          "Side": "Side Glass",
+          "Vent": "Vent Glass",
+          "Quarter": "Quarter Glass",
+          "Roof": "Roof Glass",
+          "Partition": "Roof Glass",
+          "Flat": "Roof Glass",
+          "Slider": "Roof Glass",
+          "Special Part": "Roof Glass"
+        };
 
         const newGroups = {
           "Primary Glass": [],
@@ -154,39 +154,26 @@ export default function CarGlassViewer({
           "Roof Glass": []
         };
 
-        rawTypes.forEach(t => {
-          const code = (t.code || "").toUpperCase();
-          const desc = (t.description || "").toLowerCase();
-          const type = (t.type || "").toUpperCase();
+        const allGlassTypes = [];
 
-          // 1. Primary
-          if (["DW", "DB"].includes(code) || ["DW", "DB"].includes(type) || desc.includes("windshield") || desc.includes("back glass")) {
-            newGroups["Primary Glass"].push(t);
-          }
-          // 2. Door (Side)
-          else if (code.startsWith("DD") || type === "DD" || desc.includes("door glass") || desc.includes("front door") || desc.includes("rear door")) {
-            newGroups["Side Glass"].push(t);
-          }
-          // 3. Vent
-          else if (code.startsWith("DV") || type === "DV" || desc.includes("vent")) {
-            newGroups["Vent Glass"].push(t);
-          }
-          // 4. Quarter
-          else if (code.startsWith("DQ") || type === "DQ" || desc.includes("quarter")) {
-            newGroups["Quarter Glass"].push(t);
-          }
-          // 5. Roof
-          else if (code.startsWith("DR") || type === "DR" || desc.includes("roof") || desc.includes("sunroof") || desc.includes("moonroof")) {
-            newGroups["Roof Glass"].push(t);
-          }
-          // Fallbacks
-          else {
-            // If completely unknown, maybe check common words or default to Side?
-            // Let's default to Side Glass as a safe "Other" for generic side windows
-            newGroups["Side Glass"].push(t);
+        // Process grouped data from API
+        Object.keys(data).forEach(apiGroupName => {
+          const items = data[apiGroupName];
+          if (Array.isArray(items)) {
+            items.forEach(item => {
+              // Add to flat array for backward compatibility
+              allGlassTypes.push(item);
+
+              // Map to frontend group
+              const frontendGroup = groupMapping[apiGroupName] || "Side Glass";
+              if (newGroups[frontendGroup]) {
+                newGroups[frontendGroup].push(item);
+              }
+            });
           }
         });
 
+        setGlassData(allGlassTypes);
         setGlassGroups(newGroups);
 
       } catch (err) {
@@ -198,7 +185,7 @@ export default function CarGlassViewer({
     };
 
     fetchGlassTypes();
-  }, [modelId]);
+  }, [modelId, vehId]);
 
   // ---------- 2) when a glass is selected, load its parts ----------
   const toggleGlassSelection = async (glass) => {
@@ -234,6 +221,12 @@ export default function CarGlassViewer({
 
       const params = new URLSearchParams();
       params.append("make_model_id", modelId);
+
+      // Add veh_id if available (overrides make_model_id per API docs)
+      if (vehId) {
+        params.append("veh_id", vehId);
+      }
+
       if (prefix_cd) params.append("prefix_cd", prefix_cd);
       if (pos_cd && pos_cd !== "NULL") params.append("pos_cd", pos_cd);
       if (side_cd && side_cd !== "NULL") params.append("side_cd", side_cd);
@@ -257,11 +250,17 @@ export default function CarGlassViewer({
 
   const handleSelectPart = (part, glass) => {
     const glassKey = glass ? glass.code : "";
+    const nagsId = part.nags_id || part.nags_glass_id;
+    const oemId = part.oem_glass_id;
+
     const alreadySelected = selectedParts.some(
-      (p) =>
-        p.part.nags_glass_id === part.nags_glass_id &&
-        p.part.oem_glass_id === part.oem_glass_id &&
-        p.glass.code === glassKey
+      (p) => {
+        const pNagsId = p.part.nags_id || p.part.nags_glass_id;
+        const pOemId = p.part.oem_glass_id;
+        return pNagsId === nagsId &&
+          pOemId === oemId &&
+          p.glass.code === glassKey;
+      }
     );
     if (alreadySelected) return; // Prevent duplicate selection
 
@@ -280,8 +279,11 @@ export default function CarGlassViewer({
   const handleRemoveSelectedPart = (partKey) => {
     setSelectedParts((prev) =>
       prev.filter(
-        (p) =>
-          `${p.part.nags_glass_id || ""}|${p.part.oem_glass_id || ""}|${p.glass.code}` !== partKey
+        (p) => {
+          const nagsId = p.part.nags_id || p.part.nags_glass_id;
+          const oemId = p.part.oem_glass_id;
+          return `${nagsId || ""}|${oemId || ""}|${p.glass.code}` !== partKey;
+        }
       )
     );
     // Notify parent
@@ -380,14 +382,20 @@ export default function CarGlassViewer({
                 </button>
               </div>
               {parts.map((part, index) => {
-                const partId = part.nags_glass_id || part.oem_glass_id;
-                const partKey = `${part.nags_glass_id || ""}|${part.oem_glass_id || ""}|${code}`;
+                // Support both old and new API response formats
+                const nagsId = part.nags_id || part.nags_glass_id;
+                const oemId = part.oem_glass_id;
+                const partId = nagsId || oemId;
+                const partKey = `${nagsId || ""}|${oemId || ""}|${code}`;
 
                 const isSelected = selectedParts.some(
-                  (p) =>
-                    p.part.nags_glass_id === part.nags_glass_id &&
-                    p.part.oem_glass_id === part.oem_glass_id &&
-                    p.glass.code === code
+                  (p) => {
+                    const pNagsId = p.part.nags_id || p.part.nags_glass_id;
+                    const pOemId = p.part.oem_glass_id;
+                    return pNagsId === nagsId &&
+                      pOemId === oemId &&
+                      p.glass.code === code;
+                  }
                 );
 
                 return (
@@ -426,17 +434,24 @@ export default function CarGlassViewer({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
                         <span className={`font-bold text-xs ${isSelected ? "text-blue-900" : "text-slate-800"}`}>
-                          {part.nags_glass_id || "Unknown ID"}{part.glass_info?.ta ? ` ${part.glass_info.ta}` : ""}
+                          {nagsId || "Unknown ID"}{part.feature_span ? ` ${part.feature_span}` : (part.glass_info?.ta ? ` ${part.glass_info.ta}` : "")}
                         </span>
-                        {part.oem_glass_id && (
+                        {oemId && (
                           <span className="text-xs font-mono font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded shrink-0 border border-slate-200">
-                            OEM: {part.oem_glass_id}
+                            OEM: {oemId}
                           </span>
                         )}
                       </div>
-                      <p className="text-[10px] text-slate-500 mt-0 truncate leading-tight">
-                        {part.part_description || "Glass Part"}
-                      </p>
+                      <div className="flex items-center justify-between gap-2 mt-0.5">
+                        <p className="text-[10px] text-slate-500 truncate leading-tight">
+                          {part.part_description || "Glass Part"}
+                        </p>
+                        {part.list_price && (
+                          <span className="text-[10px] font-semibold text-green-700 shrink-0">
+                            ${part.list_price.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
@@ -529,30 +544,15 @@ export default function CarGlassViewer({
                           {group.items.length > 0 ? (
                             group.items.map(item => {
                               const isSelected = selectedGlassCodes.includes(item.code);
-                              // Label cleanup
-                              let label = item.description || item.code;
-                              const codeObj = GLASS_CODE_NAMES.find(obj => obj.code === item.code);
-                              if (codeObj) label = codeObj.name;
-                              // Fallback replacements
-                              else if (label.includes("DQ")) label = label.replace("DQ", "Quarter");
-                              else if (label.includes("DD")) label = label.replace("DD", "Door");
-                              else if (label.includes("DV")) label = label.replace("DV", "Vent");
 
-                              // 1. Remove underscores
-                              label = label.replace(/_/g, " ");
+                              // Build label from API fields: [Side] [Position] [Type]
+                              const parts = [];
 
-                              // 2. Specific fix for Vent Glass: Remove "Door" logic was based on index previously, do safe check
-                              if (group.name === "Vent") {
-                                label = label.replace(/Door/gi, "").trim();
-                              }
+                              if (item.side) parts.push(item.side);
+                              if (item.position) parts.push(item.position);
+                              if (item.type) parts.push(item.type);
 
-                              // 3. Remove "Glass" from Side, Vent, Quarter
-                              if (["Side Glass", "Vent", "Quarter"].includes(group.name)) {
-                                label = label.replace(/Glass/gi, "").trim();
-                              }
-
-                              // Clean up double spaces
-                              label = label.replace(/\s+/g, " ").trim();
+                              const label = parts.length > 0 ? parts.join(" ") : item.code;
 
                               return (
                                 <div

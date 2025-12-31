@@ -43,7 +43,9 @@ export function generateServiceDocumentPDF({
     total = 0,
     balance = 0,
     docType = "Quote",
-    printableNote = ""
+    printableNote = "",
+    insuranceData = {},
+    includeInsurance = false
 }) {
     const doc = new jsPDF({ unit: "pt", format: "a4" });
     const pageWidth = doc.internal.pageSize.width;
@@ -186,10 +188,10 @@ export function generateServiceDocumentPDF({
 
     // Row 1: Year | Make | Policy
     doc.rect(margin, vY, 40, vRowH); doc.text("Year", margin + 2, vY + 14);
-    doc.rect(margin + 40, vY, 80, vRowH); doc.setFont("helvetica", "bold"); doc.text(String(customerData?.vehicleYear || ""), margin + 45, vY + 14); doc.setFont("helvetica", "normal");
+    doc.rect(margin + 40, vY, 80, vRowH); doc.text(String(customerData?.vehicleYear || ""), margin + 45, vY + 14);
 
     doc.rect(margin + 120, vY, 40, vRowH); doc.text("Make", margin + 122, vY + 14);
-    doc.rect(margin + 160, vY, 200, vRowH); doc.setFont("helvetica", "bold"); doc.text(customerData?.vehicleMake || "", margin + 165, vY + 14); doc.setFont("helvetica", "normal");
+    doc.rect(margin + 160, vY, 200, vRowH); doc.text(customerData?.vehicleMake || "", margin + 165, vY + 14);
 
     doc.rect(margin + 360, vY, 40, vRowH); doc.text("Policy #", margin + 362, vY + 14);
     doc.rect(margin + 400, vY, 140, vRowH);
@@ -197,11 +199,11 @@ export function generateServiceDocumentPDF({
     // Row 2: Model | Body | Auth
     const vY2 = vY + vRowH;
     doc.rect(margin, vY2, 40, vRowH); doc.text("Model", margin + 2, vY2 + 14);
-    doc.rect(margin + 40, vY2, 100, vRowH); doc.setFont("helvetica", "bold"); doc.text(customerData?.vehicleModel || "", margin + 45, vY2 + 14); doc.setFont("helvetica", "normal");
+    doc.rect(margin + 40, vY2, 100, vRowH); doc.text(customerData?.vehicleModel || "", margin + 45, vY2 + 14);
 
     doc.rect(margin + 140, vY2, 40, vRowH);
     doc.text("Body\nStyle", margin + 142, vY2 + 8, { lineHeightFactor: 1 });
-    doc.rect(margin + 180, vY2, 180, vRowH); doc.setFont("helvetica", "bold"); doc.text("4 DOOR UTILITY", margin + 185, vY2 + 14); doc.setFont("helvetica", "normal");
+    doc.rect(margin + 180, vY2, 180, vRowH); doc.text(customerData?.vehicleStyle || "", margin + 185, vY2 + 14);
 
     doc.rect(margin + 360, vY2, 40, vRowH); doc.text("Author-\nized by", margin + 362, vY2 + 8, { lineHeightFactor: 1 });
     doc.rect(margin + 400, vY2, 140, vRowH);
@@ -209,13 +211,13 @@ export function generateServiceDocumentPDF({
     // Row 3: Lic | VIN | Claim | Loss Date
     const vY3 = vY2 + vRowH;
     doc.rect(margin, vY3, 40, vRowH); doc.text("Lic. #", margin + 2, vY3 + 14);
-    doc.rect(margin + 40, vY3, 100, vRowH); doc.setFont("helvetica", "bold"); doc.text("8ZEY923", margin + 45, vY3 + 14); doc.setFont("helvetica", "normal");
+    doc.rect(margin + 40, vY3, 100, vRowH); doc.text(customerData?.licensePlate || "", margin + 45, vY3 + 14);
 
     doc.rect(margin + 140, vY3, 40, vRowH); doc.text("V.I.N", margin + 142, vY3 + 14);
-    doc.rect(margin + 180, vY3, 180, vRowH); doc.setFont("helvetica", "bold"); doc.text(customerData?.vin || "", margin + 185, vY3 + 14); doc.setFont("helvetica", "normal");
+    doc.rect(margin + 180, vY3, 180, vRowH); doc.text(customerData?.vin || "", margin + 185, vY3 + 14);
 
     doc.rect(margin + 360, vY3, 40, vRowH); doc.text("Claim #", margin + 362, vY3 + 14);
-    doc.rect(margin + 400, vY3, 80, vRowH); doc.setFont("helvetica", "bold"); doc.text("YTRYRTYTR", margin + 405, vY3 + 14); doc.setFont("helvetica", "normal");
+    doc.rect(margin + 400, vY3, 80, vRowH); doc.text(customerData?.claimNumber || "", margin + 405, vY3 + 14);
 
     doc.rect(margin + 480, vY3, 60, vRowH);
     doc.setFontSize(6); doc.text("Loss Date", margin + 482, vY3 + 8); doc.setFontSize(8);
@@ -232,8 +234,43 @@ export function generateServiceDocumentPDF({
     doc.rect(margin + 280, vY4, 80, vRowH); doc.text("Damage\n/ Cause", margin + 282, vY4 + 8, { lineHeightFactor: 1 });
     doc.rect(margin + 360, vY4, 180, vRowH);
 
+    // --- Insurance Details Section (if included) ---
+    let insuranceY = vY4 + vRowH;
+    if (includeInsurance && insuranceData) {
+        insuranceY += 10;
+        const insRowH = 20;
+
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+
+        // Row 1: Insurance Company | Policy #
+        doc.rect(margin, insuranceY, 80, insRowH);
+        doc.text("Insurance Co.", margin + 2, insuranceY + 14);
+        doc.rect(margin + 80, insuranceY, 200, insRowH);
+        doc.text(insuranceData?.companyName || "", margin + 85, insuranceY + 14);
+
+        doc.rect(margin + 280, insuranceY, 80, insRowH);
+        doc.text("Policy #", margin + 282, insuranceY + 14);
+        doc.rect(margin + 360, insuranceY, 180, insRowH);
+        doc.text(insuranceData?.policyNumber || "", margin + 365, insuranceY + 14);
+
+        // Row 2: Claim # | Deductible
+        const insY2 = insuranceY + insRowH;
+        doc.rect(margin, insY2, 80, insRowH);
+        doc.text("Claim #", margin + 2, insY2 + 14);
+        doc.rect(margin + 80, insY2, 200, insRowH);
+        doc.text(insuranceData?.claimNumber || "", margin + 85, insY2 + 14);
+
+        doc.rect(margin + 280, insY2, 80, insRowH);
+        doc.text("Deductible", margin + 282, insY2 + 14);
+        doc.rect(margin + 360, insY2, 180, insRowH);
+        doc.text(insuranceData?.deductible ? `$${insuranceData.deductible}` : "", margin + 365, insY2 + 14);
+
+        insuranceY = insY2 + insRowH;
+    }
+
     // --- Items Table ---
-    const tableY = vY4 + vRowH + 10;
+    const tableY = insuranceY + 10;
     autoTable(doc, {
         startY: tableY,
         head: [["Qty", "Part #", "Description", "Block Size", "List", "Price", "Total"]],

@@ -16,6 +16,7 @@ import { getAttachmentsByDocumentNumber } from "../../api/getAttachmentsByDocume
 const SearchByRoot = () => {
   const [vinData, setVinData] = useState(null);
   const [modelId, setModelId] = useState(null);
+  const [vehId, setVehId] = useState(null);
   const [vehicleInfo, setVehicleInfo] = useState({});
   const [selectedParts, setSelectedParts] = useState([]);
   const [activeTab, setActiveTab] = useState('quote');
@@ -212,6 +213,10 @@ const SearchByRoot = () => {
   // Handle vehicle info update from YMM
   const handleVehicleInfoUpdate = (info) => {
     setVehicleInfo(info);
+    // Extract veh_id if present
+    if (info.veh_id) {
+      setVehId(info.veh_id);
+    }
     setCustomerData(prev => ({
       ...prev,
       vehicleYear: info.year || prev.vehicleYear,
@@ -238,7 +243,11 @@ const SearchByRoot = () => {
   const handleRemovePart = (partKey) => {
     setSelectedParts((prevParts) =>
       prevParts.filter(
-        (p) => `${p.part.nags_glass_id || ""}|${p.part.oem_glass_id || ""}|${p.glass.code}` !== partKey
+        (p) => {
+          const nagsId = p.part.nags_id || p.part.nags_glass_id;
+          const oemId = p.part.oem_glass_id;
+          return `${nagsId || ""}|${oemId || ""}|${p.glass.code}` !== partKey;
+        }
       )
     );
   };
@@ -247,27 +256,52 @@ const SearchByRoot = () => {
   useEffect(() => {
     const fetchGlassInfo = async () => {
       const result = await Promise.all(selectedParts.map(async (p) => {
-        const uniqueId = `${p.part.nags_glass_id || ""}|${p.part.oem_glass_id || ""}|${p.glass.code}`;
+        // Support both old and new API field names
+        const nagsId = p.part.nags_id || p.part.nags_glass_id;
+        const oemId = p.part.oem_glass_id;
+        const uniqueId = `${nagsId || ""}|${oemId || ""}|${p.glass.code}`;
 
-        let rawInfo = p.glassInfo;
-        if (!rawInfo && p.part.nags_glass_id) {
-          try {
-            const res = await fetch(`${config.pythonApiUrl}agp/v1/glass-info?nags_glass_id=${p.part.nags_glass_id}`);
-            if (res.ok) rawInfo = await res.json();
-          } catch (err) { console.error("Failed to fetch glass info", err); }
+        // Check if we have new API format with all data included
+        const hasNewFormat = p.part.nags_id && p.part.list_price !== undefined;
+
+        let listPrice, netPrice, description, labor, manufacturer, ta;
+
+        if (hasNewFormat) {
+          // Use data directly from new API response
+          listPrice = p.part.list_price || 0;
+          netPrice = p.part.list_price || 0; // Use list_price as net price
+          labor = p.part.labor || 0;
+          ta = p.part.feature_span || "";
+          description = p.part.part_description || "Glass Part";
+          manufacturer = ""; // Not provided in new API
+        } else {
+          // Old format: fetch additional glass info
+          let rawInfo = p.glassInfo;
+          if (!rawInfo && nagsId) {
+            try {
+              const res = await fetch(`${config.pythonApiUrl}agp/v1/glass-info?nags_glass_id=${nagsId}`);
+              if (res.ok) rawInfo = await res.json();
+            } catch (err) { console.error("Failed to fetch glass info", err); }
+          }
+
+          // Use helper to extract data (prioritizing Pilkington)
+          const extracted = extractGlassInfo(rawInfo, p.part.part_description);
+          listPrice = extracted.listPrice;
+          netPrice = extracted.netPrice;
+          description = extracted.description;
+          labor = extracted.labor;
+          manufacturer = extracted.manufacturer;
+          ta = extracted.ta;
         }
-
-        // Use helper to extract data (prioritizing Pilkington)
-        const { listPrice, netPrice, description, labor, manufacturer, ta } = extractGlassInfo(rawInfo, p.part.part_description);
 
         const items = [];
         // Part Item
-        const fullPartNumber = `${p.part.nags_glass_id || ""}${ta ? " " + ta : ""}`.trim();
+        const fullPartNumber = `${nagsId || ""}${ta ? " " + ta : ""}`.trim();
 
         items.push({
           type: "Part", id: uniqueId,
           prefixCd: getPrefixCd(p.glass), posCd: getPosCd(p.glass), sideCd: getSideCd(p.glass),
-          nagsId: fullPartNumber, oemId: p.part.oem_glass_id || "",
+          nagsId: fullPartNumber, oemId: oemId || "",
           labor: labor, description: description,
           manufacturer: manufacturer, qty: 1,
           listPrice: listPrice,
@@ -426,6 +460,7 @@ const SearchByRoot = () => {
                         <CarGlassViewer
                           key={`${modelId || 'empty'}-${resetKey}`}
                           modelId={modelId}
+                          vehId={vehId}
                           vehicleInfo={vehicleInfo}
                           onPartSelect={handleAddPart}
                           onPartDeselect={handleRemovePart}

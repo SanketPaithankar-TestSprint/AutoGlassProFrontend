@@ -313,7 +313,9 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
             total,
             balance,
             docType: currentDocType,
-            printableNote // Passed from props
+            printableNote, // Passed from props
+            insuranceData,
+            includeInsurance
         });
     };
 
