@@ -42,6 +42,7 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
             vehicleMake: prefill.vehicleMake || prefill.make || "",
             vehicleModel: prefill.vehicleModel || prefill.model || "",
             vehicleStyle: prefill.vehicleStyle || prefill.body || "",
+            bodyType: prefill.bodyType || "",
             licensePlateNumber: prefill.licensePlateNumber || "",
             vin: prefill.vin || "",
             vehicleNotes: prefill.vehicleNotes || "",

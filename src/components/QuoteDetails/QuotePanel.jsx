@@ -113,7 +113,7 @@ class ErrorBoundary extends React.Component {
     }
 }
 
-function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNote, internalNote, insuranceData, includeInsurance, attachments = [], onClear, docMetadata, isSaved, isEditMode, onEditModeChange }) {
+function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNote, internalNote, insuranceData, includeInsurance, attachments = [], onClear, docMetadata, isSaved, isEditMode, onEditModeChange, onDocumentCreated }) {
     const navigate = useNavigate();
     const formatDate = (dateStr) => {
         if (!dateStr) return '-';
@@ -394,6 +394,8 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
 
     // Handler 1: Save Document
     const handleSave = async () => {
+        console.log("[QuotePanel] handleSave called with attachments:", attachments);
+
         if (!validateDocumentData()) return;
 
         setSaveLoading(true);
@@ -463,6 +465,7 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
                 vehicleMake: customerData.vehicleMake || "",
                 vehicleModel: customerData.vehicleModel || "",
                 vehicleStyle: customerData.vehicleStyle || "",
+                bodyType: customerData.bodyType || "",
                 licensePlateNumber: customerData.licensePlateNumber || "",
                 vin: customerData.vin || "",
                 vehicleNotes: ""
@@ -500,33 +503,34 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
             console.log("Sending Composite Payload:", compositePayload);
 
             const files = attachments.map(a => a.file);
+            console.log("Files to upload:", files.length, files);
 
             let response;
             if (isSaved && docMetadata && docMetadata.documentNumber) {
                 console.log("Updating Composite Document:", docMetadata.documentNumber);
                 response = await updateCompositeServiceDocument(docMetadata.documentNumber, compositePayload, files);
                 message.success("Service Document Updated Successfully!");
+
+                // Navigate to open page after update
+                setTimeout(() => {
+                    navigate('/open');
+                }, 1000);
             } else {
+                console.log("Creating new document with", files.length, "files");
                 response = await createCompositeServiceDocument(compositePayload, files);
-                message.success("Service Document Created Successfully!");
-            }
+                const createdDocNumber = response.serviceDocument?.documentNumber;
 
-            const createdDocNumber = response.serviceDocument?.documentNumber;
+                if (createdDocNumber) {
+                    message.success(`Service Document Created Successfully! Document #: ${createdDocNumber}`);
 
-            // Fetch attachments from backend after document is saved
-            if (createdDocNumber) {
-                try {
-                    const fetchedAttachments = await getAttachmentsByDocumentNumber(createdDocNumber);
-                    console.log("Fetched attachments for document", createdDocNumber, ":", fetchedAttachments);
-                } catch (attachmentError) {
-                    console.error("Failed to fetch attachments:", attachmentError);
+                    // Call callback to switch to attachment tab
+                    if (onDocumentCreated) {
+                        onDocumentCreated(createdDocNumber);
+                    }
+                } else {
+                    message.success("Service Document Created Successfully!");
                 }
             }
-
-            // Navigate to open page after save
-            setTimeout(() => {
-                navigate('/open');
-            }, 1000);
 
         } catch (err) {
             console.error(err);

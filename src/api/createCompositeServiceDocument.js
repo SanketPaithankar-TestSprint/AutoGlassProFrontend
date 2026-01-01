@@ -20,14 +20,23 @@ export const createCompositeServiceDocument = async (data, file) => {
         formData.append("data", jsonBlob);
 
         // Append files
+        console.log("[createCompositeServiceDocument] Received files:", file);
         if (Array.isArray(file)) {
-            file.forEach(f => {
-                if (f) formData.append("file", f);
+            console.log("[createCompositeServiceDocument] Appending", file.length, "files to FormData");
+            file.forEach((f, index) => {
+                if (f) {
+                    console.log(`  - File ${index + 1}:`, f.name, f.type, f.size, "bytes");
+                    formData.append("file", f);
+                }
             });
         } else if (file) {
+            console.log("[createCompositeServiceDocument] Appending single file:", file.name);
             formData.append("file", file);
+        } else {
+            console.log("[createCompositeServiceDocument] No files to upload");
         }
 
+        console.log("[createCompositeServiceDocument] Calling API:", `${urls.javaApiUrl}/v1/composite/service-document`);
         const response = await fetch(`${urls.javaApiUrl}/v1/composite/service-document`, {
             method: 'POST',
             headers: {

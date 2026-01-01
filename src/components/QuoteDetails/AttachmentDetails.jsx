@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { UploadOutlined, FileTextOutlined, DeleteOutlined, EyeOutlined, DownloadOutlined, FilePdfOutlined, FileImageOutlined, FileOutlined, LoadingOutlined } from "@ant-design/icons";
-import { Modal, message } from "antd";
+import { Modal, message, Button, Alert } from "antd";
 import { deleteAttachment } from "../../api/deleteAttachment";
 import { downloadAndSaveAttachment, getAttachmentPreviewUrl } from "../../api/downloadAttachmentFile";
+import { uploadAttachments } from "../../api/uploadAttachments";
+import { getAttachmentsByDocumentNumber } from "../../api/getAttachmentsByDocumentNumber";
 import AttachmentPreviewModal from "./AttachmentPreviewModal";
 import { validateAndCompressFile, formatFileSize, isAllowedFileType } from "../../utils/fileCompression";
 
@@ -10,10 +12,14 @@ const AttachmentDetails = ({
     attachments = [],
     setAttachments,
     savedAttachments = [], // New prop for backend attachments
-    setSavedAttachments // New prop to update saved attachments after delete
+    setSavedAttachments, // New prop to update saved attachments after delete
+    createdDocumentNumber = null, // Document number from successful creation
+    customerData = {} // Customer data for customerId
 }) => {
     const [downloadingIds, setDownloadingIds] = useState(new Set());
     const [previewCache, setPreviewCache] = useState(new Map()); // Cache preview URLs
+    const [uploading, setUploading] = useState(false); // Upload loading state
+    const [showAlert, setShowAlert] = useState(!!createdDocumentNumber); // Show alert when document number is available
 
     // Preview modal state
     const [previewModal, setPreviewModal] = useState({
@@ -215,6 +221,69 @@ const AttachmentDetails = ({
         }
     };
 
+    // Manual upload handler for created documents
+    const handleManualUpload = async () => {
+        if (!createdDocumentNumber) {
+            message.error("No document number available. Please create a document first.");
+            return;
+        }
+
+        if (!attachments || attachments.length === 0) {
+            message.warning("Please select files to upload first.");
+            return;
+        }
+
+        try {
+            setUploading(true);
+
+            // Extract files and descriptions
+            const files = attachments.map(att => att.file);
+            const descriptions = attachments.map(att => att.description || "");
+
+            // Get customerId and userId from customerData or localStorage
+            const customerId = customerData?.customerId || localStorage.getItem('customerId');
+            const userId = localStorage.getItem('userId');
+
+            console.log('[AttachmentDetails] Uploading with:', {
+                documentNumber: createdDocumentNumber,
+                customerId,
+                userId,
+                fileCount: files.length
+            });
+
+            // Call upload API
+            const response = await uploadAttachments(
+                createdDocumentNumber,
+                files,
+                descriptions,
+                customerId,
+                userId
+            );
+
+            message.success(`Successfully uploaded ${files.length} file(s) to document ${createdDocumentNumber}`);
+
+            // Clear the attachments list
+            setAttachments([]);
+
+            // Refresh saved attachments
+            try {
+                const fetchedAttachments = await getAttachmentsByDocumentNumber(createdDocumentNumber);
+                if (setSavedAttachments && Array.isArray(fetchedAttachments)) {
+                    setSavedAttachments(fetchedAttachments);
+                }
+            } catch (fetchError) {
+                console.error("Failed to refresh attachments:", fetchError);
+                message.warning("Files uploaded but failed to refresh the list. Please refresh the page.");
+            }
+
+        } catch (error) {
+            console.error("Upload failed:", error);
+            message.error(`Upload failed: ${error.message}`);
+        } finally {
+            setUploading(false);
+        }
+    };
+
 
     const getFileIcon = (contentType) => {
         if (contentType?.startsWith('image/')) {
@@ -244,6 +313,23 @@ const AttachmentDetails = ({
 
     return (
         <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 max-w-4xl mx-auto space-y-6">
+            {/* Document Number Alert */}
+            {createdDocumentNumber && showAlert && (
+                <Alert
+                    message="Document Ready for Attachments"
+                    description={
+                        <span>
+                            You can now upload attachments for document: <span className="font-mono font-semibold">{createdDocumentNumber}</span>
+                        </span>
+                    }
+                    type="success"
+                    showIcon
+                    closable
+                    onClose={() => setShowAlert(false)}
+                    className="mb-4"
+                />
+            )}
+
             {/* Saved Attachments Section */}
             {savedAttachments && savedAttachments.length > 0 && (
                 <div>
@@ -370,6 +456,29 @@ const AttachmentDetails = ({
                             </div>
                         ))}
                     </div>
+                </div>
+            )}
+
+            {/* Upload Button - Show when document number is available */}
+            {createdDocumentNumber && (
+                <div className="mt-4">
+                    <Button
+                        type="primary"
+                        size="large"
+                        icon={uploading ? <LoadingOutlined /> : <UploadOutlined />}
+                        onClick={handleManualUpload}
+                        loading={uploading}
+                        disabled={uploading || attachments.length === 0}
+                        block
+                        className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 border-none shadow-lg hover:shadow-xl transition-all"
+                    >
+                        {uploading
+                            ? `Uploading ${attachments.length} file(s)...`
+                            : attachments.length > 0
+                                ? `Upload ${attachments.length} file(s) to ${createdDocumentNumber}`
+                                : `No files selected - Add files above to upload to ${createdDocumentNumber}`
+                        }
+                    </Button>
                 </div>
             )}
 

@@ -20,11 +20,16 @@ import {
     EyeTwoTone
 } from '@ant-design/icons';
 import axios from 'axios';
+import { COUNTRIES, getStatesOrProvinces, getCities } from '../const/locations';
 
 const SignUpForm = ({ onSuccess, onCancel }) => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [selectedCountry, setSelectedCountry] = useState('USA');
+    const [selectedState, setSelectedState] = useState(null);
+    const [availableStates, setAvailableStates] = useState(getStatesOrProvinces('USA'));
+    const [availableCities, setAvailableCities] = useState([]);
 
     const onFinish = async (values) => {
         setLoading(true);
@@ -40,7 +45,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                 alternatePhone: values.alternatePhone,
                 addressLine1: values.addressLine1,
                 addressLine2: values.addressLine2,
-                city: values.city,
+                city: Array.isArray(values.city) ? values.city[0] : values.city,
                 state: values.state,
                 postalCode: values.postalCode,
                 country: values.country,
@@ -107,6 +112,20 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
         },
     });
 
+    const handleCountryChange = (value) => {
+        setSelectedCountry(value);
+        setSelectedState(null);
+        setAvailableStates(getStatesOrProvinces(value));
+        setAvailableCities([]);
+        form.setFieldsValue({ state: undefined, city: undefined });
+    };
+
+    const handleStateChange = (value) => {
+        setSelectedState(value);
+        setAvailableCities(getCities(selectedCountry, value));
+        form.setFieldsValue({ city: undefined });
+    };
+
     return (
         <div style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: '10px' }}>
             {error && (
@@ -128,7 +147,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                 layout="vertical"
                 size="large"
                 requiredMark={false}
-                initialValues={{ userType: 'BUSINESS' }}
+                initialValues={{ userType: 'SHOP_OWNER', country: 'USA' }}
             >
                 <Row gutter={16}>
                     <Col xs={24} sm={12}>
@@ -213,20 +232,43 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                 <Row gutter={16}>
                     <Col xs={24} sm={12}>
                         <Form.Item
-                            name="city"
-                            label="City"
-                            rules={[{ required: true, message: 'Please input city!' }]}
+                            name="country"
+                            label="Country"
+                            rules={[{ required: true, message: 'Please select country!' }]}
+                            initialValue="USA"
                         >
-                            <Input placeholder="New York" />
+                            <Select
+                                placeholder="Select country"
+                                onChange={handleCountryChange}
+                                showSearch
+                                optionFilterProp="label"
+                            >
+                                {COUNTRIES.map(country => (
+                                    <Select.Option key={country.value} value={country.value}>
+                                        {country.label}
+                                    </Select.Option>
+                                ))}
+                            </Select>
                         </Form.Item>
                     </Col>
                     <Col xs={24} sm={12}>
                         <Form.Item
                             name="state"
-                            label="State"
-                            rules={[{ required: true, message: 'Please input state!' }]}
+                            label={selectedCountry === 'Canada' ? 'Province' : 'State'}
+                            rules={[{ required: true, message: `Please select ${selectedCountry === 'Canada' ? 'province' : 'state'}!` }]}
                         >
-                            <Input placeholder="NY" />
+                            <Select
+                                placeholder={`Select ${selectedCountry === 'Canada' ? 'province' : 'state'}`}
+                                onChange={handleStateChange}
+                                showSearch
+                                optionFilterProp="label"
+                            >
+                                {availableStates.map(state => (
+                                    <Select.Option key={state.value} value={state.value}>
+                                        {state.label}
+                                    </Select.Option>
+                                ))}
+                            </Select>
                         </Form.Item>
                     </Col>
                 </Row>
@@ -234,20 +276,34 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                 <Row gutter={16}>
                     <Col xs={24} sm={12}>
                         <Form.Item
+                            name="city"
+                            label="City"
+                            rules={[{ required: true, message: 'Please enter or select city!' }]}
+                        >
+                            <Select
+                                placeholder={availableCities.length > 0 ? "Select or type city name" : "Type city name"}
+                                showSearch
+                                optionFilterProp="label"
+                                mode="tags"
+                                maxTagCount={1}
+                                allowClear
+                                notFoundContent={null}
+                            >
+                                {availableCities.map(city => (
+                                    <Select.Option key={city.value} value={city.value}>
+                                        {city.label}
+                                    </Select.Option>
+                                ))}
+                            </Select>
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24} sm={12}>
+                        <Form.Item
                             name="postalCode"
                             label="Postal Code"
                             rules={[{ required: true, message: 'Please input postal code!' }]}
                         >
                             <Input placeholder="10001" />
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} sm={12}>
-                        <Form.Item
-                            name="country"
-                            label="Country"
-                            rules={[{ required: true, message: 'Please input country!' }]}
-                        >
-                            <Input placeholder="USA" />
                         </Form.Item>
                     </Col>
                 </Row>

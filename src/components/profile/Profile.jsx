@@ -6,11 +6,12 @@ import { createCustomer } from "../../api/createCustomer";
 import { updateCustomer } from "../../api/updateCustomer";
 import { createEmployee } from "../../api/createEmployee";
 import { getValidToken } from "../../api/getValidToken";
-import { UserOutlined, TeamOutlined, IdcardOutlined, ShopOutlined, PhoneOutlined, EnvironmentOutlined, EditOutlined, PlusOutlined, DollarOutlined, ThunderboltOutlined, PercentageOutlined } from "@ant-design/icons";
+import { UserOutlined, TeamOutlined, IdcardOutlined, ShopOutlined, PhoneOutlined, EnvironmentOutlined, EditOutlined, PlusOutlined, DollarOutlined, ThunderboltOutlined, PercentageOutlined, KeyOutlined } from "@ant-design/icons";
 import { Modal, Form, Input, Select, Button, notification } from "antd";
 import SmtpConfiguration from "./SmtpConfiguration";
 import LaborRateConfiguration from "./LaborRateConfiguration";
 import TaxRateConfiguration from "./TaxRateConfiguration";
+import DistributorCredentials from "./DistributorCredentials";
 
 const Profile = () => {
     const [activeTab, setActiveTab] = useState('profile');
@@ -474,6 +475,7 @@ const Profile = () => {
                         {renderMenuItem('profile', 'Profile', <UserOutlined />)}
                         {renderMenuItem('customers', 'Customers', <TeamOutlined />)}
                         {renderMenuItem('employees', 'Employees', <IdcardOutlined />)}
+                        {renderMenuItem('distributorCredentials', 'Distributor Credentials', <KeyOutlined />)}
                         {renderMenuItem('laborRate', 'Labor Rate', <DollarOutlined />)}
                         {renderMenuItem('taxRates', 'Tax Rates', <PercentageOutlined />)}
                         {renderMenuItem('smtp', 'Email (SMTP)', <ThunderboltOutlined />)}
@@ -487,6 +489,7 @@ const Profile = () => {
                     {activeTab === 'profile' && renderProfileContent()}
                     {activeTab === 'customers' && renderCustomersContent()}
                     {activeTab === 'employees' && renderEmployeesContent()}
+                    {activeTab === 'distributorCredentials' && <DistributorCredentials />}
                     {activeTab === 'laborRate' && <LaborRateConfiguration />}
                     {activeTab === 'taxRates' && <TaxRateConfiguration />}
                     {activeTab === 'smtp' && <SmtpConfiguration />}

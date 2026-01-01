@@ -68,8 +68,6 @@ const FormSelect = ({ label, name, value, onChange, options, required = false, c
 );
 
 export default function CustomerPanel({ formData, setFormData, setCanShowQuotePanel, setPanel }) {
-    const [loading, setLoading] = useState(false);
-
     // Organizations
     const [organizations, setOrganizations] = useState([]);
     const [loadingOrganizations, setLoadingOrganizations] = useState(false);
@@ -282,6 +280,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                 vehicleMake: vehicle.vehicleMake || "",
                 vehicleModel: vehicle.vehicleModel || "",
                 vehicleStyle: vehicle.vehicleStyle || "",
+                bodyType: vehicle.bodyType || "",
                 licensePlateNumber: vehicle.licensePlateNumber || "",
                 vin: vehicle.vin || "",
                 vehicleNotes: vehicle.notes || ""
@@ -297,7 +296,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
             addressLine1: "", addressLine2: "", city: "", state: "",
             postalCode: "", country: "USA",
             vehicleYear: "", vehicleMake: "", vehicleModel: "",
-            vehicleStyle: "", licensePlateNumber: "", vin: "", vehicleNotes: ""
+            vehicleStyle: "", bodyType: "", licensePlateNumber: "", vin: "", vehicleNotes: ""
         });
     };
 
@@ -368,59 +367,12 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // If existing customer + vehicle selected, proceed
-        // NOTE: If updating existing customer, we might want to allow that? 
-        // Current logic simply takes IDs if present. 
-        if (formData.customerId && formData.vehicleId) {
-            // Maybe we want to update contact info? 
-            // For now, preserving existing 'select and go' behavior logic, but saving form data to local storage.
-            // If user edited name, it's in formData but API might not update it unless we call update endpoint.
-            // Assuming "Create Quote" flow uses ID reference mostly.
-            localStorage.setItem("agp_customer_data", JSON.stringify(formData));
-            if (setCanShowQuotePanel) setCanShowQuotePanel(true);
-            if (setPanel) setPanel("quote");
-            return;
-        }
+        // Save form data to localStorage
+        localStorage.setItem("agp_customer_data", JSON.stringify(formData));
 
-        // Create new customer + vehicle
-        setLoading(true);
-        try {
-            const token = await getValidToken();
-            const response = await fetch(`${urls.javaApiUrl}/v1/customers/create-with-vehicle`, {
-                method: "POST",
-                headers: {
-                    "accept": "*/*",
-                    "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    ...formData,
-                    phone: formData.phone.replace(/[^\d]/g, ''), // Strip formatting
-                    alternatePhone: formData.alternatePhone ? formData.alternatePhone.replace(/[^\d]/g, '') : '', // Strip formatting
-                    vehicleYear: Number(formData.vehicleYear) || 0,
-                    customerType: selectedOrganizationId ? "ORGANIZATION_CONTACT" : "INDIVIDUAL",
-                    organizationId: selectedOrganizationId || null
-                }),
-            });
-
-            if (!response.ok) throw new Error(await response.text());
-            const data = await response.json();
-
-            if (data.customerId && data.vehicleId) {
-                notification.success({ message: 'Customer Created', description: 'Saved successfully!' });
-                setFormData(prev => {
-                    const newData = { ...prev, customerId: data.customerId, vehicleId: data.vehicleId };
-                    localStorage.setItem("agp_customer_data", JSON.stringify(newData));
-                    return newData;
-                });
-                if (setCanShowQuotePanel) setCanShowQuotePanel(true);
-                if (setPanel) setPanel("quote");
-            }
-        } catch (err) {
-            notification.error({ message: 'Failed', description: err.message });
-        } finally {
-            setLoading(false);
-        }
+        // Switch to quote tab
+        if (setCanShowQuotePanel) setCanShowQuotePanel(true);
+        if (setPanel) setPanel("quote");
     };
 
     return (
@@ -546,6 +498,10 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                 <FormInput label="Year" name="vehicleYear" value={formData.vehicleYear} onChange={handleChange} type="number" />
                                 <FormInput label="Make" name="vehicleMake" value={formData.vehicleMake} onChange={handleChange} />
                                 <FormInput label="Model" name="vehicleModel" value={formData.vehicleModel} onChange={handleChange} />
+                            </div>
+                            <div className="grid grid-cols-3 gap-2">
+                                <FormInput label="Style" name="vehicleStyle" value={formData.vehicleStyle} onChange={handleChange} />
+                                <FormInput label="Body Type" name="bodyType" value={formData.bodyType} onChange={handleChange} />
                             </div>
                             <div className="grid grid-cols-2 gap-2">
                                 <FormInput label="VIN" name="vin" value={formData.vin} onChange={handleChange} />
@@ -677,10 +633,9 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                             <div className="bg-gray-50 border-t border-gray-200 p-4 flex justify-end">
                                 <button
                                     type="submit"
-                                    disabled={loading}
-                                    className="px-6 py-2 rounded-md bg-violet-600 hover:bg-violet-700 disabled:bg-violet-300 text-white font-medium shadow-sm transition-colors"
+                                    className="px-6 py-2 rounded-md bg-violet-600 hover:bg-violet-700 text-white font-medium shadow-sm transition-colors"
                                 >
-                                    {loading ? "Processing..." : "Continue to Quote"}
+                                    Continue to Quote
                                 </button>
                             </div>
 

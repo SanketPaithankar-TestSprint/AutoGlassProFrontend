@@ -12,6 +12,9 @@ import { getPrefixCd, getPosCd, getSideCd, extractGlassInfo } from "../carGlassV
 import InsuranceDetails from "../QuoteDetails/InsuranceDetails";
 import AttachmentDetails from "../QuoteDetails/AttachmentDetails";
 import { getAttachmentsByDocumentNumber } from "../../api/getAttachmentsByDocumentNumber";
+import { resolveVinModel } from "../../api/resolveVinModel";
+import { getBodyTypes } from "../../api/getModels";
+import { extractDoorCount, selectBodyTypeByDoors } from "../../utils/vinHelpers";
 
 const SearchByRoot = () => {
   const [vinData, setVinData] = useState(null);
@@ -29,6 +32,7 @@ const SearchByRoot = () => {
   const [isSaved, setIsSaved] = useState(false);
   const [docMetadata, setDocMetadata] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [createdDocumentNumber, setCreatedDocumentNumber] = useState(null);
 
   // Modal Context for better visibility/theming
   const [modal, contextHolder] = Modal.useModal();
@@ -38,7 +42,7 @@ const SearchByRoot = () => {
     firstName: "", lastName: "", email: "", phone: "", alternatePhone: "",
     addressLine1: "", addressLine2: "", city: "", state: "", postalCode: "", country: "",
     preferredContactMethod: "phone", notes: "",
-    vehicleYear: "", vehicleMake: "", vehicleModel: "", vehicleStyle: "",
+    vehicleYear: "", vehicleMake: "", vehicleModel: "", vehicleStyle: "", bodyType: "",
     licensePlateNumber: "", vin: "", vehicleNotes: "",
   };
 
@@ -94,6 +98,7 @@ const SearchByRoot = () => {
         vehicleMake: vehicle?.vehicleMake || "",
         vehicleModel: vehicle?.vehicleModel || "",
         vehicleStyle: vehicle?.vehicleStyle || "",
+        bodyType: vehicle?.bodyType || "",
         licensePlateNumber: vehicle?.licensePlateNumber || "",
         vin: vehicle?.vin || "",
 
@@ -192,13 +197,64 @@ const SearchByRoot = () => {
     }
   }, [customerData]);
 
-  // Handle VIN decode
-  const handleVinDecoded = (data) => {
+  // Handle VIN decode with model resolution and body type auto-selection
+  const handleVinDecoded = async (data) => {
     setVinData(data);
-    if (data) {
+    if (!data) return;
+
+    try {
+      const { year, make, model: vinModel } = data;
+
+      // Step 1: Resolve the model name using fuzzy matching
+      const { resolvedModel, matchFound } = await resolveVinModel(year, make, vinModel);
+
+
+
+      // Step 2: Fetch body types for the resolved model (but don't auto-select if door count is unknown)
+      let selectedBodyStyleId = null;
+      try {
+        const bodyTypesData = await getBodyTypes(year, make, resolvedModel);
+        const bodyTypesList = Array.isArray(bodyTypesData?.body_types) ? bodyTypesData.body_types : [];
+
+        if (bodyTypesList.length > 0) {
+          // Step 3: Extract door count
+          const doorCount = extractDoorCount(data);
+
+          // Only attempt auto-selection if we successfully extracted door count
+          if (doorCount) {
+            selectedBodyStyleId = selectBodyTypeByDoors(bodyTypesList, doorCount);
+          }
+        }
+      } catch (error) {
+        console.error("[VIN Decode] Error fetching/selecting body type:", error);
+      }
+
+      // Step 4: Update vehicle info with resolved data
+      const info = {
+        year,
+        make,
+        model: resolvedModel, // Use resolved model
+        body: data.body_type || data.vehicle_type,
+        bodyStyleId: selectedBodyStyleId // Include auto-selected body type
+      };
+
+      setVehicleInfo(info);
+
+      // Step 5: Auto-update customer vehicle info
+      setCustomerData(prev => ({
+        ...prev,
+        vehicleYear: info.year || prev.vehicleYear,
+        vehicleMake: info.make || prev.vehicleMake,
+        vehicleModel: info.model || prev.vehicleModel,
+        vehicleStyle: info.body || prev.vehicleStyle,
+        vin: data.vin || prev.vin
+      }));
+
+    } catch (error) {
+      console.error("[VIN Decode] Error in handleVinDecoded:", error);
+      // Fallback to basic behavior
       const info = { year: data.year, make: data.make, model: data.model, body: data.body_type || data.vehicle_type };
       setVehicleInfo(info);
-      // Auto-update customer vehicle info
       setCustomerData(prev => ({
         ...prev,
         vehicleYear: info.year || prev.vehicleYear,
@@ -223,6 +279,7 @@ const SearchByRoot = () => {
       vehicleMake: info.make || prev.vehicleMake,
       vehicleModel: info.model || prev.vehicleModel,
       vehicleStyle: info.description || prev.vehicleStyle, // Use description for style if available
+      bodyType: info.bodyType || prev.bodyType, // Add bodyType field
     }));
   };
 
@@ -250,6 +307,12 @@ const SearchByRoot = () => {
         }
       )
     );
+  };
+
+  // Handle document creation - switch to attachment tab
+  const handleDocumentCreated = (documentNumber) => {
+    setCreatedDocumentNumber(documentNumber);
+    setActiveTab('attachment');
   };
 
   // --- Invoice Item Calculation (Lifted from QuoteDetails) ---
@@ -500,6 +563,8 @@ const SearchByRoot = () => {
                     setAttachments={setAttachments}
                     savedAttachments={savedAttachments}
                     setSavedAttachments={setSavedAttachments}
+                    createdDocumentNumber={createdDocumentNumber || docMetadata?.documentNumber}
+                    customerData={customerData}
                   />
                 </div>
               )}
@@ -546,6 +611,7 @@ const SearchByRoot = () => {
                     isSaved={isSaved}
                     isEditMode={isEditMode}
                     onEditModeChange={setIsEditMode}
+                    onDocumentCreated={handleDocumentCreated}
                   />
                 </div>
               </div>

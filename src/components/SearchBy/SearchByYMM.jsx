@@ -3,9 +3,7 @@ import { Select, Spin, message, Button } from "antd";
 import { getModelId } from "../../api/getModel"; // Import the API function
 import { getModels, getBodyTypes, getVehicleDetails } from "../../api/getModels"; // Import the models lookup API
 import CarGlassViewer from "../carGlassViewer/CarGlassViewer";
-
-const VPIC_BASE = "https://vpic.nhtsa.dot.gov/api/vehicles";
-const VEHICLE_TYPE = "car";
+import config from "../../config";
 
 const buildYears = (start = 1981) => {
   const current = new Date().getFullYear();
@@ -38,12 +36,17 @@ export default function SearchByYMM({
   const [modelImage, setModelImage] = useState(null);
   const [modelDescription, setModelDescription] = useState(null);
 
-  // Sync state with value prop
+  // Sync state with value prop and handle VIN-provided body type
   useEffect(() => {
     if (value) {
       setYear(value.year || null);
       setMake(value.make || null);
       setModel(value.model || null);
+
+      // Handle pre-selected body type from VIN decode
+      if (value.bodyStyleId) {
+        setBodyType(value.bodyStyleId);
+      }
     }
   }, [value]);
 
@@ -62,34 +65,36 @@ export default function SearchByYMM({
 
   const years = useMemo(() => buildYears(minYear), [minYear]);
 
-  // Fetch makes (cached)
+  // Fetch makes (cached) - using internal API
   useEffect(() => {
     let ignore = false;
     const loadMakes = async () => {
-      const cacheKey = VEHICLE_TYPE;
+      const cacheKey = "makes"; // Simple cache key since we're not filtering by vehicle type
       if (makesCache.current.has(cacheKey)) {
         setMakes(makesCache.current.get(cacheKey));
         return;
       }
       setLoadingMakes(true);
       try {
+        // Use internal API - get makes for a recent year to get comprehensive list
+        const currentYear = new Date().getFullYear();
         const resp = await fetch(
-          `${VPIC_BASE}/GetMakesForVehicleType/${encodeURIComponent(
-            VEHICLE_TYPE
-          )}?format=json`
+          `${config.pythonApiUrl}agp/v1/model-lookup?year=${currentYear}`,
+          {
+            headers: { accept: "application/json" },
+          }
         );
         const data = await resp.json();
-        const results = Array.isArray(data?.Results) ? data.Results : [];
-        const uniqueMakes = new Set();
-        const norm = [];
-        results.forEach((r) => {
-          const name = (r.MakeName || "").trim();
-          if (name && !uniqueMakes.has(name)) {
-            uniqueMakes.add(name);
-            norm.push({ MakeId: r.MakeId, MakeName: name });
-          }
-        });
+        const results = Array.isArray(data?.makes) ? data.makes : [];
+
+        // Transform to expected format: {make_id, abbrev, name} -> {MakeId, MakeName}
+        const norm = results.map((m) => ({
+          MakeId: m.make_id,
+          MakeName: m.name || m.abbrev,
+        }));
+
         norm.sort((a, b) => a.MakeName.localeCompare(b.MakeName));
+
         if (!ignore) {
           makesCache.current.set(cacheKey, norm);
           setMakes(norm);
@@ -228,24 +233,34 @@ export default function SearchByYMM({
     }
   };
 
-  // Sync state with value prop and AUTO-FETCH if complete
+  // Sync state with value prop and handle VIN-provided body type
   useEffect(() => {
     if (value) {
-      const { year: y, make: m, model: mod } = value;
-      setYear(y || null);
-      setMake(m || null);
-      setModel(mod || null);
+      setYear(value.year || null);
+      setMake(value.make || null);
+      setModel(value.model || null);
 
-      // Auto-trigger if we have all 3 parts from a likely VIN decode or external update
-      if (y && m && mod) {
-        const key = `${y}|${m}|${mod}`;
-        // Only fetch if it's a NEW combination we haven't just fetched
-        if (key !== lastFetchedYMM.current) {
-          fetchModelId(y, m, mod);
-        }
+      // Handle pre-selected body type from VIN decode
+      if (value.bodyStyleId) {
+        setBodyType(value.bodyStyleId);
       }
     }
   }, [value]);
+
+  // Auto-trigger Find Parts when VIN provides complete data including body type
+  useEffect(() => {
+    // Only auto-trigger if:
+    // 1. We have all required fields
+    // 2. Body type was auto-selected from VIN (not manually set)
+    // 3. The current bodyType matches the VIN-provided bodyStyleId
+    if (year && make && model && bodyType && value?.bodyStyleId === bodyType && value?.bodyStyleId) {
+      // Small delay to ensure UI is ready
+      const timer = setTimeout(() => {
+        handleFindParts();
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [year, make, model, bodyType, value?.bodyStyleId]);
 
   // Fetch vehicle details and parts when "Find Parts" is clicked
   const handleFindParts = async () => {
@@ -273,6 +288,7 @@ export default function SearchByYMM({
         year,
         make,
         model,
+        bodyType,
         veh_id: vId,
         model_id: mId,
         image: vehicleData?.image || null,
