@@ -114,8 +114,9 @@ class ErrorBoundary extends React.Component {
     }
 }
 
-function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNote, internalNote, insuranceData, includeInsurance, attachments = [], onClear, docMetadata, isSaved, isEditMode, onEditModeChange, onDocumentCreated }) {
+function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNote, internalNote, insuranceData, includeInsurance, attachments = [], onClear, docMetadata, isSaved, isEditMode, onEditModeChange, onDocumentCreated, vendorPricingData = {} }) {
     const navigate = useNavigate();
+
     const formatDate = (dateStr) => {
         if (!dateStr) return '-';
         try {
@@ -219,7 +220,6 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
             });
 
             const pricingResults = await Promise.all(pricingPromises);
-
             // Update items with vendor pricing
             setItems(prev => prev.map(item => {
                 const pricingUpdate = pricingResults.find(p => p.id === item.id);
@@ -232,7 +232,6 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
                     if (pricingUpdate.unitPrice) {
                         updatedItem.amount = (Number(updatedItem.qty) || 0) * pricingUpdate.unitPrice;
                     }
-                    console.log('[QuotePanel] Updated item with vendor data:', updatedItem);
                     return updatedItem;
                 }
                 return item;
@@ -246,19 +245,9 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
     // Local State Deleted: Notes are now passed as props
 
     const handleDeleteItem = (id) => {
-        onRemovePart?.(id);
+        console.log('[QuotePanel] Removing item:', id);
+        onRemovePart?.(id);  // This calls handleRemovePart in SearchByRoot which removes vendor data
         setItems((prev) => prev.filter((it) => it.id !== id));
-    };
-
-    // Helper function to get color based on availability
-    const getAvailabilityColor = (availability) => {
-        if (!availability) return 'text-slate-600';
-        const avail = availability.toLowerCase();
-        if (avail === 'green') return 'text-green-600';
-        if (avail === 'blue') return 'text-blue-600';
-        if (avail === 'red') return 'text-red-600';
-        if (avail === 'yellow') return 'text-yellow-600';
-        return 'text-slate-600';
     };
 
     const laborCostDisplay = items.filter(it => it.type === 'Labor').reduce((sum, it) => sum + (Number(it.amount) || 0), 0);
@@ -827,8 +816,30 @@ Auto Glass Pro Team`;
 
 
     return (
-        <div>
+        <div className="relative">
             {contextHolder}
+
+            {/* Vendor Pricing Data Panel - Bottom Left */}
+            {Object.keys(vendorPricingData).length > 0 && (
+                <div className="absolute left-0 bottom-0 z-10 p-2 max-w-full">
+                    {Object.entries(vendorPricingData).map(([partId, vendorData]) => {
+                        // Determine color based on availability
+                        let colorClass = 'text-slate-600';
+                        const availability = vendorData.AvailabilityToPromise?.toLowerCase();
+                        if (availability === 'green') colorClass = 'text-green-600';
+                        else if (availability === 'blue') colorClass = 'text-blue-600';
+                        else if (availability === 'red') colorClass = 'text-red-600';
+                        else if (availability === 'yellow') colorClass = 'text-yellow-600';
+
+                        return (
+                            <div key={partId} className={`text-xs font-medium ${colorClass} truncate overflow-hidden whitespace-nowrap`} style={{ maxWidth: '90vw' }}>
+                                IndustryCode: {vendorData.IndustryCode} • Price: ${vendorData.UnitPrice} • LeadTime: {vendorData.LeadTimeFormatted || vendorData.LeadTime} • Manufacturer: Pilkington
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+
             {/* Header / Metadata */}
             {/* Header / Metadata removed from here and moved to bottom */}
             {!isSaved && (
@@ -857,48 +868,25 @@ Auto Glass Pro Team`;
                         {items.map((it) => (
                             <tr key={it.id} className="hover:bg-slate-50 transition group">
                                 <td className="px-1 py-0.5 border-r border-slate-300">
-                                    <div className="flex flex-col gap-0.5">
-                                        <input
-                                            value={it.type === 'Labor' ? "LABOR" : it.nagsId}
-                                            onChange={(e) => {
-                                                if (it.type !== 'Labor') {
-                                                    updateItem(it.id, "nagsId", e.target.value);
-                                                    handlePartNoChange(it.id, e.target.value);
-                                                }
-                                            }}
-                                            onBlur={(e) => it.type !== 'Labor' && handlePartNoBlur(it.id, e.target.value)}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter' && it.type !== 'Labor') {
-                                                    handlePartNoBlur(it.id, e.currentTarget.value);
-                                                    e.currentTarget.blur();
-                                                }
-                                            }}
-                                            className={`w-full h-5 rounded px-1 text-sm outline-none focus:bg-white bg-transparent ${it.type === 'Labor' ? 'text-slate-500' : 'text-slate-900 font-medium'}`}
-                                            placeholder="Part No"
-                                            disabled={it.type === 'Labor'}
-                                        />
-                                        {/* Vendor Information Display */}
-                                        {console.log('[QuotePanel Render] Item:', it.id, 'vendorData:', it.vendorData)}
-
-                                        {/* Debug: Show for all parts */}
-                                        {it.type !== 'Labor' && (
-                                            <div className="text-[9px] text-purple-600 mt-0.5">
-                                                {it.vendorData ? '✓ Has vendor data' : '✗ No vendor data'}
-                                            </div>
-                                        )}
-
-                                        {it.vendorData && it.type !== 'Labor' && (
-                                            <div className="text-[10px] leading-tight mt-1 px-1 bg-blue-50 rounded">
-                                                <div className={`font-semibold ${getAvailabilityColor(it.vendorData.availability)}`}>
-                                                    {it.vendorData.industryCode || 'No Industry Code'}
-                                                </div>
-                                                <div className="text-slate-500">
-                                                    {it.vendorData.leadTime && `${it.vendorData.leadTime} • `}
-                                                    {it.vendorData.manufacturer || 'Unknown'}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
+                                    <input
+                                        value={it.type === 'Labor' ? "LABOR" : it.nagsId}
+                                        onChange={(e) => {
+                                            if (it.type !== 'Labor') {
+                                                updateItem(it.id, "nagsId", e.target.value);
+                                                handlePartNoChange(it.id, e.target.value);
+                                            }
+                                        }}
+                                        onBlur={(e) => it.type !== 'Labor' && handlePartNoBlur(it.id, e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && it.type !== 'Labor') {
+                                                handlePartNoBlur(it.id, e.currentTarget.value);
+                                                e.currentTarget.blur();
+                                            }
+                                        }}
+                                        className={`w-full h-5 rounded px-1 text-sm outline-none focus:bg-white bg-transparent ${it.type === 'Labor' ? 'text-slate-500' : 'text-slate-900 font-medium'}`}
+                                        placeholder="Part No"
+                                        disabled={it.type === 'Labor'}
+                                    />
                                 </td>
                                 <td className="px-1 py-0.5 border-r border-slate-300">
                                     <input

@@ -29,6 +29,9 @@ const SearchByRoot = () => {
   const [viewerItems, setViewerItems] = useState([]);
   const [resetKey, setResetKey] = useState(0); // Key to force-reset child components
 
+  // Store vendor pricing data for each part (keyed by part ID)
+  const [vendorPricingData, setVendorPricingData] = useState({});
+
   // Edit Workflow State
   const [isSaved, setIsSaved] = useState(false);
   const [docMetadata, setDocMetadata] = useState(null);
@@ -299,6 +302,8 @@ const SearchByRoot = () => {
 
   // Handle removing a part
   const handleRemovePart = (partKey) => {
+    console.log('[SearchByRoot] Removing part and vendor data for:', partKey);
+
     setSelectedParts((prevParts) =>
       prevParts.filter(
         (p) => {
@@ -308,6 +313,14 @@ const SearchByRoot = () => {
         }
       )
     );
+
+    // Also remove vendor pricing data for this part
+    setVendorPricingData((prev) => {
+      const updated = { ...prev };
+      delete updated[partKey];
+      console.log('[SearchByRoot] Vendor data after removal:', updated);
+      return updated;
+    });
   };
 
   // Handle document creation - switch to attachment tab
@@ -349,6 +362,13 @@ const SearchByRoot = () => {
 
             if (vendorPrice) {
               console.log(`[Vendor Pricing] Found price for ${partNumber}:`, vendorPrice);
+
+              // Store complete vendor pricing data for this part
+              setVendorPricingData(prev => ({
+                ...prev,
+                [uniqueId]: vendorPrice  // Store full vendor response
+              }));
+
               // Use vendor pricing data
               netPrice = parseFloat(vendorPrice.UnitPrice) || 0;
               listPrice = parseFloat(vendorPrice.ListPrice) || netPrice;
@@ -649,6 +669,7 @@ const SearchByRoot = () => {
                     isEditMode={isEditMode}
                     onEditModeChange={setIsEditMode}
                     onDocumentCreated={handleDocumentCreated}
+                    vendorPricingData={vendorPricingData}
                   />
                 </div>
               </div>
