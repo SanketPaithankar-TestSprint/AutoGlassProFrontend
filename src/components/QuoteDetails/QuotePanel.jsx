@@ -9,6 +9,7 @@ import { getAttachmentsByDocumentNumber } from "../../api/getAttachmentsByDocume
 
 import { sendEmail } from "../../api/sendEmail";
 import { extractGlassInfo } from "../carGlassViewer/carGlassHelpers";
+import { getPilkingtonPrice } from "../../api/getVendorPrices";
 import {
     generateServiceDocumentPDF,
     generatePDFFilename,
@@ -133,6 +134,16 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
         }
     });
 
+    // Debounce timer for part number changes
+    const [debounceTimers, setDebounceTimers] = useState({});
+
+    // Cleanup timers on unmount
+    useEffect(() => {
+        return () => {
+            Object.values(debounceTimers).forEach(timer => clearTimeout(timer));
+        };
+    }, [debounceTimers]);
+
     // Get Global Labor Rate from localStorage
     const globalLaborRate = useMemo(() => {
         const rate = localStorage.getItem('GlobalLaborRate');
@@ -157,11 +168,97 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
         });
     }, [parts]);
 
+    // Fetch vendor pricing for newly added parts from SearchByRoot
+    useEffect(() => {
+        const fetchVendorPricingForParts = async () => {
+            const userId = localStorage.getItem('userId');
+            if (!userId) return;
+
+            // Find parts that have nags_id but haven't been enriched with vendor pricing yet
+            const partsNeedingPricing = items.filter(item =>
+                item.type === 'Part' &&
+                item.nagsId &&
+                !item.vendorPriceFetched // Flag to prevent re-fetching
+            );
+
+            if (partsNeedingPricing.length === 0) return;
+
+            console.log('[QuotePanel] Fetching vendor pricing for', partsNeedingPricing.length, 'parts');
+
+            // Fetch pricing for each part
+            const pricingPromises = partsNeedingPricing.map(async (item) => {
+                try {
+                    // Construct part number from nagsId (which already includes feature_span)
+                    const partNumber = item.nagsId.replace(/N$/, ''); // Remove trailing N
+
+                    const vendorPrice = await getPilkingtonPrice(userId, partNumber);
+
+                    if (vendorPrice) {
+                        console.log(`[QuotePanel] Found vendor price for ${partNumber}:`, vendorPrice);
+                        return {
+                            id: item.id,
+                            unitPrice: parseFloat(vendorPrice.UnitPrice) || item.unitPrice,
+                            description: vendorPrice.Description || item.description,
+                            vendorData: {
+                                industryCode: vendorPrice.IndustryCode,
+                                availability: vendorPrice.AvailabilityToPromise,
+                                leadTime: vendorPrice.LeadTimeFormatted || vendorPrice.LeadTime,
+                                manufacturer: "Pilkington"
+                            },
+                            vendorPriceFetched: true
+                        };
+                    }
+                } catch (error) {
+                    console.error(`Error fetching vendor price for ${item.nagsId}:`, error);
+                }
+
+                return {
+                    id: item.id,
+                    vendorPriceFetched: true // Mark as attempted even if failed
+                };
+            });
+
+            const pricingResults = await Promise.all(pricingPromises);
+
+            // Update items with vendor pricing
+            setItems(prev => prev.map(item => {
+                const pricingUpdate = pricingResults.find(p => p.id === item.id);
+                if (pricingUpdate) {
+                    const updatedItem = {
+                        ...item,  // Keep all original fields including labor
+                        ...pricingUpdate  // Apply vendor pricing updates
+                    };
+                    // Recalculate amount if unitPrice changed
+                    if (pricingUpdate.unitPrice) {
+                        updatedItem.amount = (Number(updatedItem.qty) || 0) * pricingUpdate.unitPrice;
+                    }
+                    console.log('[QuotePanel] Updated item with vendor data:', updatedItem);
+                    return updatedItem;
+                }
+                return item;
+            }));
+        };
+
+        fetchVendorPricingForParts();
+    }, [items]); // Run when items change
+
+
     // Local State Deleted: Notes are now passed as props
 
     const handleDeleteItem = (id) => {
         onRemovePart?.(id);
         setItems((prev) => prev.filter((it) => it.id !== id));
+    };
+
+    // Helper function to get color based on availability
+    const getAvailabilityColor = (availability) => {
+        if (!availability) return 'text-slate-600';
+        const avail = availability.toLowerCase();
+        if (avail === 'green') return 'text-green-600';
+        if (avail === 'blue') return 'text-blue-600';
+        if (avail === 'red') return 'text-red-600';
+        if (avail === 'yellow') return 'text-yellow-600';
+        return 'text-slate-600';
     };
 
     const laborCostDisplay = items.filter(it => it.type === 'Labor').reduce((sum, it) => sum + (Number(it.amount) || 0), 0);
@@ -244,8 +341,87 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
     };
 
 
+    // Debounced handler for part number changes (onChange)
+    const handlePartNoChange = (id, partNo) => {
+        // Clear existing timer for this item
+        if (debounceTimers[id]) {
+            clearTimeout(debounceTimers[id]);
+        }
+
+        // Set new timer - call API after 800ms of no typing
+        const timer = setTimeout(() => {
+            if (partNo && partNo.trim() !== '') {
+                handlePartNoBlur(id, partNo);
+            }
+        }, 800); // Wait 800ms after user stops typing
+
+        setDebounceTimers(prev => ({
+            ...prev,
+            [id]: timer
+        }));
+    };
+
     const handlePartNoBlur = async (id, partNo) => {
+        debugger;
+
+        // Clear any pending debounce timer for this item
+        if (debounceTimers[id]) {
+            clearTimeout(debounceTimers[id]);
+            setDebounceTimers(prev => {
+                const newTimers = { ...prev };
+                delete newTimers[id];
+                return newTimers;
+            });
+        }
+
         if (!partNo) return;
+
+        const userId = localStorage.getItem('userId') || 2;
+        let vendorPrice = null;
+
+        // Try to fetch vendor pricing first
+        if (userId) {
+            try {
+                // Remove trailing 'N' from part number for vendor API
+                const normalizedPartNo = partNo.replace(/N$/, '');
+
+                vendorPrice = await getPilkingtonPrice(userId, normalizedPartNo);
+
+                if (vendorPrice) {
+                    console.log(`[QuotePanel] Found vendor price for ${normalizedPartNo}:`, vendorPrice);
+
+                    setItems(prev => prev.map(it => {
+                        if (it.id === id) {
+                            const unitPrice = parseFloat(vendorPrice.UnitPrice) || 0;
+                            const listPrice = parseFloat(vendorPrice.ListPrice) || unitPrice;
+
+                            return {
+                                ...it,
+                                description: vendorPrice.Description || it.description,
+                                manufacturer: "Pilkington",
+                                listPrice: listPrice,
+                                unitPrice: unitPrice,
+                                amount: (Number(it.qty) || 0) * unitPrice,
+                                vendorData: {
+                                    industryCode: vendorPrice.IndustryCode,
+                                    availability: vendorPrice.AvailabilityToPromise,
+                                    leadTime: vendorPrice.LeadTimeFormatted || vendorPrice.LeadTime,
+                                    manufacturer: "Pilkington"
+                                },
+                                vendorPriceFetched: true
+                            };
+                        }
+                        return it;
+                    }));
+
+                    return; // Exit early if vendor price found
+                }
+            } catch (error) {
+                console.error("Error fetching vendor price:", error);
+            }
+        }
+
+        // Fallback to glass-info API if vendor pricing not available
         try {
             const res = await fetch(`https://api.autopaneai.com/agp/v1/glass-info?nags_glass_id=${partNo}`);
             // If 404 or other error, just ignore or log
@@ -681,20 +857,48 @@ Auto Glass Pro Team`;
                         {items.map((it) => (
                             <tr key={it.id} className="hover:bg-slate-50 transition group">
                                 <td className="px-1 py-0.5 border-r border-slate-300">
-                                    <input
-                                        value={it.type === 'Labor' ? "LABOR" : it.nagsId}
-                                        onChange={(e) => it.type !== 'Labor' && updateItem(it.id, "nagsId", e.target.value)}
-                                        onBlur={(e) => it.type !== 'Labor' && handlePartNoBlur(it.id, e.target.value)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' && it.type !== 'Labor') {
-                                                handlePartNoBlur(it.id, e.currentTarget.value);
-                                                e.currentTarget.blur();
-                                            }
-                                        }}
-                                        className={`w-full h-5 rounded px-1 text-sm outline-none focus:bg-white bg-transparent ${it.type === 'Labor' ? 'text-slate-500' : 'text-slate-900 font-medium'}`}
-                                        placeholder="Part No"
-                                        disabled={it.type === 'Labor'}
-                                    />
+                                    <div className="flex flex-col gap-0.5">
+                                        <input
+                                            value={it.type === 'Labor' ? "LABOR" : it.nagsId}
+                                            onChange={(e) => {
+                                                if (it.type !== 'Labor') {
+                                                    updateItem(it.id, "nagsId", e.target.value);
+                                                    handlePartNoChange(it.id, e.target.value);
+                                                }
+                                            }}
+                                            onBlur={(e) => it.type !== 'Labor' && handlePartNoBlur(it.id, e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' && it.type !== 'Labor') {
+                                                    handlePartNoBlur(it.id, e.currentTarget.value);
+                                                    e.currentTarget.blur();
+                                                }
+                                            }}
+                                            className={`w-full h-5 rounded px-1 text-sm outline-none focus:bg-white bg-transparent ${it.type === 'Labor' ? 'text-slate-500' : 'text-slate-900 font-medium'}`}
+                                            placeholder="Part No"
+                                            disabled={it.type === 'Labor'}
+                                        />
+                                        {/* Vendor Information Display */}
+                                        {console.log('[QuotePanel Render] Item:', it.id, 'vendorData:', it.vendorData)}
+
+                                        {/* Debug: Show for all parts */}
+                                        {it.type !== 'Labor' && (
+                                            <div className="text-[9px] text-purple-600 mt-0.5">
+                                                {it.vendorData ? '✓ Has vendor data' : '✗ No vendor data'}
+                                            </div>
+                                        )}
+
+                                        {it.vendorData && it.type !== 'Labor' && (
+                                            <div className="text-[10px] leading-tight mt-1 px-1 bg-blue-50 rounded">
+                                                <div className={`font-semibold ${getAvailabilityColor(it.vendorData.availability)}`}>
+                                                    {it.vendorData.industryCode || 'No Industry Code'}
+                                                </div>
+                                                <div className="text-slate-500">
+                                                    {it.vendorData.leadTime && `${it.vendorData.leadTime} • `}
+                                                    {it.vendorData.manufacturer || 'Unknown'}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
                                 </td>
                                 <td className="px-1 py-0.5 border-r border-slate-300">
                                     <input

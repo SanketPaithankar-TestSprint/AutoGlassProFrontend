@@ -15,6 +15,7 @@ import { getAttachmentsByDocumentNumber } from "../../api/getAttachmentsByDocume
 import { resolveVinModel } from "../../api/resolveVinModel";
 import { getBodyTypes } from "../../api/getModels";
 import { extractDoorCount, selectBodyTypeByDoors } from "../../utils/vinHelpers";
+import { getPilkingtonPrice } from "../../api/getVendorPrices";
 
 const SearchByRoot = () => {
   const [vinData, setVinData] = useState(null);
@@ -329,32 +330,68 @@ const SearchByRoot = () => {
 
         let listPrice, netPrice, description, labor, manufacturer, ta;
 
-        if (hasNewFormat) {
-          // Use data directly from new API response
-          listPrice = p.part.list_price || 0;
-          netPrice = p.part.list_price || 0; // Use list_price as net price
-          labor = p.part.labor || 0;
-          ta = p.part.feature_span || "";
-          description = p.part.part_description || "Glass Part";
-          manufacturer = ""; // Not provided in new API
-        } else {
-          // Old format: fetch additional glass info
-          let rawInfo = p.glassInfo;
-          if (!rawInfo && nagsId) {
-            try {
-              const res = await fetch(`${config.pythonApiUrl}agp/v1/glass-info?nags_glass_id=${nagsId}`);
-              if (res.ok) rawInfo = await res.json();
-            } catch (err) { console.error("Failed to fetch glass info", err); }
-          }
+        // Try to fetch vendor pricing first
+        const userId = localStorage.getItem('userId') || 2;
+        let vendorPrice = null;
 
-          // Use helper to extract data (prioritizing Pilkington)
-          const extracted = extractGlassInfo(rawInfo, p.part.part_description);
-          listPrice = extracted.listPrice;
-          netPrice = extracted.netPrice;
-          description = extracted.description;
-          labor = extracted.labor;
-          manufacturer = extracted.manufacturer;
-          ta = extracted.ta;
+        if (userId && nagsId) {
+          try {
+            // Construct part number with feature span if available
+            let partNumber = p.part.feature_span
+              ? `${nagsId} ${p.part.feature_span}`.trim()
+              : nagsId;
+
+            // Remove trailing 'N' from the part number for vendor API
+            // Example: "FD28887 GTYN" becomes "FD28887 GTY"
+            partNumber = partNumber.replace(/N$/, '');
+
+            vendorPrice = await getPilkingtonPrice(userId, partNumber);
+
+            if (vendorPrice) {
+              console.log(`[Vendor Pricing] Found price for ${partNumber}:`, vendorPrice);
+              // Use vendor pricing data
+              netPrice = parseFloat(vendorPrice.UnitPrice) || 0;
+              listPrice = parseFloat(vendorPrice.ListPrice) || netPrice;
+              description = vendorPrice.Description || p.part.part_description || "Glass Part";
+              // Keep labor and ta from existing data
+              labor = p.part.labor || 0;
+              ta = p.part.feature_span || "";
+              manufacturer = "Pilkington";
+            }
+          } catch (err) {
+            console.error("Failed to fetch vendor price:", err);
+          }
+        }
+
+        // If no vendor price found, use existing logic
+        if (!vendorPrice) {
+          if (hasNewFormat) {
+            // Use data directly from new API response
+            listPrice = p.part.list_price || 0;
+            netPrice = p.part.list_price || 0; // Use list_price as net price
+            labor = p.part.labor || 0;
+            ta = p.part.feature_span || "";
+            description = p.part.part_description || "Glass Part";
+            manufacturer = ""; // Not provided in new API
+          } else {
+            // Old format: fetch additional glass info
+            let rawInfo = p.glassInfo;
+            if (!rawInfo && nagsId) {
+              try {
+                const res = await fetch(`${config.pythonApiUrl}agp/v1/glass-info?nags_glass_id=${nagsId}`);
+                if (res.ok) rawInfo = await res.json();
+              } catch (err) { console.error("Failed to fetch glass info", err); }
+            }
+
+            // Use helper to extract data (prioritizing Pilkington)
+            const extracted = extractGlassInfo(rawInfo, p.part.part_description);
+            listPrice = extracted.listPrice;
+            netPrice = extracted.netPrice;
+            description = extracted.description;
+            labor = extracted.labor;
+            manufacturer = extracted.manufacturer;
+            ta = extracted.ta;
+          }
         }
 
         const items = [];

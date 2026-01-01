@@ -50,7 +50,9 @@ const DistributorCredentials = () => {
         form.setFieldsValue({
             distributorName: credential.distributorName,
             username: credential.username,
-            password: "" // Don't populate password for security
+            password: "", // Don't populate password for security
+            agentId: credential.agentId || "",
+            accountNumber: credential.accountNumber || ""
         });
         setIsModalVisible(true);
     };
@@ -152,6 +154,8 @@ const DistributorCredentials = () => {
                                     <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Distributor</th>
                                     <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Username</th>
                                     <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Password</th>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Agent ID</th>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Account Number</th>
                                     <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
@@ -177,6 +181,12 @@ const DistributorCredentials = () => {
                                                     {showPasswords[cred.id] ? <EyeInvisibleOutlined /> : <EyeOutlined />}
                                                 </button>
                                             </div>
+                                        </td>
+                                        <td className="p-4 text-sm text-gray-600 font-mono">
+                                            {cred.agentId || "-"}
+                                        </td>
+                                        <td className="p-4 text-sm text-gray-600 font-mono">
+                                            {cred.accountNumber || "-"}
                                         </td>
                                         <td className="p-4 text-sm">
                                             <div className="flex items-center gap-2">
@@ -270,6 +280,36 @@ const DistributorCredentials = () => {
                             placeholder="Enter password"
                             size="large"
                             autoComplete="new-password"
+                        />
+                    </Form.Item>
+
+                    <Form.Item
+                        name="agentId"
+                        label="Agent ID"
+                        rules={[
+                            { required: true, message: "Please enter the agent ID" },
+                            { max: 100, message: "Agent ID is too long" }
+                        ]}
+                    >
+                        <Input
+                            placeholder="Enter agent ID"
+                            size="large"
+                            autoComplete="off"
+                        />
+                    </Form.Item>
+
+                    <Form.Item
+                        name="accountNumber"
+                        label="Account Number"
+                        rules={[
+                            { required: true, message: "Please enter the account number" },
+                            { max: 100, message: "Account number is too long" }
+                        ]}
+                    >
+                        <Input
+                            placeholder="Enter account number"
+                            size="large"
+                            autoComplete="off"
                         />
                     </Form.Item>
                 </Form>
