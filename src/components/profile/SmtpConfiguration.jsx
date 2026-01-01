@@ -91,7 +91,7 @@ const SmtpConfiguration = () => {
         try {
             if (editingConfig) {
                 // Update existing
-                await updateSmtpConfig(editingConfig.configId, values);
+                await updateSmtpConfig(editingConfig.id, values);
                 message.success("SMTP configuration updated");
             } else {
                 // Create new
@@ -158,8 +158,8 @@ const SmtpConfiguration = () => {
                         type="text"
                         size="small"
                         icon={<ThunderboltOutlined />}
-                        onClick={() => handleTest(record.configId)}
-                        loading={testingId === record.configId}
+                        onClick={() => handleTest(record.id)}
+                        loading={testingId === record.id}
                     >
                         Test
                     </Button>
@@ -171,7 +171,7 @@ const SmtpConfiguration = () => {
                     />
                     <Popconfirm
                         title="Delete this configuration?"
-                        onConfirm={() => handleDelete(record.configId)}
+                        onConfirm={() => handleDelete(record.id)}
                         okText="Yes"
                         cancelText="No"
                     >
@@ -206,7 +206,7 @@ const SmtpConfiguration = () => {
             <Table
                 dataSource={configs}
                 columns={columns}
-                rowKey="configId"
+                rowKey="id"
                 loading={loading}
                 pagination={false}
                 bordered

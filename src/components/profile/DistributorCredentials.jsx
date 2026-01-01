@@ -16,7 +16,6 @@ const DistributorCredentials = () => {
     const [showPasswords, setShowPasswords] = useState({});
 
     const [form] = Form.useForm();
-    const token = getValidToken();
 
     useEffect(() => {
         fetchCredentials();
@@ -25,6 +24,7 @@ const DistributorCredentials = () => {
     const fetchCredentials = async () => {
         setLoading(true);
         try {
+            const token = getValidToken(); // Get fresh token
             if (!token) throw new Error("No token found. Please login.");
             const res = await getDistributorCredentials(token);
             setCredentials(res);
@@ -60,6 +60,7 @@ const DistributorCredentials = () => {
             const values = await form.validateFields();
             setSaving(true);
 
+            const token = getValidToken(); // Get fresh token
             if (!token) throw new Error("No token found");
 
             // If editing and password is empty, remove it from the payload
@@ -92,6 +93,7 @@ const DistributorCredentials = () => {
 
     const handleDelete = async (credentialId) => {
         try {
+            const token = getValidToken(); // Get fresh token
             if (!token) throw new Error("No token found");
             await deleteDistributorCredential(token, credentialId);
             notification.success({ message: "Credential deleted successfully" });
