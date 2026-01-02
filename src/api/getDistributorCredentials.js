@@ -21,7 +21,9 @@ export async function getDistributorCredentials(token) {
             throw new Error(`Error: ${response.status}`);
         }
 
-        const credentials = await response.json();
+        const result = await response.json();
+        // Handle new response structure with data field
+        const credentials = result.data || result;
         return Array.isArray(credentials) ? credentials : [];
     } catch (error) {
         console.error("Failed to fetch distributor credentials:", error);

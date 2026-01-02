@@ -166,27 +166,42 @@ const DistributorCredentials = () => {
                                             {cred.distributorName}
                                         </td>
                                         <td className="p-4 text-sm text-gray-600 font-mono">
-                                            {cred.username}
+                                            {cred.usernameMasked || cred.username || "-"}
                                         </td>
                                         <td className="p-4 text-sm text-gray-600">
                                             <div className="flex items-center gap-2">
-                                                <span className="font-mono">
-                                                    {showPasswords[cred.id] ? (cred.password || "••••••••") : "••••••••"}
-                                                </span>
-                                                <button
-                                                    onClick={() => togglePasswordVisibility(cred.id)}
-                                                    className="text-gray-400 hover:text-gray-600 transition-colors"
-                                                    title={showPasswords[cred.id] ? "Hide password" : "Show password"}
-                                                >
-                                                    {showPasswords[cred.id] ? <EyeInvisibleOutlined /> : <EyeOutlined />}
-                                                </button>
+                                                {cred.hasPassword ? (
+                                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                        ✓ Set
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                                        Not Set
+                                                    </span>
+                                                )}
                                             </div>
                                         </td>
-                                        <td className="p-4 text-sm text-gray-600 font-mono">
-                                            {cred.agentId || "-"}
+                                        <td className="p-4 text-sm text-gray-600">
+                                            {cred.hasAgentId ? (
+                                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    ✓ Set
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                                    Not Set
+                                                </span>
+                                            )}
                                         </td>
-                                        <td className="p-4 text-sm text-gray-600 font-mono">
-                                            {cred.accountNumber || "-"}
+                                        <td className="p-4 text-sm text-gray-600">
+                                            {cred.hasAccountNumber ? (
+                                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    ✓ Set
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                                    Not Set
+                                                </span>
+                                            )}
                                         </td>
                                         <td className="p-4 text-sm">
                                             <div className="flex items-center gap-2">
