@@ -283,7 +283,7 @@ const SearchByRoot = () => {
       vehicleMake: info.make || prev.vehicleMake,
       vehicleModel: info.model || prev.vehicleModel,
       vehicleStyle: info.description || prev.vehicleStyle, // Use description for style if available
-      bodyType: info.bodyType || prev.bodyType, // Add bodyType field
+      bodyType: info.bodyType || prev.bodyType, // Use bodyType description for display and storage
     }));
   };
 
@@ -347,6 +347,9 @@ const SearchByRoot = () => {
         const userId = localStorage.getItem('userId') || 2;
         let vendorPrice = null;
 
+        // Preserve NAGS list_price if available (from new API format)
+        const nagsListPrice = p.part.list_price || 0;
+
         if (userId && nagsId) {
           try {
             // Construct part number with feature span if available
@@ -369,14 +372,15 @@ const SearchByRoot = () => {
                 [uniqueId]: vendorPrice  // Store full vendor response
               }));
 
-              // Use vendor pricing data
+              // Use vendor NetPrice for amount, but preserve NAGS list_price for List column
               netPrice = parseFloat(vendorPrice.UnitPrice) || 0;
-              listPrice = parseFloat(vendorPrice.ListPrice) || netPrice;
+              listPrice = nagsListPrice || parseFloat(vendorPrice.ListPrice) || netPrice;
               description = vendorPrice.Description || p.part.part_description || "Glass Part";
               // Keep labor and ta from existing data
               labor = p.part.labor || 0;
               ta = p.part.feature_span || "";
               manufacturer = "Pilkington";
+              console.log(`[Vendor Pricing] Using NAGS list_price: ${listPrice}, Vendor NetPrice: ${netPrice}`);
             }
           } catch (err) {
             console.error("Failed to fetch vendor price:", err);
@@ -393,6 +397,7 @@ const SearchByRoot = () => {
             ta = p.part.feature_span || "";
             description = p.part.part_description || "Glass Part";
             manufacturer = ""; // Not provided in new API
+            console.log(`[Glass Parts API] Using list_price: ${listPrice} for part ${nagsId}`);
           } else {
             // Old format: fetch additional glass info
             let rawInfo = p.glassInfo;
@@ -418,7 +423,7 @@ const SearchByRoot = () => {
         // Part Item
         const fullPartNumber = `${nagsId || ""}${ta ? " " + ta : ""}`.trim();
 
-        items.push({
+        const partItem = {
           type: "Part", id: uniqueId,
           prefixCd: getPrefixCd(p.glass), posCd: getPosCd(p.glass), sideCd: getSideCd(p.glass),
           nagsId: fullPartNumber, oemId: oemId || "",
@@ -426,7 +431,9 @@ const SearchByRoot = () => {
           manufacturer: manufacturer, qty: 1,
           listPrice: listPrice,
           unitPrice: netPrice, amount: netPrice
-        });
+        };
+        console.log(`[Item Created] Part ${fullPartNumber} with listPrice: ${listPrice}`, partItem);
+        items.push(partItem);
 
         // Labor Item
         if (Number(labor) > 0) {

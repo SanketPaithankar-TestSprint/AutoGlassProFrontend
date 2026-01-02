@@ -250,7 +250,11 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
         setItems((prev) => prev.filter((it) => it.id !== id));
     };
 
-    const laborCostDisplay = items.filter(it => it.type === 'Labor').reduce((sum, it) => sum + (Number(it.amount) || 0), 0);
+
+    const laborCostDisplay = useMemo(() =>
+        items.filter(it => it.type === 'Labor').reduce((sum, it) => sum + (Number(it.amount) || 0), 0),
+        [items]
+    );
 
     const [globalTaxRate, setGlobalTaxRate] = useState(0);
 
@@ -474,6 +478,7 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
             subtotal,
             totalTax,
             totalHours,
+            laborAmount: laborCostDisplay,
             discountAmount,
             total,
             balance,
@@ -636,6 +641,10 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
                 vehicleNotes: ""
             };
 
+            // Debug: Log bodyType value
+            console.log("[QuotePanel] customerData.bodyType:", customerData.bodyType);
+            console.log("[QuotePanel] customerWithVehicle.bodyType:", customerWithVehicle.bodyType);
+
             const serviceDocument = {
                 documentType: currentDocType.toLowerCase().replace(" ", "") === "workorder" ? "invoice" : currentDocType.toLowerCase(),
                 employeeId: 0,
@@ -670,31 +679,25 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
             const files = attachments.map(a => a.file);
             console.log("Files to upload:", files.length, files);
 
-            let response;
-            if (isSaved && docMetadata && docMetadata.documentNumber) {
-                console.log("Updating Composite Document:", docMetadata.documentNumber);
-                response = await updateCompositeServiceDocument(docMetadata.documentNumber, compositePayload, files);
-                message.success("Service Document Updated Successfully!");
+            // Always create a new document (never update)
+            console.log("Creating new document with", files.length, "files");
+            const response = await createCompositeServiceDocument(compositePayload, files);
+            const createdDocNumber = response.serviceDocument?.documentNumber;
 
-                // Navigate to open page after update
+            if (createdDocNumber) {
+                message.success(`Service Document Created Successfully! Document #: ${createdDocNumber}`);
+
+                // Navigate to open page after creation
                 setTimeout(() => {
                     navigate('/open');
                 }, 1000);
             } else {
-                console.log("Creating new document with", files.length, "files");
-                response = await createCompositeServiceDocument(compositePayload, files);
-                const createdDocNumber = response.serviceDocument?.documentNumber;
+                message.success("Service Document Created Successfully!");
 
-                if (createdDocNumber) {
-                    message.success(`Service Document Created Successfully! Document #: ${createdDocNumber}`);
-
-                    // Call callback to switch to attachment tab
-                    if (onDocumentCreated) {
-                        onDocumentCreated(createdDocNumber);
-                    }
-                } else {
-                    message.success("Service Document Created Successfully!");
-                }
+                // Navigate to open page even without document number
+                setTimeout(() => {
+                    navigate('/open');
+                }, 1000);
             }
 
         } catch (err) {

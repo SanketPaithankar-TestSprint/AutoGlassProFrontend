@@ -5,7 +5,7 @@ import { updateDistributorCredential } from "../../api/updateDistributorCredenti
 import { deleteDistributorCredential } from "../../api/deleteDistributorCredential";
 import { getValidToken } from "../../api/getValidToken";
 import { KeyOutlined, PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
-import { Modal, Form, Input, Button, notification, Popconfirm } from "antd";
+import { Modal, Form, Input, Button, notification, Popconfirm, Select } from "antd";
 
 const DistributorCredentials = () => {
     const [credentials, setCredentials] = useState([]);
@@ -258,13 +258,15 @@ const DistributorCredentials = () => {
                         name="distributorName"
                         label="Distributor Name"
                         rules={[
-                            { required: true, message: "Please enter the distributor name" },
-                            { max: 100, message: "Distributor name is too long" }
+                            { required: true, message: "Please select the distributor name" }
                         ]}
                     >
-                        <Input
-                            placeholder="e.g., Pilkington, Safelite, etc."
+                        <Select
+                            placeholder="Select a distributor"
                             size="large"
+                            options={[
+                                { label: "Pilkington", value: "Pilkington" }
+                            ]}
                         />
                     </Form.Item>
 

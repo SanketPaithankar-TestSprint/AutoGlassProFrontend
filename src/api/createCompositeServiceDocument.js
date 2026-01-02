@@ -53,7 +53,14 @@ export const createCompositeServiceDocument = async (data, file) => {
             throw new Error(`Failed to create composite service document: ${response.status} ${errorText}`);
         }
 
-        return await response.json();
+        const result = await response.json();
+
+        // Save userId to localStorage if it doesn't already exist
+        if (result.userId && !localStorage.getItem('userId')) {
+            localStorage.setItem('userId', result.userId.toString());
+            }
+
+        return result;
     } catch (error) {
         console.error("Error creating composite service document:", error);
         throw error;

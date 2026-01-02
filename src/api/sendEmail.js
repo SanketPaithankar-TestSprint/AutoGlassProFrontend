@@ -1,8 +1,7 @@
 import config from "../config";
-import { getActiveSmtpConfig } from "./getActiveSmtpConfig";
 
 /**
- * Sends an email with an optional attachment using SMTP configuration.
+ * Sends an email with an optional attachment.
  * 
  * @param {string} email - Recipient email address
  * @param {string} subject - Email subject
@@ -12,29 +11,24 @@ import { getActiveSmtpConfig } from "./getActiveSmtpConfig";
  */
 export const sendEmail = async (email, subject, body, file) => {
     try {
-        // Get active SMTP configuration
-        const smtpConfig = await getActiveSmtpConfig();
+        // Get userId from localStorage, fallback to 1 if not found
+        const userId = localStorage.getItem('userId') || '1';
 
-        if (!smtpConfig) {
-            throw new Error("No active SMTP configuration found. Please configure SMTP in your profile settings.");
-        }
-
-        // Build FormData with email content and SMTP credentials
+        // Build FormData with email content
         const formData = new FormData();
+        formData.append("user_id", userId);
         formData.append("email", email);
         formData.append("subject", subject);
         formData.append("body", body);
 
-        // Add SMTP configuration parameters
-        formData.append("smtp_host", smtpConfig.host);
-        formData.append("smtp_port", smtpConfig.port.toString());
-        formData.append("smtp_username", smtpConfig.username);
-        formData.append("smtp_password", smtpConfig.password);
-        formData.append("from_email", smtpConfig.fromEmail);
-
+        // Add file if provided, otherwise send empty file parameter
         if (file) {
             formData.append("file", file);
+        } else {
+            formData.append("file", "");
         }
+
+        console.log("[sendEmail] Sending email to:", email, "with subject:", subject);
 
         // Use external API endpoint
         const response = await fetch("https://api.autopaneai.com/agp/v1/send-email", {
@@ -51,7 +45,9 @@ export const sendEmail = async (email, subject, body, file) => {
             throw new Error(`Email send failed: ${response.status} - ${errorText}`);
         }
 
-        return await response.json();
+        const result = await response.json();
+        console.log("[sendEmail] Email sent successfully:", result);
+        return result;
     } catch (error) {
         console.error("Error sending email:", error);
         throw error;

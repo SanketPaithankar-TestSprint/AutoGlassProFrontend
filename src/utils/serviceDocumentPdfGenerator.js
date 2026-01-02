@@ -24,6 +24,7 @@ function currency(n) {
  * @param {number} params.subtotal - Subtotal amount
  * @param {number} params.totalTax - Tax amount
  * @param {number} params.totalHours - Total labor hours
+ * @param {number} params.laborAmount - Total labor amount (sum of all labor items)
  * @param {number} params.discountAmount - Discount amount
  * @param {number} params.total - Grand total
  * @param {number} params.balance - Balance due
@@ -39,6 +40,7 @@ export function generateServiceDocumentPDF({
     subtotal = 0,
     totalTax = 0,
     totalHours = 0,
+    laborAmount = 0,
     discountAmount = 0,
     total = 0,
     balance = 0,
@@ -343,9 +345,9 @@ export function generateServiceDocumentPDF({
 
     // Lines for totals
     const tRowH = 20;
-    // Labor
+    // Labor - use actual labor amount sum, not recalculated
     doc.text("Labor", totalsX + 4, totalBoxY + 12);
-    doc.text(totalHours > 0 ? (totalHours * 65).toFixed(2) : "0.00", totalsX + 125, totalBoxY + 12, { align: "right" });
+    doc.text(laborAmount > 0 ? laborAmount.toFixed(2) : "0.00", totalsX + 125, totalBoxY + 12, { align: "right" });
 
     // Subtotal
     doc.text("Subtotal", totalsX + 4, totalBoxY + 28);
