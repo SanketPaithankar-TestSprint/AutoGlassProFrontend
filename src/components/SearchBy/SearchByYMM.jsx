@@ -284,16 +284,22 @@ export default function SearchByYMM({
 
       // Step 2: Notify parent components with the vehicle info
       onModelIdFetched?.(mId);
-      onVehicleInfoUpdate?.(({
+
+      // Find the selected body type description
+      const selectedBodyType = bodyTypes.find(bt => bt.body_style_id === bodyType);
+      const bodyTypeDescription = selectedBodyType ? selectedBodyType.desc : String(bodyType);
+
+      onVehicleInfoUpdate?.({
         year,
         make,
         model,
-        bodyType,
+        bodyType: bodyTypeDescription, // Pass the description instead of ID
+        bodyTypeId: bodyType, // Keep the ID for reference
         veh_id: vId,
         model_id: mId,
         image: vehicleData?.image || null,
         description: vehicleData?.description || null
-      }));
+      });
 
       message.success(`Vehicle found: ${vehicleData?.description || 'Success'}`);
     } catch (error) {

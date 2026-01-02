@@ -203,7 +203,7 @@ export function generateServiceDocumentPDF({
 
     doc.rect(margin + 140, vY2, 40, vRowH);
     doc.text("Body\nStyle", margin + 142, vY2 + 8, { lineHeightFactor: 1 });
-    doc.rect(margin + 180, vY2, 180, vRowH); doc.text(customerData?.vehicleStyle || "", margin + 185, vY2 + 14);
+    doc.rect(margin + 180, vY2, 180, vRowH); doc.text(String(customerData?.bodyType || ""), margin + 185, vY2 + 14);
 
     doc.rect(margin + 360, vY2, 40, vRowH); doc.text("Author-\nized by", margin + 362, vY2 + 8, { lineHeightFactor: 1 });
     doc.rect(margin + 400, vY2, 140, vRowH);
@@ -273,12 +273,11 @@ export function generateServiceDocumentPDF({
     const tableY = insuranceY + 10;
     autoTable(doc, {
         startY: tableY,
-        head: [["Qty", "Part #", "Description", "Block Size", "List", "Price", "Total"]],
+        head: [["Qty", "Part #", "Description", "List", "Price", "Total"]],
         body: items.map((it) => [
             String(Number(it.qty) || 0),
             it.nagsId || it.oemId || "-",
             it.description || "-",
-            "0 x 0", // Block Size dummy
             (Number(it.unitPrice) || 0).toFixed(2), // List
             (Number(it.unitPrice) || 0).toFixed(2), // Price
             (Number(it.amount) || 0).toFixed(2)     // Total
@@ -304,9 +303,9 @@ export function generateServiceDocumentPDF({
             0: { halign: "center", cellWidth: 30 },
             1: { cellWidth: 90 },
             2: { cellWidth: 200 },
+            3: { halign: "right" },
             4: { halign: "right" },
-            5: { halign: "right" },
-            6: { halign: "right" }
+            5: { halign: "right" }
         },
         margin: { left: margin, right: margin },
         didDrawPage: (data) => {

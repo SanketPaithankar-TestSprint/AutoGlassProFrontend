@@ -152,7 +152,7 @@ const SearchByRoot = () => {
               type: 'Labor',
               nagsId: "",
               oemId: "",
-              description: `Installation Labor`,
+              description: `${item.laborHours || 0} hours`,
               manufacturer: "",
               qty: 1,
               unitPrice: item.laborRate || 0, // Assuming laborRate is the total labor cost for this item
@@ -434,7 +434,7 @@ const SearchByRoot = () => {
           items.push({
             type: "Labor", id: `${uniqueId}_LABOR`,
             nagsId: "", oemId: "", labor: labor,
-            description: "Installation Labor", manufacturer: "", qty: 1,
+            description: `${labor} hours`, manufacturer: "", qty: 1,
             unitPrice: globalLaborRate, amount: globalLaborRate, pricingType: "hourly"
           });
         }
@@ -460,6 +460,7 @@ const SearchByRoot = () => {
         setSelectedParts([]);
         setPrintableNote("");
         setInternalNote("");
+        setSpecialInstructions("");
         setInsuranceData({});
         setIncludeInsurance(false);
         setAttachments([]);
@@ -471,6 +472,7 @@ const SearchByRoot = () => {
         setVehicleInfo({});
         setVinData(null);
         setModelId(null);
+        setVendorPricingData({}); // Clear vendor pricing data
         setResetKey(prev => prev + 1); // Force remount of search components
         setActiveTab('quote');
         setIsSaved(false);
@@ -485,6 +487,7 @@ const SearchByRoot = () => {
   // Lifted Notes State
   const [printableNote, setPrintableNote] = useState("");
   const [internalNote, setInternalNote] = useState("");
+  const [specialInstructions, setSpecialInstructions] = useState("");
 
   // Lifted Insurance & Attachment State
   const [insuranceData, setInsuranceData] = useState({});
@@ -646,6 +649,16 @@ const SearchByRoot = () => {
                       onChange={(e) => setInternalNote(e.target.value)}
                       className="w-full rounded border border-slate-300 p-2 text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none bg-yellow-50"
                       placeholder="Internal notes for office use only..."
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700">Special Instructions</label>
+                    <textarea
+                      rows={6}
+                      value={specialInstructions}
+                      onChange={(e) => setSpecialInstructions(e.target.value)}
+                      className="w-full rounded border border-slate-300 p-2 text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none bg-yellow-50"
+                      placeholder="Special are from the shop that will inculded in the bottom of the pdf quote/invoice..."
                     />
                   </div>
                 </div>
