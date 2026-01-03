@@ -30,6 +30,36 @@ export const getModels = async (year, make) => {
     }
 };
 
+
+/**
+ * Fetch available makes for a given year
+ * @param {number|string} year - Vehicle year
+ * @returns {Promise<{makes: Array<{make_id: number, abbrev: string, name: string}>}>} - Array of makes
+ */
+export const getMakes = async (year) => {
+    const baseUrl = urls.pythonApiUrl + "agp/v1/model-lookup";
+    const url = `${baseUrl}?year=${year}`;
+
+    try {
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                accept: "application/json",
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error("Failed to fetch makes:", error);
+        throw error;
+    }
+};
+
 /**
  * Fetch available body types for a given year, make, and model
  * @param {number|string} year - Vehicle year

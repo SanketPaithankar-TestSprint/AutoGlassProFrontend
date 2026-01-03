@@ -12,6 +12,7 @@ import SmtpConfiguration from "./SmtpConfiguration";
 import LaborRateConfiguration from "./LaborRateConfiguration";
 import TaxRateConfiguration from "./TaxRateConfiguration";
 import DistributorCredentials from "./DistributorCredentials";
+import UserKitPricePage from "./UserKitPricePage";
 
 const Profile = () => {
     const [activeTab, setActiveTab] = useState('profile');
@@ -479,6 +480,7 @@ const Profile = () => {
                         {renderMenuItem('laborRate', 'Labor Rate', <DollarOutlined />)}
                         {renderMenuItem('taxRates', 'Tax Rates', <PercentageOutlined />)}
                         {renderMenuItem('smtp', 'Email (SMTP)', <ThunderboltOutlined />)}
+                        {renderMenuItem('userKitPrice', 'User Kit Price', <DollarOutlined />)}
                     </div>
                 </div>
             </div>
@@ -493,6 +495,7 @@ const Profile = () => {
                     {activeTab === 'laborRate' && <LaborRateConfiguration />}
                     {activeTab === 'taxRates' && <TaxRateConfiguration />}
                     {activeTab === 'smtp' && <SmtpConfiguration />}
+                    {activeTab === 'userKitPrice' && <UserKitPricePage />}
                 </div>
             </div>
         </div>

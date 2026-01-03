@@ -153,19 +153,28 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
 
     useEffect(() => {
         setItems((prevItems) => {
-            // Deduplicate: Only keep manual items that are NOT in the incoming parts list
-            const incomingIds = new Set(parts.map(p => p.id));
-            const currentManualItems = prevItems.filter(it => it.isManual && !incomingIds.has(it.id));
+            const incomingPartIds = new Set(parts.map(p => p.id));
 
-            // Enrich parts with default description for Labor if missing
-            const enrichedParts = parts.map(p => {
+            // Map existing items by ID for easy lookup
+            const existingItemsMap = new Map(prevItems.map(it => [it.id, it]));
+
+            const mergedParts = parts.map(p => {
+                // If we already have this part in state, return the STATE version (preserves edits/prices)
+                if (existingItemsMap.has(p.id)) {
+                    return existingItemsMap.get(p.id);
+                }
+
+                // Otherwise, it's a new part. Enrich it.
                 if (p.type === 'Labor' && !p.description) {
                     return { ...p, description: `Labor ${p.labor || 0} hours` };
                 }
                 return p;
             });
 
-            return [...enrichedParts, ...currentManualItems];
+            // Deduplicate: Only keep manual items that are NOT in the incoming parts list
+            const currentManualItems = prevItems.filter(it => it.isManual && !incomingPartIds.has(it.id));
+
+            return [...mergedParts, ...currentManualItems];
         });
     }, [parts]);
 
@@ -372,6 +381,35 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
         const userId = localStorage.getItem('userId') || 2;
         let vendorPrice = null;
 
+        // 0. Check Local Storage for User Kit Price Match
+        try {
+            const savedKitPrices = localStorage.getItem("user_kit_prices");
+            if (savedKitPrices) {
+                const kitPrices = JSON.parse(savedKitPrices);
+                const matchedKit = kitPrices.find(k => k.kitCode === partNo);
+
+                if (matchedKit) {
+                    console.log(`[QuotePanel] Found user kit price for ${partNo}:`, matchedKit.kitPrice);
+                    setItems(prev => prev.map(it => {
+                        if (it.id === id) {
+                            return {
+                                ...it,
+                                type: "Kit",
+                                description: "Kit Price Applied", // Or keep existing if preferred, but user didn't specify
+                                unitPrice: matchedKit.kitPrice,
+                                amount: (Number(it.qty) || 0) * matchedKit.kitPrice,
+                                pricingType: "fixed" // Mark as fixed so it might not be overridden easily? (logic depends on other parts but this is safe)
+                            };
+                        }
+                        return it;
+                    }));
+                    return; // EXIT EARLY: Do not fetch vendor or glass info
+                }
+            }
+        } catch (e) {
+            console.error("Error checking user kit prices", e);
+        }
+
         // Try to fetch vendor pricing first
         if (userId) {
             try {
@@ -577,9 +615,10 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
 
             const serviceDocumentItems = [];
             items.forEach(it => {
-                if (it.type === 'Part') {
+                if (it.type === 'Part' || it.type === 'Kit') {
                     serviceDocumentItems.push({
-                        itemType: 'part',
+                        partId: it.originalPartId || null, // Include partId for existing items
+                        itemType: it.type === 'Kit' ? 'kit' : 'part',
                         nagsGlassId: it.nagsId || "",
                         oemGlassId: it.oemId || "",
                         partDescription: it.description || "",
@@ -590,7 +629,7 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
                     });
                 } else if (it.type === 'Labor') {
                     const linkedPartId = it.id.replace('_LABOR', '');
-                    const linkedPart = items.find(p => p.id === linkedPartId && p.type === 'Part');
+                    const linkedPart = items.find(p => p.id === linkedPartId && (p.type === 'Part' || p.type === 'Kit'));
                     if (linkedPart) {
                         const existingPart = serviceDocumentItems.find(sdi =>
                             sdi.nagsGlassId === linkedPart.nagsId && sdi.oemGlassId === linkedPart.oemId
@@ -606,6 +645,7 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
             const manualItems = items.filter(it => (it.type === 'Labor' || it.type === 'Service') && !it.id.includes('_LABOR'));
             manualItems.forEach(manualIt => {
                 serviceDocumentItems.push({
+                    partId: manualIt.originalPartId || null, // Include ID for manual items too if they existed
                     itemType: manualIt.type.toLowerCase(),
                     partDescription: manualIt.description,
                     partPrice: Number(manualIt.amount) || 0,
@@ -646,7 +686,7 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
             console.log("[QuotePanel] customerWithVehicle.bodyType:", customerWithVehicle.bodyType);
 
             const serviceDocument = {
-                documentType: currentDocType.toLowerCase().replace(" ", "") === "workorder" ? "invoice" : currentDocType.toLowerCase(),
+                documentType: currentDocType.replace(" ", "_").toUpperCase(),
                 employeeId: 0,
                 serviceLocation: "mobile",
                 serviceAddress: `${customerData.addressLine1 || ''}, ${customerData.city || ''}, ${customerData.state || ''} ${customerData.postalCode || ''}`,
@@ -679,26 +719,36 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
             const files = attachments.map(a => a.file);
             console.log("Files to upload:", files.length, files);
 
-            // Always create a new document (never update)
-            console.log("Creating new document with", files.length, "files");
-            const response = await createCompositeServiceDocument(compositePayload, files);
-            const createdDocNumber = response.serviceDocument?.documentNumber;
+            console.log("Files to upload:", files.length, files);
 
-            if (createdDocNumber) {
-                message.success(`Service Document Created Successfully! Document #: ${createdDocNumber}`);
+            let createdDocNumber;
 
-                // Navigate to open page after creation
-                setTimeout(() => {
-                    navigate('/open');
-                }, 1000);
+            if (isSaved && docMetadata?.documentNumber) {
+                // UPDATE EXISTING DOCUMENT
+                console.log(`Updating existing document: ${docMetadata.documentNumber}`);
+
+                // Do not include file attachments in PUT request updates
+                const updateResponse = await updateCompositeServiceDocument(docMetadata.documentNumber, compositePayload);
+                createdDocNumber = updateResponse.serviceDocument?.documentNumber || docMetadata.documentNumber;
+                message.success(`Service Document Updated Successfully!`);
+
             } else {
-                message.success("Service Document Created Successfully!");
+                // CREATE NEW DOCUMENT
+                console.log("Creating new document with", files.length, "files");
+                const response = await createCompositeServiceDocument(compositePayload, files);
+                createdDocNumber = response.serviceDocument?.documentNumber;
 
-                // Navigate to open page even without document number
-                setTimeout(() => {
-                    navigate('/open');
-                }, 1000);
+                if (createdDocNumber) {
+                    message.success(`Service Document Created Successfully! Document #: ${createdDocNumber}`);
+                } else {
+                    message.success("Service Document Created Successfully!");
+                }
             }
+
+            // Navigate to open page after creation/update
+            setTimeout(() => {
+                navigate('/open');
+            }, 1000);
 
         } catch (err) {
             console.error(err);
@@ -991,21 +1041,6 @@ Auto Glass Pro Team`;
                                 <span className="uppercase text-[10px] font-bold text-slate-400 tracking-wider self-center">Updated</span>
                                 <span className="font-medium text-slate-700">{formatDate(docMetadata.updatedAt)}</span>
                             </div>
-
-                            {/* Edit Button */}
-                            {onEditModeChange && (
-                                <div className="mt-1">
-                                    <button
-                                        onClick={() => onEditModeChange(!isEditMode)}
-                                        className={`w-full py-2 rounded-md text-sm font-semibold transition-colors shadow-sm ${isEditMode
-                                            ? 'bg-slate-100 text-slate-600 border border-slate-300 hover:bg-slate-200'
-                                            : 'bg-[#5b4dfe] text-white hover:bg-[#4b3dce]'
-                                            }`}
-                                    >
-                                        {isEditMode ? "Cancel Edit" : "Edit Document"}
-                                    </button>
-                                </div>
-                            )}
                         </>
                     )}
                 </div>

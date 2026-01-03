@@ -27,7 +27,8 @@ const SearchByRoot = () => {
   const [activeTab, setActiveTab] = useState('quote');
   // Separated state for items to avoid overwrite conflicts
   const [editItems, setEditItems] = useState([]);
-  const [viewerItems, setViewerItems] = useState([]);
+  const [derivedPartItems, setDerivedPartItems] = useState([]); // Items derived from selectedParts (via API)
+  const [manualKitItems, setManualKitItems] = useState([]);     // Items manually added via modal (Kits)
   const [resetKey, setResetKey] = useState(0); // Key to force-reset child components
 
   // Store vendor pricing data for each part (keyed by part ID)
@@ -137,6 +138,7 @@ const SearchByRoot = () => {
           // Part Item
           result.push({
             id: partId,
+            originalPartId: item.partId, // Preserve backend ID for updates
             type: item.itemType === 'PART' ? 'Part' : (item.itemType === 'LABOR' ? 'Labor' : 'Service'),
             nagsId: item.nagsGlassId || "",
             oemId: "",
@@ -144,6 +146,7 @@ const SearchByRoot = () => {
             manufacturer: "",
             qty: item.quantity || 1,
             unitPrice: item.partPrice || 0,
+            listPrice: item.listPrice || item.partPrice || 0, // Map listPrice or fallback to partPrice
             amount: item.itemTotal || (item.partPrice * item.quantity),
             labor: 0, // Labor is separated
             isManual: true,
@@ -154,6 +157,47 @@ const SearchByRoot = () => {
           if (item.laborRate && item.laborRate > 0) {
             result.push({
               id: `${partId}_LABOR`,
+              // We don't have a distinct partId for linked labor in this flat map unless we check other items, 
+              // but usually labor is part of the same item set or handled differently. 
+              // If the backend treats them as separate items in the list, we might need logic to find the matching Labor item's ID.
+              // For now, let's assume strict separate items in DB -> mapped here. 
+              // Wait, the loop `flatMap` is over `serviceDocument.items`. 
+              // IF the backend returns Labor as a separate row, it will be hit in the loop separately.
+              // IF `logic` here is splitting one item into two, that implies the backend stored it as one or we are splitting view.
+              // The provided log shows backend returns items list. 
+              // If itemType is PART, we process it. If LABOR, we process it.
+              // This logic `if (item.laborRate ...)` inside a map seems to imply splitting a PART item that HAS labor attached.
+              // If the backend has SEPARATE items for part and labor, we shouldn't duplicate labor here.
+              // Let's look at the backend response provided by user: 
+              // It has `itemType: "PART"` and `itemType: "KIT"`. 
+              // The part item has `laborHours` and `laborRate`.
+              // So the frontend seems to split this single "Part with Labor" into two UI rows (Part row + Labor row).
+              // So the Labor row in UI is "virtual" relative to the DB item? 
+              // If so, it shouldn't have a `partId` of its own, OR it shares the `partId`?
+              // The user request shows: `partId: 1001` for PART and `partId: 1003` for LABOR.
+              // This suggests they CAN be separate items in DB.
+              // But the current code splits a single `item` into Part + Labor if `laborRate > 0`.
+              // CHECK: Does `serviceDocument.items` contain SEPARATE entries for Labor?
+              // The provided JSON shows:
+              // Item 1: Part DW02582 with laborHours 3.6.
+              // Item 2: Kit HAH000004.
+              // Logic: `mappedItems` flatMaps. 
+              // If I have one item in DB that represents Part+Labor, and I create 2 UI items.
+              // When saving back, do I merge them? 
+              // `QuotePanel.jsx` handleSave:
+              // `items.forEach`... if Part, push. if Labor, find linked Part and update its labor fields.
+              // So yes, they are merged back into ONE item in the payload if they are linked.
+              // So `originalPartId` belongs to the Part item. 
+              // The Labor item is just UI state to hold the labor values for that Part.
+              // SO, I do NOT need `originalPartId` on the labor item if it's merely a UI split of the Part.
+              // BUT, if there are standalone Labor items (type LABOR), they hit the `else` block in `handleSave` (manualItems).
+              // In `SearchByRoot`, `item.itemType === 'LABOR'` logic exists in line 140.
+              // If `itemType` is LABOR, it goes to `result.push` with type Labor.
+              // So purely manual labor items from DB have their own ID.
+              // The `if (item.laborRate ...)` block (lines 155+) creates a *secondary* labor row for a PART item.
+              // This secondary row doesn't need a DB ID because it's merged back into the Part item on save.
+              // Correct.
+
               type: 'Labor',
               nagsId: "",
               oemId: "",
@@ -345,7 +389,7 @@ const SearchByRoot = () => {
       labor: 0
     };
 
-    setViewerItems(prev => [...prev, kitItem]);
+    setManualKitItems(prev => [...prev, kitItem]);
     setPendingKitData(null);
   };
 
@@ -359,18 +403,60 @@ const SearchByRoot = () => {
   const handleRemovePart = (partKey) => {
     console.log('[SearchByRoot] Removing part and vendor data for:', partKey);
 
-    setSelectedParts((prevParts) =>
-      prevParts.filter(
+    // 1. Remove from Edit Items (Saved Document Items)
+    setEditItems((prev) => {
+      const remaining = prev.filter(it => it.id !== partKey);
+      if (remaining.length !== prev.length) {
+        console.log('[SearchByRoot] Removed item from editItems:', partKey);
+        return remaining;
+      }
+      return prev;
+    });
+
+    // 2. Remove from Viewer Items (Added Kits or manual additions)
+    // Now split: check both derived and manual lists
+
+    // Remove from Manual Kits
+    setManualKitItems((prev) => {
+      const remaining = prev.filter(it => it.id !== partKey);
+      if (remaining.length !== prev.length) {
+        console.log('[SearchByRoot] Removed item from manualKitItems:', partKey);
+        return remaining;
+      }
+      return prev;
+    });
+
+    // Remove from Derived Parts is mainly handled by removing from selectedParts.
+    // However, if we need to remove a derived part immediately visually before API sync:
+    /*
+    setDerivedPartItems((prev) => {
+        const remaining = prev.filter(it => it.id !== partKey);
+        return remaining;
+    });
+    */
+
+    // 3. Remove Part Selection (triggers API calls, so optimize update)
+    setSelectedParts((prevParts) => {
+      const filtered = prevParts.filter(
         (p) => {
           const nagsId = p.part.nags_id || p.part.nags_glass_id;
           const oemId = p.part.oem_glass_id;
-          return `${nagsId || ""}|${oemId || ""}|${p.glass.code}` !== partKey;
+          const key = `${nagsId || ""}|${oemId || ""}|${p.glass.code}`;
+          // Check against partKey (which might be random ID) OR the generated key
+          return key !== partKey;
         }
-      )
-    );
+      );
+
+      // Only update state if length changed to prevent re-render loop
+      if (filtered.length !== prevParts.length) {
+        return filtered;
+      }
+      return prevParts;
+    });
 
     // Also remove vendor pricing data for this part
     setVendorPricingData((prev) => {
+      if (!prev[partKey]) return prev; // Optimize: don't update if key not present
       const updated = { ...prev };
       delete updated[partKey];
       console.log('[SearchByRoot] Vendor data after removal:', updated);
@@ -502,11 +588,11 @@ const SearchByRoot = () => {
         }
         return items;
       }));
-      setViewerItems(result.flat());
+      setDerivedPartItems(result.flat());
     };
 
     if (selectedParts.length > 0) fetchGlassInfo();
-    else setViewerItems([]);
+    else setDerivedPartItems([]);
 
   }, [selectedParts]);
 
@@ -529,7 +615,8 @@ const SearchByRoot = () => {
         setSavedAttachments([]);
         setAttachments([]);
         setEditItems([]);
-        setViewerItems([]);
+        setDerivedPartItems([]);
+        setManualKitItems([]);
         setCustomerData(initialCustomerData);
         setVehicleInfo({});
         setVinData(null);
@@ -737,11 +824,11 @@ const SearchByRoot = () => {
               )}
 
               {/* BOTTOM ROW: QUOTE DETAILS (ALWAYS VISIBLE) */}
-              <div className={`flex-shrink-0 border-t-2 border-slate-800 bg-white shadow-sm mt-2 ${!modelId && editItems.length === 0 && viewerItems.length === 0 ? 'opacity-50' : ''}`}>
+              <div className={`flex-shrink-0 border-t-2 border-slate-800 bg-white shadow-sm mt-2 ${!modelId && editItems.length === 0 && derivedPartItems.length === 0 && manualKitItems.length === 0 ? 'opacity-50' : ''}`}>
                 <div className="p-2">
                   <QuotePanel
                     key={`quote-${resetKey}`}
-                    parts={[...editItems, ...viewerItems]}
+                    parts={[...editItems, ...derivedPartItems, ...manualKitItems]}
                     onRemovePart={handleRemovePart}
                     customerData={customerData}
                     printableNote={printableNote}

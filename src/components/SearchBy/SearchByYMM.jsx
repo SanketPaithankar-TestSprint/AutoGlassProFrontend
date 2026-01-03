@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Select, Spin, message, Button } from "antd";
 import { getModelId } from "../../api/getModel"; // Import the API function
-import { getModels, getBodyTypes, getVehicleDetails } from "../../api/getModels"; // Import the models lookup API
+import { getModels, getBodyTypes, getVehicleDetails, getMakes } from "../../api/getModels"; // Import the models lookup API
 import CarGlassViewer from "../carGlassViewer/CarGlassViewer";
 import config from "../../config";
 
@@ -66,25 +66,23 @@ export default function SearchByYMM({
   const years = useMemo(() => buildYears(minYear), [minYear]);
 
   // Fetch makes (cached) - using internal API
+  // Fetch makes when year changes
   useEffect(() => {
     let ignore = false;
-    const loadMakes = async () => {
-      const cacheKey = "makes"; // Simple cache key since we're not filtering by vehicle type
+    const loadMakes = async (y) => {
+      if (!y) {
+        setMakes([]);
+        return;
+      }
+
+      const cacheKey = `makes|${y}`;
       if (makesCache.current.has(cacheKey)) {
         setMakes(makesCache.current.get(cacheKey));
         return;
       }
       setLoadingMakes(true);
       try {
-        // Use internal API - get makes for a recent year to get comprehensive list
-        const currentYear = new Date().getFullYear();
-        const resp = await fetch(
-          `${config.pythonApiUrl}agp/v1/model-lookup?year=${currentYear}`,
-          {
-            headers: { accept: "application/json" },
-          }
-        );
-        const data = await resp.json();
+        const data = await getMakes(y);
         const results = Array.isArray(data?.makes) ? data.makes : [];
 
         // Transform to expected format: {make_id, abbrev, name} -> {MakeId, MakeName}
@@ -106,11 +104,17 @@ export default function SearchByYMM({
         if (!ignore) setLoadingMakes(false);
       }
     };
-    loadMakes();
+
+    if (year) {
+      loadMakes(year);
+    } else {
+      setMakes([]);
+    }
+
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [year]);
 
   // Fetch models when year+make set
   useEffect(() => {
