@@ -8,7 +8,8 @@ import {
     MenuUnfoldOutlined,
     MenuFoldOutlined,
     DownOutlined,
-    FolderOpenOutlined
+    FolderOpenOutlined,
+    BarChartOutlined
 } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 import Logo from './logo';
@@ -32,6 +33,11 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
             key: '/open',
             icon: <FolderOpenOutlined />,
             label: <Link to="/open">Dashboard</Link>,
+        },
+        {
+            key: '/reports',
+            icon: <BarChartOutlined />,
+            label: <Link to="/reports">Reports</Link>,
         },
         // Add other authenticated links here if needed
     ];

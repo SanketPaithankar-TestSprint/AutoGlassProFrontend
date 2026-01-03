@@ -869,40 +869,40 @@ Auto Glass Pro Team`;
                     </thead>
                     <tbody className="bg-white divide-y divide-slate-300">
                         {items.map((it) => (
-                            <tr key={it.id} className="hover:bg-slate-50 transition group">
+                            <tr key={it.id} className={`hover:bg-slate-50 transition group ${it.type === 'Kit' ? 'bg-violet-50' : ''}`}>
                                 <td className="px-1 py-0.5 border-r border-slate-300">
                                     <input
-                                        value={it.type === 'Labor' ? "LABOR" : it.nagsId}
+                                        value={it.type === 'Labor' ? "LABOR" : it.type === 'Kit' ? it.nagsId : it.nagsId}
                                         onChange={(e) => {
-                                            if (it.type !== 'Labor') {
+                                            if (it.type !== 'Labor' && it.type !== 'Kit') {
                                                 updateItem(it.id, "nagsId", e.target.value);
                                                 handlePartNoChange(it.id, e.target.value);
                                             }
                                         }}
-                                        onBlur={(e) => it.type !== 'Labor' && handlePartNoBlur(it.id, e.target.value)}
+                                        onBlur={(e) => it.type !== 'Labor' && it.type !== 'Kit' && handlePartNoBlur(it.id, e.target.value)}
                                         onKeyDown={(e) => {
-                                            if (e.key === 'Enter' && it.type !== 'Labor') {
+                                            if (e.key === 'Enter' && it.type !== 'Labor' && it.type !== 'Kit') {
                                                 handlePartNoBlur(it.id, e.currentTarget.value);
                                                 e.currentTarget.blur();
                                             }
                                         }}
-                                        className={`w-full h-5 rounded px-1 text-sm outline-none focus:bg-white bg-transparent ${it.type === 'Labor' ? 'text-slate-500' : 'text-slate-900 font-medium'}`}
+                                        className={`w-full h-5 rounded px-1 text-sm outline-none focus:bg-white bg-transparent ${it.type === 'Labor' ? 'text-slate-500' : it.type === 'Kit' ? 'text-violet-700 font-medium' : 'text-slate-900 font-medium'}`}
                                         placeholder="Part No"
-                                        disabled={it.type === 'Labor'}
+                                        disabled={it.type === 'Labor' || it.type === 'Kit'}
                                     />
                                 </td>
                                 <td className="px-1 py-0.5 border-r border-slate-300">
                                     <input
                                         value={it.description || ''}
                                         onChange={(e) => updateItem(it.id, "description", e.target.value)}
-                                        className="w-full h-5 rounded px-1 text-sm outline-none focus:bg-white bg-transparent text-slate-700"
+                                        className={`w-full h-5 rounded px-1 text-sm outline-none focus:bg-white bg-transparent ${it.type === 'Kit' ? 'text-violet-600' : 'text-slate-700'}`}
                                     />
                                 </td>
                                 <td className="px-1 py-0.5 border-r border-slate-300">
                                     <input
                                         value={it.manufacturer}
                                         onChange={(e) => updateItem(it.id, "manufacturer", e.target.value)}
-                                        className={`w-full h-5 rounded px-1 text-sm outline-none focus:bg-white bg-transparent ${(!it.isManual && it.type === 'Labor') ? 'text-slate-400' : 'text-slate-600'}`}
+                                        className={`w-full h-5 rounded px-1 text-sm outline-none focus:bg-white bg-transparent ${(!it.isManual && it.type === 'Labor') ? 'text-slate-400' : it.type === 'Kit' ? 'text-violet-500' : 'text-slate-600'}`}
                                         disabled={!it.isManual && it.type === 'Labor'}
                                     />
                                 </td>
@@ -911,18 +911,18 @@ Auto Glass Pro Team`;
                                         type="number"
                                         value={it.qty}
                                         onChange={(e) => updateItem(it.id, "qty", e.target.value)}
-                                        className={`w-full h-5 rounded px-1 text-sm text-right outline-none focus:bg-white bg-transparent ${(!it.isManual && it.type === 'Labor') ? 'text-slate-400 cursor-not-allowed' : 'text-slate-700'}`}
+                                        className={`w-full h-5 rounded px-1 text-sm text-right outline-none focus:bg-white bg-transparent ${(!it.isManual && it.type === 'Labor') ? 'text-slate-400 cursor-not-allowed' : it.type === 'Kit' ? 'text-violet-700' : 'text-slate-700'}`}
                                         disabled={!it.isManual && it.type === 'Labor'}
                                     />
                                 </td>
                                 <td className="px-1 py-0.5 text-right border-r border-slate-300">
                                     <input
                                         type="text"
-                                        value={it.listPrice ? `$${it.listPrice}` : ''}
+                                        value={it.type === 'Kit' && !it.listPrice ? '' : (it.listPrice ? `$${it.listPrice}` : '')}
                                         onChange={(e) => updateItem(it.id, "listPrice", e.target.value.replace(/[^0-9.]/g, ''))}
-                                        className={`w-full h-5 rounded px-1 text-sm text-right outline-none focus:bg-white bg-transparent ${(!it.isManual && it.type === 'Labor') ? 'text-slate-400 cursor-not-allowed' : 'text-slate-700'}`}
+                                        className={`w-full h-5 rounded px-1 text-sm text-right outline-none focus:bg-white bg-transparent ${(!it.isManual && it.type === 'Labor') ? 'text-slate-400 cursor-not-allowed' : it.type === 'Kit' ? 'text-violet-500 italic' : 'text-slate-700'}`}
                                         disabled={!it.isManual && it.type === 'Labor'}
-                                        placeholder="$0.00"
+                                        placeholder={it.type === 'Kit' ? '' : '$0.00'}
                                     />
                                 </td>
                                 <td className="px-1 py-0.5 text-right font-medium text-sm border-r border-slate-300">
@@ -931,7 +931,7 @@ Auto Glass Pro Team`;
                                             type="text"
                                             value={it.amount ? `$${it.amount}` : ''}
                                             onChange={(e) => updateItem(it.id, "amount", e.target.value.replace(/[^0-9.]/g, ''))}
-                                            className={`w-full rounded px-1 py-0 text-right text-sm outline-none h-5 focus:bg-white bg-transparent ${(!Number(it.amount) || Number(it.amount) === 0) ? 'text-red-600 font-bold bg-red-50' : 'text-slate-900 bg-sky-50'}`}
+                                            className={`w-full rounded px-1 py-0 text-right text-sm outline-none h-5 focus:bg-white bg-transparent ${it.type === 'Kit' ? 'text-violet-700 bg-violet-50' : (!Number(it.amount) || Number(it.amount) === 0) ? 'text-red-600 font-bold bg-red-50' : 'text-slate-900 bg-sky-50'}`}
                                             placeholder="$0.00"
                                         />
                                         {(!Number(it.amount) || Number(it.amount) === 0) && (

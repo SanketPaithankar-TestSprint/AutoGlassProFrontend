@@ -6,6 +6,7 @@ import SearchByYMM from "./SearchByYMM";
 import CarGlassViewer from "../carGlassViewer/CarGlassViewer";
 import QuotePanel from "../QuoteDetails/QuotePanel";
 import CustomerPanel from "../QuoteDetails/CustomerPanel";
+import KitSelectionModal from "../QuoteDetails/KitSelectionModal";
 import ErrorBoundary from "../common/ErrorBoundary";
 import config from "../../config";
 import { getPrefixCd, getPosCd, getSideCd, extractGlassInfo } from "../carGlassViewer/carGlassHelpers";
@@ -31,6 +32,10 @@ const SearchByRoot = () => {
 
   // Store vendor pricing data for each part (keyed by part ID)
   const [vendorPricingData, setVendorPricingData] = useState({});
+
+  // Kit Selection Modal State
+  const [kitModalVisible, setKitModalVisible] = useState(false);
+  const [pendingKitData, setPendingKitData] = useState(null); // { kits: [], partId: '', partNumber: '' }
 
   // Edit Workflow State
   const [isSaved, setIsSaved] = useState(false);
@@ -289,6 +294,10 @@ const SearchByRoot = () => {
 
   // Handle adding a part
   const handleAddPart = ({ glass, part, glassInfo }) => {
+    const nagsId = part.nags_id || part.nags_glass_id;
+    const featureSpan = part.feature_span || '';
+    const fullPartNumber = `${nagsId}${featureSpan ? ' ' + featureSpan : ''}`;
+
     setSelectedParts((prevParts) => {
       const alreadyAdded = prevParts.some(
         (p) =>
@@ -298,6 +307,52 @@ const SearchByRoot = () => {
       );
       return alreadyAdded ? prevParts : [...prevParts, { glass, part, glassInfo }];
     });
+
+    // Check if part has kit options
+    if (part.kit && Array.isArray(part.kit) && part.kit.length > 0) {
+      console.log('[SearchByRoot] Part has kit options:', part.kit);
+      const partId = `${nagsId || ""}|${part.oem_glass_id || ""}|${glass.code}`;
+      setPendingKitData({
+        kits: part.kit,
+        partId: partId,
+        partNumber: fullPartNumber
+      });
+      setKitModalVisible(true);
+    }
+  };
+
+  // Handle kit selection from modal
+  const handleKitSelect = (selectedKit) => {
+    if (!selectedKit || !pendingKitData) return;
+
+    console.log('[SearchByRoot] Kit selected:', selectedKit);
+
+    // Add kit as a separate item in viewerItems
+    const kitQty = selectedKit.QTY || 1;
+    const kitPrice = 20; // Default kit price
+    const kitItem = {
+      type: "Kit",
+      id: `kit_${selectedKit.NAGS_HW_ID}_${Date.now()}`,
+      parentPartId: pendingKitData.partId,
+      nagsId: selectedKit.NAGS_HW_ID,
+      oemId: "",
+      description: selectedKit.DSC || "Installation Kit",
+      manufacturer: "",
+      qty: kitQty,
+      listPrice: 0, // No list price for kits
+      unitPrice: kitPrice,
+      amount: kitQty * kitPrice,
+      labor: 0
+    };
+
+    setViewerItems(prev => [...prev, kitItem]);
+    setPendingKitData(null);
+  };
+
+  // Handle kit modal close without selection
+  const handleKitModalClose = () => {
+    setKitModalVisible(false);
+    setPendingKitData(null);
   };
 
   // Handle removing a part
@@ -513,6 +568,16 @@ const SearchByRoot = () => {
   return (
     <div className="min-h-screen bg-white flex flex-col px-0 pt-0 pb-1">
       {contextHolder}
+
+      {/* Kit Selection Modal */}
+      <KitSelectionModal
+        visible={kitModalVisible}
+        onClose={handleKitModalClose}
+        onSelect={handleKitSelect}
+        kits={pendingKitData?.kits || []}
+        partNumber={pendingKitData?.partNumber || ''}
+      />
+
       <div className="w-full mx-auto space-y-2 flex flex-col max-w-[98%] 2xl:max-w-[1900px] flex-1">
 
 

@@ -76,6 +76,8 @@ export function generateServiceDocumentPDF({
     doc.setFont("helvetica", "bold");
     doc.text(userProfile?.businessName || "", margin + 10, 50);
     doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+
     const addressLine = (userProfile?.addressLine1 && userProfile?.addressLine2)
         ? `${userProfile.addressLine1}, ${userProfile.addressLine2}`
         : (userProfile?.addressLine1 || "");
@@ -84,26 +86,41 @@ export function generateServiceDocumentPDF({
         ? `${userProfile.city}, ${userProfile.state} ${userProfile.postalCode || ""}`
         : "";
 
-    doc.text(addressLine, margin + 10, 65);
-    doc.text(cityStateZip, margin + 10, 80);
-    doc.text(userProfile?.phone || "", margin + 10, 95);
-    doc.text(`Fed. ID# ${userProfile?.ein || userProfile?.businessLicenseNumber || ""}`, margin + 10, 110);
+    // Wrap address line if too long (max width ~300pt to avoid overlapping with right grid)
+    const maxAddressWidth = 300;
+    const wrappedAddress = doc.splitTextToSize(addressLine, maxAddressWidth);
+    let currentY = 65;
+
+    // Draw wrapped address lines
+    doc.text(wrappedAddress, margin + 10, currentY);
+    currentY += (wrappedAddress.length * 12); // 12pt line height for each line
+
+    // Draw city/state/zip
+    doc.text(cityStateZip, margin + 10, currentY);
+    currentY += 15;
+
+    // Draw phone
+    doc.text(userProfile?.phone || "", margin + 10, currentY);
+    currentY += 15;
+
+    // Draw Fed ID
+    doc.text(`Fed. ID# ${userProfile?.ein || userProfile?.businessLicenseNumber || ""}`, margin + 10, currentY);
 
     // Right: Quote/Invoice Info Grid
     const now = new Date().toLocaleDateString();
     doc.setLineWidth(0.5);
 
-    // Quote # / Date
+    // Quote # / Date - aligned with rows below
     doc.rect(topGridX, topGridY, 120, rowH);
     doc.line(topGridX + 40, topGridY, topGridX + 40, topGridY + rowH);
     doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.text(`${docType} #`, topGridX + 2, topGridY + 12);
     doc.setFontSize(10); doc.setFont("helvetica", "bold"); doc.text("GFI0016248", topGridX + 45, topGridY + 13);
 
-    // Box for Date
+    // Box for Date - aligned divider with BillCode/Sold By/Inst'l By columns below
     doc.rect(topGridX + 120, topGridY, 100, rowH);
-    doc.line(topGridX + 150, topGridY, topGridX + 150, topGridY + rowH);
+    doc.line(topGridX + 155, topGridY, topGridX + 155, topGridY + rowH);
     doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.text("Date", topGridX + 122, topGridY + 12);
-    doc.setFontSize(10); doc.setFont("helvetica", "bold"); doc.text(now, topGridX + 155, topGridY + 13);
+    doc.setFontSize(10); doc.setFont("helvetica", "bold"); doc.text(now, topGridX + 160, topGridY + 13);
 
     // Row 2: Cust # | BillCode
     const y2 = topGridY + rowH;
@@ -126,8 +143,12 @@ export function generateServiceDocumentPDF({
     doc.rect(topGridX + 120, y3, 100, rowH);
     doc.line(topGridX + 155, y3, topGridX + 155, y3 + rowH);
     doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.text("Sold By", topGridX + 122, y3 + 12);
-    const soldBy = userProfile?.ownerName || (userProfile?.firstName ? `${userProfile.firstName} ${userProfile.lastName || ""}` : "");
-    doc.setFont("helvetica", "bold"); doc.text(soldBy, topGridX + 160, y3 + 13);
+    let soldBy = userProfile?.ownerName || (userProfile?.firstName ? `${userProfile.firstName} ${userProfile.lastName || ""}` : "");
+    // Truncate name if too long to fit in box (max ~12 chars at font size 7)
+    if (soldBy.length > 14) {
+        soldBy = soldBy.substring(0, 13) + "...";
+    }
+    doc.setFontSize(7); doc.setFont("helvetica", "bold"); doc.text(soldBy, topGridX + 160, y3 + 13);
 
     // Row 4: Fed Tax # | Inst'l By
     const y4 = y3 + rowH;
@@ -158,20 +179,8 @@ export function generateServiceDocumentPDF({
         }
     }
 
-    // Top Left Bracket
-    doc.line(margin, addrY, margin + 20, addrY);
-    doc.line(margin, addrY, margin, addrY + 20);
-    // Top Right Bracket
-    doc.line(340, addrY, 320, addrY);
-    doc.line(340, addrY, 340, addrY + 20);
-
-    // Bottom Left Bracket
+    // Calculate bottom position for address box (no bracket lines)
     const bottomY = addrY + addrBoxH;
-    doc.line(margin, bottomY, margin + 20, bottomY);
-    doc.line(margin, bottomY, margin, bottomY - 20);
-    // Bottom Right Bracket
-    doc.line(340, bottomY, 320, bottomY);
-    doc.line(340, bottomY, 340, bottomY - 20);
 
     if (customerData) {
         doc.setFontSize(10);
@@ -190,10 +199,10 @@ export function generateServiceDocumentPDF({
 
     // Row 1: Year | Make | Policy
     doc.rect(margin, vY, 40, vRowH); doc.text("Year", margin + 2, vY + 14);
-    doc.rect(margin + 40, vY, 80, vRowH); doc.text(String(customerData?.vehicleYear || ""), margin + 45, vY + 14);
+    doc.rect(margin + 40, vY, 100, vRowH); doc.text(String(customerData?.vehicleYear || ""), margin + 45, vY + 14);
 
-    doc.rect(margin + 120, vY, 40, vRowH); doc.text("Make", margin + 122, vY + 14);
-    doc.rect(margin + 160, vY, 200, vRowH); doc.text(customerData?.vehicleMake || "", margin + 165, vY + 14);
+    doc.rect(margin + 140, vY, 40, vRowH); doc.text("Make", margin + 142, vY + 14);
+    doc.rect(margin + 180, vY, 180, vRowH); doc.text(customerData?.vehicleMake || "", margin + 185, vY + 14);
 
     doc.rect(margin + 360, vY, 40, vRowH); doc.text("Policy #", margin + 362, vY + 14);
     doc.rect(margin + 400, vY, 140, vRowH);
@@ -302,12 +311,12 @@ export function generateServiceDocumentPDF({
         },
         theme: "plain",
         columnStyles: {
-            0: { halign: "center", cellWidth: 30 },
-            1: { cellWidth: 90 },
-            2: { cellWidth: 200 },
-            3: { halign: "right" },
-            4: { halign: "right" },
-            5: { halign: "right" }
+            0: { halign: "center", cellWidth: 35 },  // Qty
+            1: { cellWidth: 90 },                      // Part #
+            2: { cellWidth: 210 },                     // Description
+            3: { halign: "right", cellWidth: 60 },    // List
+            4: { halign: "right", cellWidth: 60 },    // Price
+            5: { halign: "right", cellWidth: 60 }     // Total
         },
         margin: { left: margin, right: margin },
         didDrawPage: (data) => {

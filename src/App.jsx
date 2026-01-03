@@ -13,6 +13,7 @@ import Chatbot from './components/Chatbot';
 import Sidebar from './components/Sidebar';
 import AuthPage from './components/AuthPage';
 import OpenRoot from './components/Open/OpenRoot';
+import ReportsRoot from './components/Reports/ReportsRoot';
 import { getValidToken } from './api/getValidToken';
 
 const { Content } = Layout;
@@ -72,6 +73,7 @@ function AppContent() {
                   <Route path="/Order" element={<OrderPage />} />
                   <Route path="/Pricing" element={<PricingPage />} />
                   <Route path="/open" element={<OpenRoot />} />
+                  <Route path="/reports" element={<ReportsRoot />} />
                 </Routes>
               </div>
               <Footer />
