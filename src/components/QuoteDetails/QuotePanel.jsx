@@ -621,8 +621,13 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                         itemType: it.type === 'Kit' ? 'kit' : 'part',
                         nagsGlassId: it.nagsId || "",
                         oemGlassId: it.oemId || "",
+                        // Add missing fields for verification
+                        prefixCd: it.prefixCd || "",
+                        posCd: it.posCd || "",
+                        sideCd: it.sideCd || "",
                         partDescription: it.description || "",
-                        partPrice: Number(it.unitPrice) || 0,
+                        partPrice: Number(it.amount) || 0, // Using amount as the partPrice
+                        listPrice: Number(it.listPrice) || 0, // Added listPrice
                         quantity: Number(it.qty) || 1,
                         laborRate: 0,
                         laborHours: Number(it.labor) || 0
@@ -671,7 +676,7 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                 country: customerData.country || "USA",
                 preferredContactMethod: "email",
                 notes: customerData.notes || "",
-                vehicleYear: Number(customerData.vehicleYear) || 2020,
+                vehicleYear: Number(customerData.vehicleYear) || "",    
                 vehicleMake: customerData.vehicleMake || "",
                 vehicleModel: customerData.vehicleModel || "",
                 vehicleStyle: customerData.vehicleStyle || "",

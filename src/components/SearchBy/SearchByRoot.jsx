@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useQuoteStore } from "../../store";
 import { useQueryClient } from "@tanstack/react-query";
 import { useKitPrices } from "../../hooks/usePricing";
@@ -78,6 +78,7 @@ const SearchByRoot = () => {
   });
 
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     document.title = "APAI | Search";
@@ -265,6 +266,7 @@ const SearchByRoot = () => {
         vehicleMake: info.make || prev.vehicleMake,
         vehicleModel: info.model || prev.vehicleModel,
         vehicleStyle: info.body || prev.vehicleStyle,
+        bodyType: info.body || prev.bodyType, // Added bodyType persistence
         vin: data.vin || prev.vin
       }));
 
@@ -279,6 +281,7 @@ const SearchByRoot = () => {
         vehicleMake: info.make || prev.vehicleMake,
         vehicleModel: info.model || prev.vehicleModel,
         vehicleStyle: info.body || prev.vehicleStyle,
+        bodyType: info.body || prev.bodyType, // Added bodyType persistence
         vin: data.vin || prev.vin
       }));
     }
@@ -518,6 +521,7 @@ const SearchByRoot = () => {
         setEditItems([]);
         setDerivedPartItems([]); // Ensure these legacy states are cleared if they exist in closure
         setManualKitItems([]);
+        setCreatedDocumentNumber(null); // Clear document number
 
         // 4. Reset Customer & Vehicle
         // Passing a new object ensures the useEffect sees a change, 
@@ -534,6 +538,9 @@ const SearchByRoot = () => {
         setIsSaved(false);
         setDocMetadata(null);
         setIsEditMode(false);
+
+        // 6. Clear Navigation State
+        navigate(location.pathname, { replace: true, state: {} });
       }
     });
 
