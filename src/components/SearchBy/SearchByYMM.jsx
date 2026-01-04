@@ -5,7 +5,7 @@ import { getModels, getBodyTypes, getVehicleDetails, getMakes } from "../../api/
 import CarGlassViewer from "../carGlassViewer/CarGlassViewer";
 import config from "../../config";
 
-const buildYears = (start = 1981) => {
+const buildYears = (start = 1949) => {
   const current = new Date().getFullYear();
   const arr = [];
   for (let y = current; y >= start; y--) arr.push(y);
@@ -23,7 +23,7 @@ export default function SearchByYMM({
   onContinue,
   className,
   disabled = false,
-  minYear = 1981,
+  minYear = 1949,
   showSearch = true,
 }) {
   // --- YMM state

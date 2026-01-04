@@ -504,8 +504,6 @@ const SearchByRoot = () => {
       onOk() {
         // 1. Clear Local Storage FIRST
         localStorage.removeItem("agp_customer_data");
-        // Also clear other related keys if necessary
-        // localStorage.removeItem("user_kit_prices"); // Keep kit prices? Probably yes.
 
         // 2. Reset Store (Global State)
         resetStore();
@@ -518,25 +516,20 @@ const SearchByRoot = () => {
         setIncludeInsurance(false);
         setAttachments([]);
         setSavedAttachments([]);
-        setEditItems([]);
-        setDerivedPartItems([]); // Ensure these legacy states are cleared if they exist in closure
-        setManualKitItems([]);
         setCreatedDocumentNumber(null); // Clear document number
 
         // 4. Reset Customer & Vehicle
-        // Passing a new object ensures the useEffect sees a change, 
-        // but since we cleared localStorage, it should be fine.
         setCustomerData({ ...initialCustomerData });
         setVehicleInfo({});
         setVinData(null);
         setModelId(null);
-        setVendorPricingData({});
+        setVehId(null); // Added this to clear the model view correctly
 
         // 5. UI Resets
         setResetKey(prev => prev + 1); // Force remount of search components
         setActiveTab('quote');
         setIsSaved(false);
-        setDocMetadata(null);
+        setDocMetadata(null); // THIS WILL NOW HIDE THE DOCUMENT # AND DATES
         setIsEditMode(false);
 
         // 6. Clear Navigation State
@@ -756,6 +749,7 @@ const SearchByRoot = () => {
                     isEditMode={isEditMode}
                     onEditModeChange={setIsEditMode}
                     onDocumentCreated={handleDocumentCreated}
+                    onClear={handleGlobalClear}
 
                   />
                 </div>

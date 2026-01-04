@@ -676,7 +676,7 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                 country: customerData.country || "USA",
                 preferredContactMethod: "email",
                 notes: customerData.notes || "",
-                vehicleYear: Number(customerData.vehicleYear) || "",    
+                vehicleYear: Number(customerData.vehicleYear) || "",
                 vehicleMake: customerData.vehicleMake || "",
                 vehicleModel: customerData.vehicleModel || "",
                 vehicleStyle: customerData.vehicleStyle || "",

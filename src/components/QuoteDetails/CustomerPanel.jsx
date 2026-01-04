@@ -312,6 +312,16 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
         return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
     };
 
+    // React to formData being cleared (Global Clear)
+    useEffect(() => {
+        if (!formData.firstName && !formData.lastName && !formData.organizationName && !formData.vehicleMake) {
+            setSelectedOrganizationId(null);
+            setSelectedCustomerId(null);
+            setSelectedVehicleId(null);
+            setVehicles([]);
+        }
+    }, [formData]);
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         let finalValue = value;
