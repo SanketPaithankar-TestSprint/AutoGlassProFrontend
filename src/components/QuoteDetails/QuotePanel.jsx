@@ -1,4 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
+import { useQuoteStore } from "../../store";
+import { useQueryClient } from "@tanstack/react-query";
 import { Modal, Input, Button, message, Dropdown, Select, InputNumber } from "antd";
 import { DownOutlined, UnorderedListOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -114,7 +116,7 @@ class ErrorBoundary extends React.Component {
     }
 }
 
-function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNote, internalNote, insuranceData, includeInsurance, attachments = [], onClear, docMetadata, isSaved, isEditMode, onEditModeChange, onDocumentCreated, vendorPricingData = {} }) {
+function QuotePanelContent({ onRemovePart, customerData, printableNote, internalNote, insuranceData, includeInsurance, attachments = [], onClear, docMetadata, isSaved, isEditMode, onEditModeChange, onDocumentCreated, vendorPricingData = {} }) {
     const navigate = useNavigate();
 
     const formatDate = (dateStr) => {
@@ -124,7 +126,13 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
             return isNaN(date.getTime()) ? '-' : date.toLocaleString('sv-SE');
         } catch { return '-'; }
     };
-    const [items, setItems] = useState(parts.length ? parts : [newItem()]);
+    // Use Store (aliased to items/setItems to minimize refactor)
+    const { quoteItems, setQuoteItems } = useQuoteStore();
+    const items = quoteItems;
+    const setItems = setQuoteItems;
+
+    const queryClient = useQueryClient();
+
     const [userProfile, setUserProfile] = useState(() => {
         try {
             const saved = localStorage.getItem("agp_profile_data");
@@ -151,32 +159,7 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
         return rate ? parseFloat(rate) : 0; // Default to 0 if not set
     }, []);
 
-    useEffect(() => {
-        setItems((prevItems) => {
-            const incomingPartIds = new Set(parts.map(p => p.id));
-
-            // Map existing items by ID for easy lookup
-            const existingItemsMap = new Map(prevItems.map(it => [it.id, it]));
-
-            const mergedParts = parts.map(p => {
-                // If we already have this part in state, return the STATE version (preserves edits/prices)
-                if (existingItemsMap.has(p.id)) {
-                    return existingItemsMap.get(p.id);
-                }
-
-                // Otherwise, it's a new part. Enrich it.
-                if (p.type === 'Labor' && !p.description) {
-                    return { ...p, description: `Labor ${p.labor || 0} hours` };
-                }
-                return p;
-            });
-
-            // Deduplicate: Only keep manual items that are NOT in the incoming parts list
-            const currentManualItems = prevItems.filter(it => it.isManual && !incomingPartIds.has(it.id));
-
-            return [...mergedParts, ...currentManualItems];
-        });
-    }, [parts]);
+    // Syncing effect removed (SearchByRoot now updates store directly)
 
     // Fetch vendor pricing for newly added parts from SearchByRoot
     useEffect(() => {
@@ -188,7 +171,8 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
             const partsNeedingPricing = items.filter(item =>
                 item.type === 'Part' &&
                 item.nagsId &&
-                !item.vendorPriceFetched // Flag to prevent re-fetching
+                !item.vendorPriceFetched && // Flag to prevent re-fetching
+                !item.isManual // Ignore manual items (fetched on Enter)
             );
 
             if (partsNeedingPricing.length === 0) return;
@@ -198,35 +182,45 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
             // Fetch pricing for each part
             const pricingPromises = partsNeedingPricing.map(async (item) => {
                 try {
-                    // Construct part number from nagsId (which already includes feature_span)
-                    const partNumber = item.nagsId.replace(/N$/, ''); // Remove trailing N
+                    // Try to fetch vendor price
+                    let vendorPrice = null;
+                    const nagsId = item.nagsId;
 
-                    const vendorPrice = await getPilkingtonPrice(userId, partNumber);
+                    if (userId && nagsId) {
+                        // Use QueryClient to fetch with cache (same key as SearchByRoot)
+                        // Note: We need partNumber. Item might not have feature_span preserved cleanly if it came from direct add vs derived.
+                        // Usually item.nagsId includes span if it was constructed that way? 
+                        // In SearchByRoot: nagsId = fullPartNumber. 
+                        // uniqueId = composed.
+                        // Here item.nagsId seems to be the full string "FD... GTY".
+                        // So we strip 'N' if present.
+                        let partNumber = item.nagsId.trim().replace(/N$/, '');
+
+                        vendorPrice = await queryClient.fetchQuery({
+                            queryKey: ['pilkingtonPrice', userId, partNumber],
+                            queryFn: () => getPilkingtonPrice(userId, partNumber),
+                            staleTime: 1000 * 60 * 60
+                        });
+                    }
 
                     if (vendorPrice) {
-                        console.log(`[QuotePanel] Found vendor price for ${partNumber}:`, vendorPrice);
                         return {
                             id: item.id,
+                            vendorPriceFetched: true,
                             unitPrice: parseFloat(vendorPrice.UnitPrice) || item.unitPrice,
-                            description: vendorPrice.Description || item.description,
-                            vendorData: {
-                                industryCode: vendorPrice.IndustryCode,
-                                availability: vendorPrice.AvailabilityToPromise,
-                                leadTime: vendorPrice.LeadTimeFormatted || vendorPrice.LeadTime,
-                                manufacturer: "Pilkington"
-                            },
-                            vendorPriceFetched: true
+                            // If listPrice logic needs update:
+                            // listPrice: parseFloat(vendorPrice.ListPrice) || ...
+                            description: vendorPrice.Description || item.description
                         };
                     }
-                } catch (error) {
-                    console.error(`Error fetching vendor price for ${item.nagsId}:`, error);
-                }
 
-                return {
-                    id: item.id,
-                    vendorPriceFetched: true // Mark as attempted even if failed
-                };
+                    return { id: item.id, vendorPriceFetched: true }; // Mark as fetched even if failed/null to avoid loop
+                } catch (e) {
+                    console.error("Vendor price fetch failed for", item.nagsId, e);
+                    return { id: item.id, vendorPriceFetched: true };
+                }
             });
+
 
             const pricingResults = await Promise.all(pricingPromises);
             // Update items with vendor pricing
@@ -255,8 +249,15 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
 
     const handleDeleteItem = (id) => {
         console.log('[QuotePanel] Removing item:', id);
-        onRemovePart?.(id);  // This calls handleRemovePart in SearchByRoot which removes vendor data
-        setItems((prev) => prev.filter((it) => it.id !== id));
+        if (onRemovePart) {
+            onRemovePart(id);
+        } else {
+            setItems((prev) => prev.filter((it) =>
+                it.id !== id &&
+                it.id !== `${id}_LABOR` &&
+                it.parentPartId !== id
+            ));
+        }
     };
 
 
@@ -364,7 +365,6 @@ function QuotePanelContent({ parts = [], onRemovePart, customerData, printableNo
     };
 
     const handlePartNoBlur = async (id, partNo) => {
-        debugger;
 
         // Clear any pending debounce timer for this item
         if (debounceTimers[id]) {
@@ -922,21 +922,38 @@ Auto Glass Pro Team`;
                             <tr key={it.id} className={`hover:bg-slate-50 transition group ${it.type === 'Kit' ? 'bg-violet-50' : ''}`}>
                                 <td className="px-1 py-0.5 border-r border-slate-300">
                                     <input
-                                        value={it.type === 'Labor' ? "LABOR" : it.type === 'Kit' ? it.nagsId : it.nagsId}
+                                        // Display logic remains the same
+                                        value={it.type === 'Labor' ? "LABOR" : it.nagsId}
+
+                                        // Updates local state as they type
                                         onChange={(e) => {
                                             if (it.type !== 'Labor' && it.type !== 'Kit') {
                                                 updateItem(it.id, "nagsId", e.target.value);
-                                                handlePartNoChange(it.id, e.target.value);
+                                                // handlePartNoChange(it.id, e.target.value); // Disabled: API call only on Enter
                                             }
                                         }}
-                                        onBlur={(e) => it.type !== 'Labor' && it.type !== 'Kit' && handlePartNoBlur(it.id, e.target.value)}
+
+                                        // REMOVED: handlePartNoBlur call from here
+                                        onBlur={() => {
+                                            /* We leave this empty or just for UI cleanup. 
+                                               The API call is no longer triggered by clicking away.
+                                            */
+                                        }}
+
                                         onKeyDown={(e) => {
                                             if (e.key === 'Enter' && it.type !== 'Labor' && it.type !== 'Kit') {
+                                                // The API call happens ONLY here
                                                 handlePartNoBlur(it.id, e.currentTarget.value);
+
+                                                // This removes focus from the input, making it look "accepted"
                                                 e.currentTarget.blur();
                                             }
                                         }}
-                                        className={`w-full h-5 rounded px-1 text-sm outline-none focus:bg-white bg-transparent ${it.type === 'Labor' ? 'text-slate-500' : it.type === 'Kit' ? 'text-violet-700 font-medium' : 'text-slate-900 font-medium'}`}
+
+                                        className={`w-full h-5 rounded px-1 text-sm outline-none focus:bg-white bg-transparent ${it.type === 'Labor' ? 'text-slate-500' :
+                                            it.type === 'Kit' ? 'text-violet-700 font-medium' :
+                                                'text-slate-900 font-medium'
+                                            }`}
                                         placeholder="Part No"
                                         disabled={it.type === 'Labor' || it.type === 'Kit'}
                                     />

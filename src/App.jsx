@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Layout } from 'antd';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import Home from './components/Home/HomeRoot.jsx';
 import OrderPage from './components/OrderPage.jsx';
-import SearchByRoot from "./components/SearchBy/SearchByRoot";
 import Profile from './components/profile/Profile.jsx';
 import Work from './components/work/Work.jsx';
 import PricingPage from './components/PricingPage.jsx';
@@ -15,6 +14,11 @@ import AuthPage from './components/AuthPage';
 import OpenRoot from './components/Open/OpenRoot';
 import ReportsRoot from './components/Reports/ReportsRoot';
 import { getValidToken } from './api/getValidToken';
+
+// Lazy Load Main Components
+const Home = React.lazy(() => import('./components/Home/HomeRoot.jsx'));
+const SearchByRoot = React.lazy(() => import("./components/SearchBy/SearchByRoot"));
+
 
 const { Content } = Layout;
 
@@ -65,16 +69,22 @@ function AppContent() {
           <Layout className="flex flex-col h-full bg-slate-50 transition-all duration-300 overflow-hidden">
             <Content className="flex-1 flex flex-col overflow-y-auto custom-scrollbar">
               <div className={`flex-1 flex-col flex`}>
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/search-by-root" element={<SearchByRoot />} />
-                  <Route path="/Profile" element={<Profile />} />
-                  <Route path="/work" element={<Work />} />
-                  <Route path="/Order" element={<OrderPage />} />
-                  <Route path="/Pricing" element={<PricingPage />} />
-                  <Route path="/open" element={<OpenRoot />} />
-                  <Route path="/reports" element={<ReportsRoot />} />
-                </Routes>
+                <Suspense fallback={
+                  <div className="flex items-center justify-center h-full">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+                  </div>
+                }>
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/search-by-root" element={<SearchByRoot />} />
+                    <Route path="/Profile" element={<Profile />} />
+                    <Route path="/work" element={<Work />} />
+                    <Route path="/Order" element={<OrderPage />} />
+                    <Route path="/Pricing" element={<PricingPage />} />
+                    <Route path="/open" element={<OpenRoot />} />
+                    <Route path="/reports" element={<ReportsRoot />} />
+                  </Routes>
+                </Suspense>
               </div>
               <Footer />
             </Content>
@@ -84,17 +94,24 @@ function AppContent() {
         // Public Layout: Header + Content Area
         <Layout className="min-h-screen bg-white flex flex-col">
           <Header onLoginSuccess={handleLoginSuccess} />
+
           <Content className="flex-1 flex flex-col pt-20"> {/* pt-20 for fixed header */}
             <div className="min-h-[calc(100vh-80px)] flex flex-col">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/search-by-root" element={<SearchByRoot />} />
-                <Route path="/Profile" element={<Profile />} />
-                <Route path="/work" element={<Work />} />
-                <Route path="/Order" element={<OrderPage />} />
-                <Route path="/Pricing" element={<PricingPage />} />
-                <Route path="/auth" element={<AuthPage />} />
-              </Routes>
+              <Suspense fallback={
+                <div className="flex items-center justify-center h-full">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+                </div>
+              }>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/search-by-root" element={<SearchByRoot />} />
+                  <Route path="/Profile" element={<Profile />} />
+                  <Route path="/work" element={<Work />} />
+                  <Route path="/Order" element={<OrderPage />} />
+                  <Route path="/Pricing" element={<PricingPage />} />
+                  <Route path="/auth" element={<AuthPage />} />
+                </Routes>
+              </Suspense>
             </div>
             <Footer />
           </Content>
@@ -105,11 +122,15 @@ function AppContent() {
   );
 }
 
+const queryClient = new QueryClient();
+
 function App() {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <AppContent />
+      </Router>
+    </QueryClientProvider>
   );
 }
 

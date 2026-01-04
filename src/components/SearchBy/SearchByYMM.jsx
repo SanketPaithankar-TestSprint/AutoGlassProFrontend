@@ -38,7 +38,7 @@ export default function SearchByYMM({
 
   // Sync state with value prop and handle VIN-provided body type
   useEffect(() => {
-    if (value) {
+    if (value && Object.keys(value).length > 0) {
       setYear(value.year || null);
       setMake(value.make || null);
       setModel(value.model || null);
@@ -47,6 +47,16 @@ export default function SearchByYMM({
       if (value.bodyStyleId) {
         setBodyType(value.bodyStyleId);
       }
+    } else {
+      // Explicitly reset if value is empty/null
+      setYear(null);
+      setMake(null);
+      setModel(null);
+      setBodyType(null);
+      setVehId(null);
+      setModelId(null);
+      setModelImage(null);
+      setModelDescription(null);
     }
   }, [value]);
 

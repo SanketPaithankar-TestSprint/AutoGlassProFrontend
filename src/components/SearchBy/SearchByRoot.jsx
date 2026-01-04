@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { useQuoteStore } from "../../store";
+import { useQueryClient } from "@tanstack/react-query";
+import { useKitPrices } from "../../hooks/usePricing";
+import { getPilkingtonPrice } from "../../api/getVendorPrices";
 import { Modal } from "antd";
 import SearchByVin from "./SearchByvin";
 import SearchByYMM from "./SearchByYMM";
@@ -16,27 +20,34 @@ import { getAttachmentsByDocumentNumber } from "../../api/getAttachmentsByDocume
 import { resolveVinModel } from "../../api/resolveVinModel";
 import { getBodyTypes } from "../../api/getModels";
 import { extractDoorCount, selectBodyTypeByDoors } from "../../utils/vinHelpers";
-import { getPilkingtonPrice } from "../../api/getVendorPrices";
+
 
 const SearchByRoot = () => {
-  const [vinData, setVinData] = useState(null);
+  // Zustand Store
+  const {
+    vinData, setVinData,
+    vehicleInfo, setVehicleInfo,
+    selectedParts, addPart, removePart, setQuoteItems, quoteItems, resetStore
+  } = useQuoteStore();
+
+  const queryClient = useQueryClient();
+  const { data: kitPricesList } = useKitPrices();
+
   const [modelId, setModelId] = useState(null);
   const [vehId, setVehId] = useState(null);
-  const [vehicleInfo, setVehicleInfo] = useState({});
-  const [selectedParts, setSelectedParts] = useState([]);
+  // vehicleInfo, vinData, selectedParts removed from local state
   const [activeTab, setActiveTab] = useState('quote');
   // Separated state for items to avoid overwrite conflicts
-  const [editItems, setEditItems] = useState([]);
-  const [derivedPartItems, setDerivedPartItems] = useState([]); // Items derived from selectedParts (via API)
-  const [manualKitItems, setManualKitItems] = useState([]);     // Items manually added via modal (Kits)
-  const [resetKey, setResetKey] = useState(0); // Key to force-reset child components
 
-  // Store vendor pricing data for each part (keyed by part ID)
-  const [vendorPricingData, setVendorPricingData] = useState({});
+
+  // Unused state removed: editItems, derivedPartItems, manualKitItems, vendorPricingData
+
+  const [resetKey, setResetKey] = useState(0); // Key to force-reset child components
 
   // Kit Selection Modal State
   const [kitModalVisible, setKitModalVisible] = useState(false);
   const [pendingKitData, setPendingKitData] = useState(null); // { kits: [], partId: '', partNumber: '' }
+
 
   // Edit Workflow State
   const [isSaved, setIsSaved] = useState(false);
@@ -83,7 +94,7 @@ const SearchByRoot = () => {
         setDocMetadata({
           documentNumber: serviceDocument.documentNumber,
           documentDate: serviceDocument.documentDate,
-          createdAt: serviceDocument.createdAt, // Corrected field name from API
+          createdAt: serviceDocument.createdAt,
           updatedAt: serviceDocument.updatedAt
         });
       }
@@ -111,7 +122,6 @@ const SearchByRoot = () => {
         bodyType: vehicle?.bodyType || "",
         licensePlateNumber: vehicle?.licensePlateNumber || "",
         vin: vehicle?.vin || "",
-
         vehicleNotes: vehicle?.notes || ""
       };
       setCustomerData(prev => ({ ...prev, ...newCustomerData }));
@@ -125,7 +135,6 @@ const SearchByRoot = () => {
           style: vehicle.vehicleStyle || "",
           vin: vehicle.vin || ""
         });
-        // Also set VIN data if available to consistency?
         if (vehicle.vin) setVinData({ vin: vehicle.vin });
       }
 
@@ -138,7 +147,7 @@ const SearchByRoot = () => {
           // Part Item
           result.push({
             id: partId,
-            originalPartId: item.partId, // Preserve backend ID for updates
+            originalPartId: item.partId,
             type: item.itemType === 'PART' ? 'Part' : (item.itemType === 'LABOR' ? 'Labor' : 'Service'),
             nagsId: item.nagsGlassId || "",
             oemId: "",
@@ -146,77 +155,34 @@ const SearchByRoot = () => {
             manufacturer: "",
             qty: item.quantity || 1,
             unitPrice: item.partPrice || 0,
-            listPrice: item.listPrice || item.partPrice || 0, // Map listPrice or fallback to partPrice
+            listPrice: item.listPrice || item.partPrice || 0,
             amount: item.itemTotal || (item.partPrice * item.quantity),
-            labor: 0, // Labor is separated
+            labor: 0,
             isManual: true,
             pricingType: "hourly"
           });
 
-          // Linked Labor Item (if laborRate exists)
+          // Linked Labor Item
           if (item.laborRate && item.laborRate > 0) {
             result.push({
               id: `${partId}_LABOR`,
-              // We don't have a distinct partId for linked labor in this flat map unless we check other items, 
-              // but usually labor is part of the same item set or handled differently. 
-              // If the backend treats them as separate items in the list, we might need logic to find the matching Labor item's ID.
-              // For now, let's assume strict separate items in DB -> mapped here. 
-              // Wait, the loop `flatMap` is over `serviceDocument.items`. 
-              // IF the backend returns Labor as a separate row, it will be hit in the loop separately.
-              // IF `logic` here is splitting one item into two, that implies the backend stored it as one or we are splitting view.
-              // The provided log shows backend returns items list. 
-              // If itemType is PART, we process it. If LABOR, we process it.
-              // This logic `if (item.laborRate ...)` inside a map seems to imply splitting a PART item that HAS labor attached.
-              // If the backend has SEPARATE items for part and labor, we shouldn't duplicate labor here.
-              // Let's look at the backend response provided by user: 
-              // It has `itemType: "PART"` and `itemType: "KIT"`. 
-              // The part item has `laborHours` and `laborRate`.
-              // So the frontend seems to split this single "Part with Labor" into two UI rows (Part row + Labor row).
-              // So the Labor row in UI is "virtual" relative to the DB item? 
-              // If so, it shouldn't have a `partId` of its own, OR it shares the `partId`?
-              // The user request shows: `partId: 1001` for PART and `partId: 1003` for LABOR.
-              // This suggests they CAN be separate items in DB.
-              // But the current code splits a single `item` into Part + Labor if `laborRate > 0`.
-              // CHECK: Does `serviceDocument.items` contain SEPARATE entries for Labor?
-              // The provided JSON shows:
-              // Item 1: Part DW02582 with laborHours 3.6.
-              // Item 2: Kit HAH000004.
-              // Logic: `mappedItems` flatMaps. 
-              // If I have one item in DB that represents Part+Labor, and I create 2 UI items.
-              // When saving back, do I merge them? 
-              // `QuotePanel.jsx` handleSave:
-              // `items.forEach`... if Part, push. if Labor, find linked Part and update its labor fields.
-              // So yes, they are merged back into ONE item in the payload if they are linked.
-              // So `originalPartId` belongs to the Part item. 
-              // The Labor item is just UI state to hold the labor values for that Part.
-              // SO, I do NOT need `originalPartId` on the labor item if it's merely a UI split of the Part.
-              // BUT, if there are standalone Labor items (type LABOR), they hit the `else` block in `handleSave` (manualItems).
-              // In `SearchByRoot`, `item.itemType === 'LABOR'` logic exists in line 140.
-              // If `itemType` is LABOR, it goes to `result.push` with type Labor.
-              // So purely manual labor items from DB have their own ID.
-              // The `if (item.laborRate ...)` block (lines 155+) creates a *secondary* labor row for a PART item.
-              // This secondary row doesn't need a DB ID because it's merged back into the Part item on save.
-              // Correct.
-
               type: 'Labor',
               nagsId: "",
               oemId: "",
               description: `${item.laborHours || 0} hours`,
               manufacturer: "",
               qty: 1,
-              unitPrice: item.laborRate || 0, // Assuming laborRate is the total labor cost for this item
+              unitPrice: item.laborRate || 0,
               amount: item.laborRate || 0,
               labor: item.laborHours || 0,
               isManual: true,
               pricingType: "hourly"
             });
           }
-
           return result;
         });
-        setEditItems(mappedItems);
-        // Also set Model ID if possible to unlock UI? 
-        // We lack modelId from backend usually, so UI might stay gray, but QuotePanel will work.
+        // Set global store items
+        setQuoteItems(mappedItems);
       }
 
       // 3. Map Notes
@@ -232,7 +198,6 @@ const SearchByRoot = () => {
       if (serviceDocument?.documentNumber) {
         getAttachmentsByDocumentNumber(serviceDocument.documentNumber)
           .then(fetchedAttachments => {
-            console.log("Fetched attachments for edit mode:", fetchedAttachments);
             setSavedAttachments(fetchedAttachments || []);
           })
           .catch(err => {
@@ -341,16 +306,16 @@ const SearchByRoot = () => {
     const nagsId = part.nags_id || part.nags_glass_id;
     const featureSpan = part.feature_span || '';
     const fullPartNumber = `${nagsId}${featureSpan ? ' ' + featureSpan : ''}`;
+    const uniqueId = `${nagsId || ""}|${part.oem_glass_id || ""}|${glass.code}`;
 
-    setSelectedParts((prevParts) => {
-      const alreadyAdded = prevParts.some(
-        (p) =>
-          p.part.nags_glass_id === part.nags_glass_id &&
-          p.part.oem_glass_id === part.oem_glass_id &&
-          p.glass.code === glass.code
-      );
-      return alreadyAdded ? prevParts : [...prevParts, { glass, part, glassInfo }];
-    });
+    // Check if already added using distinct ID
+    const alreadyAdded = selectedParts.some(p => p.id === uniqueId);
+
+    if (!alreadyAdded) {
+      addPart({ glass, part, glassInfo, id: uniqueId });
+      // Add to Quote Items directly
+      processAndAddPart({ glass, part, glassInfo });
+    }
 
     // Check if part has kit options
     if (part.kit && Array.isArray(part.kit) && part.kit.length > 0) {
@@ -371,9 +336,16 @@ const SearchByRoot = () => {
 
     console.log('[SearchByRoot] Kit selected:', selectedKit);
 
-    // Add kit as a separate item in viewerItems
+    // Add kit as a separate item in quoteItems
     const kitQty = selectedKit.QTY || 1;
-    const kitPrice = 20; // Default kit price
+
+    // Use price from modal if available, otherwise look up or default
+    let kitPrice = selectedKit.unitPrice;
+    if (kitPrice === undefined || kitPrice === null || isNaN(kitPrice)) {
+      const foundPrice = kitPricesList?.find(k => k.kit_code === selectedKit.NAGS_HW_ID)?.kit_price;
+      kitPrice = foundPrice !== undefined ? foundPrice : 20;
+    }
+
     const kitItem = {
       type: "Kit",
       id: `kit_${selectedKit.NAGS_HW_ID}_${Date.now()}`,
@@ -383,13 +355,13 @@ const SearchByRoot = () => {
       description: selectedKit.DSC || "Installation Kit",
       manufacturer: "",
       qty: kitQty,
-      listPrice: 0, // No list price for kits
+      listPrice: 0,
       unitPrice: kitPrice,
       amount: kitQty * kitPrice,
       labor: 0
     };
 
-    setManualKitItems(prev => [...prev, kitItem]);
+    setQuoteItems(prev => [...prev, kitItem]);
     setPendingKitData(null);
   };
 
@@ -401,67 +373,20 @@ const SearchByRoot = () => {
 
   // Handle removing a part
   const handleRemovePart = (partKey) => {
-    console.log('[SearchByRoot] Removing part and vendor data for:', partKey);
+    // 3. Remove Part Selection from Store (triggers UI update)
+    // Also remove from Quote Items
+    setQuoteItems(prev => prev.filter(it => {
+      // Filter out item if it matches partKey (Part ID)
+      // OR if it is a labor item linked to that part (partKey_LABOR)
+      if (it.id === partKey) return false;
+      if (it.id === `${partKey}_LABOR`) return false;
+      // Also check if partKey is parent of a Kit
+      if (it.parentPartId === partKey) return false;
+      return true;
+    }));
 
-    // 1. Remove from Edit Items (Saved Document Items)
-    setEditItems((prev) => {
-      const remaining = prev.filter(it => it.id !== partKey);
-      if (remaining.length !== prev.length) {
-        console.log('[SearchByRoot] Removed item from editItems:', partKey);
-        return remaining;
-      }
-      return prev;
-    });
-
-    // 2. Remove from Viewer Items (Added Kits or manual additions)
-    // Now split: check both derived and manual lists
-
-    // Remove from Manual Kits
-    setManualKitItems((prev) => {
-      const remaining = prev.filter(it => it.id !== partKey);
-      if (remaining.length !== prev.length) {
-        console.log('[SearchByRoot] Removed item from manualKitItems:', partKey);
-        return remaining;
-      }
-      return prev;
-    });
-
-    // Remove from Derived Parts is mainly handled by removing from selectedParts.
-    // However, if we need to remove a derived part immediately visually before API sync:
-    /*
-    setDerivedPartItems((prev) => {
-        const remaining = prev.filter(it => it.id !== partKey);
-        return remaining;
-    });
-    */
-
-    // 3. Remove Part Selection (triggers API calls, so optimize update)
-    setSelectedParts((prevParts) => {
-      const filtered = prevParts.filter(
-        (p) => {
-          const nagsId = p.part.nags_id || p.part.nags_glass_id;
-          const oemId = p.part.oem_glass_id;
-          const key = `${nagsId || ""}|${oemId || ""}|${p.glass.code}`;
-          // Check against partKey (which might be random ID) OR the generated key
-          return key !== partKey;
-        }
-      );
-
-      // Only update state if length changed to prevent re-render loop
-      if (filtered.length !== prevParts.length) {
-        return filtered;
-      }
-      return prevParts;
-    });
-
-    // Also remove vendor pricing data for this part
-    setVendorPricingData((prev) => {
-      if (!prev[partKey]) return prev; // Optimize: don't update if key not present
-      const updated = { ...prev };
-      delete updated[partKey];
-      console.log('[SearchByRoot] Vendor data after removal:', updated);
-      return updated;
-    });
+    // Remove from selected parts in store
+    removePart(partKey);
   };
 
   // Handle document creation - switch to attachment tab
@@ -470,131 +395,100 @@ const SearchByRoot = () => {
     setActiveTab('attachment');
   };
 
-  // --- Invoice Item Calculation (Lifted from QuoteDetails) ---
-  useEffect(() => {
-    const fetchGlassInfo = async () => {
-      const result = await Promise.all(selectedParts.map(async (p) => {
-        // Support both old and new API field names
-        const nagsId = p.part.nags_id || p.part.nags_glass_id;
-        const oemId = p.part.oem_glass_id;
-        const uniqueId = `${nagsId || ""}|${oemId || ""}|${p.glass.code}`;
+  // --- Helper to process and add part with pricing ---
+  const processAndAddPart = async ({ glass, part, glassInfo }) => {
+    // Support both old and new API field names
+    const nagsId = part.nags_id || part.nags_glass_id;
+    const oemId = part.oem_glass_id;
+    const uniqueId = `${nagsId || ""}|${oemId || ""}|${glass.code}`;
 
-        // Check if we have new API format with all data included
-        const hasNewFormat = p.part.nags_id && p.part.list_price !== undefined;
+    // Check for new API format
+    const hasNewFormat = p => p.nags_id && p.list_price !== undefined;
+    const isNewFormat = hasNewFormat(part);
 
-        let listPrice, netPrice, description, labor, manufacturer, ta;
+    let listPrice, netPrice, description, labor, manufacturer, ta;
 
-        // Try to fetch vendor pricing first
-        const userId = localStorage.getItem('userId') || 2;
-        let vendorPrice = null;
+    // Fetch Vendor Pricing
+    const userId = localStorage.getItem('userId') || 2;
+    let vendorPrice = null;
+    const nagsListPrice = part.list_price || 0;
 
-        // Preserve NAGS list_price if available (from new API format)
-        const nagsListPrice = p.part.list_price || 0;
+    if (userId && nagsId) {
+      try {
+        let partNumber = part.feature_span ? `${nagsId} ${part.feature_span}`.trim() : nagsId;
+        partNumber = partNumber.replace(/N$/, '');
 
-        if (userId && nagsId) {
-          try {
-            // Construct part number with feature span if available
-            let partNumber = p.part.feature_span
-              ? `${nagsId} ${p.part.feature_span}`.trim()
-              : nagsId;
+        // Use QueryClient to fetch with cache
+        vendorPrice = await queryClient.fetchQuery({
+          queryKey: ['pilkingtonPrice', userId, partNumber],
+          queryFn: () => getPilkingtonPrice(userId, partNumber),
+          staleTime: 1000 * 60 * 60
+        });
 
-            // Remove trailing 'N' from the part number for vendor API
-            // Example: "FD28887 GTYN" becomes "FD28887 GTY"
-            partNumber = partNumber.replace(/N$/, '');
+      } catch (err) { console.error("Failed to fetch vendor price", err); }
+    }
 
-            vendorPrice = await getPilkingtonPrice(userId, partNumber);
+    if (vendorPrice) {
+      netPrice = parseFloat(vendorPrice.UnitPrice) || 0;
+      listPrice = nagsListPrice || parseFloat(vendorPrice.ListPrice) || netPrice;
+      description = vendorPrice.Description || part.part_description || "Glass Part";
+      labor = part.labor || 0;
+      ta = part.feature_span || "";
+      manufacturer = "Pilkington";
+    } else if (isNewFormat) {
+      listPrice = part.list_price || 0;
+      netPrice = part.list_price || 0;
+      labor = part.labor || 0;
+      ta = part.feature_span || "";
+      description = part.part_description || "Glass Part";
+      manufacturer = "";
+    } else {
+      // Old format fallback
+      let rawInfo = glassInfo;
+      if (!rawInfo && nagsId) {
+        try {
+          const res = await fetch(`${config.pythonApiUrl}agp/v1/glass-info?nags_glass_id=${nagsId}`);
+          if (res.ok) rawInfo = await res.json();
+        } catch (err) { }
+      }
+      const extracted = extractGlassInfo(rawInfo, part.part_description);
+      listPrice = extracted.listPrice;
+      netPrice = extracted.netPrice;
+      description = extracted.description;
+      labor = extracted.labor;
+      manufacturer = extracted.manufacturer;
+      ta = extracted.ta;
+    }
 
-            if (vendorPrice) {
-              console.log(`[Vendor Pricing] Found price for ${partNumber}:`, vendorPrice);
+    const newItems = [];
+    const fullPartNumber = `${nagsId || ""}${ta ? " " + ta : ""}`.trim();
 
-              // Store complete vendor pricing data for this part
-              setVendorPricingData(prev => ({
-                ...prev,
-                [uniqueId]: vendorPrice  // Store full vendor response
-              }));
-
-              // Use vendor NetPrice for amount, but preserve NAGS list_price for List column
-              netPrice = parseFloat(vendorPrice.UnitPrice) || 0;
-              listPrice = nagsListPrice || parseFloat(vendorPrice.ListPrice) || netPrice;
-              description = vendorPrice.Description || p.part.part_description || "Glass Part";
-              // Keep labor and ta from existing data
-              labor = p.part.labor || 0;
-              ta = p.part.feature_span || "";
-              manufacturer = "Pilkington";
-              console.log(`[Vendor Pricing] Using NAGS list_price: ${listPrice}, Vendor NetPrice: ${netPrice}`);
-            }
-          } catch (err) {
-            console.error("Failed to fetch vendor price:", err);
-          }
-        }
-
-        // If no vendor price found, use existing logic
-        if (!vendorPrice) {
-          if (hasNewFormat) {
-            // Use data directly from new API response
-            listPrice = p.part.list_price || 0;
-            netPrice = p.part.list_price || 0; // Use list_price as net price
-            labor = p.part.labor || 0;
-            ta = p.part.feature_span || "";
-            description = p.part.part_description || "Glass Part";
-            manufacturer = ""; // Not provided in new API
-            console.log(`[Glass Parts API] Using list_price: ${listPrice} for part ${nagsId}`);
-          } else {
-            // Old format: fetch additional glass info
-            let rawInfo = p.glassInfo;
-            if (!rawInfo && nagsId) {
-              try {
-                const res = await fetch(`${config.pythonApiUrl}agp/v1/glass-info?nags_glass_id=${nagsId}`);
-                if (res.ok) rawInfo = await res.json();
-              } catch (err) { console.error("Failed to fetch glass info", err); }
-            }
-
-            // Use helper to extract data (prioritizing Pilkington)
-            const extracted = extractGlassInfo(rawInfo, p.part.part_description);
-            listPrice = extracted.listPrice;
-            netPrice = extracted.netPrice;
-            description = extracted.description;
-            labor = extracted.labor;
-            manufacturer = extracted.manufacturer;
-            ta = extracted.ta;
-          }
-        }
-
-        const items = [];
-        // Part Item
-        const fullPartNumber = `${nagsId || ""}${ta ? " " + ta : ""}`.trim();
-
-        const partItem = {
-          type: "Part", id: uniqueId,
-          prefixCd: getPrefixCd(p.glass), posCd: getPosCd(p.glass), sideCd: getSideCd(p.glass),
-          nagsId: fullPartNumber, oemId: oemId || "",
-          labor: labor, description: description,
-          manufacturer: manufacturer, qty: 1,
-          listPrice: listPrice,
-          unitPrice: netPrice, amount: netPrice
-        };
-        console.log(`[Item Created] Part ${fullPartNumber} with listPrice: ${listPrice}`, partItem);
-        items.push(partItem);
-
-        // Labor Item
-        if (Number(labor) > 0) {
-          const globalLaborRate = parseFloat(localStorage.getItem('GlobalLaborRate')) || 0;
-          items.push({
-            type: "Labor", id: `${uniqueId}_LABOR`,
-            nagsId: "", oemId: "", labor: labor,
-            description: `${labor} hours`, manufacturer: "", qty: 1,
-            unitPrice: globalLaborRate, amount: globalLaborRate, pricingType: "hourly"
-          });
-        }
-        return items;
-      }));
-      setDerivedPartItems(result.flat());
+    const partItem = {
+      type: "Part", id: uniqueId,
+      prefixCd: getPrefixCd(glass), posCd: getPosCd(glass), sideCd: getSideCd(glass),
+      nagsId: fullPartNumber, oemId: oemId || "",
+      labor: labor, description: description,
+      manufacturer: manufacturer, qty: 1,
+      listPrice: listPrice,
+      unitPrice: netPrice, amount: netPrice,
+      isManual: false
     };
+    newItems.push(partItem);
 
-    if (selectedParts.length > 0) fetchGlassInfo();
-    else setDerivedPartItems([]);
+    if (Number(labor) > 0) {
+      const globalLaborRate = parseFloat(localStorage.getItem('GlobalLaborRate')) || 0;
+      newItems.push({
+        type: "Labor", id: `${uniqueId}_LABOR`,
+        nagsId: "", oemId: "", labor: labor,
+        description: `${labor} hours`, manufacturer: "", qty: 1,
+        unitPrice: globalLaborRate, amount: globalLaborRate, pricingType: "hourly",
+        isManual: false
+      });
+    }
 
-  }, [selectedParts]);
+    setQuoteItems(prev => [...prev, ...newItems]);
+  };
+
 
   // Global Clear Handler
   const handleGlobalClear = () => {
@@ -605,7 +499,15 @@ const SearchByRoot = () => {
       okType: "danger",
       cancelText: "Cancel",
       onOk() {
-        setSelectedParts([]);
+        // 1. Clear Local Storage FIRST
+        localStorage.removeItem("agp_customer_data");
+        // Also clear other related keys if necessary
+        // localStorage.removeItem("user_kit_prices"); // Keep kit prices? Probably yes.
+
+        // 2. Reset Store (Global State)
+        resetStore();
+
+        // 3. Reset Local State
         setPrintableNote("");
         setInternalNote("");
         setSpecialInstructions("");
@@ -613,15 +515,20 @@ const SearchByRoot = () => {
         setIncludeInsurance(false);
         setAttachments([]);
         setSavedAttachments([]);
-        setAttachments([]);
         setEditItems([]);
-        setDerivedPartItems([]);
+        setDerivedPartItems([]); // Ensure these legacy states are cleared if they exist in closure
         setManualKitItems([]);
-        setCustomerData(initialCustomerData);
+
+        // 4. Reset Customer & Vehicle
+        // Passing a new object ensures the useEffect sees a change, 
+        // but since we cleared localStorage, it should be fine.
+        setCustomerData({ ...initialCustomerData });
         setVehicleInfo({});
         setVinData(null);
         setModelId(null);
-        setVendorPricingData({}); // Clear vendor pricing data
+        setVendorPricingData({});
+
+        // 5. UI Resets
         setResetKey(prev => prev + 1); // Force remount of search components
         setActiveTab('quote');
         setIsSaved(false);
@@ -756,6 +663,7 @@ const SearchByRoot = () => {
               {activeTab === 'customer' && (
                 <div className="w-full p-2">
                   <CustomerPanel
+                    key={`cust-${resetKey}`}
                     formData={customerData}
                     setFormData={setCustomerData}
                     setCanShowQuotePanel={() => { }}
@@ -824,11 +732,11 @@ const SearchByRoot = () => {
               )}
 
               {/* BOTTOM ROW: QUOTE DETAILS (ALWAYS VISIBLE) */}
-              <div className={`flex-shrink-0 border-t-2 border-slate-800 bg-white shadow-sm mt-2 ${!modelId && editItems.length === 0 && derivedPartItems.length === 0 && manualKitItems.length === 0 ? 'opacity-50' : ''}`}>
+              <div className={`flex-shrink-0 border-t-2 border-slate-800 bg-white shadow-sm mt-2 ${!modelId && quoteItems.length === 0 ? 'opacity-50' : ''}`}>
                 <div className="p-2">
                   <QuotePanel
                     key={`quote-${resetKey}`}
-                    parts={[...editItems, ...derivedPartItems, ...manualKitItems]}
+
                     onRemovePart={handleRemovePart}
                     customerData={customerData}
                     printableNote={printableNote}
@@ -841,7 +749,7 @@ const SearchByRoot = () => {
                     isEditMode={isEditMode}
                     onEditModeChange={setIsEditMode}
                     onDocumentCreated={handleDocumentCreated}
-                    vendorPricingData={vendorPricingData}
+
                   />
                 </div>
               </div>
