@@ -510,10 +510,26 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
             .reduce((sum, it) => sum + (Number(it.amount) || 0), 0);
         return (taxableSubtotal * (Number(globalTaxRate) || 0)) / 100;
     }, [items, globalTaxRate]);
-    const discountAmount = useMemo(() => {
+    const baseDiscountAmount = useMemo(() => {
         return (subtotal * (Number(discountPercent) || 0)) / 100;
     }, [subtotal, discountPercent]);
-    const total = useMemo(() => Math.max(0, subtotal + totalTax - discountAmount), [subtotal, totalTax, discountAmount]);
+
+    const calculatedTotal = useMemo(() => Math.max(0, subtotal + totalTax - baseDiscountAmount), [subtotal, totalTax, baseDiscountAmount]);
+
+    const [manualTotal, setManualTotal] = useState(null);
+
+    const total = useMemo(() => manualTotal !== null ? Number(manualTotal) : calculatedTotal, [manualTotal, calculatedTotal]);
+
+    const effectiveDiscountAmount = useMemo(() => {
+        if (manualTotal !== null) {
+            return subtotal + totalTax - total;
+        }
+        return baseDiscountAmount;
+    }, [manualTotal, subtotal, totalTax, total, baseDiscountAmount]);
+
+    const handleRoundUp = () => {
+        setManualTotal(Math.ceil(total));
+    };
     const numericPayment = Number(payment) || 0;
     const balance = useMemo(() => Math.max(0, total - numericPayment), [total, numericPayment]);
 
@@ -532,7 +548,7 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
             totalTax,
             totalHours,
             laborAmount: laborCostDisplay,
-            discountAmount,
+            discountAmount: effectiveDiscountAmount,
             total,
             balance,
             docType: currentDocType,
@@ -718,7 +734,7 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                 notes: printableNote,
                 termsConditions: "Warranty valid for 12 months on workmanship.",
                 taxRate: Number(globalTaxRate) || 0,
-                discountAmount: discountAmount,
+                discountAmount: effectiveDiscountAmount,
                 laborAmount: totalLaborAmount,
                 items: serviceDocumentItems
             };
@@ -1111,11 +1127,42 @@ Auto Glass Pro Team`;
                     </div>
 
                     <NumberRow label="Discount %" value={discountPercent} setter={setDiscountPercent} />
-                    {Number(discountPercent) > 0 && <Row label="Discount" value={`- ${currency(discountAmount)}`} />}
+                    {(Number(discountPercent) > 0 || manualTotal !== null) && <Row label="Discount" value={effectiveDiscountAmount >= 0 ? `- ${currency(effectiveDiscountAmount)}` : `+ ${currency(effectiveDiscountAmount * -1)}`} />}
 
                     <div className="my-1 border-t border-slate-200"></div>
 
-                    <Row label="Total" value={currency(total)} bold />
+                    <div className="flex justify-between items-center text-sm py-1">
+                        <span className="font-semibold text-slate-700">Total</span>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={handleRoundUp}
+                                className="text-[10px] bg-sky-50 hover:bg-sky-100 text-sky-600 px-2 py-0.5 rounded border border-sky-100 transition-colors font-medium"
+                                title="Round Up Total"
+                            >
+                                Round Up
+                            </button>
+                            <div className="relative">
+                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 font-semibold">$</span>
+                                <input
+                                    type="text"
+                                    value={manualTotal !== null ? manualTotal : (total ? total.toFixed(2) : '0.00')}
+                                    onChange={(e) => {
+                                        const val = e.target.value.replace(/[^0-9.]/g, '');
+                                        setManualTotal(val);
+                                    }}
+                                    onBlur={() => {
+                                        if (manualTotal !== null && manualTotal !== '') {
+                                            const f = parseFloat(manualTotal);
+                                            setManualTotal(isNaN(f) ? null : f.toFixed(2));
+                                        } else if (manualTotal === '') {
+                                            setManualTotal(null);
+                                        }
+                                    }}
+                                    className="w-24 rounded border border-slate-300 pl-5 pr-2 py-1 text-right text-sm font-bold text-slate-900 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                                />
+                            </div>
+                        </div>
+                    </div>
                     <NumberRow label="Paid" value={payment} setter={setPayment} isCurrency />
 
                     <div className="my-1 border-t border-slate-200"></div>

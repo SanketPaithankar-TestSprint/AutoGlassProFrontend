@@ -30,14 +30,14 @@ export const useProfileDataPrefetch = (isAuthed) => {
                     }
                 });
 
-                // Customers
-                await queryClient.prefetchQuery({
-                    queryKey: ['customers'],
-                    queryFn: async () => {
-                        const res = await getCustomers(token);
-                        return Array.isArray(res) ? res : [];
-                    }
-                });
+                // Customers - PREFETCH REMOVED PER USER REQUEST
+                // await queryClient.prefetchQuery({
+                //     queryKey: ['customers'],
+                //     queryFn: async () => {
+                //         const res = await getCustomers(token);
+                //         return Array.isArray(res) ? res : [];
+                //     }
+                // });
 
                 // Employees
                 await queryClient.prefetchQuery({
