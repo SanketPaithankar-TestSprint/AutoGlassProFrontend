@@ -252,12 +252,15 @@ export default function CarGlassViewer({
     const glassKey = glass ? glass.code : "";
     const nagsId = part.nags_id || part.nags_glass_id;
     const oemId = part.oem_glass_id;
+    const featureSpan = part.feature_span || "";
 
     const alreadySelected = selectedParts.some(
       (p) => {
         const pNagsId = p.part.nags_id || p.part.nags_glass_id;
         const pOemId = p.part.oem_glass_id;
+        const pFeatureSpan = p.part.feature_span || "";
         return pNagsId === nagsId &&
+          pFeatureSpan === featureSpan &&
           pOemId === oemId &&
           p.glass.code === glassKey;
       }
@@ -282,7 +285,8 @@ export default function CarGlassViewer({
         (p) => {
           const nagsId = p.part.nags_id || p.part.nags_glass_id;
           const oemId = p.part.oem_glass_id;
-          return `${nagsId || ""}|${oemId || ""}|${p.glass.code}` !== partKey;
+          const featureSpan = p.part.feature_span || "";
+          return `${nagsId || ""}|${featureSpan}|${oemId || ""}|${p.glass.code}` !== partKey;
         }
       )
     );
@@ -311,7 +315,7 @@ export default function CarGlassViewer({
     // 4. Notify parent for each removed part
     if (partsToRemove.length > 0) {
       partsToRemove.forEach(p => {
-        const partKey = `${p.part.nags_glass_id || ""}|${p.part.oem_glass_id || ""}|${p.glass.code}`;
+        const partKey = `${p.part.nags_id || p.part.nags_glass_id || ""}|${p.part.feature_span || ""}|${p.part.oem_glass_id || ""}|${p.glass.code}`;
         if (onPartDeselect) {
           onPartDeselect(partKey);
         } else if (typeof onPartSelect === 'function') {
@@ -382,17 +386,19 @@ export default function CarGlassViewer({
                 </button>
               </div>
               {parts.map((part, index) => {
-                // Support both old and new API response formats
                 const nagsId = part.nags_id || part.nags_glass_id;
                 const oemId = part.oem_glass_id;
+                const featureSpan = part.feature_span || "";
                 const partId = nagsId || oemId;
-                const partKey = `${nagsId || ""}|${oemId || ""}|${code}`;
+                const partKey = `${nagsId || ""}|${featureSpan}|${oemId || ""}|${code}`;
 
                 const isSelected = selectedParts.some(
                   (p) => {
                     const pNagsId = p.part.nags_id || p.part.nags_glass_id;
                     const pOemId = p.part.oem_glass_id;
+                    const pFeatureSpan = p.part.feature_span || "";
                     return pNagsId === nagsId &&
+                      pFeatureSpan === featureSpan &&
                       pOemId === oemId &&
                       p.glass.code === code;
                   }

@@ -309,7 +309,8 @@ const SearchByRoot = () => {
     const nagsId = part.nags_id || part.nags_glass_id;
     const featureSpan = part.feature_span || '';
     const fullPartNumber = `${nagsId}${featureSpan ? ' ' + featureSpan : ''}`;
-    const uniqueId = `${nagsId || ""}|${part.oem_glass_id || ""}|${glass.code}`;
+    // Include feature_span in uniqueId to differentiate parts with same NAGS ID but different features
+    const uniqueId = `${nagsId || ""}|${featureSpan}|${part.oem_glass_id || ""}|${glass.code}`;
 
     // Check if already added using distinct ID
     const alreadyAdded = selectedParts.some(p => p.id === uniqueId);
@@ -340,7 +341,7 @@ const SearchByRoot = () => {
     console.log('[SearchByRoot] Kit selected:', selectedKit);
 
     // Add kit as a separate item in quoteItems
-    const kitQty = selectedKit.QTY || 1;
+    const kitQtyFromApi = selectedKit.QTY || 1; // Keep for description reference only
 
     // Use price from modal if available, otherwise look up or default
     let kitPrice = selectedKit.unitPrice;
@@ -349,7 +350,9 @@ const SearchByRoot = () => {
       kitPrice = foundPrice !== undefined ? foundPrice : 20;
     }
 
-    const kitDescription = selectedKit.DSC ? `${kitQty} ${selectedKit.DSC}` : "Installation Kit";
+    // Include API QTY in description for reference, but qty in panel is always 1
+    const formattedQty = Number(kitQtyFromApi).toFixed(1); // Always show one decimal (e.g., 2.0)
+    const kitDescription = selectedKit.DSC ? `${formattedQty} ${selectedKit.DSC}` : "Installation Kit";
 
     const kitItem = {
       type: "Kit",
@@ -357,12 +360,12 @@ const SearchByRoot = () => {
       parentPartId: pendingKitData.partId,
       nagsId: selectedKit.NAGS_HW_ID, // Use NAGS_HW_ID as the main ID
       oemId: "",
-      description: kitDescription, // QTY + DSC
+      description: kitDescription, // QTY + DSC for reference
       manufacturer: "",
-      qty: kitQty,
+      qty: 1, // Always 1 in the quote panel
       listPrice: 0,
       unitPrice: kitPrice,
-      amount: kitQty * kitPrice,
+      amount: kitPrice, // qty is 1, so amount = kitPrice
       labor: 0
     };
 
@@ -428,7 +431,9 @@ const SearchByRoot = () => {
     // Support both old and new API field names
     const nagsId = part.nags_id || part.nags_glass_id;
     const oemId = part.oem_glass_id;
-    const uniqueId = `${nagsId || ""}|${oemId || ""}|${glass.code}`;
+    const featureSpan = part.feature_span || '';
+    // Include feature_span in uniqueId to differentiate parts with same NAGS ID but different features
+    const uniqueId = `${nagsId || ""}|${featureSpan}|${oemId || ""}|${glass.code}`;
 
     // Check for new API format
     const hasNewFormat = p => p.nags_id && p.list_price !== undefined;
@@ -499,7 +504,14 @@ const SearchByRoot = () => {
       manufacturer: manufacturer, qty: 1,
       listPrice: listPrice,
       unitPrice: netPrice, amount: netPrice,
-      isManual: false
+      isManual: false,
+      // Attach vendor data for display in QuotePanel
+      vendorData: vendorPrice ? {
+        industryCode: vendorPrice.IndustryCode,
+        availability: vendorPrice.AvailabilityToPromise,
+        leadTime: vendorPrice.LeadTimeFormatted || vendorPrice.LeadTime,
+        manufacturer: "Pilkington"
+      } : null
     };
     newItems.push(partItem);
 

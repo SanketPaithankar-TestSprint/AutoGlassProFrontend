@@ -116,7 +116,7 @@ class ErrorBoundary extends React.Component {
     }
 }
 
-function QuotePanelContent({ onRemovePart, customerData, printableNote, internalNote, insuranceData, includeInsurance, attachments = [], onClear, docMetadata, isSaved, isEditMode, onEditModeChange, onDocumentCreated, vendorPricingData = {} }) {
+function QuotePanelContent({ onRemovePart, customerData, printableNote, internalNote, insuranceData, includeInsurance, attachments = [], onClear, docMetadata, isSaved, isEditMode, onEditModeChange, onDocumentCreated }) {
     const navigate = useNavigate();
 
     const formatDate = (dateStr) => {
@@ -892,26 +892,7 @@ Auto Glass Pro Team`;
         <div className="relative">
             {contextHolder}
 
-            {/* Vendor Pricing Data Panel - Bottom Left */}
-            {Object.keys(vendorPricingData).length > 0 && (
-                <div className="absolute left-0 bottom-0 z-10 p-2 max-w-full">
-                    {Object.entries(vendorPricingData).map(([partId, vendorData]) => {
-                        // Determine color based on availability
-                        let colorClass = 'text-slate-600';
-                        const availability = vendorData.AvailabilityToPromise?.toLowerCase();
-                        if (availability === 'green') colorClass = 'text-green-600';
-                        else if (availability === 'blue') colorClass = 'text-blue-600';
-                        else if (availability === 'red') colorClass = 'text-red-600';
-                        else if (availability === 'yellow') colorClass = 'text-yellow-600';
 
-                        return (
-                            <div key={partId} className={`text-xs font-medium ${colorClass} truncate overflow-hidden whitespace-nowrap`} style={{ maxWidth: '90vw' }}>
-                                IndustryCode: {vendorData.IndustryCode} • Price: ${vendorData.UnitPrice} • LeadTime: {vendorData.LeadTimeFormatted || vendorData.LeadTime} • Manufacturer: Pilkington
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
 
             {/* Header / Metadata */}
             {/* Header / Metadata removed from here and moved to bottom */}
@@ -1068,11 +1049,37 @@ Auto Glass Pro Team`;
             {/* Totals & Actions (Notes removed) */}
             {/* Totals & Actions */}
             {/* Totals & Actions */}
-            <div className="flex justify-end items-end mt-4 gap-6">
-                {/* Left side Metadata */}
-                <div className="flex flex-col gap-4 min-w-[200px]">
+            <div className="flex justify-between items-end mt-4 gap-6">
+                {/* Left side - Vendor Pricing & Metadata */}
+                <div className="flex flex-col gap-2 flex-1">
+                    {/* Vendor Pricing Data Display */}
+                    {items.filter(it => it.vendorData).length > 0 && (
+                        <div className="space-y-1">
+                            {items.filter(it => it.vendorData).map((item) => {
+                                const vendorData = item.vendorData;
+                                // Determine color based on availability
+                                let colorClass = 'text-slate-600';
+                                const availability = vendorData.availability?.toLowerCase();
+                                if (availability === 'green') colorClass = 'text-green-600';
+                                else if (availability === 'blue') colorClass = 'text-blue-600';
+                                else if (availability === 'red') colorClass = 'text-red-600';
+                                else if (availability === 'yellow') colorClass = 'text-yellow-600';
+
+                                return (
+                                    <div key={item.id} className={`text-xs font-medium ${colorClass}`}>
+                                        {vendorData.industryCode && <>IndustryCode: {vendorData.industryCode} • </>}
+                                        Price: ${item.unitPrice} •
+                                        {vendorData.leadTime && <>LeadTime: {vendorData.leadTime} • </>}
+                                        Manufacturer: {vendorData.manufacturer || 'Pilkington'}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+
+                    {/* Document Metadata */}
                     {docMetadata && (
-                        <>
+                        <div className="flex flex-col gap-2 mt-2">
                             {/* Document # */}
                             <div className="flex flex-col">
                                 <span className="text-[10px] text-sky-700 font-bold uppercase tracking-wider mb-0.5">Document #</span>
@@ -1087,7 +1094,7 @@ Auto Glass Pro Team`;
                                 <span className="uppercase text-[10px] font-bold text-slate-400 tracking-wider self-center">Updated</span>
                                 <span className="font-medium text-slate-700">{formatDate(docMetadata.updatedAt)}</span>
                             </div>
-                        </>
+                        </div>
                     )}
                 </div>
 
