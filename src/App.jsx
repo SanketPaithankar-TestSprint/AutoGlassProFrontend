@@ -14,6 +14,7 @@ import AuthPage from './components/AuthPage';
 import OpenRoot from './components/Open/OpenRoot';
 import ReportsRoot from './components/Reports/ReportsRoot';
 import { getValidToken } from './api/getValidToken';
+import { useProfileDataPrefetch } from './hooks/useProfileDataPrefetch';
 
 // Lazy Load Main Components
 const Home = React.lazy(() => import('./components/Home/HomeRoot.jsx'));
@@ -22,12 +23,17 @@ const SearchByRoot = React.lazy(() => import("./components/SearchBy/SearchByRoot
 
 const { Content } = Layout;
 
+
+
 function AppContent() {
   const [isAuthed, setIsAuthed] = useState(false);
   const [collapsed, setCollapsed] = useState(true); // Default collapsed
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Prefetch data when authenticated
+  useProfileDataPrefetch(isAuthed);
 
   useEffect(() => {
     const token = getValidToken();

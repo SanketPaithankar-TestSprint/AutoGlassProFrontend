@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getDistributorCredentials } from "../../api/getDistributorCredentials";
 import { createDistributorCredential } from "../../api/createDistributorCredential";
 import { updateDistributorCredential } from "../../api/updateDistributorCredential";
@@ -8,36 +9,29 @@ import { KeyOutlined, PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, E
 import { Modal, Form, Input, Button, notification, Popconfirm, Select } from "antd";
 
 const DistributorCredentials = () => {
-    const [credentials, setCredentials] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [saving, setSaving] = useState(false);
+    const queryClient = useQueryClient();
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [editingCredential, setEditingCredential] = useState(null);
     const [showPasswords, setShowPasswords] = useState({});
+    const [saving, setSaving] = useState(false);
 
     const [form] = Form.useForm();
 
-    useEffect(() => {
-        fetchCredentials();
-    }, []);
-
-    const fetchCredentials = async () => {
-        setLoading(true);
-        try {
-            const token = getValidToken(); // Get fresh token
+    const { data: credentials = [], isLoading: loading } = useQuery({
+        queryKey: ['distributorCredentials'],
+        queryFn: async () => {
+            const token = getValidToken();
             if (!token) throw new Error("No token found. Please login.");
-            const res = await getDistributorCredentials(token);
-            setCredentials(res);
-        } catch (err) {
+            return await getDistributorCredentials(token);
+        },
+        onError: (err) => {
             console.error(err);
             notification.error({
                 message: "Failed to fetch credentials",
                 description: err.message
             });
-        } finally {
-            setLoading(false);
         }
-    };
+    });
 
     const handleAdd = () => {
         setEditingCredential(null);
@@ -81,7 +75,7 @@ const DistributorCredentials = () => {
 
             setIsModalVisible(false);
             form.resetFields();
-            fetchCredentials();
+            queryClient.invalidateQueries({ queryKey: ['distributorCredentials'] });
         } catch (err) {
             console.error(err);
             notification.error({
@@ -99,7 +93,7 @@ const DistributorCredentials = () => {
             if (!token) throw new Error("No token found");
             await deleteDistributorCredential(token, credentialId);
             notification.success({ message: "Credential deleted successfully" });
-            fetchCredentials();
+            queryClient.invalidateQueries({ queryKey: ['distributorCredentials'] });
         } catch (err) {
             console.error(err);
             notification.error({

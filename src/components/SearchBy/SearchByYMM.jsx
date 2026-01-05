@@ -27,6 +27,7 @@ export default function SearchByYMM({
   showSearch = true,
 }) {
   // --- YMM state
+  /* REPLACE STATE DECLARATIONS AND VALUE EFFECT */
   const [year, setYear] = useState(value?.year || null);
   const [make, setMake] = useState(value?.make || null);
   const [model, setModel] = useState(value?.model || null);
@@ -36,6 +37,8 @@ export default function SearchByYMM({
   const [modelImage, setModelImage] = useState(null);
   const [modelDescription, setModelDescription] = useState(null);
 
+  const [pendingBodyType, setPendingBodyType] = useState(null); // To store string description matching
+
   // Sync state with value prop and handle VIN-provided body type
   useEffect(() => {
     if (value && Object.keys(value).length > 0) {
@@ -43,9 +46,15 @@ export default function SearchByYMM({
       setMake(value.make || null);
       setModel(value.model || null);
 
-      // Handle pre-selected body type from VIN decode
+      // Handle pre-selected body type from VIN decode (ID)
       if (value.bodyStyleId) {
         setBodyType(value.bodyStyleId);
+        setPendingBodyType(null);
+      } else if (value.bodyType) {
+        // Handle pre-selected body type from strings (e.g. from saved quote "4 Door Hatchback")
+        setPendingBodyType(value.bodyType);
+        // Do NOT setBodyType(null) here if we want to preserve potentially user-selected value?
+        // Actually, if value prop changes, we should sync.
       }
     } else {
       // Explicitly reset if value is empty/null
@@ -53,6 +62,7 @@ export default function SearchByYMM({
       setMake(null);
       setModel(null);
       setBodyType(null);
+      setPendingBodyType(null);
       setVehId(null);
       setModelId(null);
       setModelImage(null);
@@ -63,6 +73,24 @@ export default function SearchByYMM({
   const [makes, setMakes] = useState([]);
   const [models, setModels] = useState([]);
   const [bodyTypes, setBodyTypes] = useState([]);
+
+  // Effect to resolve pending body type string to ID
+  useEffect(() => {
+    if (pendingBodyType && bodyTypes.length > 0) {
+      // Try to find a match
+      const lowerPending = pendingBodyType.toLowerCase();
+      // Match against desc (description) or name? API usually returns 'desc'
+      const match = bodyTypes.find(bt =>
+        (bt.desc && bt.desc.toLowerCase() === lowerPending) ||
+        (bt.name && bt.name.toLowerCase() === lowerPending)
+      );
+
+      if (match) {
+        setBodyType(match.body_style_id);
+        setPendingBodyType(null); // Clear processed pending
+      }
+    }
+  }, [bodyTypes, pendingBodyType]);
 
   const [loadingMakes, setLoadingMakes] = useState(false);
   const [loadingModels, setLoadingModels] = useState(false);

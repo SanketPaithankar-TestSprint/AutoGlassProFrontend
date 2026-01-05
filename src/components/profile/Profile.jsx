@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getProfile } from "../../api/getProfile";
 import { getCustomers } from "../../api/getCustomers";
 import { getEmployees } from "../../api/getEmployees";
@@ -16,16 +17,7 @@ import UserKitPricePage from "./UserKitPricePage";
 
 const Profile = () => {
     const [activeTab, setActiveTab] = useState('profile');
-    const [profile, setProfile] = useState(null);
-    const [customers, setCustomers] = useState([]);
-    const [employees, setEmployees] = useState([]);
-
-    const [loadingProfile, setLoadingProfile] = useState(true);
-    const [loadingCustomers, setLoadingCustomers] = useState(false);
-    const [loadingEmployees, setLoadingEmployees] = useState(false);
-    const [saving, setSaving] = useState(false);
-
-
+    const queryClient = useQueryClient();
 
     // Modals state
     const [isCustomerModalVisible, setIsCustomerModalVisible] = useState(false);
@@ -34,65 +26,41 @@ const Profile = () => {
 
     const [form] = Form.useForm();
     const [employeeForm] = Form.useForm();
-
-    const [error, setError] = useState(null);
-
     const token = getValidToken();
 
     useEffect(() => {
         document.title = "APAI | Profile";
-        fetchProfile();
     }, []);
 
-    useEffect(() => {
-        if (activeTab === 'customers') fetchCustomers();
-        if (activeTab === 'employees') fetchEmployees();
-    }, [activeTab]);
-
-    const fetchProfile = async () => {
-        setLoadingProfile(true);
-        setError(null);
-        try {
+    const { data: profile, isLoading: loadingProfile, error } = useQuery({
+        queryKey: ['profile'],
+        queryFn: async () => {
             if (!token) throw new Error("No token found. Please login.");
             const res = await getProfile(token);
-            setProfile(res);
             localStorage.setItem("agp_profile_data", JSON.stringify(res));
-        } catch (err) {
-            setError(err.message || "Failed to fetch profile.");
-        } finally {
-            setLoadingProfile(false);
+            return res;
         }
-    };
+    });
 
-    const fetchCustomers = async () => {
-        if (customers.length > 0) return; // cache locally
-        setLoadingCustomers(true);
-        try {
+    const { data: customers = [], isLoading: loadingCustomers } = useQuery({
+        queryKey: ['customers'],
+        queryFn: async () => {
             if (!token) throw new Error("No token found. Please login.");
             const res = await getCustomers(token);
-            setCustomers(Array.isArray(res) ? res : []);
-        } catch (err) {
-            console.error(err);
-            // setError(err.message || "Failed to fetch customers.");
-        } finally {
-            setLoadingCustomers(false);
+            return Array.isArray(res) ? res : [];
         }
-    };
+    });
 
-    const fetchEmployees = async () => {
-        if (employees.length > 0) return; // cache locally
-        setLoadingEmployees(true);
-        try {
+    const { data: employees = [], isLoading: loadingEmployees } = useQuery({
+        queryKey: ['employees'],
+        queryFn: async () => {
             if (!token) throw new Error("No token found. Please login.");
             const res = await getEmployees(token);
-            setEmployees(Array.isArray(res) ? res : []);
-        } catch (err) {
-            console.error(err);
-            // setError(err.message || "Failed to fetch employees.");
-        } finally {
-            setLoadingEmployees(false);
+            return Array.isArray(res) ? res : [];
         }
-    };
+    });
+
+    const [saving, setSaving] = useState(false);
 
     // Customer Handlers
     const handleAddCustomer = () => {
@@ -132,7 +100,7 @@ const Profile = () => {
             }
 
             setIsCustomerModalVisible(false);
-            fetchCustomers(); // Refresh list
+            queryClient.invalidateQueries({ queryKey: ['customers'] });
         } catch (err) {
             console.error(err);
             notification.error({ message: "Failed to save customer", description: err.message });
@@ -164,7 +132,7 @@ const Profile = () => {
             notification.success({ message: "Employee created successfully" });
 
             setIsEmployeeModalVisible(false);
-            fetchEmployees(); // Refresh list
+            queryClient.invalidateQueries({ queryKey: ['employees'] });
         } catch (err) {
             console.error(err);
             notification.error({ message: "Failed to create employee", description: err.message });
@@ -204,7 +172,7 @@ const Profile = () => {
 
     const renderProfileContent = () => {
         if (loadingProfile) return <div className="text-center py-12 text-lg text-gray-500 animate-pulse">Loading profile...</div>;
-        if (error) return <div className="text-center py-12 text-lg text-red-500">{error}</div>;
+        if (error) return <div className="text-center py-12 text-lg text-red-500">{error.message || "Failed to fetch profile."}</div>;
         if (!profile) return null;
 
         return (

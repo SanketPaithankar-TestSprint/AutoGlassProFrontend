@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Input, Card, notification, Table, Tag } from "antd";
 import { DollarOutlined } from "@ant-design/icons";
 import { createUserKitPrice, getUserKitPrices } from "../../api/userKitPrices";
@@ -13,33 +14,31 @@ const STANDARD_KITS = [
 
 const UserKitPricePage = () => {
     const [prices, setPrices] = useState({}); // Map of code -> price
-    const [loading, setLoading] = useState(false);
     const [updating, setUpdating] = useState({}); // Map of code -> boolean
+    const queryClient = useQueryClient();
 
-    const fetchKitPrices = async () => {
-        setLoading(true);
-        try {
-            const data = await getUserKitPrices();
-            const priceMap = {};
-            data.forEach(item => {
-                priceMap[item.kitCode] = item.kitPrice;
-            });
-            setPrices(priceMap);
-            localStorage.setItem("user_kit_prices", JSON.stringify(data));
-        } catch (error) {
+    const { data: kitPrices, isLoading: loading } = useQuery({
+        queryKey: ['userKitPrices'],
+        queryFn: getUserKitPrices,
+        onError: (error) => {
             console.error("Error fetching kit prices:", error);
             notification.error({
                 message: "Failed to fetch kit prices",
                 description: error.message
             });
-        } finally {
-            setLoading(false);
         }
-    };
+    });
 
     useEffect(() => {
-        fetchKitPrices();
-    }, []);
+        if (kitPrices) {
+            const priceMap = {};
+            kitPrices.forEach(item => {
+                priceMap[item.kitCode] = item.kitPrice;
+            });
+            setPrices(priceMap);
+            localStorage.setItem("user_kit_prices", JSON.stringify(kitPrices));
+        }
+    }, [kitPrices]);
 
     const handlePriceChange = (code, value) => {
         setPrices(prev => ({
@@ -68,6 +67,7 @@ const UserKitPricePage = () => {
                 currentData.push({ kitCode: code, kitPrice: price });
             }
             localStorage.setItem("user_kit_prices", JSON.stringify(currentData));
+            queryClient.invalidateQueries({ queryKey: ['userKitPrices'] });
 
             notification.success({ message: `Price for ${code} updated` });
         } catch (error) {

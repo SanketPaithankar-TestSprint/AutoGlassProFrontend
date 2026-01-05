@@ -134,6 +134,7 @@ const SearchByRoot = () => {
           make: vehicle.vehicleMake || "",
           model: vehicle.vehicleModel || "",
           style: vehicle.vehicleStyle || "",
+          bodyType: vehicle.bodyType || "", // Pass body type description
           vin: vehicle.vin || ""
         });
         if (vehicle.vin) setVinData({ vin: vehicle.vin });

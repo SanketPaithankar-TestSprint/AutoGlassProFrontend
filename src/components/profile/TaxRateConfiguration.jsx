@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Table, Button, Modal, Form, Input, InputNumber, Switch, Card, notification, Popconfirm, Tag, Tooltip, Empty } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined, StarOutlined, StarFilled, ReloadOutlined } from "@ant-design/icons";
 import { getTaxRates, createTaxRate, updateTaxRate, deleteTaxRate, setDefaultTaxRate } from "../../api/taxRateApi";
@@ -25,29 +26,25 @@ const US_STATES = [
 ];
 
 const TaxRateConfiguration = () => {
-    const [taxRates, setTaxRates] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
+    // const [taxRates, setTaxRates] = useState([]); // Replaced by useQuery
+    // const [loading, setLoading] = useState(true); // Replaced by useQuery
     const [modalVisible, setModalVisible] = useState(false);
     const [editingRate, setEditingRate] = useState(null);
     const [saving, setSaving] = useState(false);
     const [form] = Form.useForm();
 
-    useEffect(() => {
-        fetchTaxRates();
-    }, []);
-
-    const fetchTaxRates = async () => {
-        setLoading(true);
-        try {
+    const { data: taxRates = [], isLoading: loading, refetch: fetchTaxRates } = useQuery({
+        queryKey: ['taxRates'],
+        queryFn: async () => {
             const data = await getTaxRates();
-            setTaxRates(Array.isArray(data) ? data : []);
-        } catch (error) {
+            return Array.isArray(data) ? data : [];
+        },
+        onError: (error) => {
             console.error("Error fetching tax rates:", error);
             notification.error({ message: "Failed to fetch tax rates", description: error.message });
-        } finally {
-            setLoading(false);
         }
-    };
+    });
 
     const handleAdd = () => {
         setEditingRate(null);
@@ -72,7 +69,7 @@ const TaxRateConfiguration = () => {
         try {
             await deleteTaxRate(taxRateId);
             notification.success({ message: "Tax rate deleted successfully" });
-            fetchTaxRates();
+            queryClient.invalidateQueries({ queryKey: ['taxRates'] });
         } catch (error) {
             notification.error({ message: "Failed to delete tax rate", description: error.message });
         }
@@ -82,7 +79,7 @@ const TaxRateConfiguration = () => {
         try {
             await setDefaultTaxRate(taxRateId);
             notification.success({ message: "Default tax rate updated" });
-            fetchTaxRates();
+            queryClient.invalidateQueries({ queryKey: ['taxRates'] });
         } catch (error) {
             notification.error({ message: "Failed to set default", description: error.message });
         }
@@ -108,7 +105,7 @@ const TaxRateConfiguration = () => {
             }
 
             setModalVisible(false);
-            fetchTaxRates();
+            queryClient.invalidateQueries({ queryKey: ['taxRates'] });
         } catch (error) {
             if (error.errorFields) return; // Form validation error
             notification.error({ message: "Failed to save tax rate", description: error.message });

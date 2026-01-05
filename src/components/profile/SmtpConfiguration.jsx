@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Table, Button, Modal, Form, Input, InputNumber, Select, message, Popconfirm, Space, Tag } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined, CheckCircleOutlined, ThunderboltOutlined } from "@ant-design/icons";
 import { getAllSmtpConfigs } from "../../api/getAllSmtpConfigs";
@@ -11,29 +12,25 @@ import { verifySmtpConfig } from "../../api/verifySmtpConfig";
 const { Option } = Select;
 
 const SmtpConfiguration = () => {
-    const [configs, setConfigs] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const queryClient = useQueryClient();
+    // const [configs, setConfigs] = useState([]); // Replaced by useQuery
+    // const [loading, setLoading] = useState(false); // Replaced by useQuery
     const [modalVisible, setModalVisible] = useState(false);
     const [form] = Form.useForm();
     const [editingConfig, setEditingConfig] = useState(null);
     const [testingId, setTestingId] = useState(null);
 
-    useEffect(() => {
-        fetchConfigs();
-    }, []);
-
-    const fetchConfigs = async () => {
-        setLoading(true);
-        try {
+    const { data: configs = [], isLoading: loading } = useQuery({
+        queryKey: ['smtpConfigs'],
+        queryFn: async () => {
             const data = await getAllSmtpConfigs();
-            setConfigs(Array.isArray(data) ? data : []);
-        } catch (error) {
+            return Array.isArray(data) ? data : [];
+        },
+        onError: (error) => {
             message.error("Failed to load SMTP configurations");
             console.error(error);
-        } finally {
-            setLoading(false);
         }
-    };
+    });
 
     const handleAdd = () => {
         setEditingConfig(null);
@@ -59,7 +56,7 @@ const SmtpConfiguration = () => {
         try {
             await deleteSmtpConfig(configId);
             message.success("SMTP configuration deleted");
-            fetchConfigs();
+            queryClient.invalidateQueries({ queryKey: ['smtpConfigs'] });
         } catch (error) {
             message.error("Failed to delete configuration");
         }
@@ -81,7 +78,7 @@ const SmtpConfiguration = () => {
         try {
             await verifySmtpConfig(configId);
             message.success("Configuration verified");
-            fetchConfigs();
+            queryClient.invalidateQueries({ queryKey: ['smtpConfigs'] });
         } catch (error) {
             message.error("Verification failed: " + error.message);
         }
@@ -100,7 +97,7 @@ const SmtpConfiguration = () => {
             }
             setModalVisible(false);
             form.resetFields();
-            fetchConfigs();
+            queryClient.invalidateQueries({ queryKey: ['smtpConfigs'] });
         } catch (error) {
             message.error("Failed to save configuration: " + error.message);
         }
