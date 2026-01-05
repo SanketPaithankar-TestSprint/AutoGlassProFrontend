@@ -60,12 +60,16 @@ const KitSelectionModal = ({
 
     const handleConfirm = () => {
         if (selectedStandardKit) {
+            // Find the original kit data from the API response to get the correct NAGS_HW_ID
+            const originalKit = kits.find(k => String(k.QUAL_CD) === selectedStandardKit);
+
             const price = standardPrices[selectedStandardKit] || 0;
             const kitDef = STANDARD_KITS.find(k => k.code === selectedStandardKit);
+
             onSelect({
-                NAGS_HW_ID: selectedStandardKit,
-                DSC: kitDef?.desc || 'Standard Kit',
-                QTY: 1,
+                NAGS_HW_ID: originalKit?.NAGS_HW_ID || selectedStandardKit, // Use correct Hardware ID (e.g. HAH000004)
+                DSC: originalKit?.DSC || kitDef?.desc || 'Standard Kit',
+                QTY: originalKit?.QTY || 1, // Use QTY from API response
                 unitPrice: parseFloat(price),
                 type: 'Kit'
             });

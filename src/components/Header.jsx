@@ -240,16 +240,14 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
 
             {!isAuthed && (
               <div className="px-4 pt-4 border-t border-slate-200 mt-4">
-                <Button
-                  type="text"
-                  className="w-full !h-10 !text-slate-700 !bg-transparent hover:!bg-violet-100 !border-0 text-base"
-                  onClick={() => {
-                    setDrawerOpen(false);
-                    navigate('/auth');
-                  }}
-                >
-                  Login
-                </Button>
+                <Link to="/auth" onClick={() => setDrawerOpen(false)}>
+                  <Button
+                    type="text"
+                    className="w-full !h-10 !text-slate-700 !bg-transparent hover:!bg-violet-100 !border-0 text-base"
+                  >
+                    Login
+                  </Button>
+                </Link>
                 <Button
                   type="primary"
                   onClick={() => {

@@ -83,6 +83,7 @@ function AppContent() {
                     <Route path="/Pricing" element={<PricingPage />} />
                     <Route path="/open" element={<OpenRoot />} />
                     <Route path="/reports" element={<ReportsRoot />} />
+                    <Route path="/auth" element={<AuthPage />} />
                   </Routes>
                 </Suspense>
               </div>

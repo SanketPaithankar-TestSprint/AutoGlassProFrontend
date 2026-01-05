@@ -4,6 +4,10 @@ import './index.css'
 import AppRoutes from './App.jsx'
 import 'antd/dist/reset.css'; // For Ant Design v5+
 import { App } from 'antd';
+import { setupFetchInterceptor } from './utils/fetchInterceptor';
+
+// Initialize Global Safeguards
+setupFetchInterceptor();
 
 createRoot(document.getElementById('root')).render(
   <App>

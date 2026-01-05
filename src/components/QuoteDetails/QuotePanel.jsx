@@ -325,15 +325,30 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
     };
 
     const handleAddRow = (type = "Part") => {
+        let actualType = type;
+        let description = "Custom Part";
+        let isAdas = false;
+
+        if (type.startsWith("ADAS_")) {
+            actualType = "Service"; // ADAS items are Services
+            isAdas = true;
+            const subType = type.split('_')[1];
+            if (subType === 'Static') description = "Labor/ADAS Recal - Static";
+            else if (subType === 'Dynamic') description = "Labor/ADAS Recal - Dynamic";
+            else if (subType === 'Dual') description = "Labor/ADAS Recal - Static & Dynamic";
+        } else {
+            description = type === "Part" ? "Custom Part" : type === "Labor" ? "Custom Labor" : "Service";
+        }
+
         const newItemData = {
             ...newItem(),
             id: Math.random().toString(36).substring(2, 9),
             isManual: true, // Flag to identify manual items
-            description: type === "Part" ? "Custom Part" : type === "Labor" ? "Custom Labor" : "Service",
-            type: type
+            description: description,
+            type: actualType
         };
 
-        if (type === "Labor") {
+        if (actualType === "Labor") {
             newItemData.unitPrice = globalLaborRate;
             newItemData.labor = 1;
             newItemData.pricingType = "hourly";
@@ -1030,7 +1045,16 @@ Auto Glass Pro Team`;
                         items: [
                             { key: 'Part', label: <span className="text-xs">Add Part</span> },
                             { key: 'Labor', label: <span className="text-xs">Add Labor</span> },
-                            { key: 'Service', label: <span className="text-xs">Add Service</span> }
+                            { key: 'Service', label: <span className="text-xs">Add Service</span> },
+                            {
+                                key: 'ADAS',
+                                label: <span className="text-xs">ADAS Calibration</span>,
+                                children: [
+                                    { key: 'ADAS_Static', label: <span className="text-xs">Static</span> },
+                                    { key: 'ADAS_Dynamic', label: <span className="text-xs">Dynamic</span> },
+                                    { key: 'ADAS_Dual', label: <span className="text-xs">Static & Dynamic</span> },
+                                ]
+                            }
                         ],
                         onClick: (e) => handleAddRow(e.key)
                     }}

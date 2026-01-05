@@ -305,7 +305,7 @@ const SearchByRoot = () => {
   };
 
   // Handle adding a part
-  const handleAddPart = ({ glass, part, glassInfo }) => {
+  const handleAddPart = async ({ glass, part, glassInfo }) => {
     const nagsId = part.nags_id || part.nags_glass_id;
     const featureSpan = part.feature_span || '';
     const fullPartNumber = `${nagsId}${featureSpan ? ' ' + featureSpan : ''}`;
@@ -316,14 +316,14 @@ const SearchByRoot = () => {
 
     if (!alreadyAdded) {
       addPart({ glass, part, glassInfo, id: uniqueId });
-      // Add to Quote Items directly
-      processAndAddPart({ glass, part, glassInfo });
+      // Add to Quote Items directly and WAIT for it to complete
+      await processAndAddPart({ glass, part, glassInfo });
     }
 
     // Check if part has kit options
     if (part.kit && Array.isArray(part.kit) && part.kit.length > 0) {
       console.log('[SearchByRoot] Part has kit options:', part.kit);
-      const partId = `${nagsId || ""}|${part.oem_glass_id || ""}|${glass.code}`;
+      const partId = uniqueId; // ENSURE THIS MATCHES THE ID USED IN processAndAddPart
       setPendingKitData({
         kits: part.kit,
         partId: partId,
@@ -349,13 +349,15 @@ const SearchByRoot = () => {
       kitPrice = foundPrice !== undefined ? foundPrice : 20;
     }
 
+    const kitDescription = selectedKit.DSC ? `${kitQty} ${selectedKit.DSC}` : "Installation Kit";
+
     const kitItem = {
       type: "Kit",
       id: `kit_${selectedKit.NAGS_HW_ID}_${Date.now()}`,
       parentPartId: pendingKitData.partId,
-      nagsId: selectedKit.NAGS_HW_ID,
+      nagsId: selectedKit.NAGS_HW_ID, // Use NAGS_HW_ID as the main ID
       oemId: "",
-      description: selectedKit.DSC || "Installation Kit",
+      description: kitDescription, // QTY + DSC
       manufacturer: "",
       qty: kitQty,
       listPrice: 0,
@@ -364,7 +366,30 @@ const SearchByRoot = () => {
       labor: 0
     };
 
-    setQuoteItems(prev => [...prev, kitItem]);
+    setQuoteItems(prev => {
+      // Find index of parent part
+      const parentIndex = prev.findIndex(item => item.id === pendingKitData.partId);
+
+      if (parentIndex !== -1) {
+        // Insert kit item specifically after its parent part
+        const newItems = [...prev];
+        // If the next item is labor for this part, insert after that too?
+        // Usually safer to just insert after parent.
+        // Let's check if parent has labor attached (id_LABOR)
+        const possibleLaborIndex = prev.findIndex(item => item.id === `${pendingKitData.partId}_LABOR`);
+
+        let insertIndex = parentIndex + 1;
+        if (possibleLaborIndex !== -1 && possibleLaborIndex > parentIndex) {
+          insertIndex = possibleLaborIndex + 1;
+        }
+
+        newItems.splice(insertIndex, 0, kitItem);
+        return newItems;
+      } else {
+        // Fallback: append if parent not found (shouldn't happen)
+        return [...prev, kitItem];
+      }
+    });
     setPendingKitData(null);
   };
 

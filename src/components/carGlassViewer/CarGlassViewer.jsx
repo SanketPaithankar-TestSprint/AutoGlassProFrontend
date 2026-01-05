@@ -60,7 +60,7 @@ export default function CarGlassViewer({
     const side = (glass.side || "").toUpperCase();
 
     const codeObj = GLASS_CODE_NAMES.find(obj => obj.code === prefix);
-    const baseName = codeObj ? codeObj.name : (glass.description || "Glass Part");
+    const baseName = codeObj ? codeObj.name : (glass.description || "");
 
     // For Windshield and Back Glass, return just the name
     if (prefix === "DW" || prefix === "DB") return baseName;
@@ -434,17 +434,33 @@ export default function CarGlassViewer({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
                         <span className={`font-bold text-xs ${isSelected ? "text-blue-900" : "text-slate-800"}`}>
-                          {nagsId || "Unknown ID"}{part.feature_span ? ` ${part.feature_span}` : (part.glass_info?.ta ? ` ${part.glass_info.ta}` : "")}
+                          {nagsId || "Unknown ID"}
+                          {part.feature_span ? ` ${part.feature_span}` : (part.glass_info?.ta ? ` ${part.glass_info.ta}` : "")}
+                          {part.qualifiers && part.qualifiers.length > 0 ? ` (${part.qualifiers.join(", ")})` : ""}
                         </span>
-                        {oemId && (
+
+                        {/* OEM Display Logic */}
+                        {part.OEMS && part.OEMS.length > 1 ? (
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <Select
+                              defaultValue={part.OEMS[0]}
+                              size="small"
+                              bordered={false}
+                              className="w-36 !text-xs !font-mono !font-bold bg-slate-100 border border-slate-200 rounded"
+                              dropdownMatchSelectWidth={false}
+                              options={part.OEMS.map(o => ({ label: o, value: o }))}
+                            // We could handle selection here if needed to update the 'selected' part context
+                            />
+                          </div>
+                        ) : (oemId || (part.OEMS && part.OEMS.length === 1)) ? (
                           <span className="text-xs font-mono font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded shrink-0 border border-slate-200">
-                            OEM: {oemId}
+                            OEM: {oemId || part.OEMS[0]}
                           </span>
-                        )}
+                        ) : null}
                       </div>
                       <div className="flex items-center justify-between gap-2 mt-0.5">
                         <p className="text-[10px] text-slate-500 truncate leading-tight">
-                          {part.part_description || "Glass Part"}
+                          {part.part_description || ""}
                         </p>
                         {part.list_price && (
                           <span className="text-[10px] font-semibold text-green-700 shrink-0">
