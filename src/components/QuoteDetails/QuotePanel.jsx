@@ -143,6 +143,31 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
         }
     });
 
+    useEffect(() => {
+        const loadProfile = () => {
+            try {
+                const saved = localStorage.getItem("agp_profile_data");
+                if (saved) {
+                    setUserProfile(JSON.parse(saved));
+                }
+            } catch (e) {
+                console.error("Failed to load profile update", e);
+            }
+        };
+
+        window.addEventListener('storage', loadProfile);
+        // Also check on focus in case they changed it in another tab/window
+        window.addEventListener('focus', loadProfile);
+
+        // Initial check in case it changed since mount
+        loadProfile();
+
+        return () => {
+            window.removeEventListener('storage', loadProfile);
+            window.removeEventListener('focus', loadProfile);
+        };
+    }, []);
+
     // Debounce timer for part number changes
     const [debounceTimers, setDebounceTimers] = useState({});
 

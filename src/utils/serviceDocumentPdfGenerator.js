@@ -155,6 +155,7 @@ export function generateServiceDocumentPDF({
     doc.rect(topGridX, y4, 120, rowH);
     doc.line(topGridX + 40, y4, topGridX + 40, y4 + rowH);
     doc.setFontSize(8); doc.setFont("helvetica", "normal"); doc.text("Fed Tax #", topGridX + 2, y4 + 12);
+    doc.setFontSize(10); doc.setFont("helvetica", "bold"); doc.text(userProfile?.ein || userProfile?.businessLicenseNumber || "", topGridX + 45, y4 + 13);
 
     doc.rect(topGridX + 120, y4, 100, rowH);
     doc.line(topGridX + 155, y4, topGridX + 155, y4 + rowH);
@@ -222,13 +223,13 @@ export function generateServiceDocumentPDF({
     // Row 3: Lic | VIN | Claim | Loss Date
     const vY3 = vY2 + vRowH;
     doc.rect(margin, vY3, 40, vRowH); doc.text("Lic. #", margin + 2, vY3 + 14);
-    doc.rect(margin + 40, vY3, 100, vRowH); doc.text(customerData?.licensePlate || "", margin + 45, vY3 + 14);
+    doc.rect(margin + 40, vY3, 100, vRowH); doc.text(customerData?.licensePlateNumber || "", margin + 45, vY3 + 14);
 
     doc.rect(margin + 140, vY3, 40, vRowH); doc.text("V.I.N", margin + 142, vY3 + 14);
     doc.rect(margin + 180, vY3, 180, vRowH); doc.text(customerData?.vin || "", margin + 185, vY3 + 14);
 
     doc.rect(margin + 360, vY3, 40, vRowH); doc.text("Claim #", margin + 362, vY3 + 14);
-    doc.rect(margin + 400, vY3, 80, vRowH); doc.text(customerData?.claimNumber || "", margin + 405, vY3 + 14);
+    doc.rect(margin + 400, vY3, 80, vRowH); doc.text(customerData?.claimNumber || insuranceData?.claimNumber || "", margin + 405, vY3 + 14);
 
     doc.rect(margin + 480, vY3, 60, vRowH);
     doc.setFontSize(6); doc.text("Loss Date", margin + 482, vY3 + 8); doc.setFontSize(8);
@@ -237,10 +238,10 @@ export function generateServiceDocumentPDF({
     // Row 4: Phones | Damage
     const vY4 = vY3 + vRowH;
     doc.rect(margin, vY4, 40, vRowH); doc.text("Home\nPhone", margin + 2, vY4 + 8, { lineHeightFactor: 1 });
-    doc.rect(margin + 40, vY4, 100, vRowH); doc.text("() -", margin + 45, vY4 + 14);
+    doc.rect(margin + 40, vY4, 100, vRowH); doc.text(customerData?.phone || "", margin + 45, vY4 + 14);
 
     doc.rect(margin + 140, vY4, 40, vRowH); doc.text("Bus.\nPhone", margin + 142, vY4 + 8, { lineHeightFactor: 1 });
-    doc.rect(margin + 180, vY4, 100, vRowH); doc.text("() -", margin + 185, vY4 + 14);
+    doc.rect(margin + 180, vY4, 100, vRowH); doc.text(customerData?.alternatePhone || "", margin + 185, vY4 + 14);
 
     doc.rect(margin + 280, vY4, 80, vRowH); doc.text("Damage\n/ Cause", margin + 282, vY4 + 8, { lineHeightFactor: 1 });
     doc.rect(margin + 360, vY4, 180, vRowH);
@@ -287,7 +288,7 @@ export function generateServiceDocumentPDF({
         head: [["Qty", "Part #", "Description", "List", "Price", "Total"]],
         body: items.map((it) => [
             String(Number(it.qty) || 0),
-            it.nagsId || it.oemId || "-",
+            it.type === 'Labor' ? "Labor" : (it.nagsId || it.oemId || "-"),
             it.description || "-",
             (Number(it.unitPrice) || 0).toFixed(2), // List
             (Number(it.unitPrice) || 0).toFixed(2), // Price
