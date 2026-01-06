@@ -618,7 +618,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                             <div className="p-4 overflow-y-auto flex-1">
                                 <div className="grid grid-cols-4 gap-3 mb-3">
                                     <FormInput label="First Name" name="firstName" value={formData.firstName} onChange={handleChange} required />
-                                    <FormInput label="Last Name" name="lastName" value={formData.lastName} onChange={handleChange} required />
+                                    <FormInput label="Last Name" name="lastName" value={formData.lastName} onChange={handleChange} />
                                     <FormInput label="Email Address" name="email" value={formData.email} onChange={handleChange} type="email" />
                                     <FormInput label="Phone Number" name="phone" value={formData.phone} onChange={handleChange} required type="tel" />
                                 </div>
@@ -645,7 +645,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                     type="submit"
                                     className="px-6 py-2 rounded-md bg-violet-600 hover:bg-violet-700 text-white font-medium shadow-sm transition-colors"
                                 >
-                                    Continue to Quote
+                                    Save
                                 </button>
                             </div>
 

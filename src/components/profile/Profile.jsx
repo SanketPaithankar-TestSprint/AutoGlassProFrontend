@@ -7,13 +7,14 @@ import { createCustomer } from "../../api/createCustomer";
 import { updateCustomer } from "../../api/updateCustomer";
 import { createEmployee } from "../../api/createEmployee";
 import { getValidToken } from "../../api/getValidToken";
-import { UserOutlined, TeamOutlined, IdcardOutlined, ShopOutlined, PhoneOutlined, EnvironmentOutlined, EditOutlined, PlusOutlined, DollarOutlined, ThunderboltOutlined, PercentageOutlined, KeyOutlined } from "@ant-design/icons";
+import { UserOutlined, TeamOutlined, IdcardOutlined, ShopOutlined, PhoneOutlined, EnvironmentOutlined, EditOutlined, PlusOutlined, DollarOutlined, ThunderboltOutlined, PercentageOutlined, KeyOutlined, ScanOutlined } from "@ant-design/icons";
 import { Modal, Form, Input, Select, Button, notification } from "antd";
 import SmtpConfiguration from "./SmtpConfiguration";
 import LaborRateConfiguration from "./LaborRateConfiguration";
 import TaxRateConfiguration from "./TaxRateConfiguration";
 import DistributorCredentials from "./DistributorCredentials";
 import UserKitPricePage from "./UserKitPricePage";
+import UserAdasPricePage from "./UserAdasPricePage";
 
 const Profile = () => {
     const [activeTab, setActiveTab] = useState('profile');
@@ -449,6 +450,7 @@ const Profile = () => {
                         {renderMenuItem('taxRates', 'Tax Rates', <PercentageOutlined />)}
                         {renderMenuItem('smtp', 'Email (SMTP)', <ThunderboltOutlined />)}
                         {renderMenuItem('userKitPrice', 'User Kit Price', <DollarOutlined />)}
+                        {renderMenuItem('userAdasPrice', 'ADAS Pricing', <ScanOutlined />)}
                     </div>
                 </div>
             </div>
@@ -464,6 +466,7 @@ const Profile = () => {
                     {activeTab === 'taxRates' && <TaxRateConfiguration />}
                     {activeTab === 'smtp' && <SmtpConfiguration />}
                     {activeTab === 'userKitPrice' && <UserKitPricePage />}
+                    {activeTab === 'userAdasPrice' && <UserAdasPricePage />}
                 </div>
             </div>
         </div>

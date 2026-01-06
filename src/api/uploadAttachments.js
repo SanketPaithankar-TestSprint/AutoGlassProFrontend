@@ -63,7 +63,7 @@ export const uploadAttachments = async (documentNumber, files, descriptions = []
             },
             body: formData
         });
-
+        debugger;
         if (!response.ok) {
             const errorData = await response.json().catch(() => null);
             throw new Error(
