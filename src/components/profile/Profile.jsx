@@ -6,6 +6,7 @@ import { getEmployees } from "../../api/getEmployees";
 import { createCustomer } from "../../api/createCustomer";
 import { updateCustomer } from "../../api/updateCustomer";
 import { createEmployee } from "../../api/createEmployee";
+import { updateProfile } from "../../api/updateProfile";
 import { getValidToken } from "../../api/getValidToken";
 import { UserOutlined, TeamOutlined, IdcardOutlined, ShopOutlined, PhoneOutlined, EnvironmentOutlined, EditOutlined, PlusOutlined, DollarOutlined, ThunderboltOutlined, PercentageOutlined, KeyOutlined, ScanOutlined } from "@ant-design/icons";
 import { Modal, Form, Input, Select, Button, notification } from "antd";
@@ -15,6 +16,7 @@ import TaxRateConfiguration from "./TaxRateConfiguration";
 import DistributorCredentials from "./DistributorCredentials";
 import UserKitPricePage from "./UserKitPricePage";
 import UserAdasPricePage from "./UserAdasPricePage";
+import { COUNTRIES, getStatesOrProvinces, getCities } from "../../const/locations";
 
 const Profile = () => {
     const [activeTab, setActiveTab] = useState('profile');
@@ -23,11 +25,20 @@ const Profile = () => {
     // Modals state
     const [isCustomerModalVisible, setIsCustomerModalVisible] = useState(false);
     const [isEmployeeModalVisible, setIsEmployeeModalVisible] = useState(false);
+    const [isEditProfileModalVisible, setIsEditProfileModalVisible] = useState(false);
     const [editingCustomer, setEditingCustomer] = useState(null);
 
     const [form] = Form.useForm();
     const [employeeForm] = Form.useForm();
+    const [profileForm] = Form.useForm();
     const token = getValidToken();
+
+    // Watch for country/state changes in Profile Form to update dropdowns dynamically
+    const selectedCountry = Form.useWatch('country', profileForm);
+    const selectedState = Form.useWatch('state', profileForm);
+
+    const states = getStatesOrProvinces(selectedCountry);
+    const cities = getCities(selectedCountry, selectedState);
 
     useEffect(() => {
         document.title = "APAI | Profile";
@@ -144,6 +155,41 @@ const Profile = () => {
 
 
 
+    // Profile Edit Handlers
+    const handleEditProfile = () => {
+        if (profile) {
+            // Normalize Country for Dropdown
+            let normalizedCountry = profile.country;
+            if (!normalizedCountry || normalizedCountry === 'United States' || normalizedCountry === 'US') {
+                normalizedCountry = 'USA';
+            }
+
+            // Map existing profile to form
+            profileForm.setFieldsValue({
+                ...profile,
+                country: normalizedCountry,
+                businessNumber: profile.businessLicenseNumber
+            });
+        }
+        setIsEditProfileModalVisible(true);
+    };
+
+    const handleUpdateProfile = async () => {
+        try {
+            const values = await profileForm.validateFields();
+            setSaving(true);
+            await updateProfile(values);
+            await queryClient.invalidateQueries({ queryKey: ['profile'] });
+            notification.success({ message: "Profile updated successfully" });
+            setIsEditProfileModalVisible(false);
+        } catch (error) {
+            console.error(error);
+            notification.error({ message: "Failed to update profile", description: error.message });
+        } finally {
+            setSaving(false);
+        }
+    };
+
     // Format address helper
     const formatAddress = (p) => {
         if (!p) return "-";
@@ -179,9 +225,19 @@ const Profile = () => {
         return (
             <div className="space-y-6 animate-fadeIn">
                 <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                    <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                        <ShopOutlined className="text-violet-500" /> Business Information
-                    </h2>
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                            <ShopOutlined className="text-violet-500" /> Business Information
+                        </h2>
+                        <Button
+                            type="primary"
+                            icon={<EditOutlined />}
+                            onClick={handleEditProfile}
+                            className="bg-violet-600 hover:bg-violet-700"
+                        >
+                            Edit Profile
+                        </Button>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-1">
                             <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Business Name</span>
@@ -243,9 +299,92 @@ const Profile = () => {
                         </div>
                     </div>
                 </div>
+                <Modal
+                    title="Edit Profile"
+                    open={isEditProfileModalVisible}
+                    onOk={handleUpdateProfile}
+                    onCancel={() => setIsEditProfileModalVisible(false)}
+                    confirmLoading={saving}
+                    width={800}
+                >
+                    <Form form={profileForm} layout="vertical">
+                        {/* ... Business Info Fields ... */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <Form.Item name="businessName" label="Business Name" rules={[{ required: true }]}>
+                                <Input />
+                            </Form.Item>
+                            <Form.Item name="ownerName" label="Owner Name">
+                                <Input />
+                            </Form.Item>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <Form.Item name="businessNumber" label="Business License Number">
+                                <Input />
+                            </Form.Item>
+                            <Form.Item name="email" label="Email" rules={[{ type: 'email', required: true }]}>
+                                <Input />
+                            </Form.Item>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <Form.Item name="phone" label="Phone" rules={[{ required: true }]}>
+                                <Input />
+                            </Form.Item>
+                            <Form.Item name="alternatePhone" label="Alternate Phone">
+                                <Input />
+                            </Form.Item>
+                        </div>
+
+                        <div className="border-t pt-4 mt-2">
+                            <h4 className="text-sm font-bold text-gray-500 uppercase mb-3">Address</h4>
+                            <Form.Item name="addressLine1" label="Address Line 1">
+                                <Input />
+                            </Form.Item>
+                            <Form.Item name="addressLine2" label="Address Line 2">
+                                <Input />
+                            </Form.Item>
+
+                            {/* Country First to drive State */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <Form.Item name="country" label="Country">
+                                    <Select
+                                        showSearch
+                                        options={COUNTRIES}
+                                        onChange={() => {
+                                            profileForm.setFieldsValue({ state: null, city: null });
+                                        }}
+                                    />
+                                </Form.Item>
+                                <Form.Item name="postalCode" label="Zip Code">
+                                    <Input />
+                                </Form.Item>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <Form.Item name="state" label="State/Province">
+                                    <Select
+                                        showSearch
+                                        options={states}
+                                        disabled={!selectedCountry || states.length === 0}
+                                        onChange={() => profileForm.setFieldsValue({ city: null })}
+                                    />
+                                </Form.Item>
+                                <Form.Item name="city" label="City">
+                                    {cities.length > 0 ? (
+                                        <Select showSearch options={cities} />
+                                    ) : (
+                                        <Input />
+                                    )}
+                                </Form.Item>
+                            </div>
+                        </div>
+                    </Form>
+                </Modal>
             </div>
         );
     };
+
 
     const renderCustomersContent = () => {
         if (loadingCustomers) return <div className="text-center py-12 text-lg text-gray-500 animate-pulse">Loading customers...</div>;

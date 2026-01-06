@@ -6,6 +6,7 @@ import { getValidToken } from "../../api/getValidToken";
 import { getCustomers } from "../../api/getCustomers";
 import { getCustomerWithVehicles } from "../../api/getCustomerWithVehicles";
 import { getMyOrganizations, getOrganizationWithDetails, createOrganization } from "../../api/organizationApi";
+import { COUNTRIES, US_STATES } from "../../const/locations";
 
 const { Option } = Select;
 
@@ -26,25 +27,7 @@ const FormInput = ({ label, name, value, onChange, required = false, type = "tex
     </div>
 );
 
-const US_STATES = [
-    { value: "AL", label: "Alabama" }, { value: "AK", label: "Alaska" }, { value: "AZ", label: "Arizona" },
-    { value: "AR", label: "Arkansas" }, { value: "CA", label: "California" }, { value: "CO", label: "Colorado" },
-    { value: "CT", label: "Connecticut" }, { value: "DE", label: "Delaware" }, { value: "DC", label: "District Of Columbia" },
-    { value: "FL", label: "Florida" }, { value: "GA", label: "Georgia" }, { value: "HI", label: "Hawaii" },
-    { value: "ID", label: "Idaho" }, { value: "IL", label: "Illinois" }, { value: "IN", label: "Indiana" },
-    { value: "IA", label: "Iowa" }, { value: "KS", label: "Kansas" }, { value: "KY", label: "Kentucky" },
-    { value: "LA", label: "Louisiana" }, { value: "ME", label: "Maine" }, { value: "MD", label: "Maryland" },
-    { value: "MA", label: "Massachusetts" }, { value: "MI", label: "Michigan" }, { value: "MN", label: "Minnesota" },
-    { value: "MS", label: "Mississippi" }, { value: "MO", label: "Missouri" }, { value: "MT", label: "Montana" },
-    { value: "NE", label: "Nebraska" }, { value: "NV", label: "Nevada" }, { value: "NH", label: "New Hampshire" },
-    { value: "NJ", label: "New Jersey" }, { value: "NM", label: "New Mexico" }, { value: "NY", label: "New York" },
-    { value: "NC", label: "North Carolina" }, { value: "ND", label: "North Dakota" }, { value: "OH", label: "Ohio" },
-    { value: "OK", label: "Oklahoma" }, { value: "OR", label: "Oregon" }, { value: "PA", label: "Pennsylvania" },
-    { value: "RI", label: "Rhode Island" }, { value: "SC", label: "South Carolina" }, { value: "SD", label: "South Dakota" },
-    { value: "TN", label: "Tennessee" }, { value: "TX", label: "Texas" }, { value: "UT", label: "Utah" },
-    { value: "VT", label: "Vermont" }, { value: "VA", label: "Virginia" }, { value: "WA", label: "Washington" },
-    { value: "WV", label: "West Virginia" }, { value: "WI", label: "Wisconsin" }, { value: "WY", label: "Wyoming" }
-];
+
 
 const FormSelect = ({ label, name, value, onChange, options, required = false, className = "", ...props }) => (
     <div className={`flex flex-col gap-1 ${className}`}>
@@ -558,7 +541,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                         <FormInput label="City *" name="city" value={orgFormData.city} onChange={handleOrgChange} required />
                                         <FormSelect label="State *" name="state" value={orgFormData.state} onChange={handleOrgChange} options={US_STATES} required />
                                         <FormInput label="Postal Code *" name="postalCode" value={orgFormData.postalCode} onChange={handleOrgChange} required />
-                                        <FormInput label="Country" name="country" value={orgFormData.country} onChange={handleOrgChange} />
+                                        <FormSelect label="Country" name="country" value={orgFormData.country} onChange={handleOrgChange} options={COUNTRIES} />
                                     </div>
                                     <div className="grid grid-cols-4 gap-3 items-end">
                                         <div className="col-span-3">
@@ -633,7 +616,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                     </div>
                                     <div className="grid grid-cols-4 gap-3">
                                         <FormInput label="Zip Code" name="postalCode" value={formData.postalCode} onChange={handleChange} />
-                                        <FormInput label="Country" name="country" value={formData.country || "USA"} onChange={handleChange} />
+                                        <FormSelect label="Country" name="country" value={formData.country || "USA"} onChange={handleChange} options={COUNTRIES} />
 
                                     </div>
                                 </div>

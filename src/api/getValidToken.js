@@ -15,7 +15,7 @@ const getValidToken = () => {
         return null;
     }
 
-    if (!res && !res?.data?.jwtToken) return null;
+    if (!res || !res?.data?.jwtToken) return null;
     return res?.data?.jwtToken;
 };
 

@@ -13,6 +13,7 @@ import urls from "../config";
 export const uploadAttachments = async (documentNumber, files, descriptions = [], customerId = null, userId = null) => {
     try {
         const token = await getValidToken();
+        debugger;
 
         if (!token) {
             throw new Error("Authentication token not found. Please log in.");
@@ -27,7 +28,8 @@ export const uploadAttachments = async (documentNumber, files, descriptions = []
         }
 
         // Get userId from localStorage if not provided
-        const storedUserId = userId || localStorage.getItem('userId') || '1';
+        // const storedUserId = userId || localStorage.getItem('userId') || '1'; // Unused
+
         const storedCustomerId = customerId || localStorage.getItem('customerId') || '1';
 
         // Create FormData for files
@@ -38,18 +40,22 @@ export const uploadAttachments = async (documentNumber, files, descriptions = []
             formData.append('files', file);
         });
 
-        // Combine descriptions into a single string
-        const combinedDescription = descriptions
-            .map((desc, index) => desc || `File ${index + 1}`)
-            .join(' & ');
-
         // Build query parameters
-        const params = new URLSearchParams({
-            documentNumber: documentNumber,
-            customerId: storedCustomerId,
-            userId: storedUserId,
-            descriptions: combinedDescription || 'Attachment'
-        });
+        const params = new URLSearchParams();
+        params.append('documentNumber', documentNumber);
+        params.append('customerId', storedCustomerId);
+
+        // Add each description as a separate query parameter
+        if (descriptions && descriptions.length > 0) {
+            descriptions.forEach((desc, index) => {
+                params.append('descriptions', desc || `Attachment ${index + 1}`);
+            });
+        } else {
+            // Fallback if no descriptions provided, though typical usage should provide them
+            files.forEach((_, index) => {
+                params.append('descriptions', `Attachment ${index + 1}`);
+            });
+        }
 
         console.log('[uploadAttachments] Uploading to:', `${urls.javaApiUrl}api/attachments/upload?${params.toString()}`);
         console.log('[uploadAttachments] Files:', files.length, files.map(f => f.name));

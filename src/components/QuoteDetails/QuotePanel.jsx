@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useQuoteStore } from "../../store";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { Modal, Input, Button, message, Dropdown, Select, InputNumber } from "antd";
 import { DownOutlined, UnorderedListOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +12,8 @@ import { getAttachmentsByDocumentNumber } from "../../api/getAttachmentsByDocume
 import { sendEmail } from "../../api/sendEmail";
 import { extractGlassInfo } from "../carGlassViewer/carGlassHelpers";
 import { getPilkingtonPrice } from "../../api/getVendorPrices";
+import { getUserAdasPrices } from "../../api/userAdasPrices";
+import { ADAS_TYPES } from "../../const/adasTypes";
 import {
     generateServiceDocumentPDF,
     generatePDFFilename,
@@ -354,8 +356,13 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
         let description = "Custom Part";
         let isAdas = false;
 
-        if (type.startsWith("ADAS_")) {
-            actualType = "Service"; // ADAS items are Services
+        if (type === "ADAS") {
+            actualType = "ADAS"; // Distinct type for UI logic
+            description = "ADAS Recalibration"; // Default, to be selected from dropdown
+            isAdas = true;
+        } else if (type.startsWith("ADAS_")) {
+            // ... legacy or specific if needed, but we probably want to consolidate to just "ADAS"
+            actualType = "Service"; // Legacy mapping? Or maybe just map to ADAS too?
             isAdas = true;
             const subType = type.split('_')[1];
             if (subType === 'Static') description = "Labor/ADAS Recal - Static";
@@ -929,14 +936,38 @@ Auto Glass Pro Team`;
 
 
 
+    // Fetch ADAS Prices
+    const { data: adasPrices = [] } = useQuery({
+        queryKey: ['userAdasPrices'],
+        queryFn: getUserAdasPrices,
+        staleTime: 1000 * 60 * 5 // 5 minutes
+    });
+
+    // Helper to check if item is ADAS
+    // We rely on item.type === 'ADAS' from our new handleAddRow logic
+    const handleAdasChange = (id, calibrationCode) => {
+        const selectedPrice = adasPrices.find(p => p.calibrationCode === calibrationCode);
+        const price = selectedPrice ? selectedPrice.calibrationPrice : 0;
+
+        setItems(prev => prev.map(it => {
+            if (it.id === id) {
+                return {
+                    ...it,
+                    description: `ADAS Recalibration - ${calibrationCode}`,
+                    unitPrice: price,
+                    amount: (Number(it.qty) || 0) * price,
+                    adasCode: calibrationCode
+                };
+            }
+            return it;
+        }));
+    };
+
     return (
         <div className="relative">
             {contextHolder}
 
-
-
             {/* Header / Metadata */}
-            {/* Header / Metadata removed from here and moved to bottom */}
             {!isSaved && (
                 <h3 className="text-base font-bold text-[#7E5CFE] mb-1">
                     Quote Details
@@ -961,49 +992,56 @@ Auto Glass Pro Team`;
                         {items.map((it) => (
                             <tr key={it.id} className={`hover:bg-slate-50 transition group ${it.type === 'Kit' ? 'bg-violet-50' : ''}`}>
                                 <td className="px-1 py-0.5 border-r border-slate-300">
-                                    <input
-                                        // Display logic remains the same
-                                        value={it.type === 'Labor' ? "LABOR" : it.nagsId}
-
-                                        // Updates local state as they type
-                                        onChange={(e) => {
-                                            if (it.type !== 'Labor' && it.type !== 'Kit') {
-                                                updateItem(it.id, "nagsId", e.target.value);
-                                                // handlePartNoChange(it.id, e.target.value); // Disabled: API call only on Enter
-                                            }
-                                        }}
-
-                                        // REMOVED: handlePartNoBlur call from here
-                                        onBlur={() => {
-                                            /* We leave this empty or just for UI cleanup. 
-                                               The API call is no longer triggered by clicking away.
-                                            */
-                                        }}
-
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' && it.type !== 'Labor' && it.type !== 'Kit') {
-                                                // The API call happens ONLY here
-                                                handlePartNoBlur(it.id, e.currentTarget.value);
-
-                                                // This removes focus from the input, making it look "accepted"
-                                                e.currentTarget.blur();
-                                            }
-                                        }}
-
-                                        className={`w-full h-4 rounded px-1 text-xs outline-none focus:bg-white bg-transparent ${it.type === 'Labor' ? 'text-slate-500' :
-                                            it.type === 'Kit' ? 'text-violet-700 font-medium' :
-                                                'text-slate-900 font-medium'
-                                            }`}
-                                        placeholder="Part No"
-                                        disabled={it.type === 'Labor' || it.type === 'Kit'}
-                                    />
+                                    <div className="relative">
+                                        {it.type === 'Part' ? (
+                                            <input
+                                                value={it.nagsId}
+                                                onChange={(e) => {
+                                                    updateItem(it.id, "nagsId", e.target.value);
+                                                    // handlePartNoChange(it.id, e.target.value); // Use Enter only
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        handlePartNoBlur(it.id, e.currentTarget.value);
+                                                        e.currentTarget.blur();
+                                                    }
+                                                }}
+                                                className="w-full h-4 rounded px-1 text-xs outline-none focus:bg-white bg-transparent text-slate-900 font-medium"
+                                                placeholder="Part No"
+                                            />
+                                        ) : (
+                                            <div className="h-4 flex items-center text-slate-500 text-xs font-mono px-1">
+                                                {it.type === 'Labor' ? 'LABOR' : it.type === 'ADAS' ? 'ADAS' : 'SERVICE'}
+                                            </div>
+                                        )}
+                                    </div>
                                 </td>
                                 <td className="px-1 py-0.5 border-r border-slate-300">
-                                    <input
-                                        value={it.description || ''}
-                                        onChange={(e) => updateItem(it.id, "description", e.target.value)}
-                                        className={`w-full h-4 rounded px-1 text-xs outline-none focus:bg-white bg-transparent ${it.type === 'Kit' ? 'text-violet-600' : 'text-slate-700'}`}
-                                    />
+                                    {it.type === 'ADAS' ? (
+                                        <Select
+                                            className="w-full text-xs custom-select-small"
+                                            size="small"
+                                            bordered={false}
+                                            placeholder="Select Type"
+                                            value={it.adasCode || null}
+                                            onChange={(val) => handleAdasChange(it.id, val)}
+                                            options={ADAS_TYPES.map(type => {
+                                                const p = adasPrices.find(ap => ap.calibrationCode === type.code);
+                                                const price = p ? p.calibrationPrice : 0;
+                                                return {
+                                                    label: `${type.code} ($${price})`,
+                                                    value: type.code
+                                                };
+                                            })}
+                                            dropdownMatchSelectWidth={false}
+                                        />
+                                    ) : (
+                                        <input
+                                            value={it.description || ''}
+                                            onChange={(e) => updateItem(it.id, "description", e.target.value)}
+                                            className={`w-full h-4 rounded px-1 text-xs outline-none focus:bg-white bg-transparent ${it.type === 'Kit' ? 'text-violet-600' : 'text-slate-700'}`}
+                                        />
+                                    )}
                                 </td>
                                 <td className="px-1 py-0.5 border-r border-slate-300">
                                     <input
@@ -1075,20 +1113,12 @@ Auto Glass Pro Team`;
                 <Dropdown
                     menu={{
                         items: [
-                            { key: 'Part', label: <span className="text-xs">Add Part</span> },
-                            { key: 'Labor', label: <span className="text-xs">Add Labor</span> },
-                            { key: 'Service', label: <span className="text-xs">Add Service</span> },
-                            {
-                                key: 'ADAS',
-                                label: <span className="text-xs">ADAS Calibration</span>,
-                                children: [
-                                    { key: 'ADAS_Static', label: <span className="text-xs">Static</span> },
-                                    { key: 'ADAS_Dynamic', label: <span className="text-xs">Dynamic</span> },
-                                    { key: 'ADAS_Dual', label: <span className="text-xs">Static & Dynamic</span> },
-                                ]
-                            }
+                            { key: 'Part', label: <span className="text-xs">Add Part</span>, onClick: () => handleAddRow("Part") },
+                            { key: 'Labor', label: <span className="text-xs">Add Labor</span>, onClick: () => handleAddRow("Labor") },
+                            { key: 'Service', label: <span className="text-xs">Add Service</span>, onClick: () => handleAddRow("Service") },
+                            { type: 'divider' },
+                            { key: 'ADAS', label: <span className="text-xs">Add ADAS Recalibration</span>, onClick: () => handleAddRow("ADAS") },
                         ],
-                        onClick: (e) => handleAddRow(e.key)
                     }}
                 >
                     <button className="flex items-center gap-1 px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded text-xs font-medium transition-colors">

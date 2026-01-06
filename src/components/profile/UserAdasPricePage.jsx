@@ -4,11 +4,7 @@ import { Input, Card, notification, Table, Tag } from "antd";
 import { DollarOutlined } from "@ant-design/icons";
 import { createUserAdasPrice, getUserAdasPrices } from "../../api/userAdasPrices";
 
-const ADAS_TYPES = [
-    { code: 'Static', label: 'Static Calibration' },
-    { code: 'Dynamic', label: 'Dynamic Calibration' },
-    { code: 'Static and Dynamic', label: 'Static and Dynamic Calibration' }
-];
+import { ADAS_TYPES } from "../../const/adasTypes";
 
 const UserAdasPricePage = () => {
     const [prices, setPrices] = useState({}); // Map of code -> price
