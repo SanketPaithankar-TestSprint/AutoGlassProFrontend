@@ -938,15 +938,13 @@ Auto Glass Pro Team`;
             {/* Header / Metadata */}
             {/* Header / Metadata removed from here and moved to bottom */}
             {!isSaved && (
-                <div className="flex items-center justify-between max-w-7xl mb-2">
-                    <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-fuchsia-600">
-                        Quote Details
-                    </h3>
-                </div>
+                <h3 className="text-base font-bold text-[#7E5CFE] mb-1">
+                    Quote Details
+                </h3>
             )}
 
-            {/* Line Items Table */}
-            <div className="overflow-x-auto overflow-y-auto max-h-[180px] mb-2 border border-slate-300 bg-white shadow-sm rounded-sm">
+            {/* Line Items Table - Height for 6 rows + header */}
+            <div className="mb-2 border border-slate-300 bg-white shadow-sm rounded-sm max-h-[200px] overflow-y-auto">
                 <table className="min-w-full divide-y divide-slate-300">
                     <thead className="bg-slate-50 sticky top-0 z-10 shadow-sm">
                         <tr className="text-left text-sm font-semibold text-slate-800 tracking-tight">
@@ -992,7 +990,7 @@ Auto Glass Pro Team`;
                                             }
                                         }}
 
-                                        className={`w-full h-5 rounded px-1 text-sm outline-none focus:bg-white bg-transparent ${it.type === 'Labor' ? 'text-slate-500' :
+                                        className={`w-full h-4 rounded px-1 text-xs outline-none focus:bg-white bg-transparent ${it.type === 'Labor' ? 'text-slate-500' :
                                             it.type === 'Kit' ? 'text-violet-700 font-medium' :
                                                 'text-slate-900 font-medium'
                                             }`}
@@ -1004,14 +1002,14 @@ Auto Glass Pro Team`;
                                     <input
                                         value={it.description || ''}
                                         onChange={(e) => updateItem(it.id, "description", e.target.value)}
-                                        className={`w-full h-5 rounded px-1 text-sm outline-none focus:bg-white bg-transparent ${it.type === 'Kit' ? 'text-violet-600' : 'text-slate-700'}`}
+                                        className={`w-full h-4 rounded px-1 text-xs outline-none focus:bg-white bg-transparent ${it.type === 'Kit' ? 'text-violet-600' : 'text-slate-700'}`}
                                     />
                                 </td>
                                 <td className="px-1 py-0.5 border-r border-slate-300">
                                     <input
                                         value={it.manufacturer}
                                         onChange={(e) => updateItem(it.id, "manufacturer", e.target.value)}
-                                        className={`w-full h-5 rounded px-1 text-sm outline-none focus:bg-white bg-transparent ${(!it.isManual && it.type === 'Labor') ? 'text-slate-400' : it.type === 'Kit' ? 'text-violet-500' : 'text-slate-600'}`}
+                                        className={`w-full h-4 rounded px-1 text-xs outline-none focus:bg-white bg-transparent ${(!it.isManual && it.type === 'Labor') ? 'text-slate-400' : it.type === 'Kit' ? 'text-violet-500' : 'text-slate-600'}`}
                                         disabled={!it.isManual && it.type === 'Labor'}
                                     />
                                 </td>
@@ -1020,7 +1018,7 @@ Auto Glass Pro Team`;
                                         type="number"
                                         value={it.qty}
                                         onChange={(e) => updateItem(it.id, "qty", e.target.value)}
-                                        className={`w-full h-5 rounded px-1 text-sm text-right outline-none focus:bg-white bg-transparent ${(!it.isManual && it.type === 'Labor') ? 'text-slate-400 cursor-not-allowed' : it.type === 'Kit' ? 'text-violet-700' : 'text-slate-700'}`}
+                                        className={`w-full h-4 rounded px-1 text-xs text-right outline-none focus:bg-white bg-transparent ${(!it.isManual && it.type === 'Labor') ? 'text-slate-400 cursor-not-allowed' : it.type === 'Kit' ? 'text-violet-700' : 'text-slate-700'}`}
                                         disabled={!it.isManual && it.type === 'Labor'}
                                     />
                                 </td>
@@ -1029,18 +1027,18 @@ Auto Glass Pro Team`;
                                         type="text"
                                         value={it.type === 'Kit' && !it.listPrice ? '' : (it.listPrice ? `$${it.listPrice}` : '')}
                                         onChange={(e) => updateItem(it.id, "listPrice", e.target.value.replace(/[^0-9.]/g, ''))}
-                                        className={`w-full h-5 rounded px-1 text-sm text-right outline-none focus:bg-white bg-transparent ${(!it.isManual && it.type === 'Labor') ? 'text-slate-400 cursor-not-allowed' : it.type === 'Kit' ? 'text-violet-500 italic' : 'text-slate-700'}`}
+                                        className={`w-full h-4 rounded px-1 text-xs text-right outline-none focus:bg-white bg-transparent ${(!it.isManual && it.type === 'Labor') ? 'text-slate-400 cursor-not-allowed' : it.type === 'Kit' ? 'text-violet-500 italic' : 'text-slate-700'}`}
                                         disabled={!it.isManual && it.type === 'Labor'}
                                         placeholder={it.type === 'Kit' ? '' : '$0.00'}
                                     />
                                 </td>
-                                <td className="px-1 py-0.5 text-right font-medium text-sm border-r border-slate-300">
+                                <td className="px-1 py-0.5 text-right font-medium text-xs border-r border-slate-300">
                                     <div className="flex flex-col items-end gap-0 h-full justify-center w-full">
                                         <input
                                             type="text"
                                             value={it.amount ? `$${it.amount}` : ''}
                                             onChange={(e) => updateItem(it.id, "amount", e.target.value.replace(/[^0-9.]/g, ''))}
-                                            className={`w-full rounded px-1 py-0 text-right text-sm outline-none h-5 focus:bg-white bg-transparent ${it.type === 'Kit' ? 'text-violet-700 bg-violet-50' : (!Number(it.amount) || Number(it.amount) === 0) ? 'text-red-600 font-bold bg-red-50' : 'text-slate-900 bg-sky-50'}`}
+                                            className={`w-full rounded px-1 py-0 text-right text-xs outline-none h-4 focus:bg-white bg-transparent ${it.type === 'Kit' ? 'text-violet-700 bg-violet-50' : (!Number(it.amount) || Number(it.amount) === 0) ? 'text-red-600 font-bold bg-red-50' : 'text-slate-900 bg-sky-50'}`}
                                             placeholder="$0.00"
                                         />
                                         {(!Number(it.amount) || Number(it.amount) === 0) && (
@@ -1055,6 +1053,18 @@ Auto Glass Pro Team`;
                                         </svg>
                                     </button>
                                 </td>
+                            </tr>
+                        ))}
+                        {/* Empty placeholder rows to fill up to 6 rows */}
+                        {Array.from({ length: Math.max(0, 6 - items.length) }).map((_, index) => (
+                            <tr key={`empty-${index}`} className="h-6">
+                                <td className="px-1 py-0.5 border-r border-slate-300">&nbsp;</td>
+                                <td className="px-1 py-0.5 border-r border-slate-300"></td>
+                                <td className="px-1 py-0.5 border-r border-slate-300"></td>
+                                <td className="px-1 py-0.5 border-r border-slate-300"></td>
+                                <td className="px-1 py-0.5 border-r border-slate-300"></td>
+                                <td className="px-1 py-0.5 border-r border-slate-300"></td>
+                                <td className="px-1 py-0.5"></td>
                             </tr>
                         ))}
                     </tbody>
@@ -1139,38 +1149,52 @@ Auto Glass Pro Team`;
                     )}
                 </div>
 
-                <div className="bg-slate-50 border border-slate-200 p-2 space-y-1 w-full max-w-sm rounded-lg shadow-sm">
-                    <Row label="Subtotal" value={currency(subtotal)} />
-
-                    {/* Tax Rate Selection */}
-                    <div className="flex justify-between items-center text-sm">
-                        <span className="text-slate-500">Tax</span>
-                        <div className="flex items-center gap-2">
-                            <span className="text-slate-500 text-xs mr-2">({globalTaxRate}%)</span>
-                            <span className="text-slate-900 w-16 text-right">{currency(totalTax)}</span>
-                        </div>
-                    </div>
-
-                    <NumberRow label="Discount %" value={discountPercent} setter={setDiscountPercent} />
-                    {(Number(discountPercent) > 0 || manualTotal !== null) && <Row label="Discount" value={effectiveDiscountAmount >= 0 ? `- ${currency(effectiveDiscountAmount)}` : `+ ${currency(effectiveDiscountAmount * -1)}`} />}
-
-                    <div className="my-1 border-t border-slate-200"></div>
-
-                    <div className="flex justify-between items-center text-sm py-1">
-                        <span className="font-semibold text-slate-700">Total</span>
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={handleRoundUp}
-                                className="text-[10px] bg-sky-50 hover:bg-sky-100 text-sky-600 px-2 py-0.5 rounded border border-sky-100 transition-colors font-medium"
-                                title="Round Up Total"
-                            >
-                                Round Up
-                            </button>
-                            <div className="relative">
-                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 font-semibold">$</span>
+                <table className="w-full max-w-xs border border-slate-300 text-sm">
+                    <tbody>
+                        {/* Subtotal Row */}
+                        <tr className="border-b border-slate-300">
+                            <td className="px-2 py-1 text-slate-600 border-r border-slate-300">Subtotal</td>
+                            <td className="px-2 py-1 text-right text-slate-900">{currency(subtotal)}</td>
+                        </tr>
+                        {/* Tax Row */}
+                        <tr className="border-b border-slate-300">
+                            <td className="px-2 py-1 text-slate-600 border-r border-slate-300">Tax ({globalTaxRate}%)</td>
+                            <td className="px-2 py-1 text-right text-slate-900">{currency(totalTax)}</td>
+                        </tr>
+                        {/* Discount Row */}
+                        <tr className="border-b border-slate-300">
+                            <td className="px-2 py-1 text-slate-600 border-r border-slate-300">Discount %</td>
+                            <td className="px-2 py-1 text-right">
+                                <input
+                                    type="number"
+                                    value={discountPercent}
+                                    onChange={(e) => setDiscountPercent(e.target.value)}
+                                    className="w-16 text-right bg-transparent text-sm text-slate-900 outline-none border-b border-transparent hover:border-slate-300 focus:border-sky-400"
+                                />
+                            </td>
+                        </tr>
+                        {Number(discountPercent) > 0 && (
+                            <tr className="border-b border-slate-300">
+                                <td className="px-2 py-1 text-slate-600 border-r border-slate-300">Discount</td>
+                                <td className="px-2 py-1 text-right text-slate-900">- {currency(baseDiscountAmount)}</td>
+                            </tr>
+                        )}
+                        {/* Total Row */}
+                        <tr className="border-b border-slate-300 bg-slate-50">
+                            <td className="px-2 py-1 font-semibold text-slate-700 border-r border-slate-300">
+                                <div className="flex items-center gap-1">
+                                    Total
+                                    <button
+                                        onClick={handleRoundUp}
+                                        className="w-4 h-4 flex items-center justify-center bg-sky-100 hover:bg-sky-200 text-sky-600 rounded text-[10px] font-bold"
+                                        title="Round Up"
+                                    >↑</button>
+                                </div>
+                            </td>
+                            <td className="px-2 py-1 text-right font-bold text-slate-900">
                                 <input
                                     type="text"
-                                    value={manualTotal !== null ? manualTotal : (total ? total.toFixed(2) : '0.00')}
+                                    value={manualTotal !== null ? `$${manualTotal}` : currency(total)}
                                     onChange={(e) => {
                                         const val = e.target.value.replace(/[^0-9.]/g, '');
                                         setManualTotal(val);
@@ -1183,62 +1207,68 @@ Auto Glass Pro Team`;
                                             setManualTotal(null);
                                         }
                                     }}
-                                    className="w-24 rounded border border-slate-300 pl-5 pr-2 py-1 text-right text-sm font-bold text-slate-900 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                                    className="w-full text-right bg-transparent text-sm font-bold text-slate-900 outline-none border-b border-transparent hover:border-slate-300 focus:border-sky-400"
                                 />
-                            </div>
-                        </div>
-                    </div>
-                    <NumberRow label="Paid" value={payment} setter={setPayment} isCurrency />
-
-                    <div className="my-1 border-t border-slate-200"></div>
-
-                    <Row label="Balance" value={currency(balance)} bold />
-
-                    <div className="pt-1 flex flex-col gap-2 bg-white rounded-lg p-1">
-                        {/* Document Type Selector */}
-                        <select
-                            value={manualDocType}
-                            onChange={(e) => setManualDocType(e.target.value)}
-                            className="appearance-none outline-none cursor-pointer inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium border border-[#00A8E4]/30 bg-[#00A8E4]/5 text-[#00A8E4]"
-                        >
-                            <option value="Quote">Quote</option>
-                            <option value="Work Order">Work Order</option>
-                            <option value="Invoice">Invoice</option>
-                        </select>
-
-                        {/* Action Buttons */}
-                        <div className="flex gap-2">
-                            {/* Save Button */}
-                            <button
-                                onClick={handleSave}
-                                disabled={saveLoading}
-                                className="flex-1 px-4 py-1.5 rounded bg-[#7E5CFE] text-white text-xs font-semibold shadow hover:bg-[#6b4ce6] transition disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {saveLoading ? 'Saving...' : (isSaved ? `Update ${currentDocType}` : `Save ${currentDocType}`)}
-                            </button>
-
-                            {/* Preview Button */}
-                            <button
-                                onClick={handlePreview}
-                                disabled={previewLoading}
-                                className="px-4 py-1.5 rounded bg-[#00A8E4] text-white text-xs font-semibold shadow hover:bg-[#0096cc] transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                title="Preview PDF"
-                            >
-                                {previewLoading ? 'Loading...' : 'Preview'}
-                            </button>
-
-                            {/* Email Button */}
-                            <button
-                                onClick={handleEmail}
-                                disabled={!isSaved || emailLoading}
-                                className="px-4 py-1.5 rounded bg-[#00A8E4] text-white text-xs font-semibold shadow hover:bg-[#0096cc] transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                title={!isSaved ? "Save document first" : "Send via email"}
-                            >
-                                {emailLoading ? 'Sending...' : 'Email'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                            </td>
+                        </tr>
+                        <tr className="border-b border-slate-300">
+                            <td className="px-2 py-1 text-slate-600 border-r border-slate-300">Paid</td>
+                            <td className="px-2 py-1 text-right text-slate-900">
+                                <input
+                                    type="number"
+                                    value={payment}
+                                    onChange={(e) => setPayment(e.target.value)}
+                                    className="w-full text-right bg-transparent text-sm text-slate-900 outline-none border-b border-transparent hover:border-slate-300 focus:border-sky-400"
+                                    placeholder="$0"
+                                />
+                            </td>
+                        </tr>
+                        {/* Balance Row */}
+                        <tr className="border-b border-slate-300 bg-slate-50">
+                            <td className="px-2 py-1 font-semibold text-slate-700 border-r border-slate-300">Balance</td>
+                            <td className="px-2 py-1 text-right font-bold text-slate-900">{currency(balance)}</td>
+                        </tr>
+                        {/* Action Buttons Row */}
+                        <tr>
+                            <td colSpan="2" className="p-1">
+                                <div className="flex gap-1">
+                                    <select
+                                        value={manualDocType}
+                                        onChange={(e) => setManualDocType(e.target.value)}
+                                        className="flex-1 px-2 py-1 text-[10px] font-medium border border-slate-300 rounded bg-white text-slate-700 outline-none"
+                                    >
+                                        <option value="Quote">Quote</option>
+                                        <option value="Work Order">W.Order</option>
+                                        <option value="Invoice">Invoice</option>
+                                    </select>
+                                    <button
+                                        onClick={handleSave}
+                                        disabled={saveLoading}
+                                        className="flex-1 px-2 py-1 rounded bg-[#00A8E4] text-white text-[10px] font-semibold hover:bg-[#0096cc] transition disabled:opacity-50"
+                                    >
+                                        {saveLoading ? '...' : 'Save'}
+                                    </button>
+                                    <button
+                                        onClick={handlePreview}
+                                        disabled={previewLoading}
+                                        className="flex-1 px-2 py-1 rounded bg-[#00A8E4] text-white text-[10px] font-semibold hover:bg-[#0096cc] transition disabled:opacity-50"
+                                        title="Preview PDF"
+                                    >
+                                        {previewLoading ? '...' : 'Preview'}
+                                    </button>
+                                    <button
+                                        onClick={handleEmail}
+                                        disabled={!isSaved || emailLoading}
+                                        className="flex-1 px-2 py-1 rounded bg-[#00A8E4] text-white text-[10px] font-semibold hover:bg-[#0096cc] transition disabled:opacity-50"
+                                        title={!isSaved ? "Save document first" : "Send via email"}
+                                    >
+                                        {emailLoading ? '...' : 'Email'}
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
             {/* Email Preview Modal */}

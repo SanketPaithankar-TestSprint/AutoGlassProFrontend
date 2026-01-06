@@ -95,7 +95,7 @@ const KitSelectionModal = ({
             open={visible}
             onOk={handleConfirm}
             onCancel={onClose}
-            okText="Add Selected Kit"
+            okText="OK"
             cancelButtonProps={{ style: { display: 'none' } }}
             okButtonProps={{
                 disabled: !selectedStandardKit,

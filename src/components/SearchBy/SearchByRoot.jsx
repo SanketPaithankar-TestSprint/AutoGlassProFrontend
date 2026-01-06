@@ -54,6 +54,7 @@ const SearchByRoot = () => {
   const [docMetadata, setDocMetadata] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [createdDocumentNumber, setCreatedDocumentNumber] = useState(null);
+  const [lastRemovedPartKey, setLastRemovedPartKey] = useState(null); // Track last removed part for CarGlassViewer sync
 
   // Modal Context for better visibility/theming
   const [modal, contextHolder] = Modal.useModal();
@@ -419,6 +420,11 @@ const SearchByRoot = () => {
 
     // Remove from selected parts in store
     removePart(partKey);
+
+    // Set last removed part key to trigger CarGlassViewer sync
+    setLastRemovedPartKey(partKey);
+    // Reset after a brief delay to allow re-removal of same part if needed
+    setTimeout(() => setLastRemovedPartKey(null), 100);
   };
 
   // Handle document creation - switch to attachment tab
@@ -652,9 +658,9 @@ const SearchByRoot = () => {
             <div className="flex-1 overflow-y-auto">
 
               <div className={activeTab === 'quote' ? 'block' : 'hidden'}>
-                <div className="grid grid-cols-[380px_1fr] gap-2 h-[280px]">
+                <div className="flex flex-col md:flex-row gap-2 md:h-[280px]">
                   {/* LEFT: SEARCH */}
-                  <div className="border border-slate-200 bg-white p-2 flex flex-col gap-1 overflow-y-auto shadow-sm rounded-lg">
+                  <div className="border border-slate-200 bg-white p-2 flex flex-col gap-1 overflow-visible shadow-sm rounded-lg w-full md:w-[380px] md:flex-shrink-0">
                     {/* VIN */}
                     <div>
                       <h2 className="text-xs font-bold text-slate-800 mb-1 uppercase tracking-wide">Search by VIN:</h2>
@@ -681,7 +687,7 @@ const SearchByRoot = () => {
                   </div>
 
                   {/* RIGHT: GRAPHIC & PARTS */}
-                  <div className={`border border-slate-200 bg-white p-0 overflow-hidden shadow-sm rounded-lg flex flex-col ${!modelId ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
+                  <div className={`border border-slate-200 bg-white p-0 overflow-hidden shadow-sm rounded-lg flex flex-col flex-1 min-h-[300px] md:min-h-0 ${!modelId ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
                     <div className="flex-1 overflow-hidden relative">
                       <ErrorBoundary>
                         <CarGlassViewer
@@ -691,6 +697,7 @@ const SearchByRoot = () => {
                           vehicleInfo={vehicleInfo}
                           onPartSelect={handleAddPart}
                           onPartDeselect={handleRemovePart}
+                          externalRemovedPartKey={lastRemovedPartKey}
                         />
                       </ErrorBoundary>
                     </div>

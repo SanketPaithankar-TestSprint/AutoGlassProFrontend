@@ -86,7 +86,7 @@ const Chatbot = () => {
             <FloatButton
                 icon={<MessageOutlined />}
                 type="primary"
-                style={{ right: 24, bottom: 24, width: 60, height: 60 }}
+                style={{ right: 24, bottom: 24, width: 40, height: 40 }}
                 onClick={() => setIsOpen(!isOpen)}
                 tooltip="Chat with AI"
             />

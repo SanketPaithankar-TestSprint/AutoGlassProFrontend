@@ -409,6 +409,10 @@ export default function SearchByYMM({
               disabled={disabled}
               options={years.map((y) => ({ label: y.toString(), value: y }))}
               showSearch={showSearch}
+              virtual={false}
+              getPopupContainer={() => document.body}
+              dropdownStyle={{ maxHeight: 300, overflow: 'auto', zIndex: 9999 }}
+              popupMatchSelectWidth={false}
             />
           </div>
 
@@ -425,6 +429,10 @@ export default function SearchByYMM({
               notFoundContent={loadingMakes ? <Spin size="small" /> : null}
               options={toOptions(makes, "MakeName", "MakeName")}
               showSearch={showSearch}
+              virtual={false}
+              getPopupContainer={() => document.body}
+              dropdownStyle={{ maxHeight: 300, overflow: 'auto', zIndex: 9999 }}
+              popupMatchSelectWidth={false}
             />
           </div>
         </div>
@@ -444,6 +452,10 @@ export default function SearchByYMM({
               notFoundContent={loadingModels ? <Spin size="small" /> : null}
               options={toOptions(models, "ModelName", "ModelName")}
               showSearch={showSearch}
+              virtual={false}
+              getPopupContainer={() => document.body}
+              dropdownStyle={{ maxHeight: 300, overflow: 'auto', zIndex: 9999 }}
+              popupMatchSelectWidth={false}
             />
           </div>
 
@@ -463,6 +475,10 @@ export default function SearchByYMM({
                 value: bt.body_style_id
               }))}
               showSearch={showSearch}
+              virtual={false}
+              getPopupContainer={() => document.body}
+              dropdownStyle={{ maxHeight: 300, overflow: 'auto', zIndex: 9999 }}
+              popupMatchSelectWidth={false}
             />
           </div>
         </div>

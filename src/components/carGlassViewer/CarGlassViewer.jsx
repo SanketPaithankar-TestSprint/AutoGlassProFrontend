@@ -17,6 +17,7 @@ export default function CarGlassViewer({
   vehicleInfo,
   onPartSelect,
   onPartDeselect,
+  externalRemovedPartKey, // New prop: when set, remove this part from internal state
 }) {
   // 1) Glass catalog (left column)
   const [loading, setLoading] = useState(true);
@@ -48,6 +49,22 @@ export default function CarGlassViewer({
 
   // 3) Selected parts + extra info (bottom)
   const [selectedParts, setSelectedParts] = useState([]); // Array of { glass, part, glassInfo }
+
+  // Handle external removal from QuotePanel
+  useEffect(() => {
+    if (externalRemovedPartKey) {
+      setSelectedParts((prev) =>
+        prev.filter(
+          (p) => {
+            const nagsId = p.part.nags_id || p.part.nags_glass_id;
+            const oemId = p.part.oem_glass_id;
+            const featureSpan = p.part.feature_span || "";
+            return `${nagsId || ""}|${featureSpan}|${oemId || ""}|${p.glass.code}` !== externalRemovedPartKey;
+          }
+        )
+      );
+    }
+  }, [externalRemovedPartKey]);
 
   // ---------- helpers: convert backend data → API params ----------
 
@@ -542,15 +559,16 @@ export default function CarGlassViewer({
               >
                 {/* Dropdown Content */}
                 <div
-                  className="absolute bg-white border border-slate-200 shadow-xl rounded-lg flex flex-col max-h-[500px] overflow-hidden"
+                  className="absolute bg-white border border-slate-200 shadow-xl rounded-lg flex flex-col max-h-[70vh] overflow-hidden"
                   style={{
                     top: dropdownCoords.top,
-                    left: dropdownCoords.left,
-                    width: '480px', // Adjusted width significantly smaller
+                    left: Math.max(8, Math.min(dropdownCoords.left, window.innerWidth - 320)),
+                    width: Math.min(480, window.innerWidth - 16),
+                    maxWidth: '95vw',
                   }}
                   onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
                 >
-                  <div className="grid grid-cols-3 gap-x-2 gap-y-3 p-3 overflow-y-auto">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-x-2 gap-y-3 p-3 overflow-y-auto">
                     {[
                       { name: "Primary", items: glassGroups["Primary Glass"] || [] },
                       { name: "Side Glass", items: glassGroups["Side Glass"] || [] },
