@@ -19,6 +19,7 @@ import {
     generatePDFFilename,
     downloadPDF
 } from "../../utils/serviceDocumentPdfGenerator";
+import KitSelectionModal from "./KitSelectionModal";
 
 function currency(n) {
     const num = Number.isFinite(n) ? n : 0;
@@ -412,7 +413,6 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
     };
 
     const handlePartNoBlur = async (id, partNo) => {
-
         // Clear any pending debounce timer for this item
         if (debounceTimers[id]) {
             clearTimeout(debounceTimers[id]);
@@ -423,108 +423,313 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
             });
         }
 
-        if (!partNo) return;
+        if (!partNo || partNo.trim() === '') return;
 
-        const userId = localStorage.getItem('userId') || 2;
-        let vendorPrice = null;
+        const trimmedPartNo = partNo.trim();
 
-        // 0. Check Local Storage for User Kit Price Match
         try {
-            const savedKitPrices = localStorage.getItem("user_kit_prices");
-            if (savedKitPrices) {
-                const kitPrices = JSON.parse(savedKitPrices);
-                const matchedKit = kitPrices.find(k => k.kitCode === partNo);
+            // Call glass-info API
+            const res = await fetch(`https://api.autopaneai.com/agp/v1/glass-info?nags_glass_id=${trimmedPartNo}`);
 
-                if (matchedKit) {
-                    console.log(`[QuotePanel] Found user kit price for ${partNo}:`, matchedKit.kitPrice);
-                    setItems(prev => prev.map(it => {
-                        if (it.id === id) {
-                            return {
-                                ...it,
-                                type: "Kit",
-                                description: "Kit Price Applied", // Or keep existing if preferred, but user didn't specify
-                                unitPrice: matchedKit.kitPrice,
-                                amount: (Number(it.qty) || 0) * matchedKit.kitPrice,
-                                pricingType: "fixed" // Mark as fixed so it might not be overridden easily? (logic depends on other parts but this is safe)
-                            };
-                        }
-                        return it;
-                    }));
-                    return; // EXIT EARLY: Do not fetch vendor or glass info
-                }
+            if (!res.ok) {
+                message.error(`Part not found: ${trimmedPartNo}`);
+                return;
             }
-        } catch (e) {
-            console.error("Error checking user kit prices", e);
-        }
-
-        // Try to fetch vendor pricing first
-        if (userId) {
-            try {
-                // Remove trailing 'N' from part number for vendor API
-                const normalizedPartNo = partNo.replace(/N$/, '');
-
-                vendorPrice = await getPilkingtonPrice(userId, normalizedPartNo);
-
-                if (vendorPrice) {
-                    console.log(`[QuotePanel] Found vendor price for ${normalizedPartNo}:`, vendorPrice);
-
-                    setItems(prev => prev.map(it => {
-                        if (it.id === id) {
-                            const unitPrice = parseFloat(vendorPrice.UnitPrice) || 0;
-                            const listPrice = parseFloat(vendorPrice.ListPrice) || unitPrice;
-
-                            return {
-                                ...it,
-                                description: vendorPrice.Description || it.description,
-                                manufacturer: "Pilkington",
-                                listPrice: listPrice,
-                                unitPrice: unitPrice,
-                                amount: (Number(it.qty) || 0) * unitPrice,
-                                vendorData: {
-                                    industryCode: vendorPrice.IndustryCode,
-                                    availability: vendorPrice.AvailabilityToPromise,
-                                    leadTime: vendorPrice.LeadTimeFormatted || vendorPrice.LeadTime,
-                                    manufacturer: "Pilkington"
-                                },
-                                vendorPriceFetched: true
-                            };
-                        }
-                        return it;
-                    }));
-
-                    return; // Exit early if vendor price found
-                }
-            } catch (error) {
-                console.error("Error fetching vendor price:", error);
-            }
-        }
-
-        // Fallback to glass-info API if vendor pricing not available
-        try {
-            const res = await fetch(`https://api.autopaneai.com/agp/v1/glass-info?nags_glass_id=${partNo}`);
-            // If 404 or other error, just ignore or log
-            if (!res.ok) return;
 
             const data = await res.json();
-            if (data) {
+
+            if (!data || !Array.isArray(data) || data.length === 0) {
+                message.error(`No glass info found for: ${trimmedPartNo}`);
+                return;
+            }
+
+            console.log('[QuotePanel] Glass info response:', data);
+
+            if (data.length > 1) {
+                // Multiple glass types - show selection modal
+                setGlassSelectionModal({
+                    visible: true,
+                    options: data,
+                    pendingItemId: id,
+                    partNo: trimmedPartNo
+                });
+            } else {
+                // Single glass type - apply directly
+                await applySelectedGlass(id, data[0]);
+            }
+        } catch (error) {
+            console.error("Error fetching glass info:", error);
+            message.error("Failed to fetch part information");
+        }
+    };
+
+    // Apply selected glass and its kit items
+    const applySelectedGlass = async (itemId, glassData) => {
+        const userId = localStorage.getItem('userId') || 2; // Fallback to 2 like SearchByRoot
+        const fullPartNumber = `${glassData.nags_id}${glassData.feature_span || ''}`;
+
+        // Build qualifiers string
+        const qualifiersStr = Array.isArray(glassData.qualifiers)
+            ? glassData.qualifiers.join(', ')
+            : '';
+
+        // Close glass selection modal first
+        setGlassSelectionModal({
+            visible: false,
+            options: [],
+            pendingItemId: null,
+            partNo: null
+        });
+
+        // Check if there are multiple kits - show kit selection modal
+        if (Array.isArray(glassData.kit) && glassData.kit.length > 1) {
+            // Store glass data and show kit selection modal
+            setKitSelectionModal({
+                visible: true,
+                kits: glassData.kit,
+                pendingItemId: itemId,
+                selectedGlass: glassData
+            });
+
+            // Update the main part item first (without kit)
+            setItems(prev => {
+                const filtered = prev.filter(it => it.parentPartId !== itemId);
+                return filtered.map(it => {
+                    if (it.id === itemId) {
+                        return {
+                            ...it,
+                            nagsId: fullPartNumber,
+                            oemId: Array.isArray(glassData.OEMS) && glassData.OEMS.length > 0
+                                ? glassData.OEMS[0]
+                                : '',
+                            description: qualifiersStr || `Glass Part ${glassData.nags_id}`,
+                            listPrice: glassData.list_price || 0,
+                            unitPrice: glassData.list_price || 0,
+                            amount: (Number(it.qty) || 1) * (glassData.list_price || 0),
+                            labor: glassData.labor || 0,
+                            glassData: glassData
+                        };
+                    }
+                    return it;
+                });
+            });
+
+            // Fetch vendor price in background
+            if (userId) {
+                fetchVendorPriceForItem(itemId, glassData.nags_id, userId, glassData);
+            }
+            return; // Exit - kit selection will complete the process
+        }
+
+        // Single kit or no kit - apply directly
+        await applyGlassWithKit(itemId, glassData, glassData.kit?.[0] || null);
+    };
+
+    // Apply glass with a specific kit (or no kit)
+    const applyGlassWithKit = async (itemId, glassData, selectedKit) => {
+        const userId = localStorage.getItem('userId') || 2; // Fallback to 2 like SearchByRoot
+        const fullPartNumber = `${glassData.nags_id}${glassData.feature_span || ''}`;
+        const labor = glassData.labor || 0;
+
+        const qualifiersStr = Array.isArray(glassData.qualifiers)
+            ? glassData.qualifiers.join(', ')
+            : '';
+
+        // Get global labor rate for labor row
+        const globalLaborRate = parseFloat(localStorage.getItem('GlobalLaborRate')) || 0;
+
+        // Update the main part item and add labor + kit
+        setItems(prev => {
+            // Remove any existing labor and kit items for this part
+            const filtered = prev.filter(it =>
+                it.parentPartId !== itemId &&
+                it.id !== `${itemId}_LABOR`
+            );
+
+            // Update the main part
+            const updated = filtered.map(it => {
+                if (it.id === itemId) {
+                    return {
+                        ...it,
+                        nagsId: fullPartNumber,
+                        oemId: Array.isArray(glassData.OEMS) && glassData.OEMS.length > 0
+                            ? glassData.OEMS[0]
+                            : '',
+                        description: qualifiersStr || `Glass Part ${glassData.nags_id}`,
+                        listPrice: glassData.list_price || 0,
+                        unitPrice: glassData.list_price || 0,
+                        amount: (Number(it.qty) || 1) * (glassData.list_price || 0),
+                        labor: labor,
+                        glassData: glassData
+                    };
+                }
+                return it;
+            });
+
+            const additionalItems = [];
+
+            // Add Labor row if labor > 0
+            if (Number(labor) > 0) {
+                additionalItems.push({
+                    id: `${itemId}_LABOR`,
+                    type: 'Labor',
+                    nagsId: '',
+                    oemId: '',
+                    labor: labor,
+                    description: `${labor} hours`,
+                    manufacturer: '',
+                    qty: 1,
+                    unitPrice: globalLaborRate,
+                    amount: globalLaborRate,
+                    listPrice: 0,
+                    pricingType: 'hourly',
+                    isManual: false
+                });
+            }
+
+            // Add the selected kit item if present
+            if (selectedKit) {
+                const kitUnitPrice = selectedKit.unitPrice || 0;
+                const kitQtyFromApi = selectedKit.QTY || 1;
+
+                // Include API QTY in description for reference, but qty in panel is always 1
+                const formattedQty = Number(kitQtyFromApi).toFixed(1);
+                const kitDescription = selectedKit.DSC
+                    ? `${formattedQty} ${selectedKit.DSC}`
+                    : 'Installation Kit';
+
+                additionalItems.push({
+                    id: `${itemId}_KIT_0`,
+                    parentPartId: itemId,
+                    nagsId: selectedKit.NAGS_HW_ID || '',
+                    oemId: '',
+                    description: kitDescription,
+                    manufacturer: '',
+                    qty: 1, // Always 1 in the quote panel
+                    unitPrice: kitUnitPrice,
+                    amount: kitUnitPrice, // qty is 1, so amount = unitPrice
+                    listPrice: 0,
+                    type: 'Kit',
+                    kitData: selectedKit
+                });
+            }
+
+            return [...updated, ...additionalItems];
+        });
+
+        // Fetch vendor price for the part
+        console.log('[QuotePanel] applyGlassWithKit - About to fetch vendor price:', { userId, nagsId: glassData.nags_id });
+        if (userId) {
+            await fetchVendorPriceForItem(itemId, glassData.nags_id, userId, glassData);
+        } else {
+            console.warn('[QuotePanel] No userId found, skipping vendor price fetch');
+        }
+
+        // Close kit selection modal if open
+        setKitSelectionModal({
+            visible: false,
+            kits: [],
+            pendingItemId: null,
+            selectedGlass: null
+        });
+    };
+
+    // Helper to fetch vendor price for an item (uses queryClient for caching like SearchByRoot)
+    const fetchVendorPriceForItem = async (itemId, nagsId, userId, glassData = null) => {
+        console.log('[QuotePanel] fetchVendorPriceForItem called:', { itemId, nagsId, userId, glassData });
+
+        if (!userId || !nagsId) {
+            console.warn('[QuotePanel] fetchVendorPriceForItem: Missing userId or nagsId');
+            return;
+        }
+
+        try {
+            // Build part number with feature_span if available
+            let partNumber = nagsId;
+            if (glassData?.feature_span) {
+                partNumber = `${nagsId} ${glassData.feature_span}`.trim();
+            }
+            partNumber = partNumber.replace(/N$/, '');
+
+            // Use QueryClient to fetch with cache (same as SearchByRoot)
+            const vendorPrice = await queryClient.fetchQuery({
+                queryKey: ['pilkingtonPrice', userId, partNumber],
+                queryFn: () => getPilkingtonPrice(userId, partNumber),
+                staleTime: 1000 * 60 * 60 // 1 hour cache
+            });
+
+            if (vendorPrice) {
+                console.log(`[QuotePanel] Found vendor price for ${partNumber}:`, vendorPrice);
+
+                const nagsListPrice = glassData?.list_price || 0;
+
                 setItems(prev => prev.map(it => {
-                    if (it.id === id) {
-                        const { listPrice, netPrice, description, manufacturer } = extractGlassInfo(data, it.description);
+                    if (it.id === itemId) {
+                        const unitPrice = parseFloat(vendorPrice.UnitPrice) || it.unitPrice;
+                        const listPrice = nagsListPrice || parseFloat(vendorPrice.ListPrice) || unitPrice;
+                        // Use vendor description if available, otherwise keep existing
+                        const description = vendorPrice.Description || it.description;
+
                         return {
                             ...it,
                             description: description,
-                            manufacturer: manufacturer,
                             listPrice: listPrice,
-                            unitPrice: netPrice, // Use Net Price for calculation
-                            amount: (Number(it.qty) || 0) * netPrice
+                            unitPrice: unitPrice,
+                            amount: (Number(it.qty) || 1) * unitPrice,
+                            manufacturer: 'Pilkington',
+                            vendorData: {
+                                industryCode: vendorPrice.IndustryCode,
+                                availability: vendorPrice.AvailabilityToPromise,
+                                leadTime: vendorPrice.LeadTimeFormatted || vendorPrice.LeadTime,
+                                manufacturer: 'Pilkington'
+                            },
+                            vendorPriceFetched: true
                         };
                     }
                     return it;
                 }));
             }
         } catch (error) {
-            console.error("Error fetching glass info:", error);
+            console.error("Error fetching vendor price:", error);
         }
+    };
+
+    // Handle glass selection from modal
+    const handleGlassSelection = (selectedGlass) => {
+        if (glassSelectionModal.pendingItemId) {
+            applySelectedGlass(glassSelectionModal.pendingItemId, selectedGlass);
+        }
+    };
+
+    // Handle kit selection from modal
+    const handleKitSelection = (selectedKit) => {
+        if (kitSelectionModal.pendingItemId && kitSelectionModal.selectedGlass) {
+            applyGlassWithKit(
+                kitSelectionModal.pendingItemId,
+                kitSelectionModal.selectedGlass,
+                selectedKit
+            );
+        }
+    };
+
+    // Close glass selection modal
+    const handleCloseGlassSelection = () => {
+        setGlassSelectionModal({
+            visible: false,
+            options: [],
+            pendingItemId: null,
+            partNo: null
+        });
+    };
+
+    // Close kit selection modal
+    const handleCloseKitSelection = () => {
+        setKitSelectionModal({
+            visible: false,
+            kits: [],
+            pendingItemId: null,
+            selectedGlass: null
+        });
     };
 
 
@@ -615,6 +820,22 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
 
     // Validated Modal Context
     const [modal, contextHolder] = Modal.useModal();
+
+    // Glass Selection Modal State (for manual part entry)
+    const [glassSelectionModal, setGlassSelectionModal] = useState({
+        visible: false,
+        options: [],
+        pendingItemId: null,
+        partNo: null
+    });
+
+    // Kit Selection Modal State (for selecting kit after glass selection)
+    const [kitSelectionModal, setKitSelectionModal] = useState({
+        visible: false,
+        kits: [],
+        pendingItemId: null,
+        selectedGlass: null
+    });
 
     // Validation helper function
     const validateDocumentData = () => {
@@ -967,6 +1188,93 @@ Auto Glass Pro Team`;
         <div className="relative">
             {contextHolder}
 
+            {/* Glass Selection Modal - shown when multiple glass types are available */}
+            <Modal
+                title={<span className="text-[#7E5CFE] font-semibold">Select Glass Type</span>}
+                open={glassSelectionModal.visible}
+                onCancel={handleCloseGlassSelection}
+                footer={null}
+                width={850}
+                centered
+            >
+                <div className="py-2">
+                    <p className="text-sm text-slate-600 mb-3">
+                        Multiple glass types found for <strong>{glassSelectionModal.partNo}</strong>. Please select one:
+                    </p>
+                    <div className="overflow-x-auto max-h-[350px] overflow-y-auto border border-slate-200 rounded-lg">
+                        <table className="min-w-full divide-y divide-slate-200">
+                            <thead className="bg-slate-50 sticky top-0">
+                                <tr>
+                                    <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Part</th>
+                                    <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Description</th>
+                                    <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">OEM</th>
+                                    <th className="px-3 py-2 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Price</th>
+                                    <th className="px-3 py-2 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">Kits</th>
+                                    <th className="px-2 py-2 w-8"></th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-slate-200">
+                                {glassSelectionModal.options.map((glass, index) => (
+                                    <tr
+                                        key={`${glass.nags_id}_${glass.feature_span}_${index}`}
+                                        onClick={() => handleGlassSelection(glass)}
+                                        className="hover:bg-violet-50 cursor-pointer transition-colors group"
+                                    >
+                                        <td className="px-3 py-2 whitespace-nowrap">
+                                            <span className="font-mono font-semibold text-slate-800">
+                                                {glass.nags_id} {glass.feature_span}
+                                            </span>
+                                        </td>
+                                        <td className="px-3 py-2">
+                                            <span className="text-sm text-slate-600">
+                                                {Array.isArray(glass.qualifiers) && glass.qualifiers.length > 0
+                                                    ? glass.qualifiers.join(', ')
+                                                    : '-'}
+                                            </span>
+                                        </td>
+                                        <td className="px-3 py-2 whitespace-nowrap">
+                                            <span className="text-sm text-blue-600">
+                                                {Array.isArray(glass.OEMS) && glass.OEMS.length > 0
+                                                    ? glass.OEMS[0]
+                                                    : '-'}
+                                            </span>
+                                        </td>
+                                        <td className="px-3 py-2 text-right whitespace-nowrap">
+                                            <span className="font-semibold text-green-600">
+                                                ${glass.list_price?.toFixed(2) || '0.00'}
+                                            </span>
+                                        </td>
+                                        <td className="px-3 py-2 text-center whitespace-nowrap">
+                                            {Array.isArray(glass.kit) && glass.kit.length > 0 ? (
+                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-violet-100 text-violet-700">
+                                                    {glass.kit.length}
+                                                </span>
+                                            ) : (
+                                                <span className="text-slate-400">-</span>
+                                            )}
+                                        </td>
+                                        <td className="px-2 py-2 text-slate-400 group-hover:text-[#7E5CFE] transition-colors">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                                            </svg>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Kit Selection Modal - reusing shared component */}
+            <KitSelectionModal
+                visible={kitSelectionModal.visible}
+                onClose={handleCloseKitSelection}
+                onSelect={handleKitSelection}
+                kits={kitSelectionModal.kits}
+                partNumber={kitSelectionModal.selectedGlass?.nags_id || ''}
+            />
+
             {/* Header / Metadata */}
             {!isSaved && (
                 <h3 className="text-base font-bold text-[#7E5CFE] mb-1">
@@ -989,110 +1297,125 @@ Auto Glass Pro Team`;
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-slate-300">
-                        {items.map((it) => (
-                            <tr key={it.id} className={`hover:bg-slate-50 transition group ${it.type === 'Kit' ? 'bg-violet-50' : ''}`}>
-                                <td className="px-1 py-0.5 border-r border-slate-300">
-                                    <div className="relative">
-                                        {it.type === 'Part' ? (
-                                            <input
-                                                value={it.nagsId}
-                                                onChange={(e) => {
-                                                    updateItem(it.id, "nagsId", e.target.value);
-                                                    // handlePartNoChange(it.id, e.target.value); // Use Enter only
-                                                }}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Enter') {
-                                                        handlePartNoBlur(it.id, e.currentTarget.value);
-                                                        e.currentTarget.blur();
-                                                    }
-                                                }}
-                                                className="w-full h-4 rounded px-1 text-xs outline-none focus:bg-white bg-transparent text-slate-900 font-medium"
-                                                placeholder="Part No"
+                        {items.map((it, index) => {
+                            // Calculate rowSpan for Part rows
+                            let rowSpan = 1;
+                            let showDeleteButton = true;
+
+                            if (it.type === 'Part') {
+                                // Count related Labor and Kit rows
+                                const partId = it.id;
+                                const hasLabor = items.some(item => item.id === `${partId}_LABOR`);
+                                const kitCount = items.filter(item => item.parentPartId === partId && item.type === 'Kit').length;
+                                rowSpan = 1 + (hasLabor ? 1 : 0) + kitCount;
+                            } else if (it.type === 'Labor' || it.type === 'Kit') {
+                                // Hide delete button for Labor and Kit rows that belong to a Part
+                                showDeleteButton = false;
+                            }
+
+                            return (
+                                <tr key={it.id} className="hover:bg-slate-50 transition group">
+                                    <td className="px-1 py-0.5 border-r border-slate-300">
+                                        <div className="relative">
+                                            {it.type === 'Part' ? (
+                                                <input
+                                                    value={it.nagsId}
+                                                    onChange={(e) => {
+                                                        updateItem(it.id, "nagsId", e.target.value);
+                                                        // handlePartNoChange(it.id, e.target.value); // Use Enter only
+                                                    }}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            handlePartNoBlur(it.id, e.currentTarget.value);
+                                                            e.currentTarget.blur();
+                                                        }
+                                                    }}
+                                                    className="w-full h-4 rounded px-1 text-xs outline-none focus:bg-white bg-transparent text-slate-700"
+                                                    placeholder="Part No"
+                                                />
+                                            ) : (
+                                                <input
+                                                    type="text"
+                                                    value={it.type === 'Labor' ? 'LABOR' : it.type === 'ADAS' ? 'ADAS' : it.type === 'Kit' ? (it.nagsId || 'KIT') : 'SERVICE'}
+                                                    readOnly
+                                                    className="w-full h-4 rounded px-1 text-xs outline-none bg-transparent text-slate-700 cursor-default"
+                                                />
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="px-1 py-0.5 border-r border-slate-300">
+                                        {it.type === 'ADAS' ? (
+                                            <Select
+                                                className="w-full text-xs custom-select-small"
+                                                size="small"
+                                                bordered={false}
+                                                placeholder="Select Type"
+                                                value={it.adasCode || null}
+                                                onChange={(val) => handleAdasChange(it.id, val)}
+                                                options={ADAS_TYPES.map(type => {
+                                                    return {
+                                                        label: type.code,
+                                                        value: type.code
+                                                    };
+                                                })}
+                                                dropdownMatchSelectWidth={false}
                                             />
                                         ) : (
-                                            <div className="h-4 flex items-center text-slate-500 text-xs font-mono px-1">
-                                                {it.type === 'Labor' ? 'LABOR' : it.type === 'ADAS' ? 'ADAS' : 'SERVICE'}
-                                            </div>
+                                            <input
+                                                value={it.description || ''}
+                                                onChange={(e) => updateItem(it.id, "description", e.target.value)}
+                                                className="w-full h-4 rounded px-1 text-xs outline-none focus:bg-white bg-transparent text-slate-700"
+                                            />
                                         )}
-                                    </div>
-                                </td>
-                                <td className="px-1 py-0.5 border-r border-slate-300">
-                                    {it.type === 'ADAS' ? (
-                                        <Select
-                                            className="w-full text-xs custom-select-small"
-                                            size="small"
-                                            bordered={false}
-                                            placeholder="Select Type"
-                                            value={it.adasCode || null}
-                                            onChange={(val) => handleAdasChange(it.id, val)}
-                                            options={ADAS_TYPES.map(type => {
-                                                const p = adasPrices.find(ap => ap.calibrationCode === type.code);
-                                                const price = p ? p.calibrationPrice : 0;
-                                                return {
-                                                    label: `${type.code} ($${price})`,
-                                                    value: type.code
-                                                };
-                                            })}
-                                            dropdownMatchSelectWidth={false}
-                                        />
-                                    ) : (
+                                    </td>
+                                    <td className="px-1 py-0.5 border-r border-slate-300">
                                         <input
-                                            value={it.description || ''}
-                                            onChange={(e) => updateItem(it.id, "description", e.target.value)}
-                                            className={`w-full h-4 rounded px-1 text-xs outline-none focus:bg-white bg-transparent ${it.type === 'Kit' ? 'text-violet-600' : 'text-slate-700'}`}
+                                            value={it.manufacturer}
+                                            onChange={(e) => updateItem(it.id, "manufacturer", e.target.value)}
+                                            className="w-full h-4 rounded px-1 text-xs outline-none focus:bg-white bg-transparent text-slate-700"
+                                            disabled={!it.isManual && it.type === 'Labor'}
                                         />
-                                    )}
-                                </td>
-                                <td className="px-1 py-0.5 border-r border-slate-300">
-                                    <input
-                                        value={it.manufacturer}
-                                        onChange={(e) => updateItem(it.id, "manufacturer", e.target.value)}
-                                        className={`w-full h-4 rounded px-1 text-xs outline-none focus:bg-white bg-transparent ${(!it.isManual && it.type === 'Labor') ? 'text-slate-400' : it.type === 'Kit' ? 'text-violet-500' : 'text-slate-600'}`}
-                                        disabled={!it.isManual && it.type === 'Labor'}
-                                    />
-                                </td>
-                                <td className="px-1 py-0.5 text-right border-r border-slate-300">
-                                    <input
-                                        type="number"
-                                        value={it.qty}
-                                        onChange={(e) => updateItem(it.id, "qty", e.target.value)}
-                                        className={`w-full h-4 rounded px-1 text-xs text-right outline-none focus:bg-white bg-transparent ${(!it.isManual && it.type === 'Labor') ? 'text-slate-400 cursor-not-allowed' : it.type === 'Kit' ? 'text-violet-700' : 'text-slate-700'}`}
-                                        disabled={!it.isManual && it.type === 'Labor'}
-                                    />
-                                </td>
-                                <td className="px-1 py-0.5 text-right border-r border-slate-300">
-                                    <input
-                                        type="text"
-                                        value={it.type === 'Kit' && !it.listPrice ? '' : (it.listPrice ? `$${it.listPrice}` : '')}
-                                        onChange={(e) => updateItem(it.id, "listPrice", e.target.value.replace(/[^0-9.]/g, ''))}
-                                        className={`w-full h-4 rounded px-1 text-xs text-right outline-none focus:bg-white bg-transparent ${(!it.isManual && it.type === 'Labor') ? 'text-slate-400 cursor-not-allowed' : it.type === 'Kit' ? 'text-violet-500 italic' : 'text-slate-700'}`}
-                                        disabled={!it.isManual && it.type === 'Labor'}
-                                        placeholder={it.type === 'Kit' ? '' : '$0.00'}
-                                    />
-                                </td>
-                                <td className="px-1 py-0.5 text-right font-medium text-xs border-r border-slate-300">
-                                    <div className="flex flex-col items-end gap-0 h-full justify-center w-full">
+                                    </td>
+                                    <td className="px-1 py-0.5 text-right border-r border-slate-300">
+                                        <input
+                                            type="number"
+                                            value={it.qty}
+                                            onChange={(e) => updateItem(it.id, "qty", e.target.value)}
+                                            className="w-full h-4 rounded px-1 text-xs text-right outline-none focus:bg-white bg-transparent text-slate-700"
+                                            disabled={!it.isManual && it.type === 'Labor'}
+                                        />
+                                    </td>
+                                    <td className="px-1 py-0.5 text-right border-r border-slate-300">
                                         <input
                                             type="text"
-                                            value={it.amount ? `$${it.amount}` : ''}
-                                            onChange={(e) => updateItem(it.id, "amount", e.target.value.replace(/[^0-9.]/g, ''))}
-                                            className={`w-full rounded px-1 py-0 text-right text-xs outline-none h-4 focus:bg-white bg-transparent ${it.type === 'Kit' ? 'text-violet-700 bg-violet-50' : (!Number(it.amount) || Number(it.amount) === 0) ? 'text-red-600 font-bold bg-red-50' : 'text-slate-900 bg-sky-50'}`}
+                                            value={it.listPrice ? `$${Number(it.listPrice).toFixed(2)}` : ''}
+                                            onChange={(e) => updateItem(it.id, "listPrice", e.target.value.replace(/[^0-9.]/g, ''))}
+                                            className="w-full h-4 rounded px-1 text-xs text-right outline-none focus:bg-white bg-transparent text-slate-700"
+                                            disabled={!it.isManual && it.type === 'Labor'}
                                             placeholder="$0.00"
                                         />
-                                        {(!Number(it.amount) || Number(it.amount) === 0) && (
-                                            <span className="hidden">Required</span>
-                                        )}
-                                    </div>
-                                </td>
-                                <td className="px-1 py-0.5 text-center">
-                                    <button type="button" onClick={() => handleDeleteItem(it.id)} className="text-slate-300 hover:text-red-500 transition-colors p-0.5 rounded hover:bg-red-50" title="Remove Item">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
+                                    </td>
+                                    <td className="px-1 py-0.5 text-right border-r border-slate-300">
+                                        <input
+                                            type="text"
+                                            value={it.amount ? `$${Number(it.amount).toFixed(2)}` : ''}
+                                            onChange={(e) => updateItem(it.id, "amount", e.target.value.replace(/[^0-9.]/g, ''))}
+                                            className="w-full h-4 rounded px-1 text-xs text-right outline-none focus:bg-white bg-transparent text-slate-700"
+                                            placeholder="$0.00"
+                                        />
+                                    </td>
+                                    {showDeleteButton && (
+                                        <td className="px-1 py-0.5 text-center align-middle" rowSpan={rowSpan}>
+                                            <button type="button" onClick={() => handleDeleteItem(it.id)} className="text-slate-300 hover:text-red-500 transition-colors p-0.5 rounded hover:bg-red-50" title="Remove Item">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        </td>
+                                    )}
+                                </tr>
+                            );
+                        })}
                         {/* Empty placeholder rows to fill up to 6 rows */}
                         {Array.from({ length: Math.max(0, 6 - items.length) }).map((_, index) => (
                             <tr key={`empty-${index}`} className="h-6">
