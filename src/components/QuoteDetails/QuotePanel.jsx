@@ -151,7 +151,14 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
             try {
                 const saved = localStorage.getItem("agp_profile_data");
                 if (saved) {
-                    setUserProfile(JSON.parse(saved));
+                    const parsed = JSON.parse(saved);
+                    setUserProfile(prev => {
+                        // Deep comparison to prevent unnecessary re-renders
+                        if (JSON.stringify(prev) === JSON.stringify(parsed)) {
+                            return prev;
+                        }
+                        return parsed;
+                    });
                 }
             } catch (e) {
                 console.error("Failed to load profile update", e);
@@ -303,12 +310,16 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
 
     const [taxRates, setTaxRates] = useState([]);
 
+    // Extract taxRate from userProfile to use as primitive dependency
+    const userTaxRate = userProfile?.taxRate;
+
     useEffect(() => {
         const fetchTaxData = async () => {
             try {
                 // If user profile has a tax rate, use it directly
-                if (userProfile && userProfile.taxRate !== undefined && userProfile.taxRate !== null) {
-                    setGlobalTaxRate(userProfile.taxRate);
+                // Using internal variable or ref access, or relying on stable dependency
+                if (userTaxRate !== undefined && userTaxRate !== null) {
+                    setGlobalTaxRate(userTaxRate);
                     return;
                 }
 
@@ -320,8 +331,8 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                 setTaxRates(validRates);
 
                 // Hierarchy: Profile -> Default -> First Active
-                if (userProfile && userProfile.taxRate !== undefined && userProfile.taxRate !== null) {
-                    setGlobalTaxRate(userProfile.taxRate);
+                if (userTaxRate !== undefined && userTaxRate !== null) {
+                    setGlobalTaxRate(userTaxRate);
                 } else if (defaultRate && defaultRate.taxPercent) {
                     setGlobalTaxRate(defaultRate.taxPercent);
                 } else if (validRates.length > 0) {
@@ -333,7 +344,7 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
             }
         };
         fetchTaxData();
-    }, [userProfile]);
+    }, [userTaxRate]);
 
     const updateItem = (id, key, value) => {
         setItems((prev) => prev.map((it) => {

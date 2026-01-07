@@ -9,7 +9,8 @@ import {
     MenuFoldOutlined,
     DownOutlined,
     FolderOpenOutlined,
-    BarChartOutlined
+    BarChartOutlined,
+    CalendarOutlined
 } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 import Logo from './logo';
@@ -28,6 +29,11 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
         {
             icon: <FileTextOutlined />,
             label: <Link to="/search-by-root">Quote</Link>,
+        },
+        {
+            key: '/schedule',
+            icon: <CalendarOutlined />,
+            label: <Link to="/schedule">Schedule</Link>,
         },
         {
             key: '/open',

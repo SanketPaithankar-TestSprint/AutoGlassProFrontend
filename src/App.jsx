@@ -19,6 +19,7 @@ import { useProfileDataPrefetch } from './hooks/useProfileDataPrefetch';
 // Lazy Load Main Components
 const Home = React.lazy(() => import('./components/Home/HomeRoot.jsx'));
 const SearchByRoot = React.lazy(() => import("./components/SearchBy/SearchByRoot"));
+const Schedule = React.lazy(() => import('./components/Schedule/ScheduleRoot.jsx'));
 
 
 const { Content } = Layout;
@@ -83,6 +84,7 @@ function AppContent() {
                   <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/search-by-root" element={<SearchByRoot />} />
+                    <Route path="/schedule" element={<Schedule />} />
                     <Route path="/Profile" element={<Profile />} />
                     <Route path="/work" element={<Work />} />
                     <Route path="/Order" element={<OrderPage />} />

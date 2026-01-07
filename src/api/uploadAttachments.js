@@ -30,9 +30,7 @@ export const uploadAttachments = async (documentNumber, files, descriptions = []
         // Get userId from localStorage if not provided
         // const storedUserId = userId || localStorage.getItem('userId') || '1'; // Unused
 
-        const storedCustomerId = customerId || localStorage.getItem('customerId') || '1';
-
-        // Create FormData for files
+        // Create FormData
         const formData = new FormData();
 
         // Append files
@@ -40,32 +38,33 @@ export const uploadAttachments = async (documentNumber, files, descriptions = []
             formData.append('files', file);
         });
 
-        // Build query parameters
-        const params = new URLSearchParams();
-        params.append('documentNumber', documentNumber);
-        params.append('customerId', storedCustomerId);
+        // Append documentNumber
+        formData.append('documentNumber', documentNumber);
 
-        // Add each description as a separate query parameter
+        // Append descriptions
         if (descriptions && descriptions.length > 0) {
             descriptions.forEach((desc, index) => {
-                params.append('descriptions', desc || `Attachment ${index + 1}`);
+                formData.append('descriptions', desc || `Attachment ${index + 1}`);
             });
         } else {
-            // Fallback if no descriptions provided, though typical usage should provide them
+            // Fallback if no descriptions provided
             files.forEach((_, index) => {
-                params.append('descriptions', `Attachment ${index + 1}`);
+                formData.append('descriptions', `Attachment ${index + 1}`);
             });
         }
 
-        console.log('[uploadAttachments] Uploading to:', `${urls.javaApiUrl}api/attachments/upload?${params.toString()}`);
-        console.log('[uploadAttachments] Files:', files.length, files.map(f => f.name));
+        console.log('[uploadAttachments] Uploading to:', `${urls.javaApiUrl}/attachments/upload`);
+        console.log('[uploadAttachments] FormData entries:');
+        for (let pair of formData.entries()) {
+            console.log(pair[0] + ', ' + (pair[1] instanceof File ? pair[1].name : pair[1]));
+        }
 
-        const response = await fetch(`${urls.javaApiUrl}api/attachments/upload?${params.toString()}`, {
+        const response = await fetch(`${urls.javaApiUrl}/attachments/upload`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'accept': '*/*'
-                // Don't set Content-Type header - browser will set it with boundary for multipart/form-data
+                // Content-Type header is set automatically by browser with boundary
             },
             body: formData
         });
