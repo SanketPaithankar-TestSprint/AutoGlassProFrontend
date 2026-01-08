@@ -226,37 +226,48 @@ const SearchByRoot = () => {
     try {
       const { year, make, model: vinModel } = data;
 
-      // Step 1: Resolve the model name using fuzzy matching
-      const { resolvedModel, matchFound } = await resolveVinModel(year, make, vinModel);
-
-
+      // Step 1: Resolve the model name and get IDs using fuzzy matching
+      const {
+        resolvedModel,
+        matchFound,
+        makeId,
+        makeName: resolvedMakeName,
+        makeModelId,
+        vehModifierId
+      } = await resolveVinModel(year, make, vinModel);
 
       // Step 2: Fetch body types for the resolved model (but don't auto-select if door count is unknown)
       let selectedBodyStyleId = null;
       try {
-        const bodyTypesData = await getBodyTypes(year, make, resolvedModel);
-        const bodyTypesList = Array.isArray(bodyTypesData?.body_types) ? bodyTypesData.body_types : [];
+        // Only fetch body types if we have the required IDs
+        if (makeId && makeModelId) {
+          const bodyTypesData = await getBodyTypes(year, makeId, makeModelId, vehModifierId);
+          const bodyTypesList = Array.isArray(bodyTypesData?.body_types) ? bodyTypesData.body_types : [];
 
-        if (bodyTypesList.length > 0) {
-          // Step 3: Extract door count
-          const doorCount = extractDoorCount(data);
+          if (bodyTypesList.length > 0) {
+            // Step 3: Extract door count
+            const doorCount = extractDoorCount(data);
 
-          // Only attempt auto-selection if we successfully extracted door count
-          if (doorCount) {
-            selectedBodyStyleId = selectBodyTypeByDoors(bodyTypesList, doorCount);
+            // Only attempt auto-selection if we successfully extracted door count
+            if (doorCount) {
+              selectedBodyStyleId = selectBodyTypeByDoors(bodyTypesList, doorCount);
+            }
           }
         }
       } catch (error) {
         console.error("[VIN Decode] Error fetching/selecting body type:", error);
       }
 
-      // Step 4: Update vehicle info with resolved data
+      // Step 4: Update vehicle info with resolved data including IDs
       const info = {
         year,
-        make,
-        model: resolvedModel, // Use resolved model
+        make: resolvedMakeName || make,       // Display name
+        makeId,                               // ID for API calls
+        model: resolvedModel,                 // Display name
+        makeModelId,                          // ID for API calls
+        vehModifierId,                        // Optional modifier ID
         body: data.body_type || data.vehicle_type,
-        bodyStyleId: selectedBodyStyleId // Include auto-selected body type
+        bodyStyleId: selectedBodyStyleId      // Include auto-selected body type
       };
 
       setVehicleInfo(info);
@@ -268,7 +279,7 @@ const SearchByRoot = () => {
         vehicleMake: info.make || prev.vehicleMake,
         vehicleModel: info.model || prev.vehicleModel,
         vehicleStyle: info.body || prev.vehicleStyle,
-        bodyType: info.body || prev.bodyType, // Added bodyType persistence
+        bodyType: info.body || prev.bodyType,
         vin: data.vin || prev.vin
       }));
 
@@ -283,7 +294,7 @@ const SearchByRoot = () => {
         vehicleMake: info.make || prev.vehicleMake,
         vehicleModel: info.model || prev.vehicleModel,
         vehicleStyle: info.body || prev.vehicleStyle,
-        bodyType: info.body || prev.bodyType, // Added bodyType persistence
+        bodyType: info.body || prev.bodyType,
         vin: data.vin || prev.vin
       }));
     }

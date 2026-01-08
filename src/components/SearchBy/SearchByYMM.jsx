@@ -1,9 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Select, Spin, message, Button } from "antd";
-import { getModelId } from "../../api/getModel"; // Import the API function
-import { getModels, getBodyTypes, getVehicleDetails, getMakes } from "../../api/getModels"; // Import the models lookup API
-import CarGlassViewer from "../carGlassViewer/CarGlassViewer";
-import config from "../../config";
+import { getModels, getBodyTypes, getVehicleDetails, getMakes } from "../../api/getModels";
 
 const buildYears = (start = 1949) => {
   const current = new Date().getFullYear();
@@ -11,9 +8,6 @@ const buildYears = (start = 1949) => {
   for (let y = current; y >= start; y--) arr.push(y);
   return arr;
 };
-
-const toOptions = (items, labelKey, valueKey) =>
-  items.map((i) => ({ label: i[labelKey], value: i[valueKey] }));
 
 export default function SearchByYMM({
   onModelIdFetched,
@@ -26,41 +20,84 @@ export default function SearchByYMM({
   minYear = 1949,
   showSearch = true,
 }) {
-  // --- YMM state
-  /* REPLACE STATE DECLARATIONS AND VALUE EFFECT */
+  // --- YMM state with IDs ---
   const [year, setYear] = useState(value?.year || null);
-  const [make, setMake] = useState(value?.make || null);
-  const [model, setModel] = useState(value?.model || null);
-  const [bodyType, setBodyType] = useState(null); // State for body type
-  const [vehId, setVehId] = useState(null); // State for vehicle ID
-  const [modelId, setModelId] = useState(null); // State to store the model ID
+
+  // Make state: store both ID and name
+  const [makeId, setMakeId] = useState(value?.makeId || null);
+  const [makeName, setMakeName] = useState(value?.make || null);
+
+  // Model state: store ID, name, and optional modifier
+  const [makeModelId, setMakeModelId] = useState(value?.makeModelId || null);
+  const [modelName, setModelName] = useState(value?.model || null);
+  const [vehModifierId, setVehModifierId] = useState(value?.vehModifierId || null);
+
+  // Body type and vehicle details
+  const [bodyType, setBodyType] = useState(null);
+  const [vehId, setVehId] = useState(null);
+  const [modelId, setModelId] = useState(null);
   const [modelImage, setModelImage] = useState(null);
   const [modelDescription, setModelDescription] = useState(null);
 
-  const [pendingBodyType, setPendingBodyType] = useState(null); // To store string description matching
+  const [pendingBodyType, setPendingBodyType] = useState(null);
 
-  // Sync state with value prop and handle VIN-provided body type
+  // Data lists from API
+  const [makes, setMakes] = useState([]);
+  const [models, setModels] = useState([]);
+  const [bodyTypes, setBodyTypes] = useState([]);
+
+  // Loading states
+  const [loadingMakes, setLoadingMakes] = useState(false);
+  const [loadingModels, setLoadingModels] = useState(false);
+  const [loadingBodyTypes, setLoadingBodyTypes] = useState(false);
+  const [loadingModelId, setLoadingModelId] = useState(false);
+
+  // Caches
+  const makesCache = useRef(new Map()); // key: year
+  const modelsCache = useRef(new Map()); // key: `${makeId}|${year}`
+  const bodyTypesCache = useRef(new Map()); // key: `${year}|${makeId}|${makeModelId}|${vehModifierId}`
+
+  const years = useMemo(() => buildYears(minYear), [minYear]);
+
+  // Sync state with value prop
   useEffect(() => {
     if (value && Object.keys(value).length > 0) {
       setYear(value.year || null);
-      setMake(value.make || null);
-      setModel(value.model || null);
 
-      // Handle pre-selected body type from VIN decode (ID)
+      // Handle make - could be ID or name from VIN decode
+      if (value.makeId) {
+        setMakeId(value.makeId);
+        setMakeName(value.make || null);
+      } else if (value.make) {
+        // Legacy support: if only make name is provided
+        setMakeName(value.make);
+      }
+
+      // Handle model - could be ID or name
+      if (value.makeModelId) {
+        setMakeModelId(value.makeModelId);
+        setModelName(value.model || null);
+        setVehModifierId(value.vehModifierId || null);
+      } else if (value.model) {
+        // Legacy support: if only model name is provided
+        setModelName(value.model);
+      }
+
+      // Handle body type
       if (value.bodyStyleId) {
         setBodyType(value.bodyStyleId);
         setPendingBodyType(null);
       } else if (value.bodyType) {
-        // Handle pre-selected body type from strings (e.g. from saved quote "4 Door Hatchback")
         setPendingBodyType(value.bodyType);
-        // Do NOT setBodyType(null) here if we want to preserve potentially user-selected value?
-        // Actually, if value prop changes, we should sync.
       }
     } else {
-      // Explicitly reset if value is empty/null
+      // Reset all states
       setYear(null);
-      setMake(null);
-      setModel(null);
+      setMakeId(null);
+      setMakeName(null);
+      setMakeModelId(null);
+      setModelName(null);
+      setVehModifierId(null);
       setBodyType(null);
       setPendingBodyType(null);
       setVehId(null);
@@ -70,16 +107,10 @@ export default function SearchByYMM({
     }
   }, [value]);
 
-  const [makes, setMakes] = useState([]);
-  const [models, setModels] = useState([]);
-  const [bodyTypes, setBodyTypes] = useState([]);
-
-  // Effect to resolve pending body type string to ID
+  // Resolve pending body type string to ID
   useEffect(() => {
     if (pendingBodyType && bodyTypes.length > 0) {
-      // Try to find a match
       const lowerPending = pendingBodyType.toLowerCase();
-      // Match against desc (description) or name? API usually returns 'desc'
       const match = bodyTypes.find(bt =>
         (bt.desc && bt.desc.toLowerCase() === lowerPending) ||
         (bt.name && bt.name.toLowerCase() === lowerPending)
@@ -87,23 +118,11 @@ export default function SearchByYMM({
 
       if (match) {
         setBodyType(match.body_style_id);
-        setPendingBodyType(null); // Clear processed pending
+        setPendingBodyType(null);
       }
     }
   }, [bodyTypes, pendingBodyType]);
 
-  const [loadingMakes, setLoadingMakes] = useState(false);
-  const [loadingModels, setLoadingModels] = useState(false);
-  const [loadingBodyTypes, setLoadingBodyTypes] = useState(false);
-  const [loadingModelId, setLoadingModelId] = useState(false); // State for loading model ID
-
-  const makesCache = useRef(new Map()); // key: vehicleType
-  const modelsCache = useRef(new Map()); // key: `${make}|${year}`
-  const bodyTypesCache = useRef(new Map()); // key: `${year}|${make}|${model}`
-
-  const years = useMemo(() => buildYears(minYear), [minYear]);
-
-  // Fetch makes (cached) - using internal API
   // Fetch makes when year changes
   useEffect(() => {
     let ignore = false;
@@ -123,13 +142,13 @@ export default function SearchByYMM({
         const data = await getMakes(y);
         const results = Array.isArray(data?.makes) ? data.makes : [];
 
-        // Transform to expected format: {make_id, abbrev, name} -> {MakeId, MakeName}
+        // Normalize: ensure we have make_id and name
         const norm = results.map((m) => ({
-          MakeId: m.make_id,
-          MakeName: m.name || m.abbrev,
+          make_id: m.make_id,
+          name: m.name || m.abbrev,
         }));
 
-        norm.sort((a, b) => a.MakeName.localeCompare(b.MakeName));
+        norm.sort((a, b) => a.name.localeCompare(b.name));
 
         if (!ignore) {
           makesCache.current.set(cacheKey, norm);
@@ -154,24 +173,28 @@ export default function SearchByYMM({
     };
   }, [year]);
 
-  // Fetch models when year+make set
+  // Fetch models when year + makeId set
   useEffect(() => {
     let ignore = false;
-    const loadModels = async (m, y) => {
-      const cacheKey = `${m}|${y}`;
+    const loadModels = async (mId, y) => {
+      const cacheKey = `${mId}|${y}`;
       if (modelsCache.current.has(cacheKey)) {
         setModels(modelsCache.current.get(cacheKey));
         return;
       }
       setLoadingModels(true);
       try {
-        // Use autopaneai.com API instead of VPIC
-        const data = await getModels(y, m);
+        const data = await getModels(y, mId);
         const modelsList = Array.isArray(data?.models) ? data.models : [];
 
-        // Transform to expected format
-        const norm = modelsList.map(modelName => ({ ModelName: modelName }));
-        norm.sort((a, b) => a.ModelName.localeCompare(b.ModelName));
+        // Normalize model data - each item has make_model_id, model_name, veh_modifier_id
+        const norm = modelsList.map(m => ({
+          make_model_id: m.make_model_id,
+          model_name: m.model_name,
+          veh_modifier_id: m.veh_modifier_id || null,
+        }));
+
+        norm.sort((a, b) => a.model_name.localeCompare(b.model_name));
 
         if (!ignore) {
           modelsCache.current.set(cacheKey, norm);
@@ -185,8 +208,8 @@ export default function SearchByYMM({
       }
     };
 
-    if (year && make) {
-      loadModels(make, year);
+    if (year && makeId) {
+      loadModels(makeId, year);
     } else {
       setModels([]);
     }
@@ -194,21 +217,20 @@ export default function SearchByYMM({
     return () => {
       ignore = true;
     };
-  }, [year, make]);
+  }, [year, makeId]);
 
-  // Fetch body types when year+make+model set
+  // Fetch body types when year + makeId + makeModelId set
   useEffect(() => {
     let ignore = false;
-    const loadBodyTypes = async (y, m, mod) => {
-      const cacheKey = `${y}|${m}|${mod}`;
+    const loadBodyTypes = async (y, mId, mmId, vModId) => {
+      const cacheKey = `${y}|${mId}|${mmId}|${vModId || 'null'}`;
       if (bodyTypesCache.current.has(cacheKey)) {
         setBodyTypes(bodyTypesCache.current.get(cacheKey));
         return;
       }
       setLoadingBodyTypes(true);
       try {
-        // Use autopaneai.com API to fetch body types
-        const data = await getBodyTypes(y, m, mod);
+        const data = await getBodyTypes(y, mId, mmId, vModId);
         const bodyTypesList = Array.isArray(data?.body_types) ? data.body_types : [];
 
         if (!ignore) {
@@ -223,8 +245,8 @@ export default function SearchByYMM({
       }
     };
 
-    if (year && make && model) {
-      loadBodyTypes(year, make, model);
+    if (year && makeId && makeModelId) {
+      loadBodyTypes(year, makeId, makeModelId, vehModifierId);
     } else {
       setBodyTypes([]);
     }
@@ -232,89 +254,29 @@ export default function SearchByYMM({
     return () => {
       ignore = true;
     };
-  }, [year, make, model]);
-
-  const lastFetchedYMM = useRef(""); // Track last fetched key to prevent loops
-
-  // Reusable fetch function
-  const fetchModelId = async (y, m, mod) => {
-    if (!y || !m || !mod) return;
-
-    // Prevent Fetch Loop: If we are already loading or already fetched this exact combo, maybe skip? 
-    // But we need to allow "Retry" if user clicks button. 
-    // We update the ref mainly to stop the EFFECT from triggering.
-    const key = `${y}|${m}|${mod}`;
-    lastFetchedYMM.current = key;
-
-    setLoadingModelId(true);
-    try {
-      const data = await getModelId(y, m, mod);
-      const mId = data?.model_id || null;
-      setModelId(mId);
-      setModelImage(data?.image || null);
-      setModelDescription(data?.description || null);
-
-      onModelIdFetched?.(mId);
-      onVehicleInfoUpdate?.({
-        year: y,
-        make: m,
-        model: mod,
-        image: data?.image || null,
-        description: data?.description || null
-      });
-      message.success(`Model ID fetched: ${mId}`);
-    } catch (error) {
-      console.error("Failed to fetch model ID:", error);
-      message.error("Failed to fetch model ID. Please try again.");
-      setModelId(null);
-      setModelImage(null);
-      setModelDescription(null);
-      lastFetchedYMM.current = ""; // Reset on failure so we can retry or effect can retry
-    } finally {
-      setLoadingModelId(false);
-    }
-  };
-
-  // Sync state with value prop and handle VIN-provided body type
-  useEffect(() => {
-    if (value) {
-      setYear(value.year || null);
-      setMake(value.make || null);
-      setModel(value.model || null);
-
-      // Handle pre-selected body type from VIN decode
-      if (value.bodyStyleId) {
-        setBodyType(value.bodyStyleId);
-      }
-    }
-  }, [value]);
+  }, [year, makeId, makeModelId, vehModifierId]);
 
   // Auto-trigger Find Parts when VIN provides complete data including body type
   useEffect(() => {
-    // Only auto-trigger if:
-    // 1. We have all required fields
-    // 2. Body type was auto-selected from VIN (not manually set)
-    // 3. The current bodyType matches the VIN-provided bodyStyleId
-    if (year && make && model && bodyType && value?.bodyStyleId === bodyType && value?.bodyStyleId) {
-      // Small delay to ensure UI is ready
+    if (year && makeId && makeModelId && bodyType && value?.bodyStyleId === bodyType && value?.bodyStyleId) {
       const timer = setTimeout(() => {
         handleFindParts();
       }, 300);
       return () => clearTimeout(timer);
     }
-  }, [year, make, model, bodyType, value?.bodyStyleId]);
+  }, [year, makeId, makeModelId, bodyType, value?.bodyStyleId]);
 
   // Fetch vehicle details and parts when "Find Parts" is clicked
   const handleFindParts = async () => {
-    if (!year || !make || !model || !bodyType) {
+    if (!year || !makeId || !makeModelId || !bodyType) {
       message.warning("Please select year, make, model, and body type");
       return;
     }
 
     setLoadingModelId(true);
     try {
-      // Step 1: Fetch vehicle details using body_style_id
-      const vehicleData = await getVehicleDetails(year, make, model, bodyType);
+      // Fetch vehicle details using all IDs
+      const vehicleData = await getVehicleDetails(year, makeId, makeModelId, bodyType, vehModifierId);
 
       const vId = vehicleData?.veh_id || null;
       const mId = vehicleData?.model_id || null;
@@ -324,7 +286,7 @@ export default function SearchByYMM({
       setModelImage(vehicleData?.image || null);
       setModelDescription(vehicleData?.description || null);
 
-      // Step 2: Notify parent components with the vehicle info
+      // Notify parent components with the vehicle info
       onModelIdFetched?.(mId);
 
       // Find the selected body type description
@@ -333,10 +295,13 @@ export default function SearchByYMM({
 
       onVehicleInfoUpdate?.({
         year,
-        make,
-        model,
-        bodyType: bodyTypeDescription, // Pass the description instead of ID
-        bodyTypeId: bodyType, // Keep the ID for reference
+        make: makeName,           // Display name
+        makeId,                   // ID for API calls
+        model: modelName,         // Display name
+        makeModelId,              // ID for API calls
+        vehModifierId,            // Optional modifier ID
+        bodyType: bodyTypeDescription,
+        bodyTypeId: bodyType,
         veh_id: vId,
         model_id: mId,
         image: vehicleData?.image || null,
@@ -356,32 +321,70 @@ export default function SearchByYMM({
     }
   };
 
+  // Handler for year selection
   const handleYear = (v) => {
     setYear(v);
-    setMake(null);
-    setModel(null);
-    setBodyType(null); // Reset body type on year change
-    setModelId(null); // Reset model ID on year change
+    setMakeId(null);
+    setMakeName(null);
+    setMakeModelId(null);
+    setModelName(null);
+    setVehModifierId(null);
+    setBodyType(null);
+    setModelId(null);
     setModelImage(null);
     setModelDescription(null);
   };
 
-  const handleMake = (v) => {
-    setMake(v);
-    setModel(null);
-    setBodyType(null); // Reset body type on make change
-    setModelId(null); // Reset model ID on make change
+  // Handler for make selection - receives make_id, looks up name
+  const handleMake = (selectedMakeId) => {
+    const selectedMake = makes.find(m => m.make_id === selectedMakeId);
+    setMakeId(selectedMakeId);
+    setMakeName(selectedMake?.name || null);
+    setMakeModelId(null);
+    setModelName(null);
+    setVehModifierId(null);
+    setBodyType(null);
+    setModelId(null);
     setModelImage(null);
     setModelDescription(null);
   };
 
-  const handleModel = (v) => {
-    setModel(v);
-    setBodyType(null); // Reset body type on model change
-    setModelId(null); // Reset model ID on model change
+  // Handler for model selection - receives composite key, parses both IDs
+  const handleModel = (compositeValue) => {
+    // Parse composite value: "make_model_id|veh_modifier_id" or "make_model_id|null"
+    const [mmIdStr, vModIdStr] = compositeValue.split('|');
+    const selectedMakeModelId = parseInt(mmIdStr, 10);
+    const selectedVehModifierId = vModIdStr === 'null' ? null : parseInt(vModIdStr, 10);
+
+    // Find the matching model
+    const selectedModel = models.find(m =>
+      m.make_model_id === selectedMakeModelId &&
+      (m.veh_modifier_id || null) === selectedVehModifierId
+    );
+
+    setMakeModelId(selectedMakeModelId);
+    setModelName(selectedModel?.model_name || null);
+    setVehModifierId(selectedVehModifierId);
+    setBodyType(null);
+    setModelId(null);
     setModelImage(null);
     setModelDescription(null);
   };
+
+  // Generate model options with composite key (make_model_id|veh_modifier_id)
+  const modelOptions = models.map(m => {
+    // Create composite value: "make_model_id|veh_modifier_id" 
+    const compositeValue = `${m.make_model_id}|${m.veh_modifier_id ?? 'null'}`;
+    return {
+      label: m.model_name,
+      value: compositeValue,
+    };
+  });
+
+  // Get current composite value for the select
+  const currentModelValue = makeModelId !== null
+    ? `${makeModelId}|${vehModifierId ?? 'null'}`
+    : null;
 
   return (
     <div className={`${className} flex flex-col h-full`}>
@@ -423,12 +426,18 @@ export default function SearchByYMM({
               size="middle"
               className="w-full !rounded-lg"
               placeholder="Make"
-              value={make}
+              value={makeId}
               onChange={handleMake}
               disabled={disabled || !year}
               notFoundContent={loadingMakes ? <Spin size="small" /> : null}
-              options={toOptions(makes, "MakeName", "MakeName")}
+              options={makes.map(m => ({
+                label: m.name,
+                value: m.make_id
+              }))}
               showSearch={showSearch}
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
               virtual={false}
               getPopupContainer={() => document.body}
               dropdownStyle={{ maxHeight: 300, overflow: 'auto', zIndex: 9999 }}
@@ -446,12 +455,15 @@ export default function SearchByYMM({
               size="middle"
               className="w-full !rounded-lg"
               placeholder="Model"
-              value={model}
+              value={currentModelValue}
               onChange={handleModel}
-              disabled={disabled || !year || !make}
+              disabled={disabled || !year || !makeId}
               notFoundContent={loadingModels ? <Spin size="small" /> : null}
-              options={toOptions(models, "ModelName", "ModelName")}
+              options={modelOptions}
               showSearch={showSearch}
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
               virtual={false}
               getPopupContainer={() => document.body}
               dropdownStyle={{ maxHeight: 300, overflow: 'auto', zIndex: 9999 }}
@@ -468,13 +480,16 @@ export default function SearchByYMM({
               placeholder="Body Type"
               value={bodyType}
               onChange={setBodyType}
-              disabled={disabled || !year || !make || !model}
+              disabled={disabled || !year || !makeId || !makeModelId}
               notFoundContent={loadingBodyTypes ? <Spin size="small" /> : null}
               options={bodyTypes.map(bt => ({
                 label: `${bt.desc} (${bt.abbrev})`,
                 value: bt.body_style_id
               }))}
               showSearch={showSearch}
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
               virtual={false}
               getPopupContainer={() => document.body}
               dropdownStyle={{ maxHeight: 300, overflow: 'auto', zIndex: 9999 }}
@@ -489,7 +504,7 @@ export default function SearchByYMM({
             <Button
               htmlType="button"
               onClick={handleFindParts}
-              disabled={disabled || !model || !year || !make || !bodyType}
+              disabled={disabled || !makeModelId || !year || !makeId || !bodyType}
               loading={loadingModelId}
               block
               className="w-full bg-white border border-slate-800 text-slate-900 font-semibold text-sm hover:!border-[#7E5CFE] hover:!text-[#7E5CFE] transition-colors !rounded-md shadow-sm flex-1 h-full min-h-[40px]"
@@ -498,11 +513,6 @@ export default function SearchByYMM({
             </Button>
           </div>
         </div>
-
-        {/* Find Parts Button Placeholder - Logic relies on auto-fetch but wireframe shows button. We can add a visual button if needed or keep auto. 
-            The current logic auto-fetches. User didn't strictly ask for logic change, just layout. 
-            I'll stick to auto-fetch for now unless explicit.
-        */}
       </div>
     </div>
   );
