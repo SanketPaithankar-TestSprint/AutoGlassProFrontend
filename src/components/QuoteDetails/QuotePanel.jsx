@@ -20,6 +20,7 @@ import {
     downloadPDF
 } from "../../utils/serviceDocumentPdfGenerator";
 import KitSelectionModal from "./KitSelectionModal";
+import CurrencyInput from "../common/CurrencyInput";
 
 function currency(n) {
     const num = Number.isFinite(n) ? n : 0;
@@ -896,25 +897,28 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
         return true;
     };
 
-    // Handler 1: Save Document
-    const handleSave = async () => {
-        console.log("[QuotePanel] handleSave called with attachments:", attachments);
+    // Internal: Save Document Function (Returns success boolean)
+    const performSave = async () => {
+        console.log("[QuotePanel] performSave called with attachments:", attachments);
 
-        if (!validateDocumentData()) return;
+        if (!validateDocumentData()) return false;
 
         setSaveLoading(true);
         try {
-            // Build payload (same logic as before)
+            // Build payload (new logic with Kit merged)
             const totalLaborAmount = items
                 .filter(it => it.type === 'Labor')
                 .reduce((sum, it) => sum + (Number(it.amount) || 0), 0);
 
             const serviceDocumentItems = [];
             items.forEach(it => {
-                if (it.type === 'Part' || it.type === 'Kit') {
+                if (it.type === 'Part') {
+                    // Find associated kit (independent Kit item usually has parentPartId pointing to this Part)
+                    const associatedKit = items.find(k => k.type === 'Kit' && k.parentPartId === it.id);
+
                     serviceDocumentItems.push({
                         partId: it.originalPartId || null, // Include partId for existing items
-                        itemType: it.type === 'Kit' ? 'kit' : 'part',
+                        itemType: 'part',
                         nagsGlassId: it.nagsId || "",
                         oemGlassId: it.oemId || "",
                         // Add missing fields for verification
@@ -926,14 +930,23 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                         listPrice: Number(it.listPrice) || 0, // Added listPrice
                         quantity: Number(it.qty) || 1,
                         laborRate: 0,
-                        laborHours: Number(it.labor) || 0
+                        laborHours: Number(it.labor) || 0,
+
+                        // Kit Details Merged into Part
+                        kitPrice: associatedKit ? (Number(associatedKit.amount) || 0) : 0,
+                        kitListPrice: associatedKit ? (Number(associatedKit.listPrice) || 0) : 0,
+                        kitDescription: associatedKit ? (associatedKit.description || "") : "",
+                        kitQuantity: associatedKit ? (Number(associatedKit.qty) || 0) : 0,
+                        kitId: associatedKit ? (associatedKit.nagsId || "") : ""
                     });
+                } else if (it.type === 'Kit') {
+                    // Skip separate kit items as they are now merged into the part
                 } else if (it.type === 'Labor') {
                     const linkedPartId = it.id.replace('_LABOR', '');
-                    const linkedPart = items.find(p => p.id === linkedPartId && (p.type === 'Part' || p.type === 'Kit'));
+                    const linkedPart = items.find(p => p.id === linkedPartId && p.type === 'Part');
                     if (linkedPart) {
                         const existingPart = serviceDocumentItems.find(sdi =>
-                            sdi.nagsGlassId === linkedPart.nagsId && sdi.oemGlassId === linkedPart.oemId
+                            sdi.nagsGlassId === linkedPart.nagsId && sdi.oemGlassId === linkedPart.oemId && sdi.itemType === 'part'
                         );
                         if (existingPart) {
                             existingPart.laborRate = Number(it.unitPrice) || 0;
@@ -943,6 +956,7 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                 }
             });
 
+            // Handle independent items (Labor/Service not linked to Part)
             const manualItems = items.filter(it => (it.type === 'Labor' || it.type === 'Service') && !it.id.includes('_LABOR'));
             manualItems.forEach(manualIt => {
                 serviceDocumentItems.push({
@@ -1029,10 +1043,9 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                 console.log(`Updating existing document: ${docMetadata.documentNumber}`);
 
                 // Do not include file attachments in PUT request updates
-                const updateResponse = await updateCompositeServiceDocument(docMetadata.documentNumber, compositePayload);
-                createdDocNumber = updateResponse.serviceDocument?.documentNumber || docMetadata.documentNumber;
+                await updateCompositeServiceDocument(docMetadata.documentNumber, compositePayload);
+                // createdDocNumber = updateResponse.serviceDocument?.documentNumber || docMetadata.documentNumber;
                 message.success(`Service Document Updated Successfully!`);
-
             } else {
                 // CREATE NEW DOCUMENT
                 console.log("Creating new document with", files.length, "files");
@@ -1046,22 +1059,34 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                 }
             }
 
-            // Navigate to open page after creation/update
-            setTimeout(() => {
-                navigate('/open');
-            }, 1000);
+            // Immediately return success
+            return true;
 
         } catch (err) {
             console.error(err);
             message.error("Save failed: " + err.message);
+            return false;
         } finally {
             setSaveLoading(false);
         }
     };
 
+    // Handler 1: Save Button (Save & Clear)
+    const handleSave = async () => {
+        const success = await performSave();
+        if (success) {
+            if (onClear) {
+                onClear(true); // Clear without confirmation
+            }
+        }
+    };
+
     // Handler 2: Preview Document (opens in new tab with proper filename)
-    const handlePreview = () => {
-        if (!validateDocumentData()) return;
+    // Updated: Save -> Preview -> Clear
+    const handlePreview = async () => {
+        // Enforce Save First
+        const success = await performSave();
+        if (!success) return;
 
         setPreviewLoading(true);
         try {
@@ -1077,8 +1102,13 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
 
             // Open in new tab for preview
             window.open(url, '_blank');
-
             message.success(`Preview opened: ${filename}`);
+
+            // Clear after opening
+            if (onClear) {
+                onClear(true); // Clear without confirmation
+            }
+
         } catch (error) {
             console.error("Error in handlePreview:", error);
             modal.error({
@@ -1091,15 +1121,11 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
     };
 
     // Handler 3: Email Document
-    const handleEmail = () => {
-        if (!isSaved) {
-            modal.warning({
-                title: 'Document Not Saved',
-                content: 'Please save the document before sending email.',
-                okText: 'OK',
-            });
-            return;
-        }
+    // Updated: Remove disabled check, Save -> Modal -> Send -> Clear
+    const handleEmail = async () => {
+        // Enforce save first
+        const success = await performSave();
+        if (!success) return;
 
         if (!validateDocumentData()) return;
 
@@ -1162,6 +1188,12 @@ Auto Glass Pro Team`;
             }
 
             handleCloseModal();
+
+            // Clear after sending
+            if (onClear) {
+                onClear(true); // Clear without confirmation
+            }
+
         } catch (err) {
             console.error(err);
             message.error("Email failed: " + err.message);
@@ -1404,20 +1436,18 @@ Auto Glass Pro Team`;
                                         />
                                     </td>
                                     <td className="px-1 py-0.5 text-right border-r border-slate-300">
-                                        <input
-                                            type="text"
-                                            value={it.listPrice ? `$${Number(it.listPrice).toFixed(2)}` : ''}
-                                            onChange={(e) => updateItem(it.id, "listPrice", e.target.value.replace(/[^0-9.]/g, ''))}
+                                        <CurrencyInput
+                                            value={it.listPrice}
+                                            onChange={(val) => updateItem(it.id, "listPrice", val)}
                                             className="w-full h-4 rounded px-1 text-xs text-right outline-none focus:bg-white bg-transparent text-slate-700"
                                             disabled={!it.isManual && it.type === 'Labor'}
                                             placeholder="$0.00"
                                         />
                                     </td>
                                     <td className="px-1 py-0.5 text-right border-r border-slate-300">
-                                        <input
-                                            type="text"
-                                            value={it.amount ? `$${Number(it.amount).toFixed(2)}` : ''}
-                                            onChange={(e) => updateItem(it.id, "amount", e.target.value.replace(/[^0-9.]/g, ''))}
+                                        <CurrencyInput
+                                            value={it.amount}
+                                            onChange={(val) => updateItem(it.id, "amount", val)}
                                             className="w-full h-4 rounded px-1 text-xs text-right outline-none focus:bg-white bg-transparent text-slate-700"
                                             placeholder="$0.00"
                                         />
@@ -1677,9 +1707,9 @@ Auto Glass Pro Team`;
                                     </button>
                                     <button
                                         onClick={handleEmail}
-                                        disabled={!isSaved || emailLoading}
+                                        disabled={emailLoading}
                                         className="flex-1 px-2 py-1 rounded bg-[#00A8E4] text-white text-[10px] font-semibold hover:bg-[#0096cc] transition disabled:opacity-50"
-                                        title={!isSaved ? "Save document first" : "Send via email"}
+                                        title="Send via email"
                                     >
                                         {emailLoading ? '...' : 'Email'}
                                     </button>

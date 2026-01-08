@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Layout, message, App, Pagination, List, Segmented, Card, Tag, Empty } from 'antd';
-import { AppstoreOutlined, UnorderedListOutlined, FileTextOutlined, UserOutlined, CarOutlined, CalendarOutlined } from '@ant-design/icons';
+import { Layout, message, App, Pagination, List, Segmented, Card, Tag, Empty, Modal, Button, Space, Tooltip } from 'antd';
+import { AppstoreOutlined, UnorderedListOutlined, FileTextOutlined, UserOutlined, CarOutlined, CalendarOutlined, DeleteOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import Header from '../Header';
 import SearchBar from './SearchBar';
 import { getValidToken } from '../../api/getValidToken';
 import { getServiceDocuments } from '../../api/getServiceDocuments';
 import { getCompositeServiceDocument } from '../../api/getCompositeServiceDocument';
+import { deleteServiceDocument } from '../../api/deleteServiceDocument';
 
 const { Content } = Layout;
 
@@ -21,7 +22,7 @@ const OpenRoot = () => {
     const [currentPage, setCurrentPage] = useState(0);
     const [pageSize, setPageSize] = useState(10);
     const [totalElements, setTotalElements] = useState(0);
-    const { message } = App.useApp(); // Use App context for messages if possible, or standard message
+    const { message, modal } = App.useApp(); // Use App context for messages and modal
 
     // Fetch API Data
     useEffect(() => {
@@ -92,6 +93,38 @@ const OpenRoot = () => {
         }
     };
 
+
+
+    // Actually, let's use a simpler approach: Standard confirm for "Cancel vs Delete" is hard with 2 buttons.
+    // Let's implement a wrapper function that uses Modal.confirm for the *action*.
+    // OR create a custom component. 
+    // Let's stick to a custom implementation inside render for reliability.
+
+    // We will use a separate function to show a custom modal content with 3 buttons?
+    // Antd Modal.confirm doesn't easily support 3 distinct exits (Cancel, Soft, Hard).
+    // Let's use `modal.info` or `modal.warning` with custom content that wraps the buttons?
+    // Or just use a local state `deleteTarget` and render a <Modal> component. --> This is safer.
+
+    const [deleteTarget, setDeleteTarget] = useState(null);
+
+    const performDelete = async (doc, isHardDelete) => {
+        const hide = message.loading(isHardDelete ? 'Deleting...' : 'Cancelling...', 0);
+        try {
+            await deleteServiceDocument(doc.documentNumber, isHardDelete);
+            hide();
+            message.success(isHardDelete ? 'Document deleted permanently.' : 'Document cancelled.');
+            setDeleteTarget(null);
+            // Refresh list
+            const fetchDocuments = async () => { /* re-fetch logic duplication? better to toggle a 'refresh' flag */ };
+            // Dirty fix: modify list locally or trigger re-fetch
+            setDocuments(prev => prev.filter(d => d.documentNumber !== doc.documentNumber));
+            setFilteredDocuments(prev => prev.filter(d => d.documentNumber !== doc.documentNumber));
+        } catch (error) {
+            hide();
+            message.error("Failed to delete document.");
+        }
+    };
+
     // Helper functions for colors
     const getStatusColor = (status) => {
         switch (status?.toLowerCase()) {
@@ -155,6 +188,17 @@ const OpenRoot = () => {
                             <span className="font-bold text-slate-900 text-base whitespace-nowrap min-w-[100px] text-right">
                                 {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalAmount || 0)}
                             </span>
+                            <Tooltip title="Delete Document">
+                                <Button
+                                    type="text"
+                                    danger
+                                    icon={<DeleteOutlined />}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setDeleteTarget(doc);
+                                    }}
+                                />
+                            </Tooltip>
                         </div>
                     </div>
                 </div>
@@ -201,10 +245,61 @@ const OpenRoot = () => {
                     <span className="font-bold text-slate-900 text-lg">
                         {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalAmount || 0)}
                     </span>
+                    <Tooltip title="Delete Document">
+                        <Button
+                            type="text"
+                            danger
+                            icon={<DeleteOutlined />}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setDeleteTarget(doc);
+                            }}
+                        />
+                    </Tooltip>
                 </div>
             </Card>
         );
     };
+
+    // End of renderDocumentCard
+
+
+    // Delete Confirmation Modal
+    const DeleteConfirmModal = () => (
+        <Modal
+            title={<Space><ExclamationCircleOutlined className="text-red-500" /> Confirm Deletion</Space>}
+            open={!!deleteTarget}
+            onCancel={() => setDeleteTarget(null)}
+            footer={null}
+        >
+            <p className="mb-4 text-base">
+                How would you like to delete document <b>{deleteTarget?.documentNumber}</b>?
+            </p>
+            <div className="flex flex-col gap-3">
+                <Button
+                    block
+                    size="large"
+                    onClick={() => performDelete(deleteTarget, false)}
+                >
+                    Cancel Document (Soft Delete)
+                </Button>
+                <div className="text-xs text-slate-400 text-center -mt-2 mb-1">Mark as cancelled, keep in database.</div>
+
+                <Button
+                    block
+                    size="large"
+                    danger
+                    onClick={() => performDelete(deleteTarget, true)}
+                >
+                    Delete from Database (Hard Delete)
+                </Button>
+                <div className="text-xs text-slate-400 text-center -mt-2">Permanently remove records.</div>
+            </div>
+            <div className="text-right mt-4">
+                <Button type="text" onClick={() => setDeleteTarget(null)}>Close</Button>
+            </div>
+        </Modal>
+    );
 
     return (
         <div className="min-h-screen bg-white">
@@ -288,6 +383,7 @@ const OpenRoot = () => {
                     </div>
                 )}
             </div>
+            <DeleteConfirmModal />
         </div>
     );
 };

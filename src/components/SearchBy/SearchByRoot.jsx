@@ -182,6 +182,24 @@ const SearchByRoot = () => {
               pricingType: "hourly"
             });
           }
+          // Linked Kit Item (Unpacking from Part)
+          if (item.kitId || (item.kitPrice && Number(item.kitPrice) > 0)) {
+            result.push({
+              type: 'Kit',
+              id: `kit_${item.kitId || 'unknown'}_${Math.random().toString(36).substring(2, 7)}`,
+              parentPartId: partId,
+              nagsId: item.kitId || "",
+              oemId: "",
+              description: item.kitDescription || "Installation Kit",
+              manufacturer: "",
+              qty: item.kitQuantity || 1,
+              unitPrice: item.kitPrice || 0,
+              listPrice: item.kitListPrice || 0,
+              amount: item.kitPrice || 0,
+              labor: 0
+            });
+          }
+
           return result;
         });
         // Set global store items
@@ -549,49 +567,54 @@ const SearchByRoot = () => {
 
 
   // Global Clear Handler
-  const handleGlobalClear = () => {
-    modal.confirm({
-      title: "Clear All Details",
-      content: "Are you sure you want to clear all details? This will reset the entire quote.",
-      okText: "Yes, Clear All",
-      okType: "danger",
-      cancelText: "Cancel",
-      onOk() {
-        // 1. Clear Local Storage FIRST
-        localStorage.removeItem("agp_customer_data");
+  const handleGlobalClear = (skipConfirm = false) => {
+    const performClear = () => {
+      // 1. Clear Local Storage FIRST
+      localStorage.removeItem("agp_customer_data");
 
-        // 2. Reset Store (Global State)
-        resetStore();
+      // 2. Reset Store (Global State)
+      resetStore();
 
-        // 3. Reset Local State
-        setPrintableNote("");
-        setInternalNote("");
+      // 3. Reset Local State
+      setPrintableNote("");
+      setInternalNote("");
 
-        setInsuranceData({});
-        setIncludeInsurance(false);
-        setAttachments([]);
-        setSavedAttachments([]);
-        setCreatedDocumentNumber(null); // Clear document number
+      setInsuranceData({});
+      setIncludeInsurance(false);
+      setAttachments([]);
+      setSavedAttachments([]);
+      setCreatedDocumentNumber(null); // Clear document number
 
-        // 4. Reset Customer & Vehicle
-        setCustomerData({ ...initialCustomerData });
-        setVehicleInfo({});
-        setVinData(null);
-        setModelId(null);
-        setVehId(null); // Added this to clear the model view correctly
+      // 4. Reset Customer & Vehicle
+      setCustomerData({ ...initialCustomerData });
+      setVehicleInfo({});
+      setVinData(null);
+      setModelId(null);
+      setVehId(null); // Added this to clear the model view correctly
 
-        // 5. UI Resets
-        setResetKey(prev => prev + 1); // Force remount of search components
-        setActiveTab('quote');
-        setIsSaved(false);
-        setDocMetadata(null); // THIS WILL NOW HIDE THE DOCUMENT # AND DATES
-        setIsEditMode(false);
+      // 5. UI Resets
+      setResetKey(prev => prev + 1); // Force remount of search components
+      setActiveTab('quote');
+      setIsSaved(false);
+      setDocMetadata(null); // THIS WILL NOW HIDE THE DOCUMENT # AND DATES
+      setIsEditMode(false);
 
-        // 6. Clear Navigation State
-        navigate(location.pathname, { replace: true, state: {} });
-      }
-    });
+      // 6. Clear Navigation State
+      navigate(location.pathname, { replace: true, state: {} });
+    };
 
+    if (skipConfirm === true) {
+      performClear();
+    } else {
+      modal.confirm({
+        title: "Clear All Details",
+        content: "Are you sure you want to clear all details? This will reset the entire quote.",
+        okText: "Yes, Clear All",
+        okType: "danger",
+        cancelText: "Cancel",
+        onOk: performClear
+      });
+    }
   };
 
 
