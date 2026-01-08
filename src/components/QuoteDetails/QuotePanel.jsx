@@ -753,8 +753,9 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
         [items]
     );
     const totalTax = useMemo(() => {
+        // Only Parts and Kits are taxable - Labor, Service, and ADAS are not taxed
         const taxableSubtotal = items
-            .filter(it => it.type !== 'Labor')
+            .filter(it => it.type === 'Part' || it.type === 'Kit')
             .reduce((sum, it) => sum + (Number(it.amount) || 0), 0);
         return (taxableSubtotal * (Number(globalTaxRate) || 0)) / 100;
     }, [items, globalTaxRate]);
@@ -1058,7 +1059,7 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
         }
     };
 
-    // Handler 2: Preview Document
+    // Handler 2: Preview Document (opens in new tab with proper filename)
     const handlePreview = () => {
         if (!validateDocumentData()) return;
 
@@ -1066,12 +1067,18 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
         try {
             const doc = generatePdfDoc();
             const blob = doc.output('blob');
-            const url = URL.createObjectURL(blob);
+
+            // Generate proper filename
+            const filename = generatePDFFilename(currentDocType, customerData);
+
+            // Create a File object with proper name (helps with download filename)
+            const file = new File([blob], filename, { type: 'application/pdf' });
+            const url = URL.createObjectURL(file);
 
             // Open in new tab for preview
             window.open(url, '_blank');
 
-            message.success('Preview opened in new tab');
+            message.success(`Preview opened: ${filename}`);
         } catch (error) {
             console.error("Error in handlePreview:", error);
             modal.error({
@@ -1565,8 +1572,56 @@ Auto Glass Pro Team`;
                                     }}
                                     onBlur={() => {
                                         if (manualTotal !== null && manualTotal !== '') {
-                                            const f = parseFloat(manualTotal);
-                                            setManualTotal(isNaN(f) ? null : f.toFixed(2));
+                                            const newTotal = parseFloat(manualTotal);
+                                            if (isNaN(newTotal)) {
+                                                setManualTotal(null);
+                                                return;
+                                            }
+
+                                            // Calculate the difference between new total and calculated total
+                                            const difference = newTotal - calculatedTotal;
+
+                                            if (difference !== 0) {
+                                                // Find the first Part item, or first Service if no Parts exist
+                                                const firstPartIndex = items.findIndex(it => it.type === 'Part');
+                                                const firstServiceIndex = items.findIndex(it => it.type === 'Service' || it.type === 'ADAS');
+
+                                                let targetIndex = firstPartIndex !== -1 ? firstPartIndex : firstServiceIndex;
+
+                                                if (targetIndex !== -1) {
+                                                    const targetItem = items[targetIndex];
+
+                                                    // Parts and Kits are taxable, so we need to account for tax when adjusting
+                                                    // If we add X to a part, total increases by X + (X * taxRate/100) = X * (1 + taxRate/100)
+                                                    // So to get total difference D, we need: X = D / (1 + taxRate/100)
+                                                    let amountToAdd = difference;
+                                                    if (targetItem.type === 'Part' || targetItem.type === 'Kit') {
+                                                        // Account for tax on parts and kits
+                                                        const taxMultiplier = 1 + (Number(globalTaxRate) || 0) / 100;
+                                                        amountToAdd = difference / taxMultiplier;
+                                                    }
+                                                    // Services, ADAS, and Labor are NOT taxed, so no tax adjustment needed
+                                                    // amountToAdd stays as difference for these types
+
+                                                    const newAmount = Math.max(0, (Number(targetItem.amount) || 0) + amountToAdd);
+
+                                                    // Update the item's amount
+                                                    setItems(prev => prev.map((it, idx) => {
+                                                        if (idx === targetIndex) {
+                                                            return {
+                                                                ...it,
+                                                                amount: parseFloat(newAmount.toFixed(2)),
+                                                                // Also update unitPrice if qty is 1 to keep them in sync
+                                                                unitPrice: (Number(it.qty) === 1) ? parseFloat(newAmount.toFixed(2)) : it.unitPrice
+                                                            };
+                                                        }
+                                                        return it;
+                                                    }));
+                                                }
+                                            }
+
+                                            // Clear manual total since we've adjusted the item amounts
+                                            setManualTotal(null);
                                         } else if (manualTotal === '') {
                                             setManualTotal(null);
                                         }
