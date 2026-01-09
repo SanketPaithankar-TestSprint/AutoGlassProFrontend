@@ -151,6 +151,15 @@ export default function SearchByYMM({
         norm.sort((a, b) => a.name.localeCompare(b.name));
 
         if (!ignore) {
+
+          // Auto-resolve Make ID if we have a name but no ID
+          if (makeName && !makeId) {
+            const match = norm.find(m => m.name.toLowerCase() === makeName.toLowerCase());
+            if (match) {
+              setMakeId(match.make_id);
+            }
+          }
+
           makesCache.current.set(cacheKey, norm);
           setMakes(norm);
         }
@@ -171,7 +180,7 @@ export default function SearchByYMM({
     return () => {
       ignore = true;
     };
-  }, [year]);
+  }, [year, makeId, makeName]);
 
   // Fetch models when year + makeId set
   useEffect(() => {
@@ -197,6 +206,16 @@ export default function SearchByYMM({
         norm.sort((a, b) => a.model_name.localeCompare(b.model_name));
 
         if (!ignore) {
+
+          // Auto-resolve Model ID if we have a name but no ID
+          if (modelName && !makeModelId) {
+            const match = norm.find(m => m.model_name.toLowerCase() === modelName.toLowerCase());
+            if (match) {
+              setMakeModelId(match.make_model_id);
+              setVehModifierId(match.veh_modifier_id || null);
+            }
+          }
+
           modelsCache.current.set(cacheKey, norm);
           setModels(norm);
         }
@@ -217,7 +236,7 @@ export default function SearchByYMM({
     return () => {
       ignore = true;
     };
-  }, [year, makeId]);
+  }, [year, makeId, makeModelId, modelName]);
 
   // Fetch body types when year + makeId + makeModelId set
   useEffect(() => {

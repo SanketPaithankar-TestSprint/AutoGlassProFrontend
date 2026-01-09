@@ -305,7 +305,6 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
     const [globalTaxRate, setGlobalTaxRate] = useState(0);
 
     const [isManualTax, setIsManualTax] = useState(false);
-    const [discountPercent, setDiscountPercent] = useState(0);
     const [payment, setPayment] = useState(0);
     const [manualDocType, setManualDocType] = useState("Quote"); // Default to Quote, no Auto
 
@@ -760,22 +759,11 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
             .reduce((sum, it) => sum + (Number(it.amount) || 0), 0);
         return (taxableSubtotal * (Number(globalTaxRate) || 0)) / 100;
     }, [items, globalTaxRate]);
-    const baseDiscountAmount = useMemo(() => {
-        return (subtotal * (Number(discountPercent) || 0)) / 100;
-    }, [subtotal, discountPercent]);
-
-    const calculatedTotal = useMemo(() => Math.max(0, subtotal + totalTax - baseDiscountAmount), [subtotal, totalTax, baseDiscountAmount]);
+    const calculatedTotal = useMemo(() => Math.max(0, subtotal + totalTax), [subtotal, totalTax]);
 
     const [manualTotal, setManualTotal] = useState(null);
 
     const total = useMemo(() => manualTotal !== null ? Number(manualTotal) : calculatedTotal, [manualTotal, calculatedTotal]);
-
-    const effectiveDiscountAmount = useMemo(() => {
-        if (manualTotal !== null) {
-            return subtotal + totalTax - total;
-        }
-        return baseDiscountAmount;
-    }, [manualTotal, subtotal, totalTax, total, baseDiscountAmount]);
 
     const handleRoundUp = () => {
         setManualTotal(Math.ceil(total));
@@ -798,7 +786,6 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
             totalTax,
             totalHours,
             laborAmount: laborCostDisplay,
-            discountAmount: effectiveDiscountAmount,
             total,
             balance,
             docType: currentDocType,
@@ -1013,7 +1000,7 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                 notes: printableNote,
                 termsConditions: "Warranty valid for 12 months on workmanship.",
                 taxRate: Number(globalTaxRate) || 0,
-                discountAmount: effectiveDiscountAmount,
+
                 laborAmount: totalLaborAmount,
                 items: serviceDocumentItems
             };
@@ -1552,6 +1539,11 @@ Auto Glass Pro Team`;
 
                 <table className="w-full max-w-xs border border-slate-300 text-sm">
                     <tbody>
+                        {/* Labor Row */}
+                        <tr className="border-b border-slate-300">
+                            <td className="px-2 py-1 text-slate-600 border-r border-slate-300">Labor</td>
+                            <td className="px-2 py-1 text-right text-slate-900">{currency(laborCostDisplay)}</td>
+                        </tr>
                         {/* Subtotal Row */}
                         <tr className="border-b border-slate-300">
                             <td className="px-2 py-1 text-slate-600 border-r border-slate-300">Subtotal</td>
@@ -1562,24 +1554,7 @@ Auto Glass Pro Team`;
                             <td className="px-2 py-1 text-slate-600 border-r border-slate-300">Tax ({globalTaxRate}%)</td>
                             <td className="px-2 py-1 text-right text-slate-900">{currency(totalTax)}</td>
                         </tr>
-                        {/* Discount Row */}
-                        <tr className="border-b border-slate-300">
-                            <td className="px-2 py-1 text-slate-600 border-r border-slate-300">Discount %</td>
-                            <td className="px-2 py-1 text-right">
-                                <input
-                                    type="number"
-                                    value={discountPercent}
-                                    onChange={(e) => setDiscountPercent(e.target.value)}
-                                    className="w-16 text-right bg-transparent text-sm text-slate-900 outline-none border-b border-transparent hover:border-slate-300 focus:border-sky-400"
-                                />
-                            </td>
-                        </tr>
-                        {Number(discountPercent) > 0 && (
-                            <tr className="border-b border-slate-300">
-                                <td className="px-2 py-1 text-slate-600 border-r border-slate-300">Discount</td>
-                                <td className="px-2 py-1 text-right text-slate-900">- {currency(baseDiscountAmount)}</td>
-                            </tr>
-                        )}
+
                         {/* Total Row */}
                         <tr className="border-b border-slate-300 bg-slate-50">
                             <td className="px-2 py-1 font-semibold text-slate-700 border-r border-slate-300">

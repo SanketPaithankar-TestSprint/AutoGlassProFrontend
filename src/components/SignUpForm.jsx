@@ -20,16 +20,16 @@ import {
     EyeTwoTone
 } from '@ant-design/icons';
 import axios from 'axios';
-import { COUNTRIES, getStatesOrProvinces, getCities } from '../const/locations';
+import { COUNTRIES, getStatesOrProvinces } from '../const/locations';
 
 const SignUpForm = ({ onSuccess, onCancel }) => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [selectedCountry, setSelectedCountry] = useState('USA');
-    const [selectedState, setSelectedState] = useState(null);
+
     const [availableStates, setAvailableStates] = useState(getStatesOrProvinces('USA'));
-    const [availableCities, setAvailableCities] = useState([]);
+
 
     const onFinish = async (values) => {
         setLoading(true);
@@ -114,15 +114,13 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
 
     const handleCountryChange = (value) => {
         setSelectedCountry(value);
-        setSelectedState(null);
+
         setAvailableStates(getStatesOrProvinces(value));
-        setAvailableCities([]);
-        form.setFieldsValue({ state: undefined, city: undefined });
+        form.setFieldsValue({ state: undefined });
     };
 
     const handleStateChange = (value) => {
-        setSelectedState(value);
-        setAvailableCities(getCities(selectedCountry, value));
+
         form.setFieldsValue({ city: undefined });
     };
 
@@ -280,21 +278,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             label="City"
                             rules={[{ required: true, message: 'Please enter or select city!' }]}
                         >
-                            <Select
-                                placeholder={availableCities.length > 0 ? "Select or type city name" : "Type city name"}
-                                showSearch
-                                optionFilterProp="label"
-                                mode="tags"
-                                maxTagCount={1}
-                                allowClear
-                                notFoundContent={null}
-                            >
-                                {availableCities.map(city => (
-                                    <Select.Option key={city.value} value={city.value}>
-                                        {city.label}
-                                    </Select.Option>
-                                ))}
-                            </Select>
+                            <Input placeholder="Enter city name" />
                         </Form.Item>
                     </Col>
                     <Col xs={24} sm={12}>
