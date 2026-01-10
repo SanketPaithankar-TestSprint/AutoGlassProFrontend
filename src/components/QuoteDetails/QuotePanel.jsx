@@ -21,6 +21,7 @@ import {
 } from "../../utils/serviceDocumentPdfGenerator";
 import KitSelectionModal from "./KitSelectionModal";
 import CurrencyInput from "../common/CurrencyInput";
+import { getTaxSettings } from "../../api/taxSettings";
 
 function currency(n) {
     const num = Number.isFinite(n) ? n : 0;
@@ -330,10 +331,33 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                     return;
                 }
 
-                const [rates, defaultRate] = await Promise.all([
-                    getActiveTaxRates().catch(() => []),
-                    getDefaultTaxRate().catch(() => null)
-                ]);
+                // Optimistically load from cache
+                let rates = [];
+                let defaultRate = null;
+                let usedCache = false;
+
+                try {
+                    const cached = localStorage.getItem("agp_tax_rates");
+                    if (cached) {
+                        const allRates = JSON.parse(cached);
+                        if (Array.isArray(allRates) && allRates.length > 0) {
+                            rates = allRates.filter(r => r.isActive);
+                            defaultRate = allRates.find(r => r.isDefault) || null;
+                            usedCache = true;
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error reading tax rates from cache", e);
+                }
+
+                if (!usedCache) {
+                    const [apiRates, apiDefault] = await Promise.all([
+                        getActiveTaxRates().catch(() => []),
+                        getDefaultTaxRate().catch(() => null)
+                    ]);
+                    rates = apiRates;
+                    defaultRate = apiDefault;
+                }
                 const validRates = Array.isArray(rates) ? rates : [];
                 setTaxRates(validRates);
 
@@ -770,13 +794,37 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
             .reduce((sum, it) => sum + (Number(it.labor) || 0), 0),
         [items]
     );
+    // Fetch User Tax Preferences from LocalStorage (cached on login)
+    const taxSettings = useMemo(() => {
+        try {
+            const stored = localStorage.getItem("user_tax_settings");
+            return stored ? JSON.parse(stored) : null;
+        } catch (e) {
+            console.error("Failed to parse tax settings", e);
+            return null;
+        }
+    }, []);
+
     const totalTax = useMemo(() => {
-        // Only Parts and Kits are taxable - Labor, Service, and ADAS are not taxed
+        // Default to standard behavior if settings not loaded/found
+        const settings = taxSettings || {
+            taxParts: true,
+            taxLabor: false,
+            taxService: false,
+            taxAdas: true
+        };
+
         const taxableSubtotal = items
-            .filter(it => it.type === 'Part' || it.type === 'Kit')
+            .filter(it => {
+                if (it.type === 'Part' || it.type === 'Kit') return settings.taxParts;
+                if (it.type === 'Labor') return settings.taxLabor;
+                if (it.type === 'Service') return settings.taxService;
+                if (it.type === 'ADAS') return settings.taxAdas;
+                return false;
+            })
             .reduce((sum, it) => sum + (Number(it.amount) || 0), 0);
         return (taxableSubtotal * (Number(globalTaxRate) || 0)) / 100;
-    }, [items, globalTaxRate]);
+    }, [items, globalTaxRate, taxSettings]);
     const calculatedTotal = useMemo(() => Math.max(0, subtotal + totalTax), [subtotal, totalTax]);
 
     const [manualTotal, setManualTotal] = useState(null);
@@ -1213,11 +1261,15 @@ Auto Glass Pro Team`;
 
 
     // Fetch ADAS Prices
-    const { data: adasPrices = [] } = useQuery({
-        queryKey: ['userAdasPrices'],
-        queryFn: getUserAdasPrices,
-        staleTime: 1000 * 60 * 5 // 5 minutes
-    });
+    // Fetch ADAS Prices from LocalStorage (cached on login)
+    const adasPrices = useMemo(() => {
+        try {
+            return JSON.parse(localStorage.getItem("user_adas_prices") || "[]");
+        } catch (e) {
+            console.error("Failed to load ADAS prices from cache", e);
+            return [];
+        }
+    }, []);
 
     // Helper to check if item is ADAS
     // We rely on item.type === 'ADAS' from our new handleAddRow logic
@@ -1613,16 +1665,24 @@ Auto Glass Pro Team`;
                                                     const targetItem = items[targetIndex];
 
                                                     // Parts and Kits are taxable, so we need to account for tax when adjusting
-                                                    // If we add X to a part, total increases by X + (X * taxRate/100) = X * (1 + taxRate/100)
-                                                    // So to get total difference D, we need: X = D / (1 + taxRate/100)
+                                                    // Check taxability based on dynamic settings
+                                                    const settings = taxSettings || {
+                                                        taxParts: true, taxLabor: false, taxService: false, taxAdas: true
+                                                    };
+
+                                                    let isTaxable = false;
+                                                    if (targetItem.type === 'Part' || targetItem.type === 'Kit') isTaxable = settings.taxParts;
+                                                    else if (targetItem.type === 'Labor') isTaxable = settings.taxLabor;
+                                                    else if (targetItem.type === 'Service') isTaxable = settings.taxService;
+                                                    else if (targetItem.type === 'ADAS') isTaxable = settings.taxAdas;
+
                                                     let amountToAdd = difference;
-                                                    if (targetItem.type === 'Part' || targetItem.type === 'Kit') {
-                                                        // Account for tax on parts and kits
+                                                    if (isTaxable) {
+                                                        // Account for tax
                                                         const taxMultiplier = 1 + (Number(globalTaxRate) || 0) / 100;
                                                         amountToAdd = difference / taxMultiplier;
                                                     }
-                                                    // Services, ADAS, and Labor are NOT taxed, so no tax adjustment needed
-                                                    // amountToAdd stays as difference for these types
+                                                    // Else no tax adjustment needed
 
                                                     const newAmount = Math.max(0, (Number(targetItem.amount) || 0) + amountToAdd);
 

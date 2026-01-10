@@ -60,16 +60,33 @@ const Profile = () => {
             if (!token) throw new Error("No token found. Please login.");
             const res = await getCustomers(token);
             return Array.isArray(res) ? res : [];
-        }
+        },
+        enabled: activeTab === 'customers', // Only fetch when tab is active
+        staleTime: 1000 * 60 * 5 // Cache for 5 minutes
     });
 
     const { data: employees = [], isLoading: loadingEmployees } = useQuery({
         queryKey: ['employees'],
         queryFn: async () => {
+            // Check localStorage cache first
+            const cached = localStorage.getItem("agp_employees");
+            if (cached) {
+                try {
+                    const parsed = JSON.parse(cached);
+                    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+                } catch (e) {
+                    console.error("Failed to parse cached employees", e);
+                }
+            }
+
             if (!token) throw new Error("No token found. Please login.");
             const res = await getEmployees(token);
-            return Array.isArray(res) ? res : [];
-        }
+            const data = Array.isArray(res) ? res : [];
+            localStorage.setItem("agp_employees", JSON.stringify(data));
+            return data;
+        },
+        enabled: activeTab === 'employees', // Only fetch when tab is active
+        staleTime: 1000 * 60 * 30 // Cache for 30 minutes
     });
 
     const [saving, setSaving] = useState(false);
@@ -575,7 +592,7 @@ const Profile = () => {
     };
 
     return (
-        <div className="flex flex-col md:flex-row h-screen bg-gray-50/50 pt-16">
+        <div className="flex flex-col md:flex-row h-screen bg-gray-50/50">
             {/* Sidebar */}
             <div className="w-full md:w-64 bg-white border-r border-gray-200 flex-shrink-0 md:h-[calc(100vh-64px)] overflow-y-auto">
                 <div className="p-6">

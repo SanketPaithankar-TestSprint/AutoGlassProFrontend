@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Form, Input, Button, Checkbox, Alert, Space, notification } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { loginUser, handleLoginSuccess } from "../api/login";
+import { getTaxSettings } from "../api/taxSettings";
 
 export default function Login({ onLoginSuccess, onSignUpClick }) {
     const [loading, setLoading] = useState(false);
@@ -22,6 +23,16 @@ export default function Login({ onLoginSuccess, onSignUpClick }) {
             if (res && res.success) {
                 // Handle post-login storage
                 handleLoginSuccess(res, values.remember);
+
+                // Fetch and cache tax settings
+                try {
+                    const settings = await getTaxSettings();
+                    if (settings) {
+                        localStorage.setItem("user_tax_settings", JSON.stringify(settings));
+                    }
+                } catch (e) {
+                    console.error("Failed to fetch tax settings on login", e);
+                }
 
                 notification.success({
                     message: `Welcome, ${res.data.username}!`,
