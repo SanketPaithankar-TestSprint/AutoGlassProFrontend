@@ -622,15 +622,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                 </div>
                             </div>
 
-                            {/* Footer Actions */}
-                            <div className="bg-gray-50 border-t border-gray-200 p-4 flex justify-end">
-                                {/* <button
-                                    type="submit"
-                                    className="px-6 py-2 rounded-md bg-violet-600 hover:bg-violet-700 text-white font-medium shadow-sm transition-colors"
-                                >
-                                    Save
-                                </button> */}
-                            </div>
+
 
                         </div>
                     )}

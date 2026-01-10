@@ -3,6 +3,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Table, Button, Modal, Form, Input, InputNumber, Switch, Card, notification, Popconfirm, Tag, Tooltip, Empty } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined, StarOutlined, StarFilled, ReloadOutlined } from "@ant-design/icons";
 import { getTaxRates, createTaxRate, updateTaxRate, deleteTaxRate, setDefaultTaxRate } from "../../api/taxRateApi";
+import { getTaxSettings, saveTaxSettings } from "../../api/taxSettings";
+import { Checkbox } from "antd";
 
 // US States list for dropdown
 const US_STATES = [
@@ -45,6 +47,51 @@ const TaxRateConfiguration = () => {
             notification.error({ message: "Failed to fetch tax rates", description: error.message });
         }
     });
+
+    // Tax Settings State
+    const [taxSettings, setTaxSettings] = useState({
+        taxParts: false,
+        taxLabor: false,
+        taxService: false,
+        taxAdas: false
+    });
+    const [savingSettings, setSavingSettings] = useState(false);
+
+    // Fetch Tax Settings
+    const { data: fetchedSettings } = useQuery({
+        queryKey: ['taxSettings'],
+        queryFn: getTaxSettings,
+    });
+
+    // Sync state with fetched settings
+    React.useEffect(() => {
+        if (fetchedSettings) {
+            setTaxSettings({
+                taxParts: fetchedSettings.taxParts ?? false,
+                taxLabor: fetchedSettings.taxLabor ?? false,
+                taxService: fetchedSettings.taxService ?? false,
+                taxAdas: fetchedSettings.taxAdas ?? false
+            });
+        }
+    }, [fetchedSettings]);
+
+    const handleSettingChange = (key, checked) => {
+        setTaxSettings(prev => ({ ...prev, [key]: checked }));
+    };
+
+    const handleSaveSettings = async () => {
+        try {
+            setSavingSettings(true);
+            await saveTaxSettings(taxSettings);
+            localStorage.setItem("user_tax_settings", JSON.stringify(taxSettings)); // Update cache
+            notification.success({ message: "Tax settings saved successfully" });
+            queryClient.invalidateQueries({ queryKey: ['taxSettings'] });
+        } catch (error) {
+            notification.error({ message: "Failed to save settings", description: error.message });
+        } finally {
+            setSavingSettings(false);
+        }
+    };
 
     const handleAdd = () => {
         setEditingRate(null);
@@ -217,6 +264,48 @@ const TaxRateConfiguration = () => {
                 </div>
             </div>
 
+            {/* Taxable Items Configuration */}
+            <Card title="Taxable Items Configuration" className="shadow-sm border-violet-100">
+                <div className="flex flex-col gap-4">
+                    <p className="text-gray-500 text-sm">Select which items should be taxable by default in quotes and invoices.</p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <Checkbox
+                            checked={taxSettings.taxParts}
+                            onChange={(e) => handleSettingChange('taxParts', e.target.checked)}
+                        >
+                            Tax Parts
+                        </Checkbox>
+                        <Checkbox
+                            checked={taxSettings.taxLabor}
+                            onChange={(e) => handleSettingChange('taxLabor', e.target.checked)}
+                        >
+                            Tax Labor
+                        </Checkbox>
+                        <Checkbox
+                            checked={taxSettings.taxService}
+                            onChange={(e) => handleSettingChange('taxService', e.target.checked)}
+                        >
+                            Tax Service
+                        </Checkbox>
+                        <Checkbox
+                            checked={taxSettings.taxAdas}
+                            onChange={(e) => handleSettingChange('taxAdas', e.target.checked)}
+                        >
+                            Tax ADAS
+                        </Checkbox>
+                    </div>
+                    <div className="flex justify-end mt-2">
+                        <Button
+                            type="primary"
+                            onClick={handleSaveSettings}
+                            loading={savingSettings}
+                        >
+                            Save Configuration
+                        </Button>
+                    </div>
+                </div>
+            </Card>
+
             <Card className="shadow-sm">
                 {taxRates.length === 0 && !loading ? (
                     <Empty
@@ -319,7 +408,7 @@ const TaxRateConfiguration = () => {
                     </div>
                 </Form>
             </Modal>
-        </div>
+        </div >
     );
 };
 

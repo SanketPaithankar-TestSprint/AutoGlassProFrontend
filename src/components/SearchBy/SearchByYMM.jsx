@@ -275,15 +275,15 @@ export default function SearchByYMM({
     };
   }, [year, makeId, makeModelId, vehModifierId]);
 
-  // Auto-trigger Find Parts when VIN provides complete data including body type
+  // Auto-trigger Find Parts whenever all required fields are selected
   useEffect(() => {
-    if (year && makeId && makeModelId && bodyType && value?.bodyStyleId === bodyType && value?.bodyStyleId) {
+    if (year && makeId && makeModelId && bodyType) {
       const timer = setTimeout(() => {
         handleFindParts();
       }, 300);
       return () => clearTimeout(timer);
     }
-  }, [year, makeId, makeModelId, bodyType, value?.bodyStyleId]);
+  }, [year, makeId, makeModelId, bodyType]);
 
   // Fetch vehicle details and parts when "Find Parts" is clicked
   const handleFindParts = async () => {

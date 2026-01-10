@@ -8,6 +8,7 @@ import { getDistributorCredentials } from '../api/getDistributorCredentials';
 import { getUserKitPrices } from '../api/userKitPrices';
 import { getTaxRates } from '../api/taxRateApi';
 import { getAllSmtpConfigs } from '../api/getAllSmtpConfigs';
+import { getUserAdasPrices } from '../api/userAdasPrices';
 
 export const useProfileDataPrefetch = (isAuthed) => {
     const queryClient = useQueryClient();
@@ -44,14 +45,20 @@ export const useProfileDataPrefetch = (isAuthed) => {
                     queryKey: ['employees'],
                     queryFn: async () => {
                         const res = await getEmployees(token);
-                        return Array.isArray(res) ? res : [];
+                        const data = Array.isArray(res) ? res : [];
+                        localStorage.setItem("agp_employees", JSON.stringify(data));
+                        return data;
                     }
                 });
 
                 // Distributor Credentials
                 await queryClient.prefetchQuery({
                     queryKey: ['distributorCredentials'],
-                    queryFn: () => getDistributorCredentials(token)
+                    queryFn: async () => {
+                        const res = await getDistributorCredentials(token);
+                        localStorage.setItem("agp_distributor_creds", JSON.stringify(res));
+                        return res;
+                    }
                 });
 
                 // User Kit Prices
@@ -69,7 +76,9 @@ export const useProfileDataPrefetch = (isAuthed) => {
                     queryKey: ['taxRates'],
                     queryFn: async () => {
                         const data = await getTaxRates();
-                        return Array.isArray(data) ? data : [];
+                        const rates = Array.isArray(data) ? data : [];
+                        localStorage.setItem("agp_tax_rates", JSON.stringify(rates));
+                        return rates;
                     }
                 });
 
@@ -78,7 +87,19 @@ export const useProfileDataPrefetch = (isAuthed) => {
                     queryKey: ['smtpConfigs'],
                     queryFn: async () => {
                         const data = await getAllSmtpConfigs();
-                        return Array.isArray(data) ? data : [];
+                        const configs = Array.isArray(data) ? data : [];
+                        localStorage.setItem("agp_smtp_configs", JSON.stringify(configs));
+                        return configs;
+                    }
+                });
+
+                // User ADAS Prices
+                await queryClient.prefetchQuery({
+                    queryKey: ['userAdasPrices'],
+                    queryFn: async () => {
+                        const res = await getUserAdasPrices();
+                        localStorage.setItem("user_adas_prices", JSON.stringify(res));
+                        return res;
                     }
                 });
 
