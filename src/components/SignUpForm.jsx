@@ -160,8 +160,8 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                     <Col xs={24} sm={12}>
                         <Form.Item
                             name="ownerName"
-                            label="Owner Name"
-                            rules={[{ required: true, message: 'Please input owner name!' }]}
+                            label="Contact Name"
+                            rules={[{ required: true, message: 'Please input contact name!' }]}
                         >
                             <Input prefix={<UserOutlined />} placeholder="John Doe" />
                         </Form.Item>
@@ -230,23 +230,11 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                 <Row gutter={16}>
                     <Col xs={24} sm={12}>
                         <Form.Item
-                            name="country"
-                            label="Country"
-                            rules={[{ required: true, message: 'Please select country!' }]}
-                            initialValue="USA"
+                            name="city"
+                            label="City"
+                            rules={[{ required: true, message: 'Please enter or select city!' }]}
                         >
-                            <Select
-                                placeholder="Select country"
-                                onChange={handleCountryChange}
-                                showSearch
-                                optionFilterProp="label"
-                            >
-                                {COUNTRIES.map(country => (
-                                    <Select.Option key={country.value} value={country.value}>
-                                        {country.label}
-                                    </Select.Option>
-                                ))}
-                            </Select>
+                            <Input placeholder="Enter city name" />
                         </Form.Item>
                     </Col>
                     <Col xs={24} sm={12}>
@@ -274,11 +262,23 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                 <Row gutter={16}>
                     <Col xs={24} sm={12}>
                         <Form.Item
-                            name="city"
-                            label="City"
-                            rules={[{ required: true, message: 'Please enter or select city!' }]}
+                            name="country"
+                            label="Country"
+                            rules={[{ required: true, message: 'Please select country!' }]}
+                            initialValue="USA"
                         >
-                            <Input placeholder="Enter city name" />
+                            <Select
+                                placeholder="Select country"
+                                onChange={handleCountryChange}
+                                showSearch
+                                optionFilterProp="label"
+                            >
+                                {COUNTRIES.map(country => (
+                                    <Select.Option key={country.value} value={country.value}>
+                                        {country.label}
+                                    </Select.Option>
+                                ))}
+                            </Select>
                         </Form.Item>
                     </Col>
                     <Col xs={24} sm={12}>

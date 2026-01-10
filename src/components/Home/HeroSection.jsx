@@ -21,29 +21,24 @@ const HeroSection = () => {
           <Logo className="w-48 md:w-64 h-auto" />
         </div>
         <p
-          className="text-xs md:text-sm font-semibold tracking-[0.32em] uppercase mb-5"
+          className="text-lg md:text-4xl font-bold mb-5"
           style={{
             color: '#7E5CFE',
             animation: 'fadeInUp 0.6s ease-out 0.1s both'
           }}
         >
-          AUTO GLASS QUOTING · POWERED BY AI
+          The Smartest Way to Run Your Auto Glass Business.
         </p>
 
-        {/* Heading */}
-        <h1
-          className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4 text-slate-900"
-          style={{ animation: 'fadeInUp 0.6s ease-out 0.2s both' }}
-        >
-          Ready to simplify your glass replacement quotes?
-        </h1>
+
 
         {/* Subheading */}
         <p
-          className="text-base md:text-lg text-slate-600 mb-8 max-w-2xl mx-auto"
+          className="text-xl md:text-2xl text-slate-600 mb-8 max-w-3xl mx-auto"
           style={{ animation: 'fadeInUp 0.6s ease-out 0.3s both' }}
         >
-          Professional B2B platform for auto glass vendors and repair shops. Generate instant quotes, manage work orders, and invoice customers—all in one place.
+          Generate Instant, 100% Accurate Quotes through NAGS data, Streamline Field
+          Service, and Manage Every Invoice—All in One Platform.
         </p>
 
         {/* CTA */}
@@ -75,7 +70,7 @@ const HeroSection = () => {
               }
             }}
           >
-            Start Free Trial
+            Start Your Free Trial
           </Button>
 
           <Button
@@ -93,7 +88,7 @@ const HeroSection = () => {
               e.currentTarget.style.color = '#334155'; // slate-700
             }}
           >
-            Watch Demo
+            Book a Demo
           </Button>
         </div>
       </div>

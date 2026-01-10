@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getValidToken } from "../../api/getValidToken";
 import HeroSection from "./HeroSection";
+import ValuePropSection from "./ValuePropSection";
 import FeaturesSection from "./FeaturesSection";
 import WorkflowSection from "./WorkflowSection";
 import ProcessSection from "./ProcessSection";
@@ -34,34 +35,14 @@ const Home = () => {
 
 
 
-            {/* Main content */}
+            {/* Main content - Value Proposition & Features */}
             <div
                 className={`transition-all duration-700 ${mounted
                     ? "opacity-100 translate-y-0"
                     : "opacity-0 translate-y-4"
                     }`}
             >
-                <FeaturesSection />
-            </div>
-
-            {/* Workflow Section */}
-            <div className="mt-12">
-                <WorkflowSection />
-            </div>
-
-            {/* Process Section */}
-            <div className="mt-12">
-                <ProcessSection />
-            </div>
-
-            {/* Business Models Section */}
-            <div className="mt-12 mb-24">
-                <BusinessModelsSection />
-            </div>
-
-            {/* Why Choose Section */}
-            <div>
-                <WhyChooseSection />
+                <ValuePropSection />
             </div>
         </div>
     )

@@ -4,6 +4,7 @@ import { Select, Modal } from "antd";
 import config from "../../config";
 
 const { Option, OptGroup } = Select;
+import { DeleteOutlined } from "@ant-design/icons";
 import GLASS_CODE_NAMES from "../../const/glassCodeNames";
 import {
   getPrefixCd,
@@ -397,9 +398,7 @@ export default function CarGlassViewer({
                   className="text-slate-400 hover:text-red-500 transition-colors p-1 rounded hover:bg-red-50"
                   title="Remove this glass type"
                 >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <DeleteOutlined style={{ fontSize: '14px' }} />
                 </button>
               </div>
               {parts.map((part, index) => {

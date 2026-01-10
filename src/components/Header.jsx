@@ -103,6 +103,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
   const menuItems = [
     { key: "home", label: "Home", href: "/" },
     ...(!isAuthed ? [
+      { key: "features", label: "Features", href: "/features" },
       { key: "pricing", label: "Pricing", href: "/Pricing" },
       { key: "about", label: "About", href: "/about" },
       { key: "contact", label: "Contact", href: "/contact" },

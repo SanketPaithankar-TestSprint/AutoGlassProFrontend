@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import { useQuoteStore } from "../../store";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { Modal, Input, Button, message, Dropdown, Select, InputNumber } from "antd";
-import { DownOutlined, UnorderedListOutlined } from "@ant-design/icons";
+import { DownOutlined, UnorderedListOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { createCompositeServiceDocument } from "../../api/createCompositeServiceDocument";
 import { updateCompositeServiceDocument } from "../../api/updateCompositeServiceDocument";
@@ -240,13 +240,20 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                     }
 
                     if (vendorPrice) {
+                        const qualifiers = item.glassData?.qualifiers || [];
+                        const isAftermarket = qualifiers.includes('Aftermarket');
+                        const partId = item.glassData?.nags_id || item.nagsId;
+                        const qualifiersStr = qualifiers.join(', ');
+
                         return {
                             id: item.id,
                             vendorPriceFetched: true,
                             unitPrice: parseFloat(vendorPrice.UnitPrice) || item.unitPrice,
                             // If listPrice logic needs update:
                             // listPrice: parseFloat(vendorPrice.ListPrice) || ...
-                            description: vendorPrice.Description || item.description
+                            description: isAftermarket
+                                ? `${partId} ${qualifiersStr}`
+                                : (vendorPrice.Description || item.description)
                         };
                     }
 
@@ -513,7 +520,9 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                             oemId: Array.isArray(glassData.OEMS) && glassData.OEMS.length > 0
                                 ? glassData.OEMS[0]
                                 : '',
-                            description: qualifiersStr || `Glass Part ${glassData.nags_id}`,
+                            description: (glassData?.qualifiers?.includes('Aftermarket'))
+                                ? `${glassData.nags_id} ${qualifiersStr}`
+                                : (qualifiersStr || `Glass Part ${glassData.nags_id}`),
                             listPrice: glassData.list_price || 0,
                             unitPrice: glassData.list_price || 0,
                             amount: (Number(it.qty) || 1) * (glassData.list_price || 0),
@@ -566,7 +575,9 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                         oemId: Array.isArray(glassData.OEMS) && glassData.OEMS.length > 0
                             ? glassData.OEMS[0]
                             : '',
-                        description: qualifiersStr || `Glass Part ${glassData.nags_id}`,
+                        description: (glassData?.qualifiers?.includes('Aftermarket'))
+                            ? `${glassData.nags_id} ${qualifiersStr}`
+                            : (qualifiersStr || `Glass Part ${glassData.nags_id}`),
                         listPrice: glassData.list_price || 0,
                         unitPrice: glassData.list_price || 0,
                         amount: (Number(it.qty) || 1) * (glassData.list_price || 0),
@@ -679,7 +690,14 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                         const unitPrice = parseFloat(vendorPrice.UnitPrice) || it.unitPrice;
                         const listPrice = nagsListPrice || parseFloat(vendorPrice.ListPrice) || unitPrice;
                         // Use vendor description if available, otherwise keep existing
-                        const description = vendorPrice.Description || it.description;
+                        const qualifiers = glassData?.qualifiers || [];
+                        const hasAftermarket = qualifiers.includes('Aftermarket');
+                        const partNumberForDesc = glassData?.nags_id || it.nagsId;
+                        const qualifiersStr = qualifiers.join(', ');
+
+                        const description = hasAftermarket
+                            ? `${partNumberForDesc} ${qualifiersStr}`
+                            : (vendorPrice.Description || it.description);
 
                         return {
                             ...it,
@@ -1441,10 +1459,8 @@ Auto Glass Pro Team`;
                                     </td>
                                     {showDeleteButton && (
                                         <td className="px-1 py-0.5 text-center align-middle" rowSpan={rowSpan}>
-                                            <button type="button" onClick={() => handleDeleteItem(it.id)} className="text-slate-300 hover:text-red-500 transition-colors p-0.5 rounded hover:bg-red-50" title="Remove Item">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                                </svg>
+                                            <button type="button" onClick={() => handleDeleteItem(it.id)} className="text-slate-400 hover:text-red-500 transition-colors p-1 rounded hover:bg-red-50" title="Remove Item">
+                                                <DeleteOutlined style={{ fontSize: '14px' }} />
                                             </button>
                                         </td>
                                     )}

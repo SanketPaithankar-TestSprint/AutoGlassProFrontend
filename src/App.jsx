@@ -20,6 +20,8 @@ import { useProfileDataPrefetch } from './hooks/useProfileDataPrefetch';
 const Home = React.lazy(() => import('./components/Home/HomeRoot.jsx'));
 const SearchByRoot = React.lazy(() => import("./components/SearchBy/SearchByRoot"));
 const Schedule = React.lazy(() => import('./components/Schedule/ScheduleRoot.jsx'));
+const FeaturesPage = React.lazy(() => import('./components/FeaturesPage/FeaturesPage.jsx'));
+const AboutPage = React.lazy(() => import('./components/About/AboutPage.jsx'));
 
 
 const { Content } = Layout;
@@ -105,7 +107,7 @@ function AppContent() {
           <Header onLoginSuccess={handleLoginSuccess} />
 
           <Content className="flex-1 flex flex-col pt-20"> {/* pt-20 for fixed header */}
-            <div className="min-h-[calc(100vh-80px)] flex flex-col">
+            <div className={`flex flex-col ${location.pathname === '/auth' ? '' : 'min-h-[calc(100vh-80px)]'}`}>
               <Suspense fallback={
                 <div className="flex items-center justify-center h-full">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
@@ -113,6 +115,8 @@ function AppContent() {
               }>
                 <Routes>
                   <Route path="/" element={<Home />} />
+                  <Route path="/features" element={<FeaturesPage />} />
+                  <Route path="/about" element={<AboutPage />} />
                   <Route path="/search-by-root" element={<SearchByRoot />} />
                   <Route path="/Profile" element={<Profile />} />
                   <Route path="/work" element={<Work />} />

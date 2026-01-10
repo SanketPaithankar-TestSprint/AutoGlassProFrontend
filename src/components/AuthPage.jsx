@@ -27,27 +27,17 @@ const AuthPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4 relative overflow-hidden">
-            {/* Back Button */}
-            <div className="absolute top-4 left-4 z-50">
-                <Button
-                    type="text"
-                    icon={<ArrowLeftOutlined />}
-                    onClick={() => navigate('/')}
-                    className="hover:bg-white/50"
-                >
-                    Back to Home
-                </Button>
-            </div>
+        <div className="w-full bg-white flex items-start justify-center p-4 pt-8 md:pt-12 pb-24 relative overflow-hidden">
+
 
             <div
-                className="bg-white rounded-[20px] shadow-2xl relative overflow-hidden w-full max-w-[1000px] min-h-[700px] flex flex-col md:block"
+                className="bg-white rounded-[20px] shadow-[0_20px_50px_rgba(124,58,237,0.455)] relative overflow-hidden w-full max-w-[800px] lg:max-w-[900px] min-h-[450px] md:min-h-[550px] flex flex-col md:block"
             >
                 {/* 
             DESKTOP LAYOUT (Sliding Overlay) 
             Hidden on mobile, block on md
         */}
-                <div className="hidden md:block h-full relative min-h-[700px]">
+                <div className="hidden md:block h-full relative min-h-[450px] md:min-h-[550px]">
 
                     {/* SIGN UP FORM CONTAINER (Left Position - 60% Width) */}
                     <div
@@ -57,7 +47,7 @@ const AuthPage = () => {
                         <div className="h-full flex flex-col items-center justify-center p-8 bg-white">
                             <div className="w-full h-full overflow-y-auto custom-scrollbar flex flex-col items-center">
                                 <div className="w-full max-w-xl bg-white pb-8">
-                                    <h1 className="text-3xl font-bold mb-4 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent text-center mt-8">Create Account</h1>
+                                    <h1 className="text-2xl md:text-3xl font-bold mb-4 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent text-center mt-8">Create Account</h1>
                                     <SignUpForm onSuccess={handleSignUpSuccess} onCancel={() => setIsSignUpMode(false)} />
                                 </div>
                             </div>
@@ -71,10 +61,12 @@ const AuthPage = () => {
                     >
                         <div className="h-full flex flex-col items-center justify-center p-8 bg-white">
                             <div className="w-full h-full overflow-y-auto custom-scrollbar flex flex-col items-center justify-center">
-                                <div className="mb-6 scale-125">
+                                {
+                                    /* <div className="mb-6 scale-125">
                                     <Logo />
-                                </div>
-                                <h1 className="text-3xl font-bold mb-6 text-slate-800">Welcome Back</h1>
+                                </div> */
+                                }
+                                <h1 className="text-2xl md:text-3xl font-bold mb-6 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">Welcome Back</h1>
                                 <div className="w-full max-w-sm">
                                     <Login
                                         onLoginSuccess={handleLoginSuccess}
@@ -87,9 +79,9 @@ const AuthPage = () => {
 
                     {/* OVERLAY CONTAINER (40% Width) */}
                     <div
-                        className={`absolute top-0 left-0 h-full w-[40%] overflow-hidden transition-transform duration-700 ease-in-out z-50
+                        className={`absolute top-0 left-0 h-full w-[40%] overflow-hidden transition-transform duration-700 ease-in-out z-30
                     ${isSignUpMode ? 'translate-x-[150%] rounded-l-[100px]' : 'translate-x-0 rounded-r-[100px]'}`}
-                        style={{ zIndex: 50 }}
+                        style={{ zIndex: 30 }}
                     >
                         <div
                             className="h-full w-full relative text-white"
@@ -101,7 +93,7 @@ const AuthPage = () => {
                             <div className={`absolute inset-0 flex flex-col items-center justify-center text-center px-8 transition-opacity duration-700
                              ${!isSignUpMode ? 'opacity-100 delay-200 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
                             >
-                                <h1 className="text-4xl font-bold mb-4">Hello, Friend!</h1>
+                                <h1 className="text-3xl md:text-4xl font-bold mb-4">Hello, Friend!</h1>
                                 <p className="text-lg mb-8 text-white/90">Enter your personal details and start your journey with us</p>
                                 <button
                                     className="border-2 border-white rounded-full px-12 py-3 font-bold uppercase tracking-wider transition-transform hover:scale-105 focus:outline-none cursor-pointer"
@@ -115,7 +107,7 @@ const AuthPage = () => {
                             <div className={`absolute inset-0 flex flex-col items-center justify-center text-center px-8 transition-opacity duration-700
                             ${isSignUpMode ? 'opacity-100 delay-200 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
                             >
-                                <h1 className="text-4xl font-bold mb-4">Welcome Back!</h1>
+                                <h1 className="text-3xl md:text-4xl font-bold mb-4">Welcome Back!</h1>
                                 <p className="text-lg mb-8 text-white/90">To keep connected with us please login with your personal info</p>
                                 <button
                                     className="border-2 border-white rounded-full px-12 py-3 font-bold uppercase tracking-wider transition-transform hover:scale-105 focus:outline-none cursor-pointer"
