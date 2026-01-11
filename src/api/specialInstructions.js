@@ -25,8 +25,15 @@ export const getSpecialInstructions = async (token) => {
         // If it returns raw text, response.text() is better. 
         // Typically JSON APIs return valid JSON values. A string in JSON is "string".
         // Let's assume it returns a JSON-encoded string.
-        const data = await response.json();
-        return data;
+        const text = await response.text();
+        if (!text) return null;
+
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            // If response is not valid JSON, return as plain text
+            return text;
+        }
     } catch (error) {
         console.error("Failed to fetch special instructions:", error);
         throw error;
@@ -51,8 +58,8 @@ export const saveSpecialInstructions = async (token, instructions) => {
         }
 
         // POST might return the saved string or something else, but we don't strictly need the return if ok.
-        const data = await response.json();
-        return data;
+        const text = await response.text();
+        return text ? JSON.parse(text) : null;
     } catch (error) {
         throw error;
     }
@@ -75,8 +82,8 @@ export const updateSpecialInstructions = async (token, instructions) => {
             throw new Error(`Error: ${response.status}`);
         }
 
-        const data = await response.json();
-        return data;
+        const text = await response.text();
+        return text ? JSON.parse(text) : null;
     } catch (error) {
         throw error;
     }

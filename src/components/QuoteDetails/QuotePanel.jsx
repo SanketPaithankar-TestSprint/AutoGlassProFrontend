@@ -271,7 +271,9 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                     if (vendorPrice) {
                         const qualifiers = item.glassData?.qualifiers || [];
                         const isAftermarket = qualifiers.includes('Aftermarket');
-                        const partId = item.glassData?.nags_id || item.nagsId;
+                        const rawNags = item.glassData?.nags_id || item.nagsId;
+                        const span = item.glassData?.feature_span || '';
+                        const fullId = span ? `${rawNags} ${span.trim()}` : rawNags;
                         const qualifiersStr = qualifiers.join(', ');
 
                         return {
@@ -281,7 +283,7 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                             // If listPrice logic needs update:
                             // listPrice: parseFloat(vendorPrice.ListPrice) || ...
                             description: isAftermarket
-                                ? `${partId} ${qualifiersStr}`
+                                ? `${fullId} (${qualifiersStr})`
                                 : (vendorPrice.Description || item.description)
                         };
                     }
@@ -536,7 +538,8 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
     // Apply selected glass and its kit items
     const applySelectedGlass = async (itemId, glassData) => {
         const userId = localStorage.getItem('userId') || 2; // Fallback to 2 like SearchByRoot
-        const fullPartNumber = `${glassData.nags_id}${glassData.feature_span || ''}`;
+        const span = glassData.feature_span || '';
+        const fullPartNumber = span ? `${glassData.nags_id} ${span.trim()}` : glassData.nags_id;
 
         // Build qualifiers string
         const qualifiersStr = Array.isArray(glassData.qualifiers)
@@ -573,7 +576,7 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                                 ? glassData.OEMS[0]
                                 : '',
                             description: (glassData?.qualifiers?.includes('Aftermarket'))
-                                ? `${glassData.nags_id} ${qualifiersStr}`
+                                ? `${fullPartNumber} (${qualifiersStr})`
                                 : (qualifiersStr || `Glass Part ${glassData.nags_id}`),
                             listPrice: glassData.list_price || 0,
                             unitPrice: glassData.list_price || 0,
@@ -600,7 +603,8 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
     // Apply glass with a specific kit (or no kit)
     const applyGlassWithKit = async (itemId, glassData, selectedKit) => {
         const userId = localStorage.getItem('userId') || 2; // Fallback to 2 like SearchByRoot
-        const fullPartNumber = `${glassData.nags_id}${glassData.feature_span || ''}`;
+        const span = glassData.feature_span || '';
+        const fullPartNumber = span ? `${glassData.nags_id} ${span.trim()}` : glassData.nags_id;
         const labor = glassData.labor || 0;
 
         const qualifiersStr = Array.isArray(glassData.qualifiers)
@@ -628,7 +632,7 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                             ? glassData.OEMS[0]
                             : '',
                         description: (glassData?.qualifiers?.includes('Aftermarket'))
-                            ? `${glassData.nags_id} ${qualifiersStr}`
+                            ? `${fullPartNumber} (${qualifiersStr})`
                             : (qualifiersStr || `Glass Part ${glassData.nags_id}`),
                         listPrice: glassData.list_price || 0,
                         unitPrice: glassData.list_price || 0,
@@ -748,7 +752,7 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                         const qualifiersStr = qualifiers.join(', ');
 
                         const description = hasAftermarket
-                            ? `${partNumberForDesc} ${qualifiersStr}`
+                            ? `${partNumber} (${qualifiersStr})`
                             : (vendorPrice.Description || it.description);
 
                         return {
@@ -1414,11 +1418,9 @@ Auto Glass Pro Team`;
             />
 
             {/* Header / Metadata */}
-            {!isSaved && (
-                <h3 className="text-base font-bold text-[#7E5CFE] mb-1">
-                    Quote Details
-                </h3>
-            )}
+            <h3 className="text-base font-bold text-[#7E5CFE] mb-1">
+                Quote Details
+            </h3>
 
             {/* Line Items Table - Height for 6 rows + header */}
             <div className="mb-2 border border-slate-300 bg-white shadow-sm rounded-sm max-h-[200px] overflow-y-auto">
@@ -1566,28 +1568,8 @@ Auto Glass Pro Team`;
                 </table>
             </div>
 
-            <div className="flex justify-end mb-2">
-                <Dropdown
-                    menu={{
-                        items: [
-                            { key: 'Part', label: <span className="text-xs">Add Part</span>, onClick: () => handleAddRow("Part") },
-                            { key: 'Labor', label: <span className="text-xs">Add Labor</span>, onClick: () => handleAddRow("Labor") },
-                            { key: 'Service', label: <span className="text-xs">Add Service</span>, onClick: () => handleAddRow("Service") },
-                            { type: 'divider' },
-                            { key: 'ADAS', label: <span className="text-xs">Add ADAS Recalibration</span>, onClick: () => handleAddRow("ADAS") },
-                        ],
-                    }}
-                >
-                    <button className="flex items-center gap-1 px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded text-xs font-medium transition-colors">
-                        Add <DownOutlined className="text-[9px]" />
-                    </button>
-                </Dropdown>
-            </div>
-
-            {/* Totals & Actions (Notes removed) */}
             {/* Totals & Actions */}
-            {/* Totals & Actions */}
-            <div className="flex justify-between items-end mt-4 gap-6">
+            <div className="flex justify-between items-start gap-6">
                 {/* Left side - Vendor Pricing & Metadata */}
                 <div className="flex flex-col gap-2 flex-1">
                     {/* Vendor Pricing Data Display */}
@@ -1636,175 +1618,191 @@ Auto Glass Pro Team`;
                     )}
                 </div>
 
-            </div>
+                {/* Right side - Add Button + Totals Table */}
+                <div className="flex items-start gap-2 flex-shrink-0">
+                    {/* Add Button */}
+                    <Dropdown
+                        menu={{
+                            items: [
+                                { key: 'Part', label: <span className="text-xs">Add Part</span>, onClick: () => handleAddRow("Part") },
+                                { key: 'Labor', label: <span className="text-xs">Add Labor</span>, onClick: () => handleAddRow("Labor") },
+                                { key: 'Service', label: <span className="text-xs">Add Service</span>, onClick: () => handleAddRow("Service") },
+                                { type: 'divider' },
+                                { key: 'ADAS', label: <span className="text-xs">Add ADAS Recalibration</span>, onClick: () => handleAddRow("ADAS") },
+                            ],
+                        }}
+                    >
+                        <button className="flex items-center gap-1 px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded text-xs font-medium transition-colors">
+                            Add <DownOutlined className="text-[9px]" />
+                        </button>
+                    </Dropdown>
 
+                    {/* Totals Table */}
+                    <table className="w-full max-w-xs border border-slate-300 text-sm">
+                        <tbody>
+                            {/* Labor Row */}
+                            <tr className="border-b border-slate-300">
+                                <td className="px-2 py-1 text-slate-600 border-r border-slate-300">Labor</td>
+                                <td className="px-2 py-1 text-right text-slate-900">{currency(laborCostDisplay)}</td>
+                            </tr>
+                            {/* Subtotal Row */}
+                            <tr className="border-b border-slate-300">
+                                <td className="px-2 py-1 text-slate-600 border-r border-slate-300">Subtotal</td>
+                                <td className="px-2 py-1 text-right text-slate-900">{currency(subtotal)}</td>
+                            </tr>
+                            {/* Tax Row */}
+                            <tr className="border-b border-slate-300">
+                                <td className="px-2 py-1 text-slate-600 border-r border-slate-300">Tax ({globalTaxRate}%)</td>
+                                <td className="px-2 py-1 text-right text-slate-900">{currency(totalTax)}</td>
+                            </tr>
 
-
-            <div className="flex justify-end mt-4">
-                <table className="w-full max-w-xs border border-slate-300 text-sm">
-                    <tbody>
-                        {/* Labor Row */}
-                        <tr className="border-b border-slate-300">
-                            <td className="px-2 py-1 text-slate-600 border-r border-slate-300">Labor</td>
-                            <td className="px-2 py-1 text-right text-slate-900">{currency(laborCostDisplay)}</td>
-                        </tr>
-                        {/* Subtotal Row */}
-                        <tr className="border-b border-slate-300">
-                            <td className="px-2 py-1 text-slate-600 border-r border-slate-300">Subtotal</td>
-                            <td className="px-2 py-1 text-right text-slate-900">{currency(subtotal)}</td>
-                        </tr>
-                        {/* Tax Row */}
-                        <tr className="border-b border-slate-300">
-                            <td className="px-2 py-1 text-slate-600 border-r border-slate-300">Tax ({globalTaxRate}%)</td>
-                            <td className="px-2 py-1 text-right text-slate-900">{currency(totalTax)}</td>
-                        </tr>
-
-                        {/* Total Row */}
-                        <tr className="border-b border-slate-300 bg-slate-50">
-                            <td className="px-2 py-1 font-semibold text-slate-700 border-r border-slate-300">
-                                <div className="flex items-center gap-1">
-                                    Total
-                                    <button
-                                        onClick={handleRoundUp}
-                                        className="w-4 h-4 flex items-center justify-center bg-sky-100 hover:bg-sky-200 text-sky-600 rounded text-[10px] font-bold"
-                                        title="Round Up"
-                                    >↑</button>
-                                </div>
-                            </td>
-                            <td className="px-2 py-1 text-right font-bold text-slate-900">
-                                <input
-                                    type="text"
-                                    value={manualTotal !== null ? `$${manualTotal}` : currency(total)}
-                                    onChange={(e) => {
-                                        const val = e.target.value.replace(/[^0-9.]/g, '');
-                                        setManualTotal(val);
-                                    }}
-                                    onBlur={() => {
-                                        if (manualTotal !== null && manualTotal !== '') {
-                                            const newTotal = parseFloat(manualTotal);
-                                            if (isNaN(newTotal)) {
-                                                setManualTotal(null);
-                                                return;
-                                            }
-
-                                            // Calculate the difference between new total and calculated total
-                                            const difference = newTotal - calculatedTotal;
-
-                                            if (difference !== 0) {
-                                                // Find the first Part item, or first Service if no Parts exist
-                                                const firstPartIndex = items.findIndex(it => it.type === 'Part');
-                                                const firstServiceIndex = items.findIndex(it => it.type === 'Service' || it.type === 'ADAS');
-
-                                                let targetIndex = firstPartIndex !== -1 ? firstPartIndex : firstServiceIndex;
-
-                                                if (targetIndex !== -1) {
-                                                    const targetItem = items[targetIndex];
-
-                                                    // Parts and Kits are taxable, so we need to account for tax when adjusting
-                                                    // Check taxability based on dynamic settings
-                                                    const settings = taxSettings || {
-                                                        taxParts: true, taxLabor: false, taxService: false, taxAdas: true
-                                                    };
-
-                                                    let isTaxable = false;
-                                                    if (targetItem.type === 'Part' || targetItem.type === 'Kit') isTaxable = settings.taxParts;
-                                                    else if (targetItem.type === 'Labor') isTaxable = settings.taxLabor;
-                                                    else if (targetItem.type === 'Service') isTaxable = settings.taxService;
-                                                    else if (targetItem.type === 'ADAS') isTaxable = settings.taxAdas;
-
-                                                    let amountToAdd = difference;
-                                                    if (isTaxable) {
-                                                        // Account for tax
-                                                        const taxMultiplier = 1 + (Number(globalTaxRate) || 0) / 100;
-                                                        amountToAdd = difference / taxMultiplier;
-                                                    }
-                                                    // Else no tax adjustment needed
-
-                                                    const newAmount = Math.max(0, (Number(targetItem.amount) || 0) + amountToAdd);
-
-                                                    // Update the item's amount
-                                                    setItems(prev => prev.map((it, idx) => {
-                                                        if (idx === targetIndex) {
-                                                            return {
-                                                                ...it,
-                                                                amount: parseFloat(newAmount.toFixed(2)),
-                                                                // Also update unitPrice if qty is 1 to keep them in sync
-                                                                unitPrice: (Number(it.qty) === 1) ? parseFloat(newAmount.toFixed(2)) : it.unitPrice
-                                                            };
-                                                        }
-                                                        return it;
-                                                    }));
+                            {/* Total Row */}
+                            <tr className="border-b border-slate-300 bg-slate-50">
+                                <td className="px-2 py-1 font-semibold text-slate-700 border-r border-slate-300">
+                                    <div className="flex items-center gap-1">
+                                        Total
+                                        <button
+                                            onClick={handleRoundUp}
+                                            className="w-4 h-4 flex items-center justify-center bg-sky-100 hover:bg-sky-200 text-sky-600 rounded text-[10px] font-bold"
+                                            title="Round Up"
+                                        >↑</button>
+                                    </div>
+                                </td>
+                                <td className="px-2 py-1 text-right font-bold text-slate-900">
+                                    <input
+                                        type="text"
+                                        value={manualTotal !== null ? `$${manualTotal}` : currency(total)}
+                                        onChange={(e) => {
+                                            const val = e.target.value.replace(/[^0-9.]/g, '');
+                                            setManualTotal(val);
+                                        }}
+                                        onBlur={() => {
+                                            if (manualTotal !== null && manualTotal !== '') {
+                                                const newTotal = parseFloat(manualTotal);
+                                                if (isNaN(newTotal)) {
+                                                    setManualTotal(null);
+                                                    return;
                                                 }
-                                            }
 
-                                            // Clear manual total since we've adjusted the item amounts
-                                            setManualTotal(null);
-                                        } else if (manualTotal === '') {
-                                            setManualTotal(null);
-                                        }
-                                    }}
-                                    className="w-full text-right bg-transparent text-sm font-bold text-slate-900 outline-none border-b border-transparent hover:border-slate-300 focus:border-sky-400"
-                                />
-                            </td>
-                        </tr>
-                        <tr className="border-b border-slate-300">
-                            <td className="px-2 py-1 text-slate-600 border-r border-slate-300">Paid</td>
-                            <td className="px-2 py-1 text-right text-slate-900">
-                                <input
-                                    type="number"
-                                    value={payment}
-                                    onChange={(e) => setPayment(e.target.value)}
-                                    className="w-full text-right bg-transparent text-sm text-slate-900 outline-none border-b border-transparent hover:border-slate-300 focus:border-sky-400"
-                                    placeholder="$0"
-                                />
-                            </td>
-                        </tr>
-                        {/* Balance Row */}
-                        <tr className="border-b border-slate-300 bg-slate-50">
-                            <td className="px-2 py-1 font-semibold text-slate-700 border-r border-slate-300">Balance</td>
-                            <td className="px-2 py-1 text-right font-bold text-slate-900">{currency(balance)}</td>
-                        </tr>
-                        {/* Action Buttons Row */}
-                        <tr>
-                            <td colSpan="2" className="p-1">
-                                <div className="flex gap-1">
-                                    <select
-                                        value={manualDocType}
-                                        onChange={(e) => setManualDocType(e.target.value)}
-                                        className="flex-1 px-2 py-1 text-[10px] font-medium border border-slate-300 rounded bg-white text-slate-700 outline-none"
-                                    >
-                                        <option value="Quote">Quote</option>
-                                        <option value="Work Order">W.Order</option>
-                                        <option value="Invoice">Invoice</option>
-                                    </select>
-                                    <button
-                                        onClick={handleSave}
-                                        disabled={saveLoading}
-                                        className="flex-1 px-2 py-1 rounded bg-[#00A8E4] text-white text-[10px] font-semibold hover:bg-[#0096cc] transition disabled:opacity-50"
-                                    >
-                                        {saveLoading ? '...' : 'Save'}
-                                    </button>
-                                    <button
-                                        onClick={handlePreview}
-                                        disabled={previewLoading}
-                                        className="flex-1 px-2 py-1 rounded bg-[#00A8E4] text-white text-[10px] font-semibold hover:bg-[#0096cc] transition disabled:opacity-50"
-                                        title="Preview PDF"
-                                    >
-                                        {previewLoading ? '...' : 'Preview'}
-                                    </button>
-                                    <button
-                                        onClick={handleEmail}
-                                        disabled={emailLoading}
-                                        className="flex-1 px-2 py-1 rounded bg-[#00A8E4] text-white text-[10px] font-semibold hover:bg-[#0096cc] transition disabled:opacity-50"
-                                        title="Send via email"
-                                    >
-                                        {emailLoading ? '...' : 'Email'}
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                                                // Calculate the difference between new total and calculated total
+                                                const difference = newTotal - calculatedTotal;
+
+                                                if (difference !== 0) {
+                                                    // Find the first Part item, or first Service if no Parts exist
+                                                    const firstPartIndex = items.findIndex(it => it.type === 'Part');
+                                                    const firstServiceIndex = items.findIndex(it => it.type === 'Service' || it.type === 'ADAS');
+
+                                                    let targetIndex = firstPartIndex !== -1 ? firstPartIndex : firstServiceIndex;
+
+                                                    if (targetIndex !== -1) {
+                                                        const targetItem = items[targetIndex];
+
+                                                        // Parts and Kits are taxable, so we need to account for tax when adjusting
+                                                        // Check taxability based on dynamic settings
+                                                        const settings = taxSettings || {
+                                                            taxParts: true, taxLabor: false, taxService: false, taxAdas: true
+                                                        };
+
+                                                        let isTaxable = false;
+                                                        if (targetItem.type === 'Part' || targetItem.type === 'Kit') isTaxable = settings.taxParts;
+                                                        else if (targetItem.type === 'Labor') isTaxable = settings.taxLabor;
+                                                        else if (targetItem.type === 'Service') isTaxable = settings.taxService;
+                                                        else if (targetItem.type === 'ADAS') isTaxable = settings.taxAdas;
+
+                                                        let amountToAdd = difference;
+                                                        if (isTaxable) {
+                                                            // Account for tax
+                                                            const taxMultiplier = 1 + (Number(globalTaxRate) || 0) / 100;
+                                                            amountToAdd = difference / taxMultiplier;
+                                                        }
+                                                        // Else no tax adjustment needed
+
+                                                        const newAmount = Math.max(0, (Number(targetItem.amount) || 0) + amountToAdd);
+
+                                                        // Update the item's amount
+                                                        setItems(prev => prev.map((it, idx) => {
+                                                            if (idx === targetIndex) {
+                                                                return {
+                                                                    ...it,
+                                                                    amount: parseFloat(newAmount.toFixed(2)),
+                                                                    // Also update unitPrice if qty is 1 to keep them in sync
+                                                                    unitPrice: (Number(it.qty) === 1) ? parseFloat(newAmount.toFixed(2)) : it.unitPrice
+                                                                };
+                                                            }
+                                                            return it;
+                                                        }));
+                                                    }
+                                                }
+
+                                                // Clear manual total since we've adjusted the item amounts
+                                                setManualTotal(null);
+                                            } else if (manualTotal === '') {
+                                                setManualTotal(null);
+                                            }
+                                        }}
+                                        className="w-full text-right bg-transparent text-sm font-bold text-slate-900 outline-none border-b border-transparent hover:border-slate-300 focus:border-sky-400"
+                                    />
+                                </td>
+                            </tr>
+                            <tr className="border-b border-slate-300">
+                                <td className="px-2 py-1 text-slate-600 border-r border-slate-300">Paid</td>
+                                <td className="px-2 py-1 text-right text-slate-900">
+                                    <input
+                                        type="number"
+                                        value={payment}
+                                        onChange={(e) => setPayment(e.target.value)}
+                                        className="w-full text-right bg-transparent text-sm text-slate-900 outline-none border-b border-transparent hover:border-slate-300 focus:border-sky-400"
+                                        placeholder="$0"
+                                    />
+                                </td>
+                            </tr>
+                            {/* Balance Row */}
+                            <tr className="border-b border-slate-300 bg-slate-50">
+                                <td className="px-2 py-1 font-semibold text-slate-700 border-r border-slate-300">Balance</td>
+                                <td className="px-2 py-1 text-right font-bold text-slate-900">{currency(balance)}</td>
+                            </tr>
+                            {/* Action Buttons Row */}
+                            <tr>
+                                <td colSpan="2" className="p-1">
+                                    <div className="flex gap-1">
+                                        <select
+                                            value={manualDocType}
+                                            onChange={(e) => setManualDocType(e.target.value)}
+                                            className="flex-1 px-2 py-1 text-[10px] font-medium border border-slate-300 rounded bg-white text-slate-700 outline-none"
+                                        >
+                                            <option value="Quote">Quote</option>
+                                            <option value="Work Order">W.Order</option>
+                                            <option value="Invoice">Invoice</option>
+                                        </select>
+                                        <button
+                                            onClick={handleSave}
+                                            disabled={saveLoading}
+                                            className="flex-1 px-2 py-1 rounded bg-[#00A8E4] text-white text-[10px] font-semibold hover:bg-[#0096cc] transition disabled:opacity-50"
+                                        >
+                                            {saveLoading ? '...' : 'Save'}
+                                        </button>
+                                        <button
+                                            onClick={handlePreview}
+                                            disabled={previewLoading}
+                                            className="flex-1 px-2 py-1 rounded bg-[#00A8E4] text-white text-[10px] font-semibold hover:bg-[#0096cc] transition disabled:opacity-50"
+                                            title="Preview PDF"
+                                        >
+                                            {previewLoading ? '...' : 'Preview'}
+                                        </button>
+                                        <button
+                                            onClick={handleEmail}
+                                            disabled={emailLoading}
+                                            className="flex-1 px-2 py-1 rounded bg-[#00A8E4] text-white text-[10px] font-semibold hover:bg-[#0096cc] transition disabled:opacity-50"
+                                            title="Send via email"
+                                        >
+                                            {emailLoading ? '...' : 'Email'}
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {/* Email Preview Modal */}
