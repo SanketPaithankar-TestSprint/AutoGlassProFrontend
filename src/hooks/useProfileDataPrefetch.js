@@ -9,6 +9,7 @@ import { getUserKitPrices } from '../api/userKitPrices';
 import { getTaxRates } from '../api/taxRateApi';
 import { getAllSmtpConfigs } from '../api/getAllSmtpConfigs';
 import { getUserAdasPrices } from '../api/userAdasPrices';
+import { getSpecialInstructions } from '../api/specialInstructions';
 
 export const useProfileDataPrefetch = (isAuthed) => {
     const queryClient = useQueryClient();
@@ -100,6 +101,21 @@ export const useProfileDataPrefetch = (isAuthed) => {
                         const res = await getUserAdasPrices();
                         localStorage.setItem("user_adas_prices", JSON.stringify(res));
                         return res;
+                    }
+                });
+
+                // Special Instructions
+                await queryClient.prefetchQuery({
+                    queryKey: ['specialInstructions'],
+                    queryFn: async () => {
+                        try {
+                            const res = await getSpecialInstructions(token);
+                            localStorage.setItem("user_special_instructions", res || "");
+                            return res;
+                        } catch (e) {
+                            console.error("Failed to prefetch special instructions", e);
+                            return "";
+                        }
                     }
                 });
 

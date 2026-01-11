@@ -8,7 +8,7 @@ import { updateCustomer } from "../../api/updateCustomer";
 import { createEmployee } from "../../api/createEmployee";
 import { updateProfile } from "../../api/updateProfile";
 import { getValidToken } from "../../api/getValidToken";
-import { UserOutlined, TeamOutlined, IdcardOutlined, ShopOutlined, PhoneOutlined, EnvironmentOutlined, EditOutlined, PlusOutlined, DollarOutlined, ThunderboltOutlined, PercentageOutlined, KeyOutlined, ScanOutlined } from "@ant-design/icons";
+import { UserOutlined, TeamOutlined, IdcardOutlined, ShopOutlined, PhoneOutlined, EnvironmentOutlined, EditOutlined, PlusOutlined, DollarOutlined, ThunderboltOutlined, PercentageOutlined, KeyOutlined, ScanOutlined, FileTextOutlined } from "@ant-design/icons";
 import { Modal, Form, Input, Select, Button, notification } from "antd";
 import SmtpConfiguration from "./SmtpConfiguration";
 import LaborRateConfiguration from "./LaborRateConfiguration";
@@ -16,6 +16,7 @@ import TaxRateConfiguration from "./TaxRateConfiguration";
 import DistributorCredentials from "./DistributorCredentials";
 import UserKitPricePage from "./UserKitPricePage";
 import UserAdasPricePage from "./UserAdasPricePage";
+import SpecialInstructions from "./SpecialInstructions";
 import { COUNTRIES, getStatesOrProvinces, getCities } from "../../const/locations";
 
 const Profile = () => {
@@ -607,6 +608,7 @@ const Profile = () => {
                         {renderMenuItem('smtp', 'Email (SMTP)', <ThunderboltOutlined />)}
                         {renderMenuItem('userKitPrice', 'User Kit Price', <DollarOutlined />)}
                         {renderMenuItem('userAdasPrice', 'ADAS Pricing', <ScanOutlined />)}
+                        {renderMenuItem('specialInstructions', 'Special Instructions', <FileTextOutlined />)}
                     </div>
                 </div>
             </div>
@@ -623,6 +625,7 @@ const Profile = () => {
                     {activeTab === 'smtp' && <SmtpConfiguration />}
                     {activeTab === 'userKitPrice' && <UserKitPricePage />}
                     {activeTab === 'userAdasPrice' && <UserAdasPricePage />}
+                    {activeTab === 'specialInstructions' && <SpecialInstructions />}
                 </div>
             </div>
         </div>

@@ -8,6 +8,7 @@ import { createCompositeServiceDocument } from "../../api/createCompositeService
 import { updateCompositeServiceDocument } from "../../api/updateCompositeServiceDocument";
 import { getActiveTaxRates, getDefaultTaxRate } from "../../api/taxRateApi";
 import { getAttachmentsByDocumentNumber } from "../../api/getAttachmentsByDocumentNumber";
+import { getSpecialInstructions } from "../../api/specialInstructions";
 
 import { sendEmail } from "../../api/sendEmail";
 import { extractGlassInfo } from "../carGlassViewer/carGlassHelpers";
@@ -137,6 +138,33 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
     const setItems = setQuoteItems;
 
     const queryClient = useQueryClient();
+    const token = localStorage.getItem("access_token");
+
+    const { data: specialInstructions } = useQuery({
+        queryKey: ['specialInstructions'],
+        queryFn: async () => {
+            if (!token) return "";
+            try {
+                // Return local storage if valid, otherwise fetch
+                const cached = localStorage.getItem("user_special_instructions");
+                if (cached) return cached;
+
+                const res = await getSpecialInstructions(token);
+                if (res) localStorage.setItem("user_special_instructions", res);
+                return res || "";
+            } catch (e) {
+                console.error("Failed to fetch special instructions", e);
+                return "";
+            }
+        },
+        initialData: () => localStorage.getItem("user_special_instructions") || "",
+        staleTime: 1000 * 60 * 60 // 1 hour stale time
+    });
+
+    // Reverted local notes state. Using props: printableNote, internalNote
+
+    // Initialize Notes from props (no local state needed for input, as it's passed down)
+    // The printableNote and internalNote props come from SearchByRoot state.
 
     const [userProfile, setUserProfile] = useState(() => {
         try {
@@ -855,7 +883,8 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
             total,
             balance,
             docType: currentDocType,
-            printableNote, // Passed from props
+            printableNote: printableNote, // Customer Notes
+            specialInstructions: specialInstructions, // Global Special Instructions
             insuranceData,
             includeInsurance
         });
@@ -1063,9 +1092,11 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                 estimatedCompletion: new Date().toISOString(),
                 dueDate: new Date().toISOString().split('T')[0],
                 paymentTerms: "Due upon receipt",
-                notes: printableNote,
+                notes: printableNote, // Use prop (Customer Notes)
+                internalNotes: internalNote, // Use prop (Internal Notes)
                 termsConditions: "Warranty valid for 12 months on workmanship.",
                 taxRate: Number(globalTaxRate) || 0,
+                amountPaid: Number(payment) || 0,
 
                 laborAmount: totalLaborAmount,
                 items: serviceDocumentItems
@@ -1605,6 +1636,11 @@ Auto Glass Pro Team`;
                     )}
                 </div>
 
+            </div>
+
+
+
+            <div className="flex justify-end mt-4">
                 <table className="w-full max-w-xs border border-slate-300 text-sm">
                     <tbody>
                         {/* Labor Row */}

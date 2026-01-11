@@ -46,6 +46,7 @@ export function generateServiceDocumentPDF({
     balance = 0,
     docType = "Quote",
     printableNote = "",
+    specialInstructions = "",
     insuranceData = {},
     includeInsurance = false
 }) {
@@ -555,8 +556,255 @@ export function generateServiceDocumentPDF({
     doc.rect(margin, totalBoxY, contentWidth - 140, totalBoxH, 'FD');
     doc.setFontSize(8);
     doc.setTextColor(60, 60, 60);
-    const disclaimer = "Windshield Post Replacement:\n• NO CAR WASH for 3 days\n• Leave Blue tape on for 3 days\n• Leave front 2 windows rolled down slightly (1/2 inch) for 48 hours\n• Gently remove blue tape after 3 days\n\nWarranty: Any issues caused by installation error will be repaired or replaced at no cost.\n\nTerms of payment are 0 days from Invoice date.";
-    doc.text(disclaimer, margin + 8, totalBoxY + 12, { maxWidth: contentWidth - 140 - 16, lineHeightFactor: 1.4 });
+    // --- Helper: Render Simple HTML to PDF (Sync) ---
+    // Supports: p, br, b, strong, i, em, u, ul, ol, li
+    const renderHtmlToPdf = (doc, html, x, y, maxWidth, fontSize = 8, lineHeight = 10) => {
+        if (!html) return y;
+
+        // Clean up input
+        // ReactQuill sometimes ends with <p><br></p> which adds empty space, trim it?
+        // Let's just parse.
+        const parser = new DOMParser();
+        const dom = parser.parseFromString(html, 'text/html');
+
+        // Flatten DOM to segments
+        // Segment: { text, isNewline, styles: { bold, italic, underline }, isBlock, listType, listIndex }
+        let segments = [];
+        let listStack = []; // { type: 'ul'|'ol', count: 0 }
+
+        const shouldAddSpace = (str) => str.length > 0 && !/\s$/.test(str);
+
+        const traverse = (node, styles) => {
+            if (node.nodeType === Node.TEXT_NODE) {
+                // Split text into words to handle wrapping, preserving distinct spaces if non-collapsed
+                // But typically HTML collapses spaces. We'll tokenize by spaces.
+                const text = node.textContent;
+                if (!text) return;
+
+                // Decode formatting entities if any remaining (DOMParser handles standard entities)
+                // Split by whitespace but keep the whitespace for reconstruction logic if we want perfect spacing?
+                // Simpler: split by spaces, treat each word as a token.
+                const words = text.split(/(\s+)/).filter(w => w.length > 0);
+
+                words.forEach(word => {
+                    // Check if it's just a newline or space char
+                    if (/^\s+$/.test(word)) {
+                        segments.push({ text: " ", styles: { ...styles }, isSpace: true });
+                    } else {
+                        segments.push({ text: word, styles: { ...styles } });
+                    }
+                });
+            } else if (node.nodeType === Node.ELEMENT_NODE) {
+                const tagName = node.tagName.toLowerCase();
+                const newStyles = { ...styles };
+
+                let isBlock = false;
+                let listMarker = null;
+
+                if (tagName === 'b' || tagName === 'strong') newStyles.bold = true;
+                if (tagName === 'i' || tagName === 'em') newStyles.italic = true;
+                if (tagName === 'u') newStyles.underline = true;
+
+                if (tagName === 'br') {
+                    segments.push({ isNewline: true });
+                    return;
+                }
+
+                if (tagName === 'p' || tagName === 'div') {
+                    isBlock = true;
+                    // Double newline before paragraphs if not at start
+                    if (segments.length > 0 && !segments[segments.length - 1].isNewline) {
+                        segments.push({ isNewline: true });
+                    }
+                }
+
+                if (tagName === 'ul') {
+                    listStack.push({ type: 'ul' });
+                    isBlock = true;
+                    if (segments.length > 0 && !segments[segments.length - 1].isNewline) segments.push({ isNewline: true });
+                }
+                if (tagName === 'ol') {
+                    listStack.push({ type: 'ol', count: 0 });
+                    isBlock = true;
+                    if (segments.length > 0 && !segments[segments.length - 1].isNewline) segments.push({ isNewline: true });
+                }
+
+                if (tagName === 'li') {
+                    isBlock = true;
+                    if (segments.length > 0 && !segments[segments.length - 1].isNewline) segments.push({ isNewline: true });
+
+                    const currentList = listStack[listStack.length - 1];
+                    if (currentList) {
+                        if (currentList.type === 'ul') {
+                            listMarker = '•';
+                        } else {
+                            currentList.count++;
+                            listMarker = `${currentList.count}.`;
+                        }
+                    } else {
+                        listMarker = '•'; // Fallback
+                    }
+
+                    // Add marker segment (non-wrapping prefix)
+                    segments.push({ listMarker, styles: newStyles });
+                }
+
+                // Recursion
+                Array.from(node.childNodes).forEach(child => traverse(child, newStyles));
+
+                // Post-traversal cleanup
+                if (isBlock) {
+                    if (segments.length > 0 && !segments[segments.length - 1].isNewline) {
+                        segments.push({ isNewline: true });
+                    }
+                }
+                if (tagName === 'ul' || tagName === 'ol') {
+                    listStack.pop();
+                }
+            }
+        };
+
+        traverse(dom.body, { bold: false, italic: false, underline: false });
+
+        // Rendering Loop
+        let cursorX = x;
+        let cursorY = y;
+        let currentLineHeight = lineHeight;
+        const initialX = x;
+
+        doc.setFontSize(fontSize);
+        doc.setTextColor(60, 60, 60); // Match existing color
+
+        // Helper to measure text
+        const measure = (txt, s) => {
+            let fontStyle = 'normal';
+            if (s.bold && s.italic) fontStyle = 'bolditalic';
+            else if (s.bold) fontStyle = 'bold';
+            else if (s.italic) fontStyle = 'italic';
+
+            doc.setFont('helvetica', fontStyle);
+            return doc.getStringUnitWidth(txt) * fontSize;
+        };
+
+        // Helper to draw text
+        const draw = (txt, s, dx, dy) => {
+            let fontStyle = 'normal';
+            if (s.bold && s.italic) fontStyle = 'bolditalic';
+            else if (s.bold) fontStyle = 'bold';
+            else if (s.italic) fontStyle = 'italic';
+
+            doc.setFont('helvetica', fontStyle);
+            doc.text(txt, dx, dy);
+
+            if (s.underline) {
+                const w = doc.getStringUnitWidth(txt) * fontSize;
+                doc.setLineWidth(0.5);
+                doc.line(dx, dy + 1, dx + w, dy + 1);
+            }
+        };
+
+        // Flatten segments into lines
+        // A line is a list of segments
+        // We iterate tokens.
+
+        let lineSegments = [];
+        let currentLineWidth = 0;
+        let indent = 0;
+
+        const flushLine = () => {
+            if (lineSegments.length > 0) {
+                let lx = initialX + indent;
+                lineSegments.forEach(seg => {
+                    draw(seg.text, seg.styles, lx, cursorY);
+                    lx += measure(seg.text, seg.styles);
+                });
+            }
+            cursorY += currentLineHeight;
+            lineSegments = [];
+            currentLineWidth = 0;
+            // Indent persists for list items until newline?
+            // Actually, if we wrap within an 'li', we should maintain indentation?
+            // Simple approach: hanging indent is hard. We'll just reset X to initial + indent.
+        };
+
+        segments.forEach(seg => {
+            if (seg.isNewline) {
+                flushLine();
+                indent = 0; // Reset indent on explicit newline (new paragraph/BI)
+                // NOTE: If we want bullet indent to persist for wrapped lines, we need logic.
+                // But typically newline starts new block. 
+                return;
+            }
+
+            if (seg.listMarker) {
+                // Determine indent based on marker
+                // Draw marker immediately at Current X?
+                // Or treat marker as part of line but with offset?
+                // Let's draw marker at X, and set indent for subsequent text
+                indent = 12; // Indent text by 12pt
+
+                // Draw marker at initialX
+                draw(seg.listMarker, seg.styles, initialX, cursorY);
+
+                // Don't add marker to lineSegments, we drew it.
+                // Set context for following text
+                return;
+            }
+
+            // Content segment (word or space)
+            const w = measure(seg.text, seg.styles);
+
+            // Check wrapping
+            // If adding this word exceeds maxWidth...
+            if (currentLineWidth + w > (maxWidth - indent)) {
+                flushLine();
+                // After flush, if we were in a list item (indent set), should we keep indent?
+                // Technically yes for hanging indent. But here indent resets in flushLine logic above if we didn't track it.
+                // Ideally hanging indent:
+                indent = indent > 0 ? indent : 0;
+                // Wait, I reset indent=0 in isNewline only. So implicit wrap should KEEP indent.
+            }
+
+            // Ignore leading space at start of line
+            if (lineSegments.length === 0 && seg.isSpace) return;
+
+            lineSegments.push(seg);
+            currentLineWidth += w;
+        });
+
+        // Flush remaining
+        flushLine();
+
+        return cursorY;
+    };
+
+
+
+    // --- RENDER CUSTOMER NOTES ---
+    let currentNoteY = totalBoxY + 12;
+    const noteWidth = contentWidth - 140 - 16;
+
+    if (printableNote && typeof printableNote === 'string' && printableNote.trim() !== '') {
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(50, 50, 50);
+        doc.text("Customer Notes:", margin + 8, currentNoteY);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(60, 60, 60);
+        const heightUsed = renderHtmlToPdf(doc, printableNote, margin + 8, currentNoteY + 12, noteWidth);
+        currentNoteY = heightUsed + 15;
+    }
+
+    // --- RENDER SPECIAL INSTRUCTIONS ---
+    if (specialInstructions && typeof specialInstructions === 'string' && specialInstructions.trim() !== '') {
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(50, 50, 50);
+        doc.text("Special Instructions:", margin + 8, currentNoteY);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(60, 60, 60);
+        renderHtmlToPdf(doc, specialInstructions, margin + 8, currentNoteY + 12, noteWidth);
+    }
 
     // Right Totals Block (Modern)
     const totalsW = 140;

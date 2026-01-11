@@ -20,6 +20,8 @@ import { getAttachmentsByDocumentNumber } from "../../api/getAttachmentsByDocume
 import { resolveVinModel } from "../../api/resolveVinModel";
 import { getBodyTypes } from "../../api/getModels";
 import { extractDoorCount, selectBodyTypeByDoors } from "../../utils/vinHelpers";
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 
 
 const SearchByRoot = () => {
@@ -207,7 +209,8 @@ const SearchByRoot = () => {
       }
 
       // 3. Map Notes
-      setPrintableNote(serviceDocument?.notes || "");
+      setPrintableNote(serviceDocument?.customerNotes || serviceDocument?.notes || "");
+      setInternalNote(serviceDocument?.internalNotes || "");
 
       // 4. Map Insurance
       if (insurance) {
@@ -777,15 +780,16 @@ const SearchByRoot = () => {
 
               {activeTab === 'notes' && (
                 <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700">Printable Note</label>
-                    <textarea
-                      rows={6}
-                      value={printableNote}
-                      onChange={(e) => setPrintableNote(e.target.value)}
-                      className="w-full rounded border border-slate-300 p-2 text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none"
-                      placeholder="Notes visible to the customer on the quote/invoice..."
-                    />
+                  <div className="space-y-2 h-[350px] flex flex-col">
+                    <label className="text-sm font-bold text-slate-700">Printable Note <span className="text-slate-400 font-normal">(Customer Notes)</span></label>
+                    <div className="flex-1 overflow-hidden">
+                      <ReactQuill
+                        theme="snow"
+                        value={printableNote}
+                        onChange={setPrintableNote}
+                        className="h-[250px]"
+                      />
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700">Internal Note</label>
@@ -797,7 +801,6 @@ const SearchByRoot = () => {
                       placeholder="Internal notes for office use only..."
                     />
                   </div>
-
                 </div>
               )}
 
