@@ -21,7 +21,7 @@ const Footer = () => {
 
   if (isAuthed) {
     return (
-      <AntFooter className="bg-white px-4 sm:px-6 py-3 border-t border-slate-200">
+      <AntFooter className="bg-white px-4 sm:px-6 py-1">
         <div className="mx-auto w-full max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
           {/* Left: Brand + Copy */}
           <div className="flex items-center gap-3 text-slate-400">

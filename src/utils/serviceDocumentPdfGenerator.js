@@ -479,7 +479,7 @@ export function generateServiceDocumentPDF({
     }
 
     // --- Items Table (Modern Style) ---
-    const tableY = insuranceY + 10;
+    const tableY = insuranceY + 25; // 25pt gap before parts table
     autoTable(doc, {
         startY: tableY,
         head: [["Qty", "Part #", "Description", "List", "Price", "Total"]],
@@ -529,11 +529,25 @@ export function generateServiceDocumentPDF({
     });
 
     // --- Totals (Modern Style) ---
-    let finalY = doc.lastAutoTable.finalY + 15;
-    let footerY = Math.max(finalY, pageHeight - 160);
-    if (finalY > pageHeight - 170) {
+    let finalY = doc.lastAutoTable.finalY + 25; // 25pt gap after parts table
+    let footerY = finalY; // Position directly after table, no forced bottom placement
+    if (finalY > pageHeight - 210) {
         doc.addPage();
         footerY = 50;
+    }
+
+    // Normalize specialInstructions - handle object or string
+    let normalizedSpecialInstructions = "";
+    if (specialInstructions) {
+        if (typeof specialInstructions === 'string') {
+            normalizedSpecialInstructions = specialInstructions;
+        } else if (typeof specialInstructions === 'object') {
+            // Handle object case - try common property names
+            normalizedSpecialInstructions = specialInstructions.instructions ||
+                specialInstructions.content ||
+                specialInstructions.text ||
+                JSON.stringify(specialInstructions);
+        }
     }
 
     // Special Instructions Header Bar (Modern)
@@ -546,9 +560,27 @@ export function generateServiceDocumentPDF({
     doc.setTextColor(0, 0, 0);
     doc.setFont("helvetica", "normal");
 
-    // Block below instructions
+    // Block below instructions - Calculate dynamic height
     const totalBoxY = footerY + 18;
-    const totalBoxH = 90;
+
+    // Estimate content height for notes
+    const noteLineHeight = 10;
+    let estimatedLines = 0;
+
+    // Estimate lines for customer notes
+    if (printableNote && typeof printableNote === 'string' && printableNote.trim() !== '') {
+        const strippedNote = printableNote.replace(/<[^>]*>/g, '');
+        estimatedLines += 3 + Math.ceil(strippedNote.length / 60); // Label + content
+    }
+
+    // Estimate lines for special instructions
+    if (normalizedSpecialInstructions && normalizedSpecialInstructions.trim() !== '') {
+        const strippedInstr = normalizedSpecialInstructions.replace(/<[^>]*>/g, '');
+        estimatedLines += 3 + Math.ceil(strippedInstr.length / 60); // Label + content
+    }
+
+    // Calculate box height with minimum of 90, max of what fits
+    const totalBoxH = Math.max(90, Math.min(180, 30 + (estimatedLines * noteLineHeight)));
 
     // Left Text Block (Modern)
     doc.setFillColor(252, 252, 254);
@@ -796,14 +828,14 @@ export function generateServiceDocumentPDF({
     }
 
     // --- RENDER SPECIAL INSTRUCTIONS ---
-    if (specialInstructions && typeof specialInstructions === 'string' && specialInstructions.trim() !== '') {
+    if (normalizedSpecialInstructions && normalizedSpecialInstructions.trim() !== '') {
         doc.setFontSize(9);
         doc.setFont("helvetica", "bold");
         doc.setTextColor(50, 50, 50);
         doc.text("Special Instructions:", margin + 8, currentNoteY);
         doc.setFont("helvetica", "normal");
         doc.setTextColor(60, 60, 60);
-        renderHtmlToPdf(doc, specialInstructions, margin + 8, currentNoteY + 12, noteWidth);
+        renderHtmlToPdf(doc, normalizedSpecialInstructions, margin + 8, currentNoteY + 12, noteWidth);
     }
 
     // Right Totals Block (Modern)
@@ -854,7 +886,14 @@ export function generateServiceDocumentPDF({
     doc.text(balance.toFixed(2), totalsX + totalsW - 8, totalBoxY + tRowH * 4 + 12, { align: "right" });
 
     // Bottom Footer: Received By (Modern - Clean)
-    const recY = totalBoxY + totalBoxH + 5;
+    let recY = totalBoxY + totalBoxH + 5;
+
+    // Check if we need a new page for the signature section
+    if (recY + 30 > pageHeight - 30) {
+        doc.addPage();
+        recY = 50;
+    }
+
     doc.setFillColor(245, 247, 250);
     doc.setDrawColor(200, 200, 200);
     doc.rect(margin, recY, contentWidth, 25, 'FD');

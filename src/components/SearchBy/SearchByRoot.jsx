@@ -532,8 +532,16 @@ const SearchByRoot = () => {
       ta = extracted.ta;
     }
 
-    const newItems = [];
+    // Override description if qualifiers include 'Aftermarket'
     const fullPartNumber = `${nagsId || ""}${ta ? " " + ta : ""}`.trim();
+
+    if (part.qualifiers && part.qualifiers.includes('Aftermarket')) {
+      const qualStr = part.qualifiers.join(', ');
+      description = `${fullPartNumber} (${qualStr})`;
+    }
+
+    const newItems = [];
+
 
     const partItem = {
       type: "Part", id: uniqueId,
