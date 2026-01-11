@@ -788,24 +788,23 @@ const SearchByRoot = () => {
 
               {activeTab === 'notes' && (
                 <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2 h-[350px] flex flex-col">
+                  <div className="space-y-2 h-[250px] flex flex-col ">
                     <label className="text-sm font-bold text-slate-700">Printable Note <span className="text-slate-400 font-normal">(Customer Notes)</span></label>
                     <div className="flex-1 overflow-hidden">
                       <ReactQuill
                         theme="snow"
                         value={printableNote}
                         onChange={setPrintableNote}
-                        className="h-[250px]"
+                        className="h-[290px] "
                       />
                     </div>
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2 h-[250px] flex flex-col">
                     <label className="text-sm font-bold text-slate-700">Internal Note</label>
                     <textarea
-                      rows={6}
                       value={internalNote}
                       onChange={(e) => setInternalNote(e.target.value)}
-                      className="w-full rounded border border-slate-300 p-2 text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none bg-yellow-50"
+                      className="w-full flex-1 rounded border border-slate-300 p-2 text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none bg-yellow-50 resize-none"
                       placeholder="Internal notes for office use only..."
                     />
                   </div>

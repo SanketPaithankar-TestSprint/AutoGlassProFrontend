@@ -9,15 +9,18 @@ import TaskTableView from './TaskTableView';
 // API Imports (Assuming these exist or I'm using the ones I saw)
 import CreateTaskModal from './CreateTaskModal';
 import { getEmployeeTasks } from '../../api/getEmployeeTasks';
+import { getShopTasks } from '../../api/getShopTasks';
 import { updateTaskStatus } from '../../api/updateTaskStatus';
 
 const { Search } = Input;
 
 const ScheduleRoot = () => {
     const [viewMode, setViewMode] = useState('kanban'); // 'kanban' or 'table'
+    const [taskScope, setTaskScope] = useState('mine'); // 'mine' or 'shop'
     const [filterStatus, setFilterStatus] = useState('ALL');
     const [searchText, setSearchText] = useState('');
     const [createModalVisible, setCreateModalVisible] = useState(false);
+    const [selectedTask, setSelectedTask] = useState(null);
 
     // Get current user ID (fallback to 2 if not found)
     const userId = localStorage.getItem('userId') || 2;
@@ -25,9 +28,14 @@ const ScheduleRoot = () => {
 
     // Fetch Tasks
     const { data: tasks = [], isLoading, refetch } = useQuery({
-        queryKey: ['employeeTasks', userId],
+        queryKey: ['tasks', userId, taskScope],
         queryFn: async () => {
-            const data = await getEmployeeTasks(userId);
+            let data;
+            if (taskScope === 'shop') {
+                data = await getShopTasks();
+            } else {
+                data = await getEmployeeTasks(userId);
+            }
             // Ensure data is array
             return Array.isArray(data) ? data : (data.content || []);
         },
@@ -41,7 +49,7 @@ const ScheduleRoot = () => {
         },
         onSuccess: () => {
             message.success('Task status updated');
-            queryClient.invalidateQueries(['employeeTasks']);
+            queryClient.invalidateQueries(['tasks']);
         },
         onError: () => {
             message.error('Failed to update task status');
@@ -50,6 +58,16 @@ const ScheduleRoot = () => {
 
     const handleStatusChange = (taskId, newStatus) => {
         updateStatusMutation.mutate({ taskId, newStatus });
+    };
+
+    const handleEditTask = (task) => {
+        setSelectedTask(task);
+        setCreateModalVisible(true);
+    };
+
+    const handleCloseModal = () => {
+        setCreateModalVisible(false);
+        setSelectedTask(null);
     };
 
     // Filter Logic
@@ -76,6 +94,24 @@ const ScheduleRoot = () => {
                     <p className="text-slate-500 m-0">Manage your assignments and daily workflow</p>
                 </div>
                 <div className="flex gap-2">
+                    {/* Scope Switcher */}
+                    <div className="bg-white border p-1 rounded-lg flex mr-2">
+                        <Button
+                            type={taskScope === 'mine' ? 'primary' : 'text'}
+                            onClick={() => setTaskScope('mine')}
+                            size="small"
+                        >
+                            My Tasks
+                        </Button>
+                        <Button
+                            type={taskScope === 'shop' ? 'primary' : 'text'}
+                            onClick={() => setTaskScope('shop')}
+                            size="small"
+                        >
+                            Shop Tasks
+                        </Button>
+                    </div>
+
                     {/* View Switcher */}
                     <div className="bg-white border p-1 rounded-lg flex">
                         <Button
@@ -140,9 +176,17 @@ const ScheduleRoot = () => {
                 ) : (
                     <>
                         {viewMode === 'kanban' ? (
-                            <KanbanView tasks={filteredTasks} onStatusChange={handleStatusChange} />
+                            <KanbanView
+                                tasks={filteredTasks}
+                                onStatusChange={handleStatusChange}
+                                onEdit={handleEditTask}
+                            />
                         ) : (
-                            <TaskTableView tasks={filteredTasks} onStatusChange={handleStatusChange} />
+                            <TaskTableView
+                                tasks={filteredTasks}
+                                onStatusChange={handleStatusChange}
+                                onViewDetails={handleEditTask}
+                            />
                         )}
                     </>
                 )}
@@ -150,7 +194,8 @@ const ScheduleRoot = () => {
 
             <CreateTaskModal
                 visible={createModalVisible}
-                onClose={() => setCreateModalVisible(false)}
+                onClose={handleCloseModal}
+                task={selectedTask}
             />
         </div>
     );

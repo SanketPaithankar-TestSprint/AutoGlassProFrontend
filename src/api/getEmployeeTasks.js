@@ -26,7 +26,16 @@ export const getEmployeeTasks = async (employeeId, status = null) => {
             throw new Error(`Failed to fetch employee tasks: ${response.status}`);
         }
 
-        return await response.json();
+        const data = await response.json();
+        const tasks = data.content || (Array.isArray(data) ? data : []);
+
+        return tasks.map(task => ({
+            ...task,
+            id: task.assignmentId,
+            status: task.assignmentStatus,
+            taskName: task.taskDescription || 'Untitled Task',
+            description: task.notes || ''
+        }));
     } catch (error) {
         console.error("Error fetching employee tasks:", error);
         throw error;

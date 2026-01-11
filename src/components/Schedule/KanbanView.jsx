@@ -1,8 +1,7 @@
 import React from 'react';
 import { Card, Tag, Button, Dropdown, Avatar, Empty } from 'antd';
-import { MoreOutlined, ClockCircleOutlined, UserOutlined, ArrowRightOutlined } from '@ant-design/icons';
-
-const StatusColumn = ({ title, status, tasks, color, onStatusChange }) => {
+import { MoreOutlined, ClockCircleOutlined, UserOutlined, ArrowRightOutlined, EditOutlined } from '@ant-design/icons';
+const StatusColumn = ({ title, status, tasks, color, onStatusChange, onEdit }) => {
     const filteredTasks = tasks.filter(t => t.status === status);
 
     return (
@@ -42,6 +41,13 @@ const StatusColumn = ({ title, status, tasks, color, onStatusChange }) => {
                                         title="Advance Status"
                                     />
                                 )}
+                                <Button
+                                    type="text"
+                                    size="small"
+                                    icon={<EditOutlined />}
+                                    onClick={() => onEdit && onEdit(task)}
+                                    title="Edit Task"
+                                />
                             </div>
                             <h4 className="font-medium text-slate-800 mb-1">{task.taskName}</h4>
                             <p className="text-slate-500 text-sm line-clamp-2 mb-3">{task.description}</p>
@@ -61,7 +67,7 @@ const StatusColumn = ({ title, status, tasks, color, onStatusChange }) => {
     );
 };
 
-const KanbanView = ({ tasks = [], onStatusChange }) => {
+const KanbanView = ({ tasks = [], onStatusChange, onEdit }) => {
     return (
         <div className="flex gap-4 overflow-x-auto h-[calc(100vh-280px)] pb-2">
             <StatusColumn
@@ -70,6 +76,7 @@ const KanbanView = ({ tasks = [], onStatusChange }) => {
                 tasks={tasks}
                 color="#faad14"
                 onStatusChange={onStatusChange}
+                onEdit={onEdit}
             />
             <StatusColumn
                 title="In Progress"
@@ -77,6 +84,7 @@ const KanbanView = ({ tasks = [], onStatusChange }) => {
                 tasks={tasks}
                 color="#1890ff"
                 onStatusChange={onStatusChange}
+                onEdit={onEdit}
             />
             <StatusColumn
                 title="Done"
@@ -84,6 +92,7 @@ const KanbanView = ({ tasks = [], onStatusChange }) => {
                 tasks={tasks}
                 color="#52c41a"
                 onStatusChange={onStatusChange}
+                onEdit={onEdit}
             />
         </div>
     );
