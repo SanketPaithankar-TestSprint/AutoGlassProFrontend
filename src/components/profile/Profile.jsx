@@ -17,6 +17,7 @@ import DistributorCredentials from "./DistributorCredentials";
 import UserKitPricePage from "./UserKitPricePage";
 import UserAdasPricePage from "./UserAdasPricePage";
 import SpecialInstructions from "./SpecialInstructions";
+import SlugConfig from "../SlugConfig/SlugConfig";
 import { COUNTRIES, getStatesOrProvinces, getCities } from "../../const/locations";
 
 const Profile = () => {
@@ -609,6 +610,7 @@ const Profile = () => {
                         {renderMenuItem('userKitPrice', 'User Kit Price', <DollarOutlined />)}
                         {renderMenuItem('userAdasPrice', 'ADAS Pricing', <ScanOutlined />)}
                         {renderMenuItem('specialInstructions', 'Special Instructions', <FileTextOutlined />)}
+                        {renderMenuItem('slugConfig', 'Slug Configuration', <KeyOutlined />)}
                     </div>
                 </div>
             </div>
@@ -626,6 +628,7 @@ const Profile = () => {
                     {activeTab === 'userKitPrice' && <UserKitPricePage />}
                     {activeTab === 'userAdasPrice' && <UserAdasPricePage />}
                     {activeTab === 'specialInstructions' && <SpecialInstructions />}
+                    {activeTab === 'slugConfig' && <SlugConfig />}
                 </div>
             </div>
         </div>

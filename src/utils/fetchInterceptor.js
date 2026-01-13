@@ -7,17 +7,21 @@ export const setupFetchInterceptor = () => {
             const response = await originalFetch(...args);
 
             // Check for Unauthorized (401)
+            // Check for Unauthorized (401)
+            // But skip for specific endpoints that might legitimately return 401/404 without needing full logout
+            // e.g. checking if a slug exists might return 401/403/404 depending on backend
             if (response.status === 401) {
-                console.warn("Unauthorized access detected. Redirecting to login...");
+                const url = args[0] || "";
+                if (typeof url === "string" && url.includes("/user-slug-info")) {
+                    // Do not redirect for slug info checks
+                    console.warn("Suppressing 401 redirect for user-slug-info");
+                } else if (!window.location.pathname.includes('/auth')) {
+                    console.warn("Unauthorized access detected. Redirecting to login...");
 
-                // Clear all storage
-                localStorage.clear();
-                sessionStorage.clear();
+                    // Clear all storage
+                    localStorage.clear();
+                    sessionStorage.clear();
 
-                // Redirect to login page
-                // We use window.location because we might be outside of React context
-                // and we want a hard reset anyway.
-                if (!window.location.pathname.includes('/auth')) {
                     window.location.href = '/auth';
                 }
             }

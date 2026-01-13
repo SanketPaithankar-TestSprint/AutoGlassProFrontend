@@ -1,5 +1,6 @@
 // src/api/login.js
 import urls from '../config';
+import { getUserSlugByUserId } from './userSlugInfo';
 
 /**
  * Login API call
@@ -61,6 +62,27 @@ export function handleLoginSuccess(loginResponse, rememberMe = false) {
         // Store username
         if (userData.username) {
             sessionStorage.setItem('username', userData.username);
+        }
+
+        // Fetch and store User Slug
+        // Note: We need the token. loginResponse usually has it.
+        // loginResponse structure seems to be { success: true, data: { ... }, token: "..." } or similar based on usage.
+        // Looking at login.jsx: res.data.username is accessed.
+        // We will assume loginResponse.data.token or loginResponse.token exists.
+        // Wait, handleLoginSuccess line 38: const tokenStr = JSON.stringify(loginResponse);
+        // It saves the WHOLE response as "ApiToken".
+        // Use that token for the call.
+        if (userData.userId) {
+            const token = loginResponse.token || (loginResponse.data && loginResponse.data.token);
+            if (token) {
+                getUserSlugByUserId(token, userData.userId)
+                    .then(slugInfo => {
+                        if (slugInfo && slugInfo.slug) {
+                            localStorage.setItem('userSlug', slugInfo.slug);
+                        }
+                    })
+                    .catch(err => console.error("Failed to fetch user slug on login", err));
+            }
         }
     }
 }
