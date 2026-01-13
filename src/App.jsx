@@ -22,6 +22,8 @@ const SearchByRoot = React.lazy(() => import("./components/SearchBy/SearchByRoot
 const Schedule = React.lazy(() => import('./components/Schedule/ScheduleRoot.jsx'));
 const FeaturesPage = React.lazy(() => import('./components/FeaturesPage/FeaturesPage.jsx'));
 const AboutPage = React.lazy(() => import('./components/About/AboutPage.jsx'));
+const PublicContactRoot = React.lazy(() => import('./components/PublicContact/PublicContactRoot.jsx'));
+import ErrorBoundary from './components/PublicContact/ErrorBoundary';
 
 
 const { Content } = Layout;
@@ -62,6 +64,24 @@ function AppContent() {
       <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600"></div>
       </div>
+    );
+  }
+
+  // Check if we're on the public contact form page - render standalone without main layout
+  const isContactPage = location.pathname.startsWith('/contact/');
+  if (isContactPage) {
+    return (
+      <ErrorBoundary>
+        <Suspense fallback={
+          <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600"></div>
+          </div>
+        }>
+          <Routes>
+            <Route path="/contact/:slug" element={<PublicContactRoot />} />
+          </Routes>
+        </Suspense>
+      </ErrorBoundary>
     );
   }
 
