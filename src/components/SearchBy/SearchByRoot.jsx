@@ -97,6 +97,7 @@ const SearchByRoot = () => {
       if (serviceDocument) {
         setDocMetadata({
           documentNumber: serviceDocument.documentNumber,
+          documentType: serviceDocument.documentType,
           documentDate: serviceDocument.documentDate,
           createdAt: serviceDocument.createdAt,
           updatedAt: serviceDocument.updatedAt

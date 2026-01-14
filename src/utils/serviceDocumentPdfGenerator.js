@@ -48,7 +48,8 @@ export function generateServiceDocumentPDF({
     printableNote = "",
     specialInstructions = "",
     insuranceData = {},
-    includeInsurance = false
+    includeInsurance = false,
+    documentNumber = ""
 }) {
     const doc = new jsPDF({ unit: "pt", format: "a4" });
     const pageWidth = doc.internal.pageSize.width;
@@ -165,10 +166,10 @@ export function generateServiceDocumentPDF({
     doc.setTextColor(50, 50, 50);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
-    doc.text("GFI0016248", topGridX + hLabelW + 5, topGridY + 15);
+    doc.text(documentNumber || "NEW", topGridX + hLabelW + 5, topGridY + 15);
     doc.text(now, topGridX + hLabelW + hValueW + hLabelW2 + 5, topGridY + 15);
 
-    // Row 2: Cust # | BillCode
+    // Row 2: P.O. # | Sold By
     const y2 = topGridY + rowH;
     drawModernHeaderCell(topGridX, y2, hLabelW, rowH, true);
     drawModernHeaderCell(topGridX + hLabelW, y2, hValueW, rowH, false);
@@ -178,27 +179,8 @@ export function generateServiceDocumentPDF({
     doc.setFontSize(8);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(100, 100, 100);
-    doc.text("Cust. #", topGridX + 5, y2 + 14);
-    doc.text("BillCode", topGridX + hLabelW + hValueW + 5, y2 + 14);
-
-    doc.setTextColor(50, 50, 50);
-    doc.setFontSize(10);
-    doc.text(customerData?.customerId ? String(customerData.customerId) : "-", topGridX + hLabelW + 5, y2 + 15);
-    doc.setFontSize(9);
-    doc.text("G1", topGridX + hLabelW + hValueW + hLabelW2 + 5, y2 + 15);
-
-    // Row 3: P.O. # | Sold By
-    const y3 = y2 + rowH;
-    drawModernHeaderCell(topGridX, y3, hLabelW, rowH, true);
-    drawModernHeaderCell(topGridX + hLabelW, y3, hValueW, rowH, false);
-    drawModernHeaderCell(topGridX + hLabelW + hValueW, y3, hLabelW2, rowH, true);
-    drawModernHeaderCell(topGridX + hLabelW + hValueW + hLabelW2, y3, hValueW2, rowH, false);
-
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(100, 100, 100);
-    doc.text("P.O. #", topGridX + 5, y3 + 14);
-    doc.text("Sold By", topGridX + hLabelW + hValueW + 5, y3 + 14);
+    doc.text("P.O. #", topGridX + 5, y2 + 14);
+    doc.text("Sold By", topGridX + hLabelW + hValueW + 5, y2 + 14);
 
     let soldBy = userProfile?.ownerName || (userProfile?.firstName ? `${userProfile.firstName} ${userProfile.lastName || ""}` : "");
     if (soldBy.length > 12) {
@@ -206,24 +188,7 @@ export function generateServiceDocumentPDF({
     }
     doc.setTextColor(50, 50, 50);
     doc.setFontSize(8);
-    doc.text(soldBy, topGridX + hLabelW + hValueW + hLabelW2 + 5, y3 + 15);
-
-    // Row 4: Fed Tax # | Inst'l By
-    const y4 = y3 + rowH;
-    drawModernHeaderCell(topGridX, y4, hLabelW, rowH, true);
-    drawModernHeaderCell(topGridX + hLabelW, y4, hValueW, rowH, false);
-    drawModernHeaderCell(topGridX + hLabelW + hValueW, y4, hLabelW2, rowH, true);
-    drawModernHeaderCell(topGridX + hLabelW + hValueW + hLabelW2, y4, hValueW2, rowH, false);
-
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(100, 100, 100);
-    doc.text("Fed Tax #", topGridX + 5, y4 + 14);
-    doc.text("Inst'l By", topGridX + hLabelW + hValueW + 5, y4 + 14);
-
-    doc.setTextColor(50, 50, 50);
-    doc.setFontSize(9);
-    doc.text(userProfile?.ein || userProfile?.businessLicenseNumber || "", topGridX + hLabelW + 5, y4 + 15);
+    doc.text(soldBy, topGridX + hLabelW + hValueW + hLabelW2 + 5, y2 + 15);
 
     // Reset for rest of document
     doc.setTextColor(0, 0, 0);

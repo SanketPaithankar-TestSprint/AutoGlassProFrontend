@@ -346,6 +346,20 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
     const [payment, setPayment] = useState(0);
     const [manualDocType, setManualDocType] = useState("Quote"); // Default to Quote, no Auto
 
+    // Sync document type from loaded document metadata
+    useEffect(() => {
+        if (docMetadata?.documentType) {
+            // Map backend format to frontend format
+            const typeMap = {
+                'QUOTE': 'Quote',
+                'WORK_ORDER': 'Work Order',
+                'INVOICE': 'Invoice'
+            };
+            const mappedType = typeMap[docMetadata.documentType] || docMetadata.documentType;
+            setManualDocType(mappedType);
+        }
+    }, [docMetadata?.documentType]);
+
     const [taxRates, setTaxRates] = useState([]);
 
     // Extract taxRate from userProfile to use as primitive dependency
@@ -890,7 +904,8 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
             printableNote: printableNote, // Customer Notes
             specialInstructions: specialInstructions, // Global Special Instructions
             insuranceData,
-            includeInsurance
+            includeInsurance,
+            documentNumber: docMetadata?.documentNumber || ""
         });
     };
 
@@ -1626,7 +1641,7 @@ Auto Glass Pro Team`;
                             items: [
                                 { key: 'Part', label: <span className="text-xs">Add Part</span>, onClick: () => handleAddRow("Part") },
                                 { key: 'Labor', label: <span className="text-xs">Add Labor</span>, onClick: () => handleAddRow("Labor") },
-                                { key: 'Service', label: <span className="text-xs">Add Service</span>, onClick: () => handleAddRow("Service") },
+                                { key: 'Service', label: <span className="text-xs">Add Chip Repair</span>, onClick: () => handleAddRow("Service") },
                                 { type: 'divider' },
                                 { key: 'ADAS', label: <span className="text-xs">Add ADAS Recalibration</span>, onClick: () => handleAddRow("ADAS") },
                             ],
@@ -1787,7 +1802,7 @@ Auto Glass Pro Team`;
                                             className="flex-1 px-2 py-1 rounded bg-[#00A8E4] text-white text-[10px] font-semibold hover:bg-[#0096cc] transition disabled:opacity-50"
                                             title="Preview PDF"
                                         >
-                                            {previewLoading ? '...' : 'Preview'}
+                                            {previewLoading ? '...' : 'Print'}
                                         </button>
                                         <button
                                             onClick={handleEmail}
