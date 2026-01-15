@@ -101,7 +101,7 @@ export function generateServiceDocumentPDF({
     doc.rect(margin, 30, leftSideWidth, 4, 'F');  // Accent bar under title area
 
     doc.setFontSize(16);
-    doc.setFont("helvetica", "bold");
+    doc.setFont("helvetica", "normal");
     doc.setTextColor(50, 60, 80);
     doc.text(userProfile?.businessName || "", margin + 5, 50);
 
@@ -111,16 +111,24 @@ export function generateServiceDocumentPDF({
 
     let currentY = 65;
 
+    const maxAddressWidth = leftSideWidth - 10;
+
     // Address Line 1
     if (userProfile?.addressLine1) {
-        doc.text(userProfile.addressLine1, margin + 5, currentY);
-        currentY += 13;
+        const addressLines = doc.splitTextToSize(userProfile.addressLine1, maxAddressWidth);
+        addressLines.forEach(line => {
+            doc.text(line, margin + 5, currentY);
+            currentY += 13;
+        });
     }
 
     // Address Line 2 (on separate line)
     if (userProfile?.addressLine2) {
-        doc.text(userProfile.addressLine2, margin + 5, currentY);
-        currentY += 13;
+        const addressLines = doc.splitTextToSize(userProfile.addressLine2, maxAddressWidth);
+        addressLines.forEach(line => {
+            doc.text(line, margin + 5, currentY);
+            currentY += 13;
+        });
     }
 
     // City, State, Zip
@@ -139,11 +147,18 @@ export function generateServiceDocumentPDF({
         currentY += 13;
     }
 
-    // Fed ID
-    const fedId = userProfile?.ein || userProfile?.businessLicenseNumber || "";
-    if (fedId) {
+    // Fed ID (EIN)
+    if (userProfile?.ein) {
         doc.setTextColor(100, 100, 100);
-        doc.text(`Fed. ID# ${fedId}`, margin + 5, currentY);
+        doc.text(`Fed. ID# ${userProfile.ein}`, margin + 5, currentY);
+        currentY += 13;
+    }
+
+    // Business License
+    if (userProfile?.businessLicenseNumber) {
+        doc.setTextColor(100, 100, 100);
+        doc.text(`Business License: ${userProfile.businessLicenseNumber}`, margin + 5, currentY);
+        currentY += 13;
     }
 
     // Right: Quote/Invoice Info Grid (Modern)
@@ -158,13 +173,13 @@ export function generateServiceDocumentPDF({
     drawModernHeaderCell(topGridX + hLabelW + hValueW + hLabelW2, topGridY, hValueW2, rowH, false);
 
     doc.setFontSize(8);
-    doc.setFont("helvetica", "bold");
+    doc.setFont("helvetica", "normal");
     doc.setTextColor(100, 100, 100);
     doc.text(`${docType} #`, topGridX + 5, topGridY + 14);
     doc.text("Date", topGridX + hLabelW + hValueW + 5, topGridY + 14);
 
     doc.setTextColor(50, 50, 50);
-    doc.setFont("helvetica", "bold");
+    doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.text(documentNumber || "NEW", topGridX + hLabelW + 5, topGridY + 15);
     doc.text(now, topGridX + hLabelW + hValueW + hLabelW2 + 5, topGridY + 15);
@@ -177,7 +192,7 @@ export function generateServiceDocumentPDF({
     drawModernHeaderCell(topGridX + hLabelW + hValueW + hLabelW2, y2, hValueW2, rowH, false);
 
     doc.setFontSize(8);
-    doc.setFont("helvetica", "bold");
+    doc.setFont("helvetica", "normal");
     doc.setTextColor(100, 100, 100);
     doc.text("P.O. #", topGridX + 5, y2 + 14);
     doc.text("Sold By", topGridX + hLabelW + hValueW + 5, y2 + 14);
@@ -195,7 +210,7 @@ export function generateServiceDocumentPDF({
     doc.setDrawColor(0, 0, 0);
 
     // --- Customer Info Card (Modern Style) ---
-    const addrY = 140;
+    const addrY = Math.max(140, currentY + 15); // Dynamic start position to avoid overlap
     const cardX = margin;
     const cardW = leftSideWidth;  // Same width as company info section
 
@@ -209,8 +224,14 @@ export function generateServiceDocumentPDF({
     if (customerData) {
         const addr1 = customerData.addressLine1 || "";
         if (addr1.trim()) {
-            addressLines = doc.splitTextToSize(addr1, cardW - 20);
-            contentLines += addressLines.length;
+            const lines = doc.splitTextToSize(addr1, cardW - 30);
+            addressLines.push(...lines);
+        }
+
+        const addr2 = customerData.addressLine2 || "";
+        if (addr2.trim()) {
+            const lines = doc.splitTextToSize(addr2, cardW - 30);
+            addressLines.push(...lines);
         }
 
         const cityPart = customerData.city || '';
@@ -226,9 +247,20 @@ export function generateServiceDocumentPDF({
         } else if (postalPart) {
             cityStateZipLine = postalPart;
         }
-        hasCityStateZip = !!cityStateZipLine;
-        if (hasCityStateZip) contentLines++;
+
+        if (cityStateZipLine) {
+            const lines = doc.splitTextToSize(cityStateZipLine, cardW - 30);
+            // We can treat this as part of addressLines or separate. 
+            // Let's separate it but use splitTextToSize to count lines.
+            // Actually, simplest is to just wrap it and store it as an array of lines.
+            // But existing code uses 'hasCityStateZip' boolean and 'cityStateZipLine' string.
+            // Let's change cityStateZipLine to be an ARRAY of strings.
+            cityStateZipLine = lines;
+            hasCityStateZip = true;
+        }
     }
+
+    contentLines = addressLines.length + (hasCityStateZip ? cityStateZipLine.length : 0);
 
     // Calculate card height (name + address lines + city + phone + padding)
     const lineHeight = 14;
@@ -248,7 +280,7 @@ export function generateServiceDocumentPDF({
 
         // Customer Name (bold, larger)
         doc.setFontSize(11);
-        doc.setFont("helvetica", "bold");
+        doc.setFont("helvetica", "normal");
         doc.setTextColor(40, 50, 70);
         const fullName = `${customerData.firstName || ''} ${customerData.lastName || ''}`.trim();
         if (fullName) {
@@ -261,6 +293,7 @@ export function generateServiceDocumentPDF({
         doc.setFont("helvetica", "normal");
         doc.setTextColor(80, 80, 80);
 
+        // Address lines (Line 1 and Line 2)
         if (addressLines.length > 0) {
             addressLines.forEach(line => {
                 doc.text(line, cardX + 14, textY);
@@ -268,10 +301,12 @@ export function generateServiceDocumentPDF({
             });
         }
 
-        // City/State/Zip
-        if (hasCityStateZip) {
-            doc.text(cityStateZipLine, cardX + 14, textY);
-            textY += lineHeight;
+        // City/State/Zip (Wrapped)
+        if (hasCityStateZip && Array.isArray(cityStateZipLine)) {
+            cityStateZipLine.forEach(line => {
+                doc.text(line, cardX + 14, textY);
+                textY += lineHeight;
+            });
         }
 
         // Phone
@@ -346,7 +381,7 @@ export function generateServiceDocumentPDF({
 
     // Text
     doc.setTextColor(...labelTextColor);
-    doc.setFont("helvetica", "bold");
+    doc.setFont("helvetica", "normal");
     doc.text("Year", col1 + 6, vY + 14);
     doc.text("Make", col3 + 6, vY + 14);
     doc.text("Model", col5 + 6, vY + 14);
@@ -368,16 +403,16 @@ export function generateServiceDocumentPDF({
     drawModernCell(col6, vY2, valueW3, vRowH, false);
 
     doc.setTextColor(...labelTextColor);
-    doc.setFont("helvetica", "bold");
+    doc.setFont("helvetica", "normal");
     doc.text("Body Style", col1 + 6, vY2 + 14);
     doc.text("Lic. #", col3 + 6, vY2 + 14);
-    doc.text("V.I.N", col5 + 6, vY2 + 14);
+    doc.text("Auth by", col5 + 6, vY2 + 14);
 
     doc.setTextColor(...textColor);
     doc.setFont("helvetica", "normal");
     doc.text(String(customerData?.bodyType || ""), col2 + 6, vY2 + 14);
     doc.text(customerData?.licensePlateNumber || "", col4 + 6, vY2 + 14);
-    doc.text(customerData?.vin || "", col6 + 6, vY2 + 14);
+    doc.text("", col6 + 6, vY2 + 14);
 
     // Row 3: Policy # | Claim # | Loss Date
     const vY3 = vY2 + vRowH;
@@ -390,7 +425,7 @@ export function generateServiceDocumentPDF({
     drawModernCell(col6, vY3, valueW3, vRowH, false);
 
     doc.setTextColor(...labelTextColor);
-    doc.setFont("helvetica", "bold");
+    doc.setFont("helvetica", "normal");
     doc.text("Policy #", col1 + 6, vY3 + 14);
     doc.text("Claim #", col3 + 6, vY3 + 14);
     doc.text("Loss Date", col5 + 6, vY3 + 14);
@@ -410,9 +445,12 @@ export function generateServiceDocumentPDF({
     drawModernCell(col6, vY4, valueW3, vRowH, false);
 
     doc.setTextColor(...labelTextColor);
-    doc.setFont("helvetica", "bold");
-    doc.text("Auth by", col1 + 6, vY4 + 14);
+    doc.setFont("helvetica", "normal");
+    doc.text("V.I.N", col1 + 6, vY4 + 14);
     doc.text("Damage/Cause", col5 + 6, vY4 + 14);
+
+    doc.setTextColor(...textColor);
+    doc.text(customerData?.vin || "", col2 + 6, vY4 + 14);
 
     // Reset colors for rest of document
     doc.setTextColor(0, 0, 0);
@@ -467,7 +505,7 @@ export function generateServiceDocumentPDF({
         headStyles: {
             fillColor: [50, 60, 80],        // Dark blue-gray header
             textColor: [255, 255, 255],     // White text
-            fontStyle: "bold",
+            fontStyle: "normal",
             lineWidth: 0,
             halign: 'center'
         },
@@ -481,11 +519,11 @@ export function generateServiceDocumentPDF({
         tableWidth: contentWidth,  // Force table to use exact content width
         columnStyles: {
             0: { halign: "center", cellWidth: 35 },   // Qty (35)
-            1: { cellWidth: 95, fontStyle: 'bold' },  // Part # (95)
+            1: { cellWidth: 95, fontStyle: 'normal' },  // Part # (95)
             2: { cellWidth: 220 },                     // Description (220)
             3: { halign: "right", cellWidth: 60 },    // List (60)
             4: { halign: "right", cellWidth: 60 },    // Price (60)
-            5: { halign: "right", cellWidth: 65, fontStyle: 'bold' }  // Total (65) = 535 total
+            5: { halign: "right", cellWidth: 65, fontStyle: 'normal' }  // Total (65) = 535 total
         },
         margin: { left: margin, right: margin },
         didDrawPage: (data) => {
@@ -520,7 +558,7 @@ export function generateServiceDocumentPDF({
     doc.rect(margin, footerY, contentWidth, 18, 'F');
     doc.setFontSize(9);
     doc.setTextColor(255, 255, 255);
-    doc.setFont("helvetica", "bold");
+    doc.setFont("helvetica", "normal");
     doc.text("SPECIAL INSTRUCTIONS", margin + 220, footerY + 12);
     doc.setTextColor(0, 0, 0);
     doc.setFont("helvetica", "normal");
@@ -783,7 +821,7 @@ export function generateServiceDocumentPDF({
 
     if (printableNote && typeof printableNote === 'string' && printableNote.trim() !== '') {
         doc.setFontSize(9);
-        doc.setFont("helvetica", "bold");
+        doc.setFont("helvetica", "normal");
         doc.setTextColor(50, 50, 50);
         doc.text("Customer Notes:", margin + 8, currentNoteY);
         doc.setFont("helvetica", "normal");
@@ -795,7 +833,7 @@ export function generateServiceDocumentPDF({
     // --- RENDER SPECIAL INSTRUCTIONS ---
     if (normalizedSpecialInstructions && normalizedSpecialInstructions.trim() !== '') {
         doc.setFontSize(9);
-        doc.setFont("helvetica", "bold");
+        doc.setFont("helvetica", "normal");
         doc.setTextColor(50, 50, 50);
         doc.text("Special Instructions:", margin + 8, currentNoteY);
         doc.setFont("helvetica", "normal");
@@ -838,7 +876,7 @@ export function generateServiceDocumentPDF({
     // Total row (highlighted)
     doc.setFillColor(240, 245, 255);
     doc.rect(totalsX, totalBoxY + tRowH * 3, totalsW, tRowH, 'FD');
-    doc.setFont("helvetica", "bold");
+    doc.setFont("helvetica", "normal");
     doc.setTextColor(50, 60, 80);
     doc.text("Total", totalsX + 8, totalBoxY + tRowH * 3 + 12);
     doc.text(total.toFixed(2), totalsX + totalsW - 8, totalBoxY + tRowH * 3 + 12, { align: "right" });
@@ -863,7 +901,7 @@ export function generateServiceDocumentPDF({
     doc.setDrawColor(200, 200, 200);
     doc.rect(margin, recY, contentWidth, 25, 'FD');
     doc.setFontSize(9);
-    doc.setFont("helvetica", "bold");
+    doc.setFont("helvetica", "normal");
     doc.setTextColor(80, 80, 80);
     doc.text("RECEIVED BY:", margin + 10, recY + 16);
 

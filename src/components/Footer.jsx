@@ -30,7 +30,7 @@ const Footer = () => {
               <span className="font-semibold text-slate-800">AutoPaneAi</span>
             </div>
             <span className="hidden sm:inline">|</span>
-            <span>© {new Date().getFullYear()} AutoGlass Pro</span>
+            <span>© {new Date().getFullYear()} APAI</span>
           </div>
 
           {/* Right: Links */}
@@ -99,7 +99,7 @@ const Footer = () => {
         <Divider className="!border-slate-200 !mt-5 !mb-2" />
 
         <div className="py-1 text-center text-[11px] text-slate-400">
-          © {new Date().getFullYear()} AutoGlass Pro. All rights reserved.
+          © {new Date().getFullYear()} APAI. All rights reserved.
         </div>
       </div>
     </AntFooter>

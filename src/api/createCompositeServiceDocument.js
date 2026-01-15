@@ -49,8 +49,20 @@ export const createCompositeServiceDocument = async (data, file) => {
         });
 
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Failed to create composite service document: ${response.status} ${errorText}`);
+            let errorMessage = `Failed to create composite service document: ${response.status}`;
+            try {
+                const errorData = await response.json();
+                if (errorData && errorData.message) {
+                    errorMessage = errorData.message;
+                } else if (typeof errorData === 'string') {
+                    errorMessage = errorData;
+                }
+            } catch (e) {
+                // Fallback to text if JSON parse fails
+                const errorText = await response.text();
+                if (errorText) errorMessage += ` ${errorText}`;
+            }
+            throw new Error(errorMessage);
         }
 
         const result = await response.json();
@@ -58,7 +70,7 @@ export const createCompositeServiceDocument = async (data, file) => {
         // Save userId to localStorage if it doesn't already exist
         if (result.userId && !localStorage.getItem('userId')) {
             localStorage.setItem('userId', result.userId.toString());
-            }
+        }
 
         return result;
     } catch (error) {

@@ -33,8 +33,20 @@ export const updateCompositeServiceDocument = async (documentNumber, data, file)
         });
 
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Failed to update composite service document: ${response.status} ${errorText}`);
+            let errorMessage = `Failed to update composite service document: ${response.status}`;
+            try {
+                const errorData = await response.json();
+                if (errorData && errorData.message) {
+                    errorMessage = errorData.message;
+                } else if (typeof errorData === 'string') {
+                    errorMessage = errorData;
+                }
+            } catch (e) {
+                // Fallback to text if JSON parse fails
+                const errorText = await response.text();
+                if (errorText) errorMessage += ` ${errorText}`;
+            }
+            throw new Error(errorMessage);
         }
 
         return await response.json();

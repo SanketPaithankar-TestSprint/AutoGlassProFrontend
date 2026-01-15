@@ -7,7 +7,7 @@ const PublicContactFooter = () => {
             <div className="footer-content">
                 <div className="powered-by">
                     <span>Powered by</span>
-                    <strong>AutoGlass Pro</strong>
+                    <strong>APAI</strong>
                 </div>
                 <div>
                     <a href="/privacy">Privacy Policy</a>

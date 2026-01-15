@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout, Menu, Button, Avatar, Dropdown, Space } from 'antd';
 import {
     HomeOutlined,
@@ -19,6 +19,22 @@ const { Sider } = Layout;
 
 const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
     const location = useLocation();
+    const [userLogo, setUserLogo] = useState(localStorage.getItem('userLogo'));
+
+    // Listen for logo updates
+    useEffect(() => {
+        const handleLogoUpdate = () => {
+            setUserLogo(localStorage.getItem('userLogo'));
+        };
+
+        window.addEventListener('storage', handleLogoUpdate); // Cross-tab
+        window.addEventListener('userLogoUpdated', handleLogoUpdate); // Same-tab custom event
+
+        return () => {
+            window.removeEventListener('storage', handleLogoUpdate);
+            window.removeEventListener('userLogoUpdated', handleLogoUpdate);
+        };
+    }, []);
 
     const items = [
         {
@@ -87,7 +103,7 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
                 {/* Top: Logo */}
                 <div className={`p-4 flex items-center ${collapsed ? 'justify-center' : 'justify-start'} transition-all duration-200 border-b border-gray-100`}>
                     <Link to="/">
-                        <Logo className={`${collapsed ? 'w-8' : 'w-32'} h-auto transition-all duration-200`} />
+                            <Logo className={`${collapsed ? 'w-8' : 'w-32'} h-auto transition-all duration-200`} />
                     </Link>
                 </div>
 
@@ -107,7 +123,11 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
                     <Dropdown overlay={profileMenu} trigger={['click']} placement="topRight">
                         <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between'} p-2 rounded-lg hover:bg-violet-50 cursor-pointer transition-colors group`}>
                             <div className="flex items-center gap-3">
-                                <Avatar icon={<UserOutlined />} className="bg-violet-100 text-violet-600" />
+                                {userLogo ? (
+                                    <Avatar src={userLogo} className="bg-transparent border border-gray-200" />
+                                ) : (
+                                    <Avatar icon={<UserOutlined />} className="bg-violet-100 text-violet-600" />
+                                )}
                                 {!collapsed && (
                                     <div className="flex flex-col min-w-0">
                                         <span className="text-sm font-medium text-slate-700 truncate group-hover:text-violet-700">My Account</span>

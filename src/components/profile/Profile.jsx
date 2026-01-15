@@ -7,9 +7,13 @@ import { createCustomer } from "../../api/createCustomer";
 import { updateCustomer } from "../../api/updateCustomer";
 import { createEmployee } from "../../api/createEmployee";
 import { updateProfile } from "../../api/updateProfile";
+import { saveUserLogo } from "../../api/saveUserLogo";
 import { getValidToken } from "../../api/getValidToken";
-import { UserOutlined, TeamOutlined, IdcardOutlined, ShopOutlined, PhoneOutlined, EnvironmentOutlined, EditOutlined, PlusOutlined, DollarOutlined, ThunderboltOutlined, PercentageOutlined, KeyOutlined, ScanOutlined, FileTextOutlined } from "@ant-design/icons";
-import { Modal, Form, Input, Select, Button, notification } from "antd";
+import { UserOutlined, TeamOutlined, IdcardOutlined, ShopOutlined, PhoneOutlined, EnvironmentOutlined, EditOutlined, PlusOutlined, DollarOutlined, ThunderboltOutlined, PercentageOutlined, KeyOutlined, ScanOutlined, FileTextOutlined, UploadOutlined } from "@ant-design/icons";
+import { Modal, Form, Input, Select, Button, notification, Upload, Avatar } from "antd";
+import ImgCrop from 'antd-img-crop';
+import imageCompression from 'browser-image-compression';
+import { getUserLogo } from "../../api/getUserLogo";
 import SmtpConfiguration from "./SmtpConfiguration";
 import LaborRateConfiguration from "./LaborRateConfiguration";
 import TaxRateConfiguration from "./TaxRateConfiguration";
@@ -91,7 +95,65 @@ const Profile = () => {
         staleTime: 1000 * 60 * 30 // Cache for 30 minutes
     });
 
+    // Logo State
+    const [logoUrl, setLogoUrl] = useState(localStorage.getItem('userLogo'));
+    const [uploadingLogo, setUploadingLogo] = useState(false);
+
+    // Effect to check logo if not in storage (fallback)
+    useEffect(() => {
+        if (!logoUrl) {
+            getUserLogo().then(url => {
+                if (url) {
+                    setLogoUrl(url);
+                    localStorage.setItem('userLogo', url);
+                }
+            });
+        }
+    }, [logoUrl]);
+
+    // Update logo state when profile refreshes (optional, if profile carries logoUrl)
+    // But we are prioritizing localStorage as per requirement. 
+    // If backend returns a URL in profile, we might want to sync it.
+    // For now, relying on explicit getUserLogo and caching.
+
     const [saving, setSaving] = useState(false);
+
+    // Logo Upload Handler
+    const handleLogoUpload = async ({ file, onSuccess, onError }) => {
+        setUploadingLogo(true);
+        try {
+            // Options for compression
+            const options = {
+                maxSizeMB: 2,
+                maxWidthOrHeight: 1920,
+                useWebWorker: true,
+            };
+
+            // Compress image
+            const compressedFile = await imageCompression(file, options);
+
+            // Upload
+            await saveUserLogo(compressedFile);
+
+            // Wait a bit for the reader in saveUserLogo to finish
+            setTimeout(() => {
+                const cached = localStorage.getItem('userLogo');
+                if (cached) setLogoUrl(cached);
+            }, 500);
+
+            // Invalidate profile query to re-fetch profile with new logo
+            await queryClient.invalidateQueries({ queryKey: ['profile'] });
+
+            notification.success({ message: "Logo uploaded successfully" });
+            onSuccess("ok");
+        } catch (error) {
+            console.error(error);
+            notification.error({ message: "Failed to upload logo", description: error.message });
+            onError(error);
+        } finally {
+            setUploadingLogo(false);
+        }
+    };
 
     // Customer Handlers
     const handleAddCustomer = () => {
@@ -197,7 +259,14 @@ const Profile = () => {
         try {
             const values = await profileForm.validateFields();
             setSaving(true);
-            await updateProfile(values);
+
+            // Merge existing profile data with form values to preserve fields like tax booleans and EIN
+            const payload = {
+                ...profile,
+                ...values
+            };
+
+            await updateProfile(payload);
             await queryClient.invalidateQueries({ queryKey: ['profile'] });
             notification.success({ message: "Profile updated successfully" });
             setIsEditProfileModalVisible(false);
@@ -257,6 +326,42 @@ const Profile = () => {
                             Edit Profile
                         </Button>
                     </div>
+
+                    {/* Logo Section */}
+                    <div className="flex items-center gap-6 mb-8 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                        <div className="relative">
+                            <Avatar
+                                size={80}
+                                src={logoUrl}
+                                icon={<ShopOutlined />}
+                                className="bg-violet-100 text-violet-600 border-2 border-white shadow-md"
+                            />
+                        </div>
+                        <div className="flex-1">
+                            <h3 className="text-sm font-bold text-gray-900 mb-1">Shop Logo</h3>
+                            <p className="text-xs text-gray-500 mb-3">
+                                Upload a logo for your shop.
+                                Max size: 2MB.
+                            </p>
+                            <ImgCrop rotationSlider showReset aspect={1} modalWidth={600}>
+                                <Upload
+                                    customRequest={handleLogoUpload}
+                                    showUploadList={false}
+                                    accept="image/png, image/jpeg, image/jpg"
+                                >
+                                    <Button
+                                        icon={uploadingLogo ? <ThunderboltOutlined spin /> : <UploadOutlined />}
+                                        disabled={uploadingLogo}
+                                        size="small"
+                                        className="bg-white"
+                                    >
+                                        {uploadingLogo ? "Uploading..." : "Change Logo"}
+                                    </Button>
+                                </Upload>
+                            </ImgCrop>
+                        </div>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-1">
                             <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Business Name</span>
@@ -341,15 +446,21 @@ const Profile = () => {
                             <Form.Item name="businessNumber" label="Business License Number">
                                 <Input />
                             </Form.Item>
-                            <Form.Item name="email" label="Email" rules={[{ type: 'email', required: true }]}>
+                            <Form.Item name="ein" label="EIN">
                                 <Input />
                             </Form.Item>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
+                            <Form.Item name="email" label="Email" rules={[{ type: 'email', required: true }]}>
+                                <Input />
+                            </Form.Item>
                             <Form.Item name="phone" label="Phone" rules={[{ required: true }]}>
                                 <Input />
                             </Form.Item>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
                             <Form.Item name="alternatePhone" label="Alternate Phone">
                                 <Input />
                             </Form.Item>

@@ -154,7 +154,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             label="Business Name"
                             rules={[{ required: true, message: 'Please input business name!' }]}
                         >
-                            <Input placeholder="AutoGlass Pro" />
+                            <Input placeholder="APAI" />
                         </Form.Item>
                     </Col>
                     <Col xs={24} sm={12}>

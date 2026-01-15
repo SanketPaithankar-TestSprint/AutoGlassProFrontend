@@ -115,10 +115,15 @@ const OpenRoot = () => {
             message.success(isHardDelete ? 'Document deleted permanently.' : 'Document cancelled.');
             setDeleteTarget(null);
             // Refresh list
-            const fetchDocuments = async () => { /* re-fetch logic duplication? better to toggle a 'refresh' flag */ };
-            // Dirty fix: modify list locally or trigger re-fetch
-            setDocuments(prev => prev.filter(d => d.documentNumber !== doc.documentNumber));
-            setFilteredDocuments(prev => prev.filter(d => d.documentNumber !== doc.documentNumber));
+            // Refresh list
+            if (isHardDelete) {
+                setDocuments(prev => prev.filter(d => d.documentNumber !== doc.documentNumber));
+                setFilteredDocuments(prev => prev.filter(d => d.documentNumber !== doc.documentNumber));
+            } else {
+                // Soft delete - update status to 'cancelled' locally
+                setDocuments(prev => prev.map(d => d.documentNumber === doc.documentNumber ? { ...d, status: 'cancelled' } : d));
+                setFilteredDocuments(prev => prev.map(d => d.documentNumber === doc.documentNumber ? { ...d, status: 'cancelled' } : d));
+            }
         } catch (error) {
             hide();
             message.error("Failed to delete document.");

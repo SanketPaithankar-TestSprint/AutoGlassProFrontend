@@ -889,7 +889,7 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
 
 
     // Generate PDF using utility function
-    const generatePdfDoc = () => {
+    const generatePdfDoc = (overrideDocumentNumber = null) => {
         return generateServiceDocumentPDF({
             items,
             customerData,
@@ -905,7 +905,7 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
             specialInstructions: specialInstructions, // Global Special Instructions
             insuranceData,
             includeInsurance,
-            documentNumber: docMetadata?.documentNumber || ""
+            documentNumber: overrideDocumentNumber || docMetadata?.documentNumber || ""
         });
     };
 
@@ -998,11 +998,11 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
         return true;
     };
 
-    // Internal: Save Document Function (Returns success boolean)
+    // Internal: Save Document Function (Returns success boolean and doc number)
     const performSave = async () => {
         console.log("[QuotePanel] performSave called with attachments:", attachments);
 
-        if (!validateDocumentData()) return false;
+        if (!validateDocumentData()) return { success: false };
 
         setSaveLoading(true);
         try {
@@ -1148,12 +1148,13 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                 // Do not include file attachments in PUT request updates
                 await updateCompositeServiceDocument(docMetadata.documentNumber, compositePayload);
                 // createdDocNumber = updateResponse.serviceDocument?.documentNumber || docMetadata.documentNumber;
+                createdDocNumber = docMetadata.documentNumber;
                 message.success(`Service Document Updated Successfully!`);
             } else {
                 // CREATE NEW DOCUMENT
                 console.log("Creating new document with", files.length, "files");
                 const response = await createCompositeServiceDocument(compositePayload, files);
-                createdDocNumber = response.serviceDocument?.documentNumber;
+                createdDocNumber = response.documentNumber || response.serviceDocument?.documentNumber;
 
                 if (createdDocNumber) {
                     message.success(`Service Document Created Successfully! Document #: ${createdDocNumber}`);
@@ -1163,12 +1164,16 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
             }
 
             // Immediately return success
-            return true;
+            return { success: true, documentNumber: createdDocNumber };
 
         } catch (err) {
             console.error(err);
-            message.error("Save failed: " + err.message);
-            return false;
+            // message.error("Save failed: " + err.message);
+            modal.error({
+                title: 'Save Failed',
+                content: err.message,
+            });
+            return { success: false };
         } finally {
             setSaveLoading(false);
         }
@@ -1176,7 +1181,7 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
 
     // Handler 1: Save Button (Save & Clear)
     const handleSave = async () => {
-        const success = await performSave();
+        const { success } = await performSave();
         if (success) {
             if (onClear) {
                 onClear(true); // Clear without confirmation
@@ -1188,12 +1193,12 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
     // Updated: Save -> Preview -> Clear
     const handlePreview = async () => {
         // Enforce Save First
-        const success = await performSave();
+        const { success, documentNumber } = await performSave();
         if (!success) return;
 
         setPreviewLoading(true);
         try {
-            const doc = generatePdfDoc();
+            const doc = generatePdfDoc(documentNumber);
             const blob = doc.output('blob');
 
             // Generate proper filename
@@ -1227,13 +1232,13 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
     // Updated: Remove disabled check, Save -> Modal -> Send -> Clear
     const handleEmail = async () => {
         // Enforce save first
-        const success = await performSave();
+        const { success, documentNumber } = await performSave();
         if (!success) return;
 
         if (!validateDocumentData()) return;
 
         try {
-            const doc = generatePdfDoc();
+            const doc = generatePdfDoc(documentNumber);
             const blob = doc.output('blob');
             const url = URL.createObjectURL(blob);
             setPdfBlob(blob);
@@ -1639,16 +1644,17 @@ Auto Glass Pro Team`;
                     <Dropdown
                         menu={{
                             items: [
-                                { key: 'Part', label: <span className="text-xs">Add Part</span>, onClick: () => handleAddRow("Part") },
-                                { key: 'Labor', label: <span className="text-xs">Add Labor</span>, onClick: () => handleAddRow("Labor") },
-                                { key: 'Service', label: <span className="text-xs">Add Chip Repair</span>, onClick: () => handleAddRow("Service") },
-                                { type: 'divider' },
-                                { key: 'ADAS', label: <span className="text-xs">Add ADAS Recalibration</span>, onClick: () => handleAddRow("ADAS") },
+                                { key: 'Part', label: <span className="text-xs">Part</span>, onClick: () => handleAddRow("Part") },
+                                { key: 'Labor', label: <span className="text-xs">Labor</span>, onClick: () => handleAddRow("Labor") },
+                                { key: 'Service', label: <span className="text-xs">Chip Repair</span>, onClick: () => handleAddRow("Service") },
+                                { key: 'ADAS', label: <span className="text-xs">ADAS Recalibration</span>, onClick: () => handleAddRow("ADAS") },
                             ],
+                            // You can add styles to the dropdown menu here
+                            className: "min-w-[160px] [&_.ant-dropdown-menu-item]:!py-1.5 [&_.ant-dropdown-menu-item]:font-semibold"
                         }}
                     >
                         <button className="flex items-center gap-1 px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded text-xs font-medium transition-colors">
-                            Add <DownOutlined className="text-[9px]" />
+                            Add <DownOutlined className="text-[12px]" />
                         </button>
                     </Dropdown>
 

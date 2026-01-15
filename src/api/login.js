@@ -1,6 +1,6 @@
-// src/api/login.js
 import urls from '../config';
 import { getUserSlugByUserId } from './userSlugInfo';
+import { getUserLogo } from './getUserLogo';
 
 /**
  * Login API call
@@ -75,6 +75,7 @@ export function handleLoginSuccess(loginResponse, rememberMe = false) {
         if (userData.userId) {
             const token = loginResponse.token || (loginResponse.data && loginResponse.data.token);
             if (token) {
+                // Fetch and store user slug
                 getUserSlugByUserId(token, userData.userId)
                     .then(slugInfo => {
                         if (slugInfo && slugInfo.slug) {
@@ -82,6 +83,19 @@ export function handleLoginSuccess(loginResponse, rememberMe = false) {
                         }
                     })
                     .catch(err => console.error("Failed to fetch user slug on login", err));
+
+                // Fetch and store user logo
+                // Check if we already have it? The requirement says "check if independent", 
+                // but usually login implies a fresh start. We will fetch and update.
+                getUserLogo()
+                    .then(logoData => {
+                        if (logoData) {
+                            localStorage.setItem('userLogo', logoData);
+                        } else {
+                            localStorage.removeItem('userLogo');
+                        }
+                    })
+                    .catch(err => console.error("Failed to fetch user logo on login", err));
             }
         }
     }
