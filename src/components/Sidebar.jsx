@@ -61,6 +61,11 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
             icon: <BarChartOutlined />,
             label: <Link to="/reports">Reports</Link>,
         },
+        {
+            key: '/ai-contact-form',
+            icon: <FileTextOutlined />, // Using FileTextOutlined as placeholder if ContactsOutlined not imported
+            label: <Link to="/ai-contact-form">AI Contact Form</Link>,
+        },
         // Add other authenticated links here if needed
     ];
 
@@ -103,7 +108,7 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
                 {/* Top: Logo */}
                 <div className={`p-4 flex items-center ${collapsed ? 'justify-center' : 'justify-start'} transition-all duration-200 border-b border-gray-100`}>
                     <Link to="/">
-                            <Logo className={`${collapsed ? 'w-8' : 'w-32'} h-auto transition-all duration-200`} />
+                        <Logo className={`${collapsed ? 'w-8' : 'w-32'} h-auto transition-all duration-200`} />
                     </Link>
                 </div>
 

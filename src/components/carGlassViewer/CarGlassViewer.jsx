@@ -19,6 +19,7 @@ export default function CarGlassViewer({
   onPartSelect,
   onPartDeselect,
   externalRemovedPartKey, // New prop: when set, remove this part from internal state
+  preSelectedGlassCodes = [], // New prop: array of glass codes to auto-select
 }) {
   // 1) Glass catalog (left column)
   const [loading, setLoading] = useState(true);
@@ -203,7 +204,32 @@ export default function CarGlassViewer({
     };
 
     fetchGlassTypes();
+    fetchGlassTypes();
   }, [modelId, vehId]);
+
+  // ---------- 1.5) Handle Pre-selection ----------
+  useEffect(() => {
+    if (!preSelectedGlassCodes || preSelectedGlassCodes.length === 0 || glassData.length === 0) return;
+
+    const newSelections = [];
+    preSelectedGlassCodes.forEach(code => {
+      // Find matching glass object
+      const glass = glassData.find(g => g.code === code);
+      if (glass && !selectedGlassCodes.includes(code)) {
+        newSelections.push(code);
+
+        // Trigger fetch if not loaded
+        if (!loadedPartsMap[code] || loadedPartsMap[code].error) {
+          fetchGlassParts(glass);
+        }
+      }
+    });
+
+    if (newSelections.length > 0) {
+      setSelectedGlassCodes(prev => [...prev, ...newSelections]);
+    }
+
+  }, [glassData, preSelectedGlassCodes]);
 
   // ---------- 2) when a glass is selected, load its parts ----------
   const toggleGlassSelection = async (glass) => {

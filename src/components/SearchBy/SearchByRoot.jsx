@@ -40,6 +40,7 @@ const SearchByRoot = () => {
   // vehicleInfo, vinData, selectedParts removed from local state
   const [activeTab, setActiveTab] = useState('quote');
   // Separated state for items to avoid overwrite conflicts
+  const [preSelectedGlassCodes, setPreSelectedGlassCodes] = useState([]);
 
 
   // Unused state removed: editItems, derivedPartItems, manualKitItems, vendorPricingData
@@ -87,7 +88,7 @@ const SearchByRoot = () => {
     document.title = "APAI | Search";
   }, []);
 
-  // Handle Incoming Composite Data (Edit Mode)
+  // Handle Incoming Composite Data (Edit Mode) OR Prefill Data (New Quote)
   useEffect(() => {
     if (location.state?.compositeData) {
       const { serviceDocument, customer, vehicle, insurance, attachments: atts } = location.state.compositeData;
@@ -229,6 +230,73 @@ const SearchByRoot = () => {
             console.error("Failed to fetch attachments:", err);
             setSavedAttachments([]);
           });
+      }
+    } else if (location.state?.prefillData) {
+      // Handle Prefill Data (from AI Contact Form or similar)
+      const { customer, vehicle, items, notes } = location.state.prefillData;
+      console.log("[SearchByRoot] Handling Prefill Data:", location.state.prefillData);
+
+      // 0. Ensure New Quote Mode
+      setIsSaved(false);
+      setDocMetadata(null);
+
+      // 1. Map Customer
+      if (customer) {
+        setCustomerData(prev => ({
+          ...prev,
+          firstName: customer.firstName || "",
+          lastName: customer.lastName || "",
+          email: customer.email || "",
+          phone: customer.phone || "",
+          notes: notes || ""
+        }));
+
+        // Save userId if present (for logic that depends on it)
+        if (customer.userId) {
+          localStorage.setItem('userId', customer.userId.toString());
+        }
+      }
+
+      // 2. Map Vehicle
+      if (vehicle) {
+        const newVehicleInfo = {
+          year: vehicle.vehicleYear?.toString() || "",
+          make: vehicle.vehicleMake || "",
+          model: vehicle.vehicleModel || "",
+          style: vehicle.vehicleStyle || "",
+          bodyType: vehicle.bodyType || "",
+          vin: vehicle.vin || ""
+        };
+        setVehicleInfo(newVehicleInfo);
+
+        // Sync with customer data vehicle fields
+        setCustomerData(prev => ({
+          ...prev,
+          vehicleYear: newVehicleInfo.year,
+          vehicleMake: newVehicleInfo.make,
+          vehicleModel: newVehicleInfo.model,
+          vehicleStyle: newVehicleInfo.style,
+          bodyType: newVehicleInfo.bodyType
+        }));
+
+        // Force model/vehicle update in YMM component if we have IDs (might need more logic in YMM)
+        if (vehicle.vehicleId) {
+          setVehId(vehicle.vehicleId);
+        }
+      }
+
+      // 3. Extract Glass Codes for Pre-selection (don't add items directly)
+      if (items && Array.isArray(items)) {
+        const codes = items
+          .map(item => item.nagsId || item.glassType) // Use nagsId (glass_code) or fallback to type
+          .filter(Boolean);
+
+        setPreSelectedGlassCodes(codes);
+      }
+
+      // 4. Notes
+      if (notes) {
+        setInternalNote(notes);
       }
     }
   }, [location.state]);
@@ -744,6 +812,7 @@ const SearchByRoot = () => {
                           onPartSelect={handleAddPart}
                           onPartDeselect={handleRemovePart}
                           externalRemovedPartKey={lastRemovedPartKey}
+                          preSelectedGlassCodes={preSelectedGlassCodes}
                         />
                       </ErrorBoundary>
                     </div>

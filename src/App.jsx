@@ -13,6 +13,7 @@ import Sidebar from './components/Sidebar';
 import AuthPage from './components/AuthPage';
 import OpenRoot from './components/Open/OpenRoot';
 import ReportsRoot from './components/Reports/ReportsRoot';
+import AiContactForm from './components/AiContactForm/AiContactForm';
 import { getValidToken } from './api/getValidToken';
 import { useProfileDataPrefetch } from './hooks/useProfileDataPrefetch';
 
@@ -114,6 +115,8 @@ function AppContent() {
                     <Route path="/open" element={<OpenRoot />} />
                     <Route path="/reports" element={<ReportsRoot />} />
                     <Route path="/auth" element={<AuthPage />} />
+
+                    <Route path="/ai-contact-form" element={<AiContactForm />} />
                   </Routes>
                 </Suspense>
               </div>
