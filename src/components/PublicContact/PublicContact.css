@@ -1025,3 +1025,128 @@
         padding: 5px 8px;
     }
 }
+
+/* =========================================
+   Windshield Features Selector - Multi-Select
+   ========================================= */
+
+.windshield-features-container {
+    padding: 16px 0;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.windshield-features-label {
+    font-size: 14px;
+    color: #475569;
+    margin-bottom: 16px;
+    font-weight: 600;
+}
+
+/* Feature Grid */
+.windshield-features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.windshield-feature-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: white;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid #e2e8f0;
+    box-shadow: var(--shadow-sm);
+}
+
+.windshield-feature-option:hover {
+    background: var(--theme-color-lighter);
+    border-color: var(--theme-color-light);
+    transform: translateY(-1px);
+}
+
+.windshield-feature-option.selected {
+    background: var(--theme-color-lighter);
+    border-color: var(--theme-color);
+    box-shadow: 0 0 0 3px var(--theme-color-light);
+}
+
+.feature-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #334155;
+}
+
+.windshield-feature-option.selected .feature-label {
+    color: var(--theme-color);
+    font-weight: 600;
+}
+
+/* Windshield Features Footer */
+.windshield-features-footer {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 16px;
+}
+
+.windshield-features-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.skip-btn {
+    flex: 1;
+    padding: 14px 24px;
+    border: 2px solid;
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    font-weight: 600;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.skip-btn:hover {
+    background: var(--theme-color-lighter);
+    transform: translateY(-2px);
+}
+
+.windshield-features-actions .submit-selection-btn {
+    flex: 1;
+}
+
+/* Mobile styles for Windshield Features */
+@media (max-width: 600px) {
+    .windshield-features-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .windshield-feature-option {
+        padding: 12px 14px;
+        gap: 10px;
+    }
+
+    .feature-label {
+        font-size: 13px;
+    }
+
+    .windshield-features-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .skip-btn,
+    .windshield-features-actions .submit-selection-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 400px) {
+    .windshield-features-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -11,6 +11,7 @@ import MessageBubble from './MessageBubble';
 import OptionTiles from './OptionTiles';
 import GroupedOptionTiles from './GroupedOptionTiles';
 import GlassSelector from './GlassSelector';
+import WindshieldFeaturesSelector from './WindshieldFeaturesSelector';
 import ChatInput from './ChatInput';
 import CompletionScreen from './CompletionScreen';
 import NotFoundPage from './NotFoundPage';
@@ -45,7 +46,7 @@ const PublicContactRoot = () => {
     const chatContainerRef = useRef(null);
 
     // Theme color with fallback
-    const themeColor = businessInfo?.theme_color || '#7E5CFE';
+    const themeColor = businessInfo?.themeColor || '#7E5CFE';
 
     // Apply theme color to CSS custom property
     useEffect(() => {
@@ -200,6 +201,14 @@ const PublicContactRoot = () => {
                             data: groupedData,
                             label: opts.label || 'Select glass type',
                         });
+                    } else if (opts.type === 'windshield_features' && Array.isArray(opts.options)) {
+                        // Windshield features: multi-select list with {id, name}
+                        setAvailableOptions({
+                            type: 'windshield_features',
+                            data: opts.options,
+                            label: opts.label || 'Select windshield features',
+                            multiple: opts.multiple || true,
+                        });
                     } else if (Array.isArray(opts.options)) {
                         // Generic flat options with {index, desc, id} or similar
                         const mappedOptions = opts.options.map(opt => ({
@@ -259,6 +268,12 @@ const PublicContactRoot = () => {
     // Handle glass selection submit (for multi-select glass types)
     const handleGlassSelection = (selection) => {
         // selection = { type: 'multiple', glasses: [...], displayText: '...' }
+        handleSendMessage(selection.displayText);
+    };
+
+    // Handle windshield features selection submit (for multi-select features)
+    const handleWindshieldFeaturesSelection = (selection) => {
+        // selection = { type: 'windshield_features', features: [...], displayText: '...' }
         handleSendMessage(selection.displayText);
     };
 
@@ -369,6 +384,13 @@ const PublicContactRoot = () => {
                             <GlassSelector
                                 groupedOptions={availableOptions.data}
                                 onSubmit={handleGlassSelection}
+                                themeColor={themeColor}
+                                label={availableOptions.label}
+                            />
+                        ) : availableOptions.type === 'windshield_features' ? (
+                            <WindshieldFeaturesSelector
+                                options={availableOptions.data}
+                                onSubmit={handleWindshieldFeaturesSelection}
                                 themeColor={themeColor}
                                 label={availableOptions.label}
                             />
