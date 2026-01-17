@@ -46,6 +46,13 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
             licensePlateNumber: prefill.licensePlateNumber || "",
             vin: prefill.vin || "",
             vehicleNotes: prefill.vehicleNotes || "",
+            // Organization Fields
+            organizationId: prefill.organizationId || null,
+            customerType: prefill.customerType || "INDIVIDUAL",
+            // If opening existing document with organization, we might want to capture these if available
+            organizationName: prefill.organizationName || "",
+            taxId: prefill.taxId || "", // If available in prefill or needs to be fetched
+            isTaxExempt: prefill.isTaxExempt || false,
         };
 
         if (saved) {

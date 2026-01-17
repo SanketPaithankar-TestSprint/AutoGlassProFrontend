@@ -852,6 +852,11 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
     }, []);
 
     const totalTax = useMemo(() => {
+        // Tax Exemption Check
+        if (customerData?.isTaxExempt) {
+            return 0;
+        }
+
         // Default to standard behavior if settings not loaded/found
         const settings = taxSettings || {
             taxParts: true,
@@ -870,7 +875,7 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
             })
             .reduce((sum, it) => sum + (Number(it.amount) || 0), 0);
         return (taxableSubtotal * (Number(globalTaxRate) || 0)) / 100;
-    }, [items, globalTaxRate, taxSettings]);
+    }, [items, globalTaxRate, taxSettings, customerData?.isTaxExempt]);
     const calculatedTotal = useMemo(() => Math.max(0, subtotal + totalTax), [subtotal, totalTax]);
 
     const [manualTotal, setManualTotal] = useState(null);
@@ -1072,20 +1077,20 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
             });
 
             const customerWithVehicle = {
-                organizationId: 0,
-                customerType: "individual",
+                organizationId: customerData.organizationId || 0,
+                customerType: customerData.customerType || "individual",
                 firstName: customerData.firstName || "",
                 lastName: customerData.lastName || "",
                 email: customerData.email || "",
                 phone: customerData.phone || "",
                 alternatePhone: customerData.alternatePhone || "",
                 addressLine1: customerData.addressLine1 || "",
-                addressLine2: "",
+                addressLine2: customerData.addressLine2 || "",
                 city: customerData.city || "",
                 state: customerData.state || "",
                 postalCode: customerData.postalCode || "",
                 country: customerData.country || "USA",
-                preferredContactMethod: "email",
+                preferredContactMethod: customerData.preferredContactMethod || "email",
                 notes: customerData.notes || "",
                 vehicleYear: Number(customerData.vehicleYear) || "",
                 vehicleMake: customerData.vehicleMake || "",
@@ -1114,7 +1119,7 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                 notes: printableNote, // Use prop (Customer Notes)
                 internalNotes: internalNote, // Use prop (Internal Notes)
                 termsConditions: "Warranty valid for 12 months on workmanship.",
-                taxRate: Number(globalTaxRate) || 0,
+                taxRate: customerData.isTaxExempt ? 0 : (Number(globalTaxRate) || 0),
                 amountPaid: Number(payment) || 0,
 
                 laborAmount: totalLaborAmount,

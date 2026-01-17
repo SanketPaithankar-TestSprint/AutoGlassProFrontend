@@ -69,6 +69,12 @@ const SearchByRoot = () => {
     preferredContactMethod: "phone", notes: "",
     vehicleYear: "", vehicleMake: "", vehicleModel: "", vehicleStyle: "", bodyType: "",
     licensePlateNumber: "", vin: "", vehicleNotes: "",
+    // Organization Fields
+    customerType: "INDIVIDUAL",
+    organizationId: null,
+    organizationName: "",
+    taxId: "",
+    isTaxExempt: false,
   };
 
   // Lifted Customer State
@@ -110,6 +116,13 @@ const SearchByRoot = () => {
         firstName: customer?.firstName || "",
         lastName: customer?.lastName || "",
         email: customer?.email || "",
+        // Organization Mapping
+        customerType: customer?.customerType || "INDIVIDUAL",
+        organizationId: customer?.organizationId || null,
+        organizationName: customer?.organizationName || "",
+        taxId: customer?.taxId || "", // If preserved in customer object
+        isTaxExempt: customer?.isTaxExempt || false, // If preserved
+
         phone: customer?.phone || "",
         alternatePhone: customer?.alternatePhone || "",
         addressLine1: customer?.addressLine1 || "",

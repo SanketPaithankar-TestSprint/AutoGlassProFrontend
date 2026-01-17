@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { notification, Select, Spin, Modal, Button } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { notification, Select, Spin, Modal, Button, Switch } from "antd";
+import { PlusOutlined, DownOutlined, UpOutlined } from "@ant-design/icons";
 import urls from "../../config";
 import { getValidToken } from "../../api/getValidToken";
 import { getCustomers } from "../../api/getCustomers";
 import { getCustomerWithVehicles } from "../../api/getCustomerWithVehicles";
-import { getMyOrganizations, getOrganizationWithDetails, createOrganization } from "../../api/organizationApi";
+import { getOrganizations, getOrganizationById, createOrganization, updateOrganizationTaxExempt } from "../../api/organizationApi";
 import { COUNTRIES, US_STATES } from "../../const/locations";
 
 const { Option } = Select;
@@ -54,6 +54,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
     // Organizations
     const [organizations, setOrganizations] = useState([]);
     const [loadingOrganizations, setLoadingOrganizations] = useState(false);
+    const [isOrgCollapsed, setIsOrgCollapsed] = useState(false); // New state for collapsible panel
     const [selectedOrganizationId, setSelectedOrganizationId] = useState(null);
 
     // Customers  
@@ -93,7 +94,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
     const fetchOrganizations = async () => {
         try {
             setLoadingOrganizations(true);
-            const orgList = await getMyOrganizations();
+            const orgList = await getOrganizations();
             setOrganizations(Array.isArray(orgList) ? orgList : []);
         } catch (error) {
             console.error("Error fetching organizations:", error);
@@ -115,9 +116,61 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
         }
     };
 
+    // Initialize/Sync Organization Data from Props (e.g. when opening existing document)
+    useEffect(() => {
+        const initOrgData = async () => {
+            if (formData.organizationId && formData.organizationId !== selectedOrganizationId) {
+                try {
+                    setLoadingOrganizations(true);
+                    // Ensure organizations are loaded first to show in dropdown
+                    // (Though getOrganizations is called on mount, we might need to wait or rely on value)
+
+                    setSelectedOrganizationId(formData.organizationId);
+                    setIsCreatingNewOrg(false);
+
+                    // Fetch full details to populate the Org Form
+                    const orgDetails = await getOrganizationById(formData.organizationId);
+
+                    if (orgDetails) {
+                        setOrgFormData({
+                            companyName: orgDetails.companyName || "",
+                            taxId: orgDetails.taxId || "",
+                            email: orgDetails.email || "",
+                            phone: orgDetails.phone || "",
+                            alternatePhone: orgDetails.alternatePhone || "",
+                            addressLine1: orgDetails.addressLine1 || "",
+                            addressLine2: orgDetails.addressLine2 || "",
+                            city: orgDetails.city || "",
+                            state: orgDetails.state || "",
+                            postalCode: orgDetails.postalCode || "",
+                            country: orgDetails.country || "USA",
+                            notes: orgDetails.notes || ""
+                        });
+
+                        // Important: Do NOT overwrite customer contact info here (firstName, lastName) 
+                        // as it comes from the document prefill.
+
+                        // Update Tax Exempt status from Org details
+                        setFormData(prev => ({
+                            ...prev,
+                            // If the organization is tax exempt, respect that setting
+                            isTaxExempt: orgDetails.taxExempt === true
+                        }));
+                    }
+                } catch (err) {
+                    console.error("Failed to load initial organization details", err);
+                } finally {
+                    setLoadingOrganizations(false);
+                }
+            }
+        };
+
+        initOrgData();
+    }, [formData.organizationId]); // Depend on the ID properly
+
     const handleOrganizationSelect = async (val) => {
-        // If selection is cleared (val is null), default back to Create Mode
-        if (!val) {
+        // If selection is cleared (val is null/undefined), default back to Create Mode
+        if (val === null || val === undefined) {
             setIsCreatingNewOrg(true);
             setSelectedOrganizationId(null);
             setSelectedCustomerId(null);
@@ -134,12 +187,15 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
         setVehicles([]);
 
         try {
-            const orgDetails = await getOrganizationWithDetails(val);
+            const orgDetails = await getOrganizationById(val);
 
             // Populate Main Form Data
             setFormData(prev => ({
                 ...prev,
                 organizationId: val,
+                firstName: "",
+                lastName: "",
+                // Keep organization details as defaults but clear personal info
                 organizationName: orgDetails.companyName || "",
                 addressLine1: orgDetails.addressLine1 || "",
                 addressLine2: orgDetails.addressLine2 || "",
@@ -148,7 +204,9 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                 postalCode: orgDetails.postalCode || "",
                 country: orgDetails.country || "USA",
                 email: orgDetails.email || "",
-                phone: orgDetails.phone || ""
+                phone: orgDetails.phone || "",
+                phone: orgDetails.phone || "",
+                isTaxExempt: orgDetails.taxExempt === true // Set tax exemption from org details
             }));
 
             // Populate Org Form Data (for display in Org Panel)
@@ -167,6 +225,9 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                 notes: orgDetails.notes || ""
             });
 
+            // Note: getOrganizationById might not return vehicles directly depending on API.
+            // If vehicles are needed, we might need a separate call or insure API returns them.
+            // The user requested specifically to show details to "add a customer", implying the focus is on adding a contact.
             setVehicles(orgDetails.vehicles || []);
         } catch (error) {
             console.error("Error loading organization:", error);
@@ -178,7 +239,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
         setSelectedCustomerId(customerId);
         setSelectedVehicleId(null);
 
-        if (!customerId) {
+        if (customerId === null || customerId === undefined) {
             // If cleared, and we are in Org mode, maybe keep Org details? 
             // Better to just clear specific contact fields but keep Type/Org.
             if (!selectedOrganizationId) {
@@ -239,6 +300,23 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                     // Fetch org details to get fleet
                     const orgDetails = await getOrganizationWithDetails(customer.organizationId);
                     setVehicles(orgDetails.vehicles || []);
+
+                    // Populate Org Form Data
+                    setOrgFormData({
+                        companyName: orgDetails.companyName || "",
+                        taxId: orgDetails.taxId || "",
+                        email: orgDetails.email || "",
+                        phone: orgDetails.phone || "",
+                        alternatePhone: orgDetails.alternatePhone || "",
+                        addressLine1: orgDetails.addressLine1 || "",
+                        addressLine2: orgDetails.addressLine2 || "",
+                        city: orgDetails.city || "",
+                        state: orgDetails.state || "",
+                        postalCode: orgDetails.postalCode || "",
+                        country: orgDetails.country || "USA",
+                        notes: orgDetails.notes || ""
+                    });
+                    setIsCreatingNewOrg(false);
                 }
                 // If we already have vehicles from org selection, keep them.
             } else {
@@ -506,12 +584,15 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                 </div>
 
                 {/* RIGHT COLUMN (MAIN FORM) */}
-                <div className="flex flex-col h-full">
+                <div className="flex flex-col h-full overflow-y-auto pr-1">
 
                     {/* CASE 1: ORGANIZATION FORM (Create NEW or View EXISTING) */}
-                    {(isCreatingNewOrg || (formData.customerType === "ORGANIZATION_CONTACT" && selectedOrganizationId)) && (
-                        <div className="bg-white rounded-md border border-gray-200 shadow-sm flex flex-col h-full overflow-hidden animate-slide-up">
-                            <div className="bg-violet-50 border-b border-violet-100 px-4 py-2 flex items-center justify-between">
+                    {(isCreatingNewOrg || (formData.customerType === "ORGANIZATION_CONTACT" && selectedOrganizationId !== null)) && (
+                        <div className={`bg-white rounded-md border border-gray-200 shadow-sm flex flex-col ${isCreatingNewOrg ? "h-full" : "mb-4 shrink-0"} overflow-hidden animate-slide-up`}>
+                            <div
+                                className="bg-violet-50 border-b border-violet-100 px-4 py-2 flex items-center justify-between cursor-pointer transition-colors hover:bg-violet-100"
+                                onClick={() => !isCreatingNewOrg && setIsOrgCollapsed(!isOrgCollapsed)}
+                            >
                                 <div className="flex items-center gap-2">
                                     <h3 className="text-sm font-bold text-violet-900">
                                         {isCreatingNewOrg ? "Create New Organization" : "Organization Details"}
@@ -520,77 +601,127 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                         {isCreatingNewOrg ? "- Enter details below" : "- View or edit organization details"}
                                     </span>
                                 </div>
+                                {!isCreatingNewOrg && (
+                                    <button type="button" className="text-violet-500 hover:text-violet-700 w-6 h-6 flex items-center justify-center rounded-full hover:bg-violet-200/50 transition-all">
+                                        {isOrgCollapsed ? <DownOutlined style={{ fontSize: '12px' }} /> : <UpOutlined style={{ fontSize: '12px' }} />}
+                                    </button>
+                                )}
                             </div>
 
-                            <div className="p-4 overflow-y-auto flex-1">
-                                <div className="grid grid-cols-4 gap-3 mb-3">
-                                    <FormInput label="Company Name *" name="companyName" value={orgFormData.companyName} onChange={handleOrgChange} required />
-                                    <FormInput label="Tax ID / EIN" name="taxId" value={orgFormData.taxId} onChange={handleOrgChange} />
-                                    <FormInput label="Email" name="email" value={orgFormData.email} onChange={handleOrgChange} type="email" />
-                                    <FormInput label="Phone *" name="phone" value={orgFormData.phone} onChange={handleOrgChange} required />
-                                </div>
-                                <div className="grid grid-cols-4 gap-3 mb-3">
-                                    <FormInput label="Alternate Phone" name="alternatePhone" value={orgFormData.alternatePhone} onChange={handleOrgChange} />
-                                    <FormInput label="Address Line 1 *" name="addressLine1" value={orgFormData.addressLine1} onChange={handleOrgChange} required className="col-span-2" />
-                                    <FormInput label="Address Line 2" name="addressLine2" value={orgFormData.addressLine2} onChange={handleOrgChange} />
-                                </div>
-
-                                <div className="border-t pt-3 mt-2">
-                                    <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Location Details</p>
+                            {/* Collapsible Content */}
+                            {(!isOrgCollapsed || isCreatingNewOrg) && (
+                                <div className="p-4 overflow-y-auto flex-1 animate-fade-in">
                                     <div className="grid grid-cols-4 gap-3 mb-3">
-                                        <FormInput label="City *" name="city" value={orgFormData.city} onChange={handleOrgChange} required />
-                                        <FormSelect label="State *" name="state" value={orgFormData.state} onChange={handleOrgChange} options={US_STATES} required />
-                                        <FormInput label="Postal Code *" name="postalCode" value={orgFormData.postalCode} onChange={handleOrgChange} required />
-                                        <FormSelect label="Country" name="country" value={orgFormData.country} onChange={handleOrgChange} options={COUNTRIES} />
+                                        <FormInput label="Company Name *" name="companyName" value={orgFormData.companyName} onChange={handleOrgChange} required />
+                                        <FormInput label="Tax ID / EIN" name="taxId" value={orgFormData.taxId} onChange={handleOrgChange} />
+                                        <div className="flex flex-col gap-1">
+                                            <label className="text-xs font-medium text-gray-500">Tax Exempt</label>
+                                            <div className="flex items-center gap-2 h-[34px]">
+                                                <Switch
+                                                    size="small"
+                                                    checked={formData.isTaxExempt}
+                                                    disabled={!orgFormData.taxId}
+                                                    onChange={async (checked) => {
+                                                        // Optimistically update UI
+                                                        setFormData(prev => ({ ...prev, isTaxExempt: checked }));
+
+                                                        // Call Backend API to persist if not creating new org
+                                                        if (!isCreatingNewOrg && selectedOrganizationId) {
+                                                            try {
+                                                                await updateOrganizationTaxExempt(selectedOrganizationId, checked);
+                                                                notification.success({
+                                                                    message: 'Tax Exempt Status Updated',
+                                                                    description: `Organization is now ${checked ? 'Tax Exempt' : 'Subject to Tax'}.`
+                                                                });
+                                                            } catch (error) {
+                                                                // Revert on failure
+                                                                setFormData(prev => ({ ...prev, isTaxExempt: !checked }));
+                                                                notification.error({
+                                                                    message: 'Update Failed',
+                                                                    description: 'Failed to update tax exempt status. Please try again.'
+                                                                });
+                                                            }
+                                                        }
+                                                    }}
+                                                />
+                                                <span className={`text-xs ${formData.isTaxExempt ? "text-violet-600 font-semibold" : "text-gray-400"}`}>
+                                                    {formData.isTaxExempt ? "Exempt" : "Standard Tax"}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <FormInput label="Email" name="email" value={orgFormData.email} onChange={handleOrgChange} type="email" />
+                                        <FormInput label="Phone *" name="phone" value={orgFormData.phone} onChange={handleOrgChange} required />
                                     </div>
-                                    <div className="grid grid-cols-4 gap-3 items-end">
-                                        <div className="col-span-3">
-                                            <FormInput label="Notes" name="notes" value={orgFormData.notes} onChange={handleOrgChange} />
-                                        </div>
-                                        <div className="flex gap-2 justify-end pb-1">
-                                            {isCreatingNewOrg ? (
-                                                <>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setIsCreatingNewOrg(false);
-                                                            handleOrganizationSelect(null);
-                                                        }}
-                                                        className="px-3 py-2 text-xs text-gray-500 hover:text-gray-900"
-                                                    >
-                                                        Cancel
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={handleCreateOrganization}
-                                                        disabled={creatingOrg}
-                                                        className="px-4 py-2 rounded-md bg-violet-600 hover:bg-violet-700 disabled:bg-violet-300 text-white font-medium shadow-sm transition-colors text-xs whitespace-nowrap"
-                                                    >
-                                                        {creatingOrg ? "Creating..." : "Create"}
-                                                    </button>
-                                                </>
-                                            ) : (
-                                                <button
-                                                    type="button"
-                                                    onClick={handleSubmit} // Use standard submit for existing flow
-                                                    className="px-4 py-2 rounded-md bg-violet-600 hover:bg-violet-700 text-white font-medium shadow-sm transition-colors text-xs whitespace-nowrap"
-                                                >
-                                                    Continue
-                                                </button>
-                                            )}
-                                        </div>
+                                    <div className="grid grid-cols-4 gap-3 mb-3">
+                                        <FormInput label="Alternate Phone" name="alternatePhone" value={orgFormData.alternatePhone} onChange={handleOrgChange} />
+                                        <FormInput label="Address Line 1 *" name="addressLine1" value={orgFormData.addressLine1} onChange={handleOrgChange} required />
+                                        <FormInput label="Address Line 2" name="addressLine2" value={orgFormData.addressLine2} onChange={handleOrgChange} />
+                                        <FormInput label="City *" name="city" value={orgFormData.city} onChange={handleOrgChange} required />
+                                    </div>
+
+                                    <div className="grid grid-cols-4 gap-3 mb-3">
+                                        <FormSelect
+                                            label="State *"
+                                            name="state"
+                                            value={orgFormData.state}
+                                            onChange={handleOrgChange}
+                                            options={US_STATES}
+                                            required
+                                        />
+                                        <FormInput label="Postal Code *" name="postalCode" value={orgFormData.postalCode} onChange={handleOrgChange} required />
+                                        <FormInput label="Country" name="country" value={orgFormData.country} onChange={handleOrgChange} />
+                                    </div>
+                                    <div className="mb-2">
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">Notes</label>
+                                        <textarea
+                                            name="notes"
+                                            value={orgFormData.notes}
+                                            onChange={(e) => setOrgFormData(prev => ({ ...prev, notes: e.target.value }))}
+                                            className="w-full rounded border border-gray-300 px-3 py-1.5 text-sm focus:border-violet-500 focus:outline-none transition-colors resize-none h-16"
+                                            placeholder="Add notes about this organization..."
+                                        />
+                                    </div>
+                                    {/* Action Buttons for Org Form */}
+                                    <div className="flex justify-end gap-2 mt-2 pt-2 border-t border-gray-100">
+                                        {/* Show Confirm button only when creating NEW or if we want to allow editing existing */}
+                                        {isCreatingNewOrg && (
+                                            <button
+                                                type="button"
+                                                className="px-4 py-1.5 bg-violet-600 text-white text-xs font-semibold rounded hover:bg-violet-700 transition shadow-sm"
+                                                onClick={handleCreateOrganization}
+                                                disabled={creatingOrg}
+                                            >
+                                                {creatingOrg ? "Creating..." : "Create Organization"}
+                                            </button>
+                                        )}
+                                        {/* If Viewing Existing, maybe an 'Update' button? */}
+                                        {!isCreatingNewOrg && (
+                                            <button
+                                                type="button"
+                                                className="px-4 py-1.5 bg-[#7E5CFE] text-white text-xs font-semibold rounded hover:bg-[#6c4df0] transition shadow-sm"
+                                                onClick={() => {
+                                                    // Update logic if needed, or just collapse
+                                                    setIsOrgCollapsed(true);
+                                                }}
+                                            >
+                                                Continue
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     )}
 
-                    {/* CASE 2: CUSTOMER FORM (Individual ONLY) */}
-                    {!isCreatingNewOrg && formData.customerType === "INDIVIDUAL" && (
-                        <div className="bg-white rounded-md border border-gray-200 shadow-sm flex flex-col h-full overflow-hidden animate-slide-up">
+                    {/* CASE 2: CUSTOMER FORM (Individual OR Organization Contact when Org Selected) */}
+                    {!isCreatingNewOrg && (formData.customerType === "INDIVIDUAL" || (formData.customerType === "ORGANIZATION_CONTACT" && selectedOrganizationId !== null)) && (
+                        <div className="bg-white rounded-md border border-gray-200 shadow-sm flex flex-col shrink-0 animate-slide-up mb-4">
 
                             {/* Header */}
-                            <div className="bg-gray-50 border-b border-gray-100 px-4 py-2 flex items-center gap-2">
+                            <div
+                                className="bg-gray-50 border-b border-gray-100 px-4 py-2 flex items-center gap-2 cursor-pointer transition-colors hover:bg-gray-100"
+                                onClick={() => setIsCustomerCollapsed(!isCustomerCollapsed)}
+                            >
                                 <h3 className="text-sm font-bold text-gray-800">Customer Information</h3>
                                 <span className="text-xs text-gray-500 font-normal">-
                                     {formData.customerType === "INDIVIDUAL" ? " Contact details" : " Organization contact"}
@@ -628,7 +759,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                     )}
 
                     {/* CASE 3: PLACEHOLDER */}
-                    {!isCreatingNewOrg && !(formData.customerType === "INDIVIDUAL" || selectedOrganizationId) && (
+                    {!isCreatingNewOrg && !(formData.customerType === "INDIVIDUAL" || selectedOrganizationId !== null) && (
                         <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-md h-full flex flex-col items-center justify-center p-8 text-center opacity-60">
                             <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center mb-3 shadow-sm text-2xl text-slate-400">
                                 <PlusOutlined />

@@ -313,23 +313,6 @@ const AttachmentDetails = ({
 
     return (
         <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 max-w-4xl mx-auto space-y-6">
-            {/* Document Number Alert */}
-            {createdDocumentNumber && showAlert && (
-                <Alert
-                    message="Document Ready for Attachments"
-                    description={
-                        <span>
-                            You can now upload attachments for document: <span className="font-mono font-semibold">{createdDocumentNumber}</span>
-                        </span>
-                    }
-                    type="success"
-                    showIcon
-                    closable
-                    onClose={() => setShowAlert(false)}
-                    className="mb-4"
-                />
-            )}
-
             {/* Saved Attachments Section */}
             {savedAttachments && savedAttachments.length > 0 && (
                 <div>

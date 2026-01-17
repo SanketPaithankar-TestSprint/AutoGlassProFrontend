@@ -263,3 +263,32 @@ export const deleteOrganization = async (organizationId) => {
         throw error;
     }
 };
+
+/**
+ * Update organization tax exempt status
+ * @param {number} organizationId - Organization ID
+ * @param {boolean} isTaxExempt - Tax exempt status
+ * @returns {Promise<Object>} - Updated organization
+ */
+export const updateOrganizationTaxExempt = async (organizationId, isTaxExempt) => {
+    try {
+        const token = await getValidToken();
+        const response = await fetch(`${urls.javaApiUrl}/v1/organizations/${organizationId}/tax-exempt?taxExempt=${isTaxExempt}`, {
+            method: 'PATCH',
+            headers: {
+                'accept': '*/*',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Failed to update tax exempt status: ${response.status} ${errorText}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("Error updating tax exempt status:", error);
+        throw error;
+    }
+};
