@@ -58,6 +58,7 @@ const SearchByRoot = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [createdDocumentNumber, setCreatedDocumentNumber] = useState(null);
   const [lastRemovedPartKey, setLastRemovedPartKey] = useState(null); // Track last removed part for CarGlassViewer sync
+  const [aiContactFormId, setAiContactFormId] = useState(null); // Track AI Contact Form ID to update status on completion
 
   // Modal Context for better visibility/theming
   const [modal, contextHolder] = Modal.useModal();
@@ -246,12 +247,15 @@ const SearchByRoot = () => {
       }
     } else if (location.state?.prefillData) {
       // Handle Prefill Data (from AI Contact Form or similar)
-      const { customer, vehicle, items, notes } = location.state.prefillData;
+      const { customer, vehicle, items, notes, aiContactFormId: incomingAiContactFormId } = location.state.prefillData;
       console.log("[SearchByRoot] Handling Prefill Data:", location.state.prefillData);
 
       // 0. Ensure New Quote Mode
       setIsSaved(false);
       setDocMetadata(null);
+      if (incomingAiContactFormId) {
+        setAiContactFormId(incomingAiContactFormId);
+      }
 
       // 1. Map Customer
       if (customer) {
@@ -261,6 +265,11 @@ const SearchByRoot = () => {
           lastName: customer.lastName || "",
           email: customer.email || "",
           phone: customer.phone || "",
+          addressLine1: customer.addressLine1 || "",
+          city: customer.city || "",
+          state: customer.state || "",
+          postalCode: customer.postalCode || "",
+          country: customer.country || "",
           notes: notes || ""
         }));
 

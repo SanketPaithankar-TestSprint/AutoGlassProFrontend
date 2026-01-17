@@ -9,6 +9,7 @@ import { updateCompositeServiceDocument } from "../../api/updateCompositeService
 import { getActiveTaxRates, getDefaultTaxRate } from "../../api/taxRateApi";
 import { getAttachmentsByDocumentNumber } from "../../api/getAttachmentsByDocumentNumber";
 import { getSpecialInstructions } from "../../api/specialInstructions";
+import { updateAiContactFormStatus } from "../../api/aiContactForm";
 
 import { sendEmail } from "../../api/sendEmail";
 import { extractGlassInfo } from "../carGlassViewer/carGlassHelpers";
@@ -122,7 +123,7 @@ class ErrorBoundary extends React.Component {
     }
 }
 
-function QuotePanelContent({ onRemovePart, customerData, printableNote, internalNote, insuranceData, includeInsurance, attachments = [], onClear, docMetadata, isSaved, isEditMode, onEditModeChange, onDocumentCreated }) {
+function QuotePanelContent({ onRemovePart, customerData, printableNote, internalNote, insuranceData, includeInsurance, attachments = [], onClear, docMetadata, isSaved, isEditMode, onEditModeChange, onDocumentCreated, aiContactFormId }) {
     const navigate = useNavigate();
 
     const formatDate = (dateStr) => {
@@ -1169,6 +1170,13 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
             }
 
             // Immediately return success
+            if (aiContactFormId) {
+                try {
+                    await updateAiContactFormStatus(token, aiContactFormId, 'COMPLETED');
+                } catch (e) {
+                    console.error("Failed to update AI Contact Form status to COMPLETED", e);
+                }
+            }
             return { success: true, documentNumber: createdDocNumber };
 
         } catch (err) {
