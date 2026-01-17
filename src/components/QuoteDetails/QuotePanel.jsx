@@ -1017,6 +1017,7 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                 .filter(it => it.type === 'Labor')
                 .reduce((sum, it) => sum + (Number(it.amount) || 0), 0);
 
+            const mergedLaborIds = new Set();
             const serviceDocumentItems = [];
             items.forEach(it => {
                 if (it.type === 'Part') {
@@ -1051,6 +1052,8 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                 } else if (it.type === 'Labor') {
                     const linkedPartId = it.id.replace('_LABOR', '');
                     const linkedPart = items.find(p => p.id === linkedPartId && p.type === 'Part');
+                    let merged = false;
+
                     if (linkedPart) {
                         const existingPart = serviceDocumentItems.find(sdi =>
                             sdi.nagsGlassId === linkedPart.nagsId && sdi.oemGlassId === linkedPart.oemId && sdi.itemType === 'part'
@@ -1058,22 +1061,25 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                         if (existingPart) {
                             existingPart.laborRate = Number(it.unitPrice) || 0;
                             existingPart.laborHours = Number(it.labor) || 0;
+                            merged = true;
+                            mergedLaborIds.add(it.id);
                         }
                     }
                 }
             });
 
-            // Handle independent items (Labor/Service not linked to Part)
-            const manualItems = items.filter(it => (it.type === 'Labor' || it.type === 'Service') && !it.id.includes('_LABOR'));
+            // Handle independent items (Labor/Service not linked to Part OR failed merge)
+            const manualItems = items.filter(it => (it.type === 'Labor' || it.type === 'Service') && !mergedLaborIds.has(it.id));
             manualItems.forEach(manualIt => {
+                const isLabor = manualIt.type === 'Labor';
                 serviceDocumentItems.push({
                     partId: manualIt.originalPartId || null, // Include ID for manual items too if they existed
                     itemType: manualIt.type.toLowerCase(),
                     partDescription: manualIt.description,
                     partPrice: Number(manualIt.amount) || 0,
                     quantity: 1,
-                    laborRate: 0,
-                    laborHours: 0
+                    laborRate: isLabor ? (Number(manualIt.unitPrice) || 0) : 0,
+                    laborHours: isLabor ? (Number(manualIt.labor) || 0) : 0
                 });
             });
 
