@@ -103,11 +103,21 @@ const AiContactForm = () => {
                     : selectedLead.selectedGlasses;
 
                 items = glasses.map(glass => {
-                    const isWindshield = glass.glass_type?.toLowerCase() === 'windshield' || glass.glass_code === 'FW'; // Basic check
-                    let description = `${glass.glass_type} - ${glass.position || ''} ${glass.side || ''} ${glass.glass_code || ''}`;
+                    const isWindshield = glass.glass_type?.toLowerCase() === 'windshield' || glass.glass_code === 'FW';
+                    let description;
 
-                    if (isWindshield && selectedLead.windshieldFeatures && selectedLead.windshieldFeatures.length > 0) {
-                        description += `\nFeatures: ${selectedLead.windshieldFeatures.join(', ')}`;
+                    if (isWindshield) {
+                        // Format: Windshield(FW)(Features)
+                        const type = glass.glass_type || 'Windshield';
+                        const code = glass.glass_code ? `(${glass.glass_code})` : '';
+                        const features = (selectedLead.windshieldFeatures && selectedLead.windshieldFeatures.length > 0)
+                            ? `(${selectedLead.windshieldFeatures.join(', ')})`
+                            : '';
+
+                        description = `${type}${code}${features}`;
+                    } else {
+                        // Standard format for other glass
+                        description = `${glass.glass_type} - ${glass.position || ''} ${glass.side || ''} ${glass.glass_code || ''}`;
                     }
 
                     return {

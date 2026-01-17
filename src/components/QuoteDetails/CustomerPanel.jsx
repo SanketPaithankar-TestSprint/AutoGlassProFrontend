@@ -205,7 +205,6 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                 country: orgDetails.country || "USA",
                 email: orgDetails.email || "",
                 phone: orgDetails.phone || "",
-                phone: orgDetails.phone || "",
                 isTaxExempt: orgDetails.taxExempt === true // Set tax exemption from org details
             }));
 
