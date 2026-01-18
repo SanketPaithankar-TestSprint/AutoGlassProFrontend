@@ -51,7 +51,7 @@ export default function SearchByVin({
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`${baseUrl}agp/v1/vin?vin=${vin}`, {
+      const res = await fetch(`${baseUrl}agp/v1/vin?vin=${vin}&lookup_ids=true`, {
         headers: { accept: "application/json" },
       });
       if (!res.ok) throw new Error(`Error: ${res.status}`);

@@ -143,7 +143,7 @@ export function generateServiceDocumentPDF({
     // Phone
     if (userProfile?.phone) {
         doc.setTextColor(100, 100, 100);
-        doc.text(`Tel: ${userProfile.phone}`, margin + 5, currentY);
+        doc.text(`Ph: ${userProfile.phone}`, margin + 5, currentY);
         currentY += 13;
     }
 
@@ -313,7 +313,7 @@ export function generateServiceDocumentPDF({
         if (customerData.phone) {
             textY += 4;
             doc.setTextColor(100, 100, 100);
-            doc.text(`Tel: ${customerData.phone}`, cardX + 14, textY);
+            doc.text(`Ph: ${customerData.phone}`, cardX + 14, textY);
 
             if (customerData.alternatePhone) {
                 doc.text(`  |  Alt: ${customerData.alternatePhone}`, cardX + 110, textY);
@@ -819,7 +819,10 @@ export function generateServiceDocumentPDF({
     let currentNoteY = totalBoxY + 12;
     const noteWidth = contentWidth - 140 - 16;
 
-    if (printableNote && typeof printableNote === 'string' && printableNote.trim() !== '') {
+    // Check if printableNote has actual content (not just empty HTML tags)
+    const strippedPrintableNote = printableNote ? printableNote.replace(/<[^>]*>/g, '').trim() : '';
+
+    if (strippedPrintableNote !== '') {
         doc.setFontSize(9);
         doc.setFont("helvetica", "normal");
         doc.setTextColor(50, 50, 50);

@@ -85,7 +85,7 @@ const SlugConfig = () => {
 
     return (
         <Card
-            title="User Slug Configuration"
+            title="AI Chat Configuration"
             className="w-full shadow-sm rounded-2xl border-gray-100"
             extra={
                 <Button

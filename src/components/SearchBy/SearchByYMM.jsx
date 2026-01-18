@@ -59,39 +59,77 @@ export default function SearchByYMM({
 
   const years = useMemo(() => buildYears(minYear), [minYear]);
 
+  // Track if we received complete VIN data with veh_id
+  const [vinVehId, setVinVehId] = useState(null);
+
   // Sync state with value prop
   useEffect(() => {
     if (value && Object.keys(value).length > 0) {
+      // Always set year
       setYear(value.year || null);
 
-      // Handle make - could be ID or name from VIN decode
+      // Handle make - set ID if provided, otherwise reset and try to resolve by name
       if (value.makeId) {
         setMakeId(value.makeId);
         setMakeName(value.make || null);
-      } else if (value.make) {
-        // Legacy support: if only make name is provided
-        setMakeName(value.make);
+      } else {
+        // Reset make ID when not provided (important for new VIN decodes)
+        setMakeId(null);
+        if (value.make) {
+          // Legacy support: if only make name is provided, will be resolved later
+          setMakeName(value.make);
+        } else {
+          setMakeName(null);
+        }
       }
 
-      // Handle model - could be ID or name
+      // Handle model - set ID if provided, otherwise reset and try to resolve by name
       if (value.makeModelId) {
         setMakeModelId(value.makeModelId);
         setModelName(value.model || null);
         setVehModifierId(value.vehModifierId || null);
-      } else if (value.model) {
-        // Legacy support: if only model name is provided
-        setModelName(value.model);
+      } else {
+        // Reset model ID when not provided (important for VINs where model lookup failed)
+        setMakeModelId(null);
+        setVehModifierId(value.vehModifierId || null);
+        if (value.model) {
+          // Model name provided but no ID - will be resolved after models list loads
+          setModelName(value.model);
+        } else {
+          setModelName(null);
+        }
       }
 
-      // Handle body type
+      // Handle body type - set ID if provided, otherwise reset
       if (value.bodyStyleId) {
         setBodyType(value.bodyStyleId);
         setPendingBodyType(null);
-      } else if (value.bodyType) {
-        setPendingBodyType(value.bodyType);
+      } else {
+        setBodyType(null);
+        if (value.bodyType || value.body) {
+          // Body type name provided but no ID - will be resolved after body types list loads
+          setPendingBodyType(value.bodyType || value.body);
+        } else {
+          setPendingBodyType(null);
+        }
       }
+
+      // Handle veh_id from VIN decode - if present, we have complete data
+      if (value.vehId) {
+        setVinVehId(value.vehId);
+        setVehId(value.vehId);
+      } else {
+        // Reset veh_id when not provided
+        setVinVehId(null);
+        setVehId(null);
+      }
+
+      // Reset display-related state that depends on API calls
+      setModelId(null);
+      setModelImage(null);
+      setModelDescription(null);
     } else {
-      // Reset all states
+      // Reset all states when value is empty/null
       setYear(null);
       setMakeId(null);
       setMakeName(null);
@@ -101,11 +139,51 @@ export default function SearchByYMM({
       setBodyType(null);
       setPendingBodyType(null);
       setVehId(null);
+      setVinVehId(null);
       setModelId(null);
       setModelImage(null);
       setModelDescription(null);
     }
   }, [value]);
+
+  // Auto-notify parent when VIN provides complete veh_id (skip body type selection)
+  useEffect(() => {
+    if (vinVehId && year && makeId && makeModelId) {
+      console.log('[SearchByYMM] VIN provided veh_id, auto-notifying parent:', vinVehId);
+
+      // Find body type description if we have bodyStyleId
+      let bodyTypeDescription = value?.body || '';
+      if (bodyType && bodyTypes.length > 0) {
+        const selectedBodyType = bodyTypes.find(bt => bt.body_style_id === bodyType);
+        if (selectedBodyType) {
+          bodyTypeDescription = selectedBodyType.desc;
+        }
+      }
+
+      // Notify parent with complete vehicle info
+      onModelIdFetched?.(null); // model_id may not be available from VIN
+
+      onVehicleInfoUpdate?.({
+        year,
+        make: makeName,
+        makeId,
+        model: modelName,
+        makeModelId,
+        vehModifierId,
+        bodyType: bodyTypeDescription || value?.body,
+        bodyTypeId: bodyType,
+        veh_id: vinVehId,
+        model_id: null,
+        image: null,
+        description: `${year} ${makeName} ${modelName}`
+      });
+
+      message.success(`VIN decoded: ${year} ${makeName} ${modelName}`);
+
+      // Clear vinVehId to prevent re-triggering
+      setVinVehId(null);
+    }
+  }, [vinVehId, year, makeId, makeModelId, makeName, modelName, bodyType, bodyTypes]);
 
   // Resolve pending body type string to ID
   useEffect(() => {

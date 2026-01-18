@@ -14,6 +14,8 @@ import {
 } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 import Logo from './logo';
+import { getUserLogo } from '../api/getUserLogo';
+import { getValidToken } from '../api/getValidToken';
 
 const { Sider } = Layout;
 
@@ -21,7 +23,42 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
     const location = useLocation();
     const [userLogo, setUserLogo] = useState(localStorage.getItem('userLogo'));
 
-    // Listen for logo updates
+    // Fetch logo on mount and when route changes (to catch post-login state)
+    useEffect(() => {
+        const fetchLogoIfNeeded = async () => {
+            // First check if we have a valid token
+            const token = getValidToken();
+            if (!token) {
+                return; // Not authenticated, don't fetch
+            }
+
+            const cachedLogo = localStorage.getItem('userLogo');
+            if (!cachedLogo) {
+                try {
+                    console.log('Sidebar: Fetching user logo from API...');
+                    const logoData = await getUserLogo();
+                    if (logoData) {
+                        console.log('Sidebar: Logo fetched successfully');
+                        localStorage.setItem('userLogo', logoData);
+                        setUserLogo(logoData);
+                        // Also dispatch event for other components
+                        window.dispatchEvent(new Event('userLogoUpdated'));
+                    } else {
+                        console.log('Sidebar: No logo returned from API');
+                    }
+                } catch (err) {
+                    console.error("Failed to fetch user logo in Sidebar", err);
+                }
+            } else if (userLogo !== cachedLogo) {
+                // localStorage has logo but state doesn't - sync it
+                setUserLogo(cachedLogo);
+            }
+        };
+
+        fetchLogoIfNeeded();
+    }, [location.pathname]); // Re-run on route changes to catch post-login navigation
+
+    // Listen for logo updates (from login or profile upload)
     useEffect(() => {
         const handleLogoUpdate = () => {
             setUserLogo(localStorage.getItem('userLogo'));

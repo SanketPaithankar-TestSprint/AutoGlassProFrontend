@@ -17,9 +17,6 @@ import { getPrefixCd, getPosCd, getSideCd, extractGlassInfo } from "../carGlassV
 import InsuranceDetails from "../QuoteDetails/InsuranceDetails";
 import AttachmentDetails from "../QuoteDetails/AttachmentDetails";
 import { getAttachmentsByDocumentNumber } from "../../api/getAttachmentsByDocumentNumber";
-import { resolveVinModel } from "../../api/resolveVinModel";
-import { getBodyTypes } from "../../api/getModels";
-import { extractDoorCount, selectBodyTypeByDoors } from "../../utils/vinHelpers";
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 
@@ -330,86 +327,62 @@ const SearchByRoot = () => {
     }
   }, [customerData]);
 
-  // Handle VIN decode with model resolution and body type auto-selection
+  // Handle VIN decode - now receives all IDs directly from API
   const handleVinDecoded = async (data) => {
     setVinData(data);
     if (!data) return;
 
-    try {
-      const { year, make, model: vinModel } = data;
+    // All IDs come directly from the VIN API with lookup_ids=true
+    const {
+      year,
+      make,
+      model,
+      body_type,
+      make_id,
+      make_model_id,
+      veh_modifier_id,
+      body_style_id,
+      veh_id
+    } = data;
 
-      // Step 1: Resolve the model name and get IDs using fuzzy matching
-      const {
-        resolvedModel,
-        matchFound,
-        makeId,
-        makeName: resolvedMakeName,
-        makeModelId,
-        vehModifierId
-      } = await resolveVinModel(year, make, vinModel);
+    console.log('[VIN Decode] Received data with IDs:', {
+      make_id,
+      make_model_id,
+      veh_modifier_id,
+      body_style_id,
+      veh_id
+    });
 
-      // Step 2: Fetch body types for the resolved model (but don't auto-select if door count is unknown)
-      let selectedBodyStyleId = null;
-      try {
-        // Only fetch body types if we have the required IDs
-        if (makeId && makeModelId) {
-          const bodyTypesData = await getBodyTypes(year, makeId, makeModelId, vehModifierId);
-          const bodyTypesList = Array.isArray(bodyTypesData?.body_types) ? bodyTypesData.body_types : [];
+    // Build vehicle info with all IDs for SearchByYMM
+    const info = {
+      year,
+      make,                           // Display name
+      makeId: make_id,                // ID for dropdowns/API
+      model,                          // Display name  
+      makeModelId: make_model_id,     // ID for dropdowns/API
+      vehModifierId: veh_modifier_id, // Optional modifier ID
+      body: body_type,                // Display name
+      bodyStyleId: body_style_id,     // ID for dropdown
+      vehId: veh_id                   // Vehicle ID for parts lookup
+    };
 
-          if (bodyTypesList.length > 0) {
-            // Step 3: Extract door count
-            const doorCount = extractDoorCount(data);
+    setVehicleInfo(info);
 
-            // Only attempt auto-selection if we successfully extracted door count
-            if (doorCount) {
-              selectedBodyStyleId = selectBodyTypeByDoors(bodyTypesList, doorCount);
-            }
-          }
-        }
-      } catch (error) {
-        console.error("[VIN Decode] Error fetching/selecting body type:", error);
-      }
-
-      // Step 4: Update vehicle info with resolved data including IDs
-      const info = {
-        year,
-        make: resolvedMakeName || make,       // Display name
-        makeId,                               // ID for API calls
-        model: resolvedModel,                 // Display name
-        makeModelId,                          // ID for API calls
-        vehModifierId,                        // Optional modifier ID
-        body: data.body_type || data.vehicle_type,
-        bodyStyleId: selectedBodyStyleId      // Include auto-selected body type
-      };
-
-      setVehicleInfo(info);
-
-      // Step 5: Auto-update customer vehicle info
-      setCustomerData(prev => ({
-        ...prev,
-        vehicleYear: info.year || prev.vehicleYear,
-        vehicleMake: info.make || prev.vehicleMake,
-        vehicleModel: info.model || prev.vehicleModel,
-        vehicleStyle: info.body || prev.vehicleStyle,
-        bodyType: info.body || prev.bodyType,
-        vin: data.vin || prev.vin
-      }));
-
-    } catch (error) {
-      console.error("[VIN Decode] Error in handleVinDecoded:", error);
-      // Fallback to basic behavior
-      const info = { year: data.year, make: data.make, model: data.model, body: data.body_type || data.vehicle_type };
-      setVehicleInfo(info);
-      setCustomerData(prev => ({
-        ...prev,
-        vehicleYear: info.year || prev.vehicleYear,
-        vehicleMake: info.make || prev.vehicleMake,
-        vehicleModel: info.model || prev.vehicleModel,
-        vehicleStyle: info.body || prev.vehicleStyle,
-        bodyType: info.body || prev.bodyType,
-        vin: data.vin || prev.vin
-      }));
+    // Set vehId for CarGlassViewer if available
+    if (veh_id) {
+      setVehId(veh_id);
     }
+
+    // Update customer data with vehicle info
+    setCustomerData(prev => ({
+      ...prev,
+      vehicleYear: year || prev.vehicleYear,
+      vehicleMake: make || prev.vehicleMake,
+      vehicleModel: model || prev.vehicleModel,
+      vehicleStyle: body_type || prev.vehicleStyle,
+      bodyType: body_type || prev.bodyType,
+      vin: data.vin || prev.vin
+    }));
   };
 
   // Handle vehicle info update from YMM

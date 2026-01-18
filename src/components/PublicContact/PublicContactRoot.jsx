@@ -87,7 +87,7 @@ const PublicContactRoot = () => {
                     // Add initial greeting message
                     const greeting = {
                         id: Date.now(),
-                        text: `Hi! Welcome to ${response.data.business_name}. I'm here to help you get a quick quote for your auto glass needs. Let's start with your contact information - what's your name, email, and phone number?`,
+                        text: `Hi! I'm here to help you get a quote for ${response.data.business_name}. To get started, could you please share your name, email, and phone number?`,
                         sender: 'ai',
                     };
                     setMessages([greeting]);
@@ -287,7 +287,7 @@ const PublicContactRoot = () => {
         setSessionId(newSessionId);
         setMessages([{
             id: Date.now(),
-            text: `Hi! Welcome back to ${businessInfo?.businessName || 'our service'}. I'm here to help you get a quick quote for your auto glass needs. Let's start with your contact information - what's your name, email, and phone number?`,
+            text: `Hi! I'm here to help you get a quote for ${businessInfo?.businessName || 'our service'}. To get started, could you please share your name, email, and phone number?`,
             sender: 'ai',
         }]);
         setAvailableOptions(null);

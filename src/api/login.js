@@ -94,6 +94,8 @@ export function handleLoginSuccess(loginResponse, rememberMe = false) {
                         } else {
                             localStorage.removeItem('userLogo');
                         }
+                        // Dispatch custom event to notify Sidebar and other components
+                        window.dispatchEvent(new Event('userLogoUpdated'));
                     })
                     .catch(err => console.error("Failed to fetch user logo on login", err));
             }
