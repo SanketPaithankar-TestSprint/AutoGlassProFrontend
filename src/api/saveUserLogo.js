@@ -44,6 +44,8 @@ export const saveUserLogo = async (file) => {
         reader.onloadend = () => {
             if (reader.result) {
                 localStorage.setItem('userLogo', reader.result);
+                // Dispatch custom event to notify Sidebar and other components
+                window.dispatchEvent(new Event('userLogoUpdated'));
             }
         };
         reader.readAsDataURL(file);

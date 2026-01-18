@@ -106,6 +106,8 @@ const Profile = () => {
                 if (url) {
                     setLogoUrl(url);
                     localStorage.setItem('userLogo', url);
+                    // Dispatch event to notify Sidebar
+                    window.dispatchEvent(new Event('userLogoUpdated'));
                 }
             });
         }
@@ -721,7 +723,7 @@ const Profile = () => {
                         {renderMenuItem('userKitPrice', 'User Kit Price', <DollarOutlined />)}
                         {renderMenuItem('userAdasPrice', 'ADAS Pricing', <ScanOutlined />)}
                         {renderMenuItem('specialInstructions', 'Special Instructions', <FileTextOutlined />)}
-                        {renderMenuItem('slugConfig', 'Slug Configuration', <KeyOutlined />)}
+                        {renderMenuItem('slugConfig', 'AI Chat Config', <KeyOutlined />)}
                     </div>
                 </div>
             </div>

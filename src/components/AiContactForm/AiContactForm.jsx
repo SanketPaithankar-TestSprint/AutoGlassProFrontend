@@ -7,6 +7,36 @@ import { getValidToken } from '../../api/getValidToken';
 
 const { Title } = Typography;
 
+// Glass code mappings for readable display
+const POSITION_CODES = {
+    F: 'Front',
+    R: 'Rear',
+    B: 'Back',
+    M: 'Middle'
+};
+
+const SIDE_CODES = {
+    C: 'Center',
+    L: 'Left',
+    R: 'Right'
+};
+
+// Helper function to format position and side codes
+const formatPositionSide = (position, side) => {
+    const parts = [];
+    if (position && POSITION_CODES[position]) {
+        parts.push(POSITION_CODES[position]);
+    } else if (position) {
+        parts.push(position);
+    }
+    if (side && SIDE_CODES[side]) {
+        parts.push(SIDE_CODES[side]);
+    } else if (side) {
+        parts.push(side);
+    }
+    return parts.join(' ');
+};
+
 const AiContactForm = () => {
     const navigate = useNavigate();
     const [data, setData] = useState([]);
@@ -256,15 +286,11 @@ const AiContactForm = () => {
                             </Descriptions.Item>
                         </Descriptions>
 
-                        <Descriptions title="Vehicle Information" bordered size="small" column={2}>
-                            <Descriptions.Item label="Vehicle">{selectedLead.year} {selectedLead.makeName} {selectedLead.modelName}</Descriptions.Item>
-                            <Descriptions.Item label="Style">{selectedLead.bodyStyleName}</Descriptions.Item>
-                            <Descriptions.Item label="VIN">{selectedLead.vin || 'N/A'}</Descriptions.Item>
-                            <Descriptions.Item label="Features">
-                                {selectedLead.windshieldFeatures && selectedLead.windshieldFeatures.length > 0
-                                    ? selectedLead.windshieldFeatures.map(f => <Tag key={f}>{f}</Tag>)
-                                    : 'None'}
-                            </Descriptions.Item>
+                        <Descriptions title="Vehicle Information" bordered size="small" column={1}>
+                            <Descriptions.Item label="Vehicle">{selectedLead.year} {selectedLead.makeName} {selectedLead.modelName} - {selectedLead.bodyStyleName}</Descriptions.Item>
+                            {selectedLead.vin && (
+                                <Descriptions.Item label="VIN">{selectedLead.vin}</Descriptions.Item>
+                            )}
                         </Descriptions>
 
                         <div>
@@ -273,16 +299,44 @@ const AiContactForm = () => {
                                 size="small"
                                 bordered
                                 dataSource={typeof selectedLead.selectedGlasses === 'string' ? JSON.parse(selectedLead.selectedGlasses) : (selectedLead.selectedGlasses || [])}
-                                renderItem={item => (
-                                    <List.Item>
-                                        <div className="flex flex-col">
-                                            <span className="font-semibold">{item.glass_type} {item.glass_code ? `(${item.glass_code})` : ''}</span>
-                                            <span className="text-xs text-gray-500">
-                                                {[item.position, item.side].filter(Boolean).join(' - ')}
-                                            </span>
-                                        </div>
-                                    </List.Item>
-                                )}
+                                renderItem={item => {
+                                    const isWindshield = item.glass_type?.toLowerCase() === 'windshield' || item.glass_code === 'FW';
+                                    const hasSensors = isWindshield && selectedLead.windshieldFeatures && selectedLead.windshieldFeatures.length > 0;
+
+                                    return (
+                                        <List.Item>
+                                            <div className="flex flex-col w-full">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-semibold">{item.glass_type}</span>
+                                                    {(item.position || item.side) && formatPositionSide(item.position, item.side) ? (
+                                                        <>
+                                                            <span className="text-gray-400">-</span>
+                                                            <span className="font-medium text-gray-800">
+                                                                {formatPositionSide(item.position, item.side)}
+                                                            </span>
+                                                        </>
+                                                    ) : null}
+                                                </div>
+                                                {hasSensors && (
+                                                    <div className="mt-2 pl-4 border-l-2 border-violet-200">
+                                                        <span className="text-xs font-medium text-gray-600 mb-1 block">Sensors:</span>
+                                                        <ul className="text-sm text-gray-700 space-y-1">
+                                                            {selectedLead.windshieldFeatures.map(f => {
+                                                                const formattedText = f.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                                                                return (
+                                                                    <li key={f} className="flex items-center gap-2">
+                                                                        <span className="w-1.5 h-1.5 rounded-full bg-violet-500"></span>
+                                                                        {formattedText}
+                                                                    </li>
+                                                                );
+                                                            })}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </List.Item>
+                                    );
+                                }}
                             />
                         </div>
                     </div>

@@ -92,6 +92,7 @@ function AppContent() {
         // Authenticated Layout: Sidebar + Content Area
         <Layout hasSider className="h-full">
           <Sidebar
+            key={isAuthed ? 'authed' : 'guest'}
             onLogout={handleLogout}
             collapsed={collapsed}
             onCollapse={setCollapsed}
