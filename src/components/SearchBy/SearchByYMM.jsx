@@ -57,6 +57,9 @@ export default function SearchByYMM({
   const modelsCache = useRef(new Map()); // key: `${makeId}|${year}`
   const bodyTypesCache = useRef(new Map()); // key: `${year}|${makeId}|${makeModelId}|${vehModifierId}`
 
+  // Track the last auto-searched combination to prevent infinite loops
+  const lastAutoSearch = useRef(null);
+
   const years = useMemo(() => buildYears(minYear), [minYear]);
 
   // Track if we received complete VIN data with veh_id
@@ -356,7 +359,15 @@ export default function SearchByYMM({
   // Auto-trigger Find Parts whenever all required fields are selected
   useEffect(() => {
     if (year && makeId && makeModelId && bodyType) {
+      const currentKey = `${year}|${makeId}|${makeModelId}|${bodyType}`;
+
+      // Prevent infinite loops: only trigger if the parameters have changed from the last auto-search
+      if (lastAutoSearch.current === currentKey) {
+        return;
+      }
+
       const timer = setTimeout(() => {
+        lastAutoSearch.current = currentKey;
         handleFindParts();
       }, 300);
       return () => clearTimeout(timer);
@@ -369,6 +380,9 @@ export default function SearchByYMM({
       message.warning("Please select year, make, model, and body type");
       return;
     }
+
+    // Update ref to prevent auto-trigger from firing immediately after manual search works
+    lastAutoSearch.current = `${year}|${makeId}|${makeModelId}|${bodyType}`;
 
     setLoadingModelId(true);
     try {
