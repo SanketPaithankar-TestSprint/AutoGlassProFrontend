@@ -429,6 +429,8 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
             if (it.type === 'Labor') {
                 if (key === 'unitPrice') {
                     updated.amount = Number(value) || 0;
+                } else if (key === 'amount') {
+                    updated.unitPrice = Number(value) || 0;
                 }
             } else {
                 if (key === 'qty' || key === 'unitPrice') {
@@ -1068,8 +1070,8 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                 }
             });
 
-            // Handle independent items (Labor/Service not linked to Part OR failed merge)
-            const manualItems = items.filter(it => (it.type === 'Labor' || it.type === 'Service') && !mergedLaborIds.has(it.id));
+            // Handle independent items (Labor/Service/ADAS not linked to Part OR failed merge)
+            const manualItems = items.filter(it => (it.type === 'Labor' || it.type === 'Service' || it.type === 'ADAS') && !mergedLaborIds.has(it.id));
             manualItems.forEach(manualIt => {
                 const isLabor = manualIt.type === 'Labor';
                 serviceDocumentItems.push({
@@ -1487,8 +1489,11 @@ Auto Glass Pro Team`;
                                 const hasLabor = items.some(item => item.id === `${partId}_LABOR`);
                                 const kitCount = items.filter(item => item.parentPartId === partId && item.type === 'Kit').length;
                                 rowSpan = 1 + (hasLabor ? 1 : 0) + kitCount;
-                            } else if (it.type === 'Labor' || it.type === 'Kit') {
-                                // Hide delete button for Labor and Kit rows that belong to a Part
+                            } else if (it.type === 'Labor' && it.id.endsWith('_LABOR')) {
+                                // Hide delete button only for linked Labor (not manual Labor)
+                                showDeleteButton = false;
+                            } else if (it.type === 'Kit' && it.parentPartId) {
+                                // Hide delete button only for Kits that belong to a Part
                                 showDeleteButton = false;
                             }
 

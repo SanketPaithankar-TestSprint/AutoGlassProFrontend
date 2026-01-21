@@ -180,8 +180,8 @@ const SearchByRoot = () => {
             pricingType: "hourly"
           });
 
-          // Linked Labor Item
-          if (item.laborRate && item.laborRate > 0) {
+          // Linked Labor Item (Only for PART items, not for LABOR items)
+          if (item.itemType === 'PART' && item.laborRate && item.laborRate > 0) {
             result.push({
               id: `${partId}_LABOR`,
               type: 'Labor',
