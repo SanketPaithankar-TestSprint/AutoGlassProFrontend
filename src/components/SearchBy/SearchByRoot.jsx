@@ -163,7 +163,7 @@ const SearchByRoot = () => {
           const partId = Math.random().toString(36).substring(2, 9);
           const result = [];
 
-          // Part Item
+          // Part Item - use partPrice for amount, not itemTotal (to avoid double-counting labor)
           result.push({
             id: partId,
             originalPartId: item.partId,
@@ -175,7 +175,7 @@ const SearchByRoot = () => {
             qty: item.quantity || 1,
             unitPrice: item.partPrice || 0,
             listPrice: item.listPrice || item.partPrice || 0,
-            amount: item.itemTotal || (item.partPrice * item.quantity),
+            amount: (item.partPrice || 0) * (item.quantity || 1),
             labor: 0,
             isManual: true,
             pricingType: "hourly"

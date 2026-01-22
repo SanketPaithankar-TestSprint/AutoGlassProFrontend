@@ -836,7 +836,13 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
 
 
 
-    const subtotal = useMemo(() => items.reduce((sum, it) => sum + (Number(it.amount) || 0), 0), [items]);
+    // Subtotal = sum of Part + Kit amounts only (partPrice + kitPrice)
+    const subtotal = useMemo(() =>
+        items
+            .filter(it => it.type === 'Part' || it.type === 'Kit')
+            .reduce((sum, it) => sum + (Number(it.amount) || 0), 0),
+        [items]
+    );
     const totalHours = useMemo(() =>
         items
             .filter(it => it.type === 'Labor')
@@ -879,7 +885,17 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
             .reduce((sum, it) => sum + (Number(it.amount) || 0), 0);
         return (taxableSubtotal * (Number(globalTaxRate) || 0)) / 100;
     }, [items, globalTaxRate, taxSettings, customerData?.isTaxExempt]);
-    const calculatedTotal = useMemo(() => Math.max(0, subtotal + totalTax), [subtotal, totalTax]);
+
+    // Service/ADAS total (not included in subtotal)
+    const serviceTotal = useMemo(() =>
+        items
+            .filter(it => it.type === 'Service' || it.type === 'ADAS')
+            .reduce((sum, it) => sum + (Number(it.amount) || 0), 0),
+        [items]
+    );
+
+    // Total = subtotal (Part+Kit) + labor + service + tax
+    const calculatedTotal = useMemo(() => Math.max(0, subtotal + laborCostDisplay + serviceTotal + totalTax), [subtotal, laborCostDisplay, serviceTotal, totalTax]);
 
     const [manualTotal, setManualTotal] = useState(null);
 
