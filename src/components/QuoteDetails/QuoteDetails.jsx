@@ -3,6 +3,7 @@ import CustomerPanel from "./CustomerPanel";
 import QuotePanel from "./QuotePanel";
 import config from "../../config";
 import { getPrefixCd, getPosCd, getSideCd } from "../carGlassViewer/carGlassHelpers";
+import AttachmentDetails from "./AttachmentDetails";
 
 export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel, onPanelSwitch, invoiceItems, setInvoiceItems }) {
     // Internal state fallback if not controlled
@@ -65,6 +66,9 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
             }
         }
     });
+
+    // Lifted Attachments State
+    const [attachments, setAttachments] = useState([]);
 
     useEffect(() => {
         if (customerData) {
@@ -162,6 +166,12 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
                 >
                     Quote Information
                 </button>
+                <button
+                    className={`px-4 py-2 rounded-md font-semibold border transition-all duration-150 ${panel === 'attachments' ? 'border-violet-500 text-violet-700 bg-white' : 'border-transparent text-slate-500 bg-slate-50 hover:bg-slate-100'}`}
+                    onClick={() => handlePanelSwitch('attachments')}
+                >
+                    Attachments
+                </button>
             </div>
             {panel === 'customer' && (
                 <CustomerPanel
@@ -176,6 +186,18 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
                     <QuotePanel
                         parts={invoiceItems}
                         onRemovePart={onRemovePart}
+                        customerData={customerData}
+                        attachments={attachments}
+                        setAttachments={setAttachments}
+                    />
+                </div>
+            )}
+            {panel === 'attachments' && (
+                <div className="min-h-[600px]">
+                    <AttachmentDetails
+                        attachments={attachments}
+                        setAttachments={setAttachments}
+                        createdDocumentNumber={null}
                         customerData={customerData}
                     />
                 </div>

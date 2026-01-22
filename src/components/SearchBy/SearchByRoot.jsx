@@ -374,7 +374,7 @@ const SearchByRoot = () => {
       setVehId(veh_id);
     }
 
-    // Update customer data with vehicle info
+    // Update customer data with vehicle info and backend IDs
     setCustomerData(prev => ({
       ...prev,
       vehicleYear: year || prev.vehicleYear,
@@ -382,7 +382,12 @@ const SearchByRoot = () => {
       vehicleModel: model || prev.vehicleModel,
       vehicleStyle: body_type || prev.vehicleStyle,
       bodyType: body_type || prev.bodyType,
-      vin: data.vin || prev.vin
+      vin: data.vin || prev.vin,
+      // Include backend IDs for composite service document
+      makeId: make_id || prev.makeId,
+      modelId: make_model_id || prev.modelId,
+      bodyStyleId: body_style_id || prev.bodyStyleId,
+      vehId: veh_id || prev.vehId,
     }));
   };
 
@@ -400,6 +405,11 @@ const SearchByRoot = () => {
       vehicleModel: info.model || prev.vehicleModel,
       vehicleStyle: info.description || prev.vehicleStyle, // Use description for style if available
       bodyType: info.bodyType || prev.bodyType, // Use bodyType description for display and storage
+      // Include backend IDs for composite service document
+      makeId: info.makeId || prev.makeId,
+      modelId: info.makeModelId || prev.modelId,
+      bodyStyleId: info.bodyStyleId || prev.bodyStyleId,
+      vehId: info.veh_id || info.vehId || prev.vehId,
     }));
   };
 
