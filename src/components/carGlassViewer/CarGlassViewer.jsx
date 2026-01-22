@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
 import ReactDOM from "react-dom";
-import { Select, Modal } from "antd";
+import { Select, Modal, Dropdown } from "antd";
 import config from "../../config";
 
 const { Option, OptGroup } = Select;
-import { DeleteOutlined } from "@ant-design/icons";
+import { DeleteOutlined, DownOutlined } from "@ant-design/icons";
 import GLASS_CODE_NAMES from "../../const/glassCodeNames";
 import {
   getPrefixCd,
@@ -383,7 +383,7 @@ export default function CarGlassViewer({
     }
 
     return (
-      <div className="flex flex-col space-y-4 p-2">
+      <div className="flex flex-col space-y-4 pt-0 p-2">
         {selectedGlassCodes.map(code => {
           const glassState = loadedPartsMap[code];
           const glassObj = glassData.find(g => g.code === code);
@@ -417,7 +417,7 @@ export default function CarGlassViewer({
 
           return (
             <div key={code} className="flex flex-col space-y-1">
-              <div className="flex items-center justify-between gap-2 pb-1 border-b border-slate-100 group/header">
+              <div className="flex items-center justify-between gap-2 pb-1 group/header">
                 <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded uppercase tracking-wide">{label}</span>
                 <button
                   onClick={(e) => handleRemoveGlassType(e, code)}
@@ -457,8 +457,11 @@ export default function CarGlassViewer({
                       }
                     }}
                     className={`
-                                group flex items-center gap-2 p-0.5 px-2 cursor-pointer transition-colors border border-slate-200 rounded
-                                ${isSelected ? "bg-blue-50/50 border-blue-300" : "hover:bg-slate-50 bg-white"}
+                                group flex items-start sm:items-center gap-3 p-1.5 cursor-pointer transition-all border rounded-lg mb-1 relative
+                                ${isSelected
+                        ? "bg-[#EFF6FF] border-blue-500 shadow-sm z-10"
+                        : "bg-white border-transparent border-b-slate-100 hover:bg-blue-50 hover:border-blue-200"
+                      }
                             `}
                   >
                     {/* Checkbox */}
@@ -479,39 +482,46 @@ export default function CarGlassViewer({
                     </div>
 
                     {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
+                    {/* Info Wrapper - Flex Row */}
+                    <div className="flex-1 min-w-0 flex items-start justify-between gap-4">
+                      {/* LEFT SIDE: ID & Description */}
+                      <div className="flex flex-col gap-1 min-w-0">
                         <span className={`font-bold text-xs ${isSelected ? "text-blue-900" : "text-slate-800"}`}>
                           {nagsId || "Unknown ID"}
                           {part.feature_span ? ` ${part.feature_span}` : (part.glass_info?.ta ? ` ${part.glass_info.ta}` : "")}
                           {part.qualifiers && part.qualifiers.length > 0 ? ` (${part.qualifiers.join(", ")})` : ""}
                         </span>
-
-                        {/* OEM Display Logic */}
-                        {part.OEMS && part.OEMS.length > 1 ? (
-                          <div onClick={(e) => e.stopPropagation()}>
-                            <Select
-                              defaultValue={part.OEMS[0]}
-                              size="small"
-                              bordered={false}
-                              className="w-36 !text-xs !font-mono !font-bold bg-slate-100 border border-slate-200 rounded"
-                              dropdownMatchSelectWidth={false}
-                              options={part.OEMS.map(o => ({ label: o, value: o }))}
-                            // We could handle selection here if needed to update the 'selected' part context
-                            />
-                          </div>
-                        ) : (oemId || (part.OEMS && part.OEMS.length === 1)) ? (
-                          <span className="text-xs font-mono font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded shrink-0 border border-slate-200">
-                            OEM: {oemId || part.OEMS[0]}
-                          </span>
-                        ) : null}
-                      </div>
-                      <div className="flex items-center justify-between gap-2 mt-0.5">
                         <p className="text-[10px] text-slate-500 truncate leading-tight">
                           {part.part_description || ""}
                         </p>
+                      </div>
+
+                      {/* RIGHT SIDE: OEM & Price (Aligned right, side by side or stacked based on space, but user asked for one line) */}
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {/* OEM Badge */}
+                        {part.OEMS && part.OEMS.length > 1 ? (
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <Dropdown
+                              menu={{
+                                items: part.OEMS.map(o => ({ key: o, label: <span className="text-[10px] font-mono font-bold">{o}</span> })),
+                                onClick: () => { } // Display only
+                              }}
+                              trigger={['click']}
+                            >
+                              <span className="cursor-pointer flex items-center gap-1 text-[10px] font-mono font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded shrink-0 border border-slate-200 hover:border-blue-400 transition-colors">
+                                {part.OEMS[0]} <DownOutlined style={{ fontSize: '8px' }} />
+                              </span>
+                            </Dropdown>
+                          </div>
+                        ) : (oemId || (part.OEMS && part.OEMS.length === 1)) ? (
+                          <span className="text-[10px] font-mono font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded shrink-0 border border-slate-200">
+                            OEM: {oemId || part.OEMS[0]}
+                          </span>
+                        ) : null}
+
+                        {/* Price Badge */}
                         {part.list_price && (
-                          <span className="text-[10px] font-semibold text-green-700 shrink-0">
+                          <span className="text-[10px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded shrink-0 border border-slate-200">
                             ${part.list_price.toFixed(2)}
                           </span>
                         )}
@@ -547,13 +557,12 @@ export default function CarGlassViewer({
   }
 
   return (
-    <div className="bg-white p-0 h-full flex flex-col">
+    <div className="bg-transparent p-0 h-full flex flex-col">
       {/* Top header removed, description moved below image */}
       <div className="flex flex-col md:flex-row gap-2 h-full overflow-hidden">
-        {/* Left column: Diagram */}
         {/* Left column: Diagram & Glass Selection */}
-        <div className="flex flex-col items-center justify-start border-r border-slate-100 pr-0 md:pr-2 w-full md:w-1/3 shrink-0 relative z-0">
-          <div className="w-full mb-2 relative pl-2 pt-2">
+        <div className="flex flex-col items-center justify-start bg-white shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg border-0 pr-0 w-full md:w-1/3 shrink-0 relative z-0">
+          <div className="w-full mb-2 relative px-2 pt-2">
             <label className="block text-sm font-bold text-slate-800 mb-2">Select Glass Type</label>
 
 
@@ -662,7 +671,7 @@ export default function CarGlassViewer({
                   onClick={() => setImageModalOpen(true)}
                   title="Click to enlarge"
                 >
-                  <div className="relative w-full h-48 flex items-center justify-center border border-slate-100 rounded-lg p-2">
+                  <div className="relative w-full h-48 flex items-center justify-center">
                     <img
                       src={imageSrc}
                       alt="Vehicle Graphic"
@@ -694,8 +703,8 @@ export default function CarGlassViewer({
         </div>
 
         {/* Right column: Parts Selection */}
-        <div className="flex flex-col flex-1 bg-white border border-slate-200 overflow-hidden min-h-0">
-          <div className="p-2 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+        <div className="flex flex-col flex-1 bg-white shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg border-0 overflow-hidden min-h-0">
+          <div className="px-2 py-1 bg-white flex items-center justify-between">
             <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wide">
               {selectedGlassCodes.length > 0
                 ? `Available Options (${selectedGlassCodes.length} Selected)`

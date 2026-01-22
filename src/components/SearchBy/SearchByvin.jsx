@@ -87,16 +87,17 @@ export default function SearchByVin({
           size="middle"
           placeholder="17-character VIN"
           aria-label="Vehicle Identification Number"
-          prefix={<SearchOutlined className="text-violet-400" />}
+          prefix={<SearchOutlined className="text-slate-400 group-focus-within:text-blue-500" />}
           className="
             !h-9 !rounded-md
             !bg-white
-            !border-slate-200 hover:!border-[#7E5CFE] focus:!border-violet-500
-            focus:!shadow-[0_0_0_1px_rgba(139,92,246,0.5)]
+            !border-[#E2E8F0] hover:!border-blue-400 focus:!border-[#3B82F6]
+            focus:!shadow-[0_0_0_3px_rgba(59,130,246,0.1)]
             !text-black !font-normal placeholder:!text-slate-400
             !text-sm
             transition-all duration-200
             flex-1
+            outline-none
           "
           status={error ? "error" : undefined}
           disabled={loading}
@@ -105,7 +106,7 @@ export default function SearchByVin({
 
         <button
           type="button"
-          className="h-9 px-4 rounded-md bg-white border border-slate-300 text-slate-900 font-medium text-sm transition-colors hover:border-[#7E5CFE] hover:text-[#7E5CFE] disabled:opacity-60 whitespace-nowrap"
+          className="h-9 px-4 rounded-md bg-transparent border border-[#E2E8F0] text-slate-600 font-medium text-sm transition-colors hover:bg-slate-50 hover:text-slate-800 disabled:opacity-60 whitespace-nowrap"
           onClick={handleDecode}
           disabled={loading || !isValid}
         >
