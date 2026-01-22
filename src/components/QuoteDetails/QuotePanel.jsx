@@ -1689,26 +1689,26 @@ Auto Glass Pro Team`;
                     </Dropdown >
 
                     {/* Totals Table */}
-                    <table className="w-full max-w-xs border border-slate-100 text-sm">
+                    <table className="w-full max-w-xs text-sm rounded-xl overflow-hidden bg-slate-50/50">
                         <tbody>
                             {/* Labor Row */}
-                            <tr className="border-b border-slate-100">
+                            <tr className="">
                                 <td className="px-2 py-1 text-slate-600">Labor</td>
                                 <td className="px-2 py-1 text-right text-slate-900">{currency(laborCostDisplay)}</td>
                             </tr>
                             {/* Subtotal Row */}
-                            <tr className="border-b border-slate-100">
+                            <tr className="">
                                 <td className="px-2 py-1 text-slate-600">Subtotal</td>
                                 <td className="px-2 py-1 text-right text-slate-900">{currency(subtotal)}</td>
                             </tr>
                             {/* Tax Row */}
-                            <tr className="border-b border-slate-100">
+                            <tr className="">
                                 <td className="px-2 py-1 text-slate-600">Tax ({globalTaxRate}%)</td>
                                 <td className="px-2 py-1 text-right text-slate-900">{currency(totalTax)}</td>
                             </tr>
 
                             {/* Total Row */}
-                            <tr className="border-b border-slate-100 bg-slate-50">
+                            <tr className="bg-slate-50">
                                 <td className="px-2 py-1 font-semibold text-slate-700">
                                     <div className="flex items-center gap-1">
                                         Total
@@ -1795,7 +1795,7 @@ Auto Glass Pro Team`;
                                     />
                                 </td>
                             </tr>
-                            <tr className="border-b border-slate-100">
+                            <tr className="">
                                 <td className="px-2 py-1 text-slate-600">Paid</td>
                                 <td className="px-2 py-1 text-right text-slate-900">
                                     <input
@@ -1808,7 +1808,7 @@ Auto Glass Pro Team`;
                                 </td>
                             </tr>
                             {/* Balance Row */}
-                            <tr className="border-b border-slate-100 bg-slate-50">
+                            <tr className="bg-slate-50">
                                 <td className="px-2 py-1 font-semibold text-slate-700">Balance</td>
                                 <td className="px-2 py-1 text-right font-bold text-slate-900">{currency(balance)}</td>
                             </tr>

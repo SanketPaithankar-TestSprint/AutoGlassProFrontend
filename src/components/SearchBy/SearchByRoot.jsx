@@ -714,7 +714,7 @@ const SearchByRoot = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col px-0 pt-0 pb-1">
+    <div className="min-h-screen bg-slate-200 flex flex-col px-0 pt-0 pb-1">
       {contextHolder}
 
       {/* Kit Selection Modal */}
