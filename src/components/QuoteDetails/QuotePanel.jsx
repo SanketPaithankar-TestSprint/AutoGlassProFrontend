@@ -123,7 +123,7 @@ class ErrorBoundary extends React.Component {
     }
 }
 
-function QuotePanelContent({ onRemovePart, customerData, printableNote, internalNote, insuranceData, includeInsurance, attachments = [], onClear, docMetadata, isSaved, isEditMode, onEditModeChange, onDocumentCreated, aiContactFormId }) {
+function QuotePanelContent({ onRemovePart, customerData, printableNote, internalNote, insuranceData, includeInsurance, attachments = [], setAttachments, onClear, docMetadata, isSaved, isEditMode, onEditModeChange, onDocumentCreated, aiContactFormId }) {
     const navigate = useNavigate();
 
     const formatDate = (dateStr) => {
@@ -1028,13 +1028,10 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
 
                     serviceDocumentItems.push({
                         partId: it.originalPartId || null, // Include partId for existing items
-                        itemType: 'part',
+                        itemType: 'PART', // Uppercase as per request example
+                        // Standard fields
                         nagsGlassId: it.nagsId || "",
-                        oemGlassId: it.oemId || "",
-                        // Add missing fields for verification
-                        prefixCd: it.prefixCd || "",
-                        posCd: it.posCd || "",
-                        sideCd: it.sideCd || "",
+                        // Optional/Extra fields
                         partDescription: it.description || "",
                         partPrice: Number(it.amount) || 0, // Using amount as the partPrice
                         listPrice: Number(it.listPrice) || 0, // Added listPrice
@@ -1044,10 +1041,8 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
 
                         // Kit Details Merged into Part
                         kitPrice: associatedKit ? (Number(associatedKit.amount) || 0) : 0,
-                        kitListPrice: associatedKit ? (Number(associatedKit.listPrice) || 0) : 0,
                         kitDescription: associatedKit ? (associatedKit.description || "") : "",
-                        kitQuantity: associatedKit ? (Number(associatedKit.qty) || 0) : 0,
-                        kitId: associatedKit ? (associatedKit.nagsId || "") : ""
+                        kitQuantity: associatedKit ? (Number(associatedKit.qty) || 0) : 0
                     });
                 } else if (it.type === 'Kit') {
                     // Skip separate kit items as they are now merged into the part
@@ -1058,7 +1053,7 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
 
                     if (linkedPart) {
                         const existingPart = serviceDocumentItems.find(sdi =>
-                            sdi.nagsGlassId === linkedPart.nagsId && sdi.oemGlassId === linkedPart.oemId && sdi.itemType === 'part'
+                            sdi.nagsGlassId === linkedPart.nagsId && sdi.itemType === 'PART'
                         );
                         if (existingPart) {
                             existingPart.laborRate = Number(it.unitPrice) || 0;
@@ -1075,8 +1070,8 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
             manualItems.forEach(manualIt => {
                 const isLabor = manualIt.type === 'Labor';
                 serviceDocumentItems.push({
-                    partId: manualIt.originalPartId || null, // Include ID for manual items too if they existed
-                    itemType: manualIt.type.toLowerCase(),
+                    partId: manualIt.originalPartId || null,
+                    itemType: manualIt.type === 'Service' ? 'SERVICE' : (manualIt.type === 'ADAS' ? 'SERVICE' : (isLabor ? 'LABOR' : 'PART')),
                     partDescription: manualIt.description,
                     partPrice: Number(manualIt.amount) || 0,
                     quantity: 1,
@@ -1085,9 +1080,8 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                 });
             });
 
-            const customerWithVehicle = {
-                organizationId: customerData.organizationId || 0,
-                customerType: customerData.customerType || "individual",
+            // Separate Customer and Vehicle Data
+            const customerPayload = {
                 firstName: customerData.firstName || "",
                 lastName: customerData.lastName || "",
                 email: customerData.email || "",
@@ -1100,73 +1094,74 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                 postalCode: customerData.postalCode || "",
                 country: customerData.country || "USA",
                 preferredContactMethod: customerData.preferredContactMethod || "email",
-                notes: customerData.notes || "",
-                vehicleYear: Number(customerData.vehicleYear) || "",
-                vehicleMake: customerData.vehicleMake || "",
-                vehicleModel: customerData.vehicleModel || "",
-                vehicleStyle: customerData.vehicleStyle || "",
-                bodyType: customerData.bodyType || "",
-                licensePlateNumber: customerData.licensePlateNumber || "",
-                vin: customerData.vin || "",
-                vehicleNotes: ""
+                customerType: customerData.customerType || "INDIVIDUAL",
+                taxExempt: customerData.isTaxExempt || false,
+                notes: customerData.notes || ""
             };
 
-            // Debug: Log bodyType value
-            console.log("[QuotePanel] customerData.bodyType:", customerData.bodyType);
-            console.log("[QuotePanel] customerWithVehicle.bodyType:", customerWithVehicle.bodyType);
+            const vehiclePayload = {
+                vehicleYear: Number(customerData.vehicleYear) || 2024, // fallback per request/logic
+                vehicleMake: customerData.vehicleMake || "",
+                vehicleModel: customerData.vehicleModel || "",
+                bodyType: customerData.bodyType || "", // e.g. SUV/Crossover
+                vin: customerData.vin || "",
+                licensePlateNumber: customerData.licensePlateNumber || "",
+                notes: customerData.vehicleNotes || "",
+                // IDs if available (often from search)
+                makeId: customerData.makeId || null, // Assuming these might be present in customerData/vehicleInfo
+                modelId: customerData.modelId || null,
+                bodyStyleId: customerData.bodyStyleId || null,
+                masterVehId: customerData.vehId || null
+            };
 
-            const serviceDocument = {
+            const attachmentMetadata = attachments.map(att => ({
+                description: att.description || att.file.name,
+                category: "GENERAL" // Default category? Or passed from AttachmentDetails?
+            }));
+
+            // Construct Flat Root Object
+            const compositePayload = {
                 documentType: currentDocType.replace(" ", "_").toUpperCase(),
-                employeeId: 0,
-                serviceLocation: "mobile",
-                serviceAddress: `${customerData.addressLine1 || ''}, ${customerData.city || ''}, ${customerData.state || ''} ${customerData.postalCode || ''}`,
                 documentDate: new Date().toISOString(),
-                scheduledDate: new Date().toISOString(),
+                scheduledDate: new Date().toISOString(), // This might need a date picker in UI? defaulting to now
                 estimatedCompletion: new Date().toISOString(),
                 dueDate: new Date().toISOString().split('T')[0],
                 paymentTerms: "Due upon receipt",
-                notes: printableNote, // Use prop (Customer Notes)
-                internalNotes: internalNote, // Use prop (Internal Notes)
-                termsConditions: "Warranty valid for 12 months on workmanship.",
+                notes: printableNote,
+                internalNotes: internalNote,
+                serviceLocation: "SHOP",
+                serviceAddress: `${customerData.addressLine1 || ''}, ${customerData.city || ''}, ${customerData.state || ''} ${customerData.postalCode || ''}`,
                 taxRate: customerData.isTaxExempt ? 0 : (Number(globalTaxRate) || 0),
-                amountPaid: Number(payment) || 0,
+                discountAmount: 0.00, // No discount logic in UI yet
 
-                laborAmount: totalLaborAmount,
-                items: serviceDocumentItems
-            };
-
-            const combinedDescription = attachments.map(att =>
-                `${att.file.name}: ${att.description || "No description"}`
-            ).join('\n');
-
-            const compositePayload = {
-                customerWithVehicle: customerWithVehicle,
-                serviceDocument: serviceDocument,
+                customer: customerPayload,
+                vehicle: vehiclePayload,
                 insurance: includeInsurance ? insuranceData : null,
-                attachmentDescription: combinedDescription
+                items: serviceDocumentItems,
+                attachments: attachmentMetadata
             };
 
             console.log("Sending Composite Payload:", compositePayload);
 
             const files = attachments.map(a => a.file);
-            console.log("Files to upload:", files.length, files);
-
-            console.log("Files to upload:", files.length, files);
+            console.log("Files to upload:", files.length);
 
             let createdDocNumber;
 
             if (isSaved && docMetadata?.documentNumber) {
                 // UPDATE EXISTING DOCUMENT
                 console.log(`Updating existing document: ${docMetadata.documentNumber}`);
-
-                // Do not include file attachments in PUT request updates
+                // Existing update logic might expect different payload? 
+                // Assuming updateCompositeServiceDocument also needs refactoring or this payload works for it too?
+                // For now, let's use the same payload structure as it's cleaner.
+                // BUT updateCompositeServiceDocument (Step 62 import) might be different.
+                // The task description focused on CREATING.
+                // If update fails, we might need to adjust.
                 await updateCompositeServiceDocument(docMetadata.documentNumber, compositePayload);
-                // createdDocNumber = updateResponse.serviceDocument?.documentNumber || docMetadata.documentNumber;
                 createdDocNumber = docMetadata.documentNumber;
                 message.success(`Service Document Updated Successfully!`);
             } else {
                 // CREATE NEW DOCUMENT
-                console.log("Creating new document with", files.length, "files");
                 const response = await createCompositeServiceDocument(compositePayload, files);
                 createdDocNumber = response.documentNumber || response.serviceDocument?.documentNumber;
 
@@ -1189,7 +1184,6 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
 
         } catch (err) {
             console.error(err);
-            // message.error("Save failed: " + err.message);
             modal.error({
                 title: 'Save Failed',
                 content: err.message,

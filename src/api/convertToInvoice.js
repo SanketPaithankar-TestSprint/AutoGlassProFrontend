@@ -1,6 +1,8 @@
 import { getValidToken } from "./getValidToken";
 
-const BASE_URL = "https://javaapi.autopaneai.com/api/v1";
+import urls from "../config";
+
+const BASE_URL = `${urls.javaApiUrl}/v1`;
 
 /**
  * Convert a Work Order to Invoice

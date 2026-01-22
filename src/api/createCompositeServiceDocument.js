@@ -26,12 +26,12 @@ export const createCompositeServiceDocument = async (data, file) => {
             file.forEach((f, index) => {
                 if (f) {
                     console.log(`  - File ${index + 1}:`, f.name, f.type, f.size, "bytes");
-                    formData.append("file", f);
+                    formData.append("files", f);
                 }
             });
         } else if (file) {
             console.log("[createCompositeServiceDocument] Appending single file:", file.name);
-            formData.append("file", file);
+            formData.append("files", file);
         } else {
             console.log("[createCompositeServiceDocument] No files to upload");
         }
