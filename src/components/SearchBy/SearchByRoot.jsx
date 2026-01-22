@@ -22,6 +22,7 @@ import 'react-quill-new/dist/quill.snow.css';
 
 
 const SearchByRoot = () => {
+  console.log("Rendering SearchByRoot - Card Redesign Active");
   // Zustand Store
   const {
     vinData, setVinData,
@@ -713,7 +714,7 @@ const SearchByRoot = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white flex flex-col px-0 pt-0 pb-1">
+    <div className="min-h-screen bg-slate-100 flex flex-col px-0 pt-0 pb-1">
       {contextHolder}
 
       {/* Kit Selection Modal */}
@@ -725,20 +726,20 @@ const SearchByRoot = () => {
         partNumber={pendingKitData?.partNumber || ''}
       />
 
-      <div className="w-full mx-auto space-y-2 flex flex-col max-w-[98%] 2xl:max-w-[1900px] flex-1">
+      <div className="w-full mx-auto space-y-2 flex flex-col max-w-full px-4 2xl:max-w-[1900px] flex-1">
 
 
 
         {/* TABS & ACTIONS */}
-        <div className="flex justify-between items-center gap-0 border-b border-slate-200 mb-1">
-          <div className="flex justify-start">
+        <div className="flex justify-between items-center gap-0 mb-3 mt-2">
+          <div className="flex justify-start gap-2">
             {tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-6 py-2 font-bold text-sm tracking-wide transition-all border-b-2 ${activeTab === tab.id
-                  ? 'border-gray-900 text-gray-900'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                className={`px-4 py-1.5 font-bold text-xs tracking-wide transition-all rounded-md shadow-sm border ${activeTab === tab.id
+                  ? 'bg-white text-blue-600 border-blue-600'
+                  : 'bg-white text-slate-600 border-slate-200 hover:text-slate-900 hover:border-slate-300'
                   }`}
               >
                 {tab.label}
@@ -749,7 +750,7 @@ const SearchByRoot = () => {
           <div className="pr-4">
             <button
               onClick={handleGlobalClear}
-              className="text-red-500 hover:text-red-700 font-medium text-sm flex items-center gap-1 transition-colors px-3 py-1 rounded hover:bg-red-50"
+              className="px-3 py-1.5 rounded-md bg-transparent border border-red-200 text-red-600 font-medium text-sm transition-colors hover:bg-red-50 hover:text-red-700 flex items-center gap-1"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
@@ -769,7 +770,7 @@ const SearchByRoot = () => {
               <div className={activeTab === 'quote' ? 'block' : 'hidden'}>
                 <div className="flex flex-col md:flex-row gap-2 md:h-[280px]">
                   {/* LEFT: SEARCH */}
-                  <div className="border border-slate-200 bg-white p-2 flex flex-col gap-1 overflow-visible shadow-sm rounded-lg w-full md:w-[380px] md:flex-shrink-0">
+                  <div className="bg-white p-2 flex flex-col gap-1 overflow-visible shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg w-full md:w-[380px] md:flex-shrink-0">
                     {/* VIN */}
                     <div>
                       <h2 className="text-xs font-bold text-slate-800 mb-1 uppercase tracking-wide">Search by VIN:</h2>
@@ -796,7 +797,7 @@ const SearchByRoot = () => {
                   </div>
 
                   {/* RIGHT: GRAPHIC & PARTS */}
-                  <div className={`border border-slate-200 bg-white p-0 overflow-hidden shadow-sm rounded-lg flex flex-col flex-1 min-h-[300px] md:min-h-0 ${!modelId ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
+                  <div className={`p-0 overflow-hidden flex flex-col flex-1 min-h-[300px] md:min-h-0 ${!modelId ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
                     <div className="flex-1 overflow-hidden relative">
                       <ErrorBoundary>
                         <CarGlassViewer
@@ -852,15 +853,18 @@ const SearchByRoot = () => {
               )}
 
               {activeTab === 'notes' && (
-                <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-2 grid grid-cols-1 md:grid-cols-2 gap-4 bg-white shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg">
                   <div className="space-y-2 h-[250px] flex flex-col ">
                     <label className="text-sm font-bold text-slate-700">Printable Note <span className="text-slate-400 font-normal">(Customer Notes)</span></label>
-                    <div className="flex-1 overflow-hidden">
+                    <div className="flex-1 overflow-hidden border border-slate-200 rounded-lg">
                       <ReactQuill
                         theme="snow"
                         value={printableNote}
                         onChange={setPrintableNote}
-                        className="h-[290px] "
+                        className="h-[210px]"
+                        modules={{
+                          toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered' }, { 'list': 'bullet' }]]
+                        }}
                       />
                     </div>
                   </div>
@@ -869,7 +873,7 @@ const SearchByRoot = () => {
                     <textarea
                       value={internalNote}
                       onChange={(e) => setInternalNote(e.target.value)}
-                      className="w-full flex-1 rounded border border-slate-300 p-2 text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none bg-yellow-50 resize-none"
+                      className="w-full flex-1 rounded-lg border border-slate-200 p-2 text-xs text-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-yellow-50/50 resize-none shadow-sm"
                       placeholder="Internal notes for office use only..."
                     />
                   </div>
@@ -877,8 +881,8 @@ const SearchByRoot = () => {
               )}
 
               {/* BOTTOM ROW: QUOTE DETAILS (ALWAYS VISIBLE) */}
-              <div className={`flex-shrink-0 border-t-2 border-slate-800 bg-white shadow-sm mt-2 ${!modelId && quoteItems.length === 0 ? 'opacity-50' : ''}`}>
-                <div className="p-2">
+              <div className={`flex-shrink-0 mt-2 ${!modelId && quoteItems.length === 0 ? 'opacity-50' : ''}`}>
+                <div className="p-0">
                   <QuotePanel
                     key={`quote-${resetKey}`}
 

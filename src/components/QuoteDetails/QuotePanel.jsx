@@ -1459,207 +1459,213 @@ Auto Glass Pro Team`;
             />
 
             {/* Header / Metadata */}
-            <h3 className="text-base font-bold text-[#7E5CFE] mb-1">
-                Quote Details
-            </h3>
+            <div className="bg-white p-2 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg mb-4">
+                <h3 className="text-base font-bold text-[#7E5CFE] mb-1">
+                    Quote Details
+                </h3>
 
-            {/* Line Items Table - Height for 6 rows + header */}
-            <div className="mb-2 border border-slate-300 bg-white shadow-sm rounded-sm max-h-[200px] overflow-y-auto">
-                <table className="min-w-full divide-y divide-slate-300">
-                    <thead className="bg-slate-50 sticky top-0 z-10 shadow-sm">
-                        <tr className="text-left text-sm font-semibold text-slate-800 tracking-tight">
-                            <th className="px-1 py-0.5 w-[120px] border-r border-slate-300 bg-slate-50">Part</th>
-                            <th className="px-1 py-0.5 border-r border-slate-300 bg-slate-50">Description</th>
-                            <th className="px-1 py-0.5 w-[90px] border-r border-slate-300 bg-slate-50">Manufacturer</th>
-                            <th className="px-1 py-0.5 text-right w-[60px] border-r border-slate-300 bg-slate-50">Quantity</th>
-                            <th className="px-1 py-0.5 text-right w-[90px] border-r border-slate-300 bg-slate-50">List</th>
-                            <th className="px-1 py-0.5 text-right w-[90px] border-r border-slate-300 bg-slate-50">Amount</th>
-                            <th className="px-1 py-0.5 w-5 bg-slate-50"></th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-slate-300">
-                        {items.map((it, index) => {
-                            // Calculate rowSpan for Part rows
-                            let rowSpan = 1;
-                            let showDeleteButton = true;
+                {/* Line Items Table - Height for 6 rows + header */}
+                <div className="border border-slate-100 bg-white rounded-sm max-h-[400px] overflow-y-auto">
+                    <table className="min-w-full divide-y divide-slate-100">
+                        <thead className="bg-slate-50 sticky top-0 z-10">
+                            <tr className="text-left text-sm font-bold text-slate-700 tracking-tight">
+                                <th className="px-2 py-2 w-[160px] bg-slate-50">Part</th>
+                                <th className="px-2 py-2 bg-slate-50">Description</th>
+                                <th className="px-2 py-2 w-[110px] bg-slate-50">Manufacturer</th>
+                                <th className="px-2 py-2 text-right w-[70px] bg-slate-50">Quantity</th>
+                                <th className="px-2 py-2 text-right w-[100px] bg-slate-50">List</th>
+                                <th className="px-2 py-2 text-right w-[100px] bg-slate-50">Amount</th>
+                                <th className="px-2 py-2 w-5 bg-slate-50"></th>
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-slate-100">
+                            {items.map((it, index) => {
+                                // Calculate rowSpan for Part rows
+                                let rowSpan = 1;
+                                let showDeleteButton = true;
 
-                            if (it.type === 'Part') {
-                                // Count related Labor and Kit rows
-                                const partId = it.id;
-                                const hasLabor = items.some(item => item.id === `${partId}_LABOR`);
-                                const kitCount = items.filter(item => item.parentPartId === partId && item.type === 'Kit').length;
-                                rowSpan = 1 + (hasLabor ? 1 : 0) + kitCount;
-                            } else if (it.type === 'Labor' && it.id.endsWith('_LABOR')) {
-                                // Hide delete button only for linked Labor (not manual Labor)
-                                showDeleteButton = false;
-                            } else if (it.type === 'Kit' && it.parentPartId) {
-                                // Hide delete button only for Kits that belong to a Part
-                                showDeleteButton = false;
-                            }
+                                if (it.type === 'Part') {
+                                    // Count related Labor and Kit rows
+                                    const partId = it.id;
+                                    const hasLabor = items.some(item => item.id === `${partId}_LABOR`);
+                                    const kitCount = items.filter(item => item.parentPartId === partId && item.type === 'Kit').length;
+                                    rowSpan = 1 + (hasLabor ? 1 : 0) + kitCount;
+                                } else if (it.type === 'Labor' && it.id.endsWith('_LABOR')) {
+                                    // Hide delete button only for linked Labor (not manual Labor)
+                                    showDeleteButton = false;
+                                } else if (it.type === 'Kit' && it.parentPartId) {
+                                    // Hide delete button only for Kits that belong to a Part
+                                    showDeleteButton = false;
+                                }
 
-                            return (
-                                <tr key={it.id} className="hover:bg-slate-50 transition group">
-                                    <td className="px-1 py-0.5 border-r border-slate-300">
-                                        <div className="relative">
-                                            {it.type === 'Part' ? (
-                                                <input
-                                                    value={it.nagsId}
-                                                    onChange={(e) => {
-                                                        updateItem(it.id, "nagsId", e.target.value);
-                                                        // handlePartNoChange(it.id, e.target.value); // Use Enter only
-                                                    }}
-                                                    onKeyDown={(e) => {
-                                                        if (e.key === 'Enter') {
-                                                            handlePartNoBlur(it.id, e.currentTarget.value);
-                                                            e.currentTarget.blur();
-                                                        }
-                                                    }}
-                                                    className="w-full h-4 rounded px-1 text-xs outline-none focus:bg-white bg-transparent text-slate-700"
-                                                    placeholder="Part No"
+                                return (
+                                    <tr key={it.id} className="hover:bg-slate-50 transition group">
+                                        <td className="px-2 py-1 align-middle">
+                                            <div className="relative">
+                                                {it.type === 'Part' ? (
+                                                    <input
+                                                        value={it.nagsId}
+                                                        onChange={(e) => {
+                                                            updateItem(it.id, "nagsId", e.target.value);
+                                                            // handlePartNoChange(it.id, e.target.value); // Use Enter only
+                                                        }}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter') {
+                                                                handlePartNoBlur(it.id, e.currentTarget.value);
+                                                                e.currentTarget.blur();
+                                                            }
+                                                        }}
+                                                        className="w-full h-7 px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all font-medium text-xs"
+                                                        placeholder="Part No"
+                                                    />
+                                                ) : (
+                                                    <input
+                                                        type="text"
+                                                        value={it.type === 'Labor' ? 'LABOR' : it.type === 'ADAS' ? 'ADAS' : it.type === 'Kit' ? (it.nagsId || 'KIT') : 'SERVICE'}
+                                                        readOnly
+                                                        className="w-full h-7 px-2 rounded border-none outline-none bg-transparent text-slate-500 font-medium cursor-default text-xs"
+                                                    />
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="px-2 py-1 align-middle">
+                                            {it.type === 'ADAS' ? (
+                                                <Select
+                                                    className="w-full text-xs custom-select-borderless"
+                                                    size="small"
+                                                    bordered={false}
+                                                    placeholder="Select Type"
+                                                    value={it.adasCode || null}
+                                                    onChange={(val) => handleAdasChange(it.id, val)}
+                                                    options={ADAS_TYPES.map(type => {
+                                                        return {
+                                                            label: type.code,
+                                                            value: type.code
+                                                        };
+                                                    })}
+                                                    dropdownMatchSelectWidth={false}
                                                 />
                                             ) : (
                                                 <input
-                                                    type="text"
-                                                    value={it.type === 'Labor' ? 'LABOR' : it.type === 'ADAS' ? 'ADAS' : it.type === 'Kit' ? (it.nagsId || 'KIT') : 'SERVICE'}
-                                                    readOnly
-                                                    className="w-full h-4 rounded px-1 text-xs outline-none bg-transparent text-slate-700 cursor-default"
+                                                    value={it.description || ''}
+                                                    onChange={(e) => updateItem(it.id, "description", e.target.value)}
+                                                    className="w-full h-7 px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all text-xs"
                                                 />
                                             )}
-                                        </div>
-                                    </td>
-                                    <td className="px-1 py-0.5 border-r border-slate-300">
-                                        {it.type === 'ADAS' ? (
-                                            <Select
-                                                className="w-full text-xs custom-select-small"
-                                                size="small"
-                                                bordered={false}
-                                                placeholder="Select Type"
-                                                value={it.adasCode || null}
-                                                onChange={(val) => handleAdasChange(it.id, val)}
-                                                options={ADAS_TYPES.map(type => {
-                                                    return {
-                                                        label: type.code,
-                                                        value: type.code
-                                                    };
-                                                })}
-                                                dropdownMatchSelectWidth={false}
-                                            />
-                                        ) : (
-                                            <input
-                                                value={it.description || ''}
-                                                onChange={(e) => updateItem(it.id, "description", e.target.value)}
-                                                className="w-full h-4 rounded px-1 text-xs outline-none focus:bg-white bg-transparent text-slate-700"
-                                            />
-                                        )}
-                                    </td>
-                                    <td className="px-1 py-0.5 border-r border-slate-300">
-                                        <input
-                                            value={it.manufacturer}
-                                            onChange={(e) => updateItem(it.id, "manufacturer", e.target.value)}
-                                            className="w-full h-4 rounded px-1 text-xs outline-none focus:bg-white bg-transparent text-slate-700"
-                                            disabled={!it.isManual && it.type === 'Labor'}
-                                        />
-                                    </td>
-                                    <td className="px-1 py-0.5 text-right border-r border-slate-300">
-                                        <input
-                                            type="number"
-                                            value={it.qty}
-                                            onChange={(e) => updateItem(it.id, "qty", e.target.value)}
-                                            className="w-full h-4 rounded px-1 text-xs text-right outline-none focus:bg-white bg-transparent text-slate-700"
-                                            disabled={!it.isManual && it.type === 'Labor'}
-                                        />
-                                    </td>
-                                    <td className="px-1 py-0.5 text-right border-r border-slate-300">
-                                        <CurrencyInput
-                                            value={it.listPrice}
-                                            onChange={(val) => updateItem(it.id, "listPrice", val)}
-                                            className="w-full h-4 rounded px-1 text-xs text-right outline-none focus:bg-white bg-transparent text-slate-700"
-                                            disabled={!it.isManual && it.type === 'Labor'}
-                                            placeholder="$0.00"
-                                        />
-                                    </td>
-                                    <td className="px-1 py-0.5 text-right border-r border-slate-300">
-                                        <CurrencyInput
-                                            value={it.amount}
-                                            onChange={(val) => updateItem(it.id, "amount", val)}
-                                            className="w-full h-4 rounded px-1 text-xs text-right outline-none focus:bg-white bg-transparent text-slate-700"
-                                            placeholder="$0.00"
-                                        />
-                                    </td>
-                                    {showDeleteButton && (
-                                        <td className="px-1 py-0.5 text-center align-middle" rowSpan={rowSpan}>
-                                            <button type="button" onClick={() => handleDeleteItem(it.id)} className="text-slate-400 hover:text-red-500 transition-colors p-1 rounded hover:bg-red-50" title="Remove Item">
-                                                <DeleteOutlined style={{ fontSize: '14px' }} />
-                                            </button>
                                         </td>
-                                    )}
+                                        <td className="px-2 py-1 align-middle">
+                                            <input
+                                                value={it.manufacturer}
+                                                onChange={(e) => updateItem(it.id, "manufacturer", e.target.value)}
+                                                className="w-full h-7 px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all text-xs"
+                                                disabled={!it.isManual && it.type === 'Labor'}
+                                            />
+                                        </td>
+                                        <td className="px-2 py-1 text-right align-middle">
+                                            <input
+                                                type="number"
+                                                value={it.qty}
+                                                onChange={(e) => updateItem(it.id, "qty", e.target.value)}
+                                                className="w-full h-7 px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-right outline-none bg-transparent text-slate-700 transition-all font-medium text-xs"
+                                                disabled={!it.isManual && it.type === 'Labor'}
+                                            />
+                                        </td>
+                                        <td className="px-2 py-1 text-right align-middle">
+                                            <CurrencyInput
+                                                value={it.listPrice}
+                                                onChange={(val) => updateItem(it.id, "listPrice", val)}
+                                                className="w-full h-7 px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-right outline-none bg-transparent text-slate-700 transition-all text-xs"
+                                                disabled={!it.isManual && it.type === 'Labor'}
+                                                placeholder="$0.00"
+                                            />
+                                        </td>
+                                        <td className="px-2 py-1 text-right align-middle">
+                                            <CurrencyInput
+                                                value={it.amount}
+                                                onChange={(val) => updateItem(it.id, "amount", val)}
+                                                className="w-full h-7 px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-right outline-none bg-transparent text-slate-900 font-bold transition-all text-xs"
+                                                placeholder="$0.00"
+                                            />
+                                        </td>
+                                        {showDeleteButton && (
+                                            <td className="px-1 py-0.5 text-center align-middle" rowSpan={rowSpan}>
+                                                <button type="button" onClick={() => handleDeleteItem(it.id)} className="text-slate-400 hover:text-red-500 transition-colors p-1 rounded hover:bg-red-50" title="Remove Item">
+                                                    <DeleteOutlined style={{ fontSize: '14px' }} />
+                                                </button>
+                                            </td>
+                                        )}
+                                    </tr>
+                                );
+                            })}
+                            {/* Empty placeholder rows to fill up to 6 rows */}
+                            {Array.from({ length: Math.max(0, 6 - items.length) }).map((_, index) => (
+                                <tr key={`empty-${index}`} className="h-10">
+                                    <td className="px-2 py-1">&nbsp;</td>
+                                    <td className="px-2 py-1"></td>
+                                    <td className="px-2 py-1"></td>
+                                    <td className="px-2 py-1"></td>
+                                    <td className="px-2 py-1"></td>
+                                    <td className="px-2 py-1"></td>
+                                    <td className="px-2 py-1"></td>
                                 </tr>
-                            );
-                        })}
-                        {/* Empty placeholder rows to fill up to 6 rows */}
-                        {Array.from({ length: Math.max(0, 6 - items.length) }).map((_, index) => (
-                            <tr key={`empty-${index}`} className="h-6">
-                                <td className="px-1 py-0.5 border-r border-slate-300">&nbsp;</td>
-                                <td className="px-1 py-0.5 border-r border-slate-300"></td>
-                                <td className="px-1 py-0.5 border-r border-slate-300"></td>
-                                <td className="px-1 py-0.5 border-r border-slate-300"></td>
-                                <td className="px-1 py-0.5 border-r border-slate-300"></td>
-                                <td className="px-1 py-0.5 border-r border-slate-300"></td>
-                                <td className="px-1 py-0.5"></td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {/* Totals & Actions */}
-            <div className="flex justify-between items-start gap-6">
+            <div className="bg-white p-4 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg flex flex-col md:flex-row justify-between items-start gap-6">
                 {/* Left side - Vendor Pricing & Metadata */}
                 <div className="flex flex-col gap-2 flex-1">
                     {/* Vendor Pricing Data Display */}
-                    {items.filter(it => it.vendorData).length > 0 && (
-                        <div className="space-y-1">
-                            {items.filter(it => it.vendorData).map((item) => {
-                                const vendorData = item.vendorData;
-                                // Determine color based on availability
-                                let colorClass = 'text-slate-600';
-                                const availability = vendorData.availability?.toLowerCase();
-                                if (availability === 'green') colorClass = 'text-green-600';
-                                else if (availability === 'blue') colorClass = 'text-blue-600';
-                                else if (availability === 'red') colorClass = 'text-red-600';
-                                else if (availability === 'yellow') colorClass = 'text-yellow-600';
+                    {
+                        items.filter(it => it.vendorData).length > 0 && (
+                            <div className="space-y-1">
+                                {items.filter(it => it.vendorData).map((item) => {
+                                    const vendorData = item.vendorData;
+                                    // Determine color based on availability
+                                    let colorClass = 'text-slate-600';
+                                    const availability = vendorData.availability?.toLowerCase();
+                                    if (availability === 'green') colorClass = 'text-green-600';
+                                    else if (availability === 'blue') colorClass = 'text-blue-600';
+                                    else if (availability === 'red') colorClass = 'text-red-600';
+                                    else if (availability === 'yellow') colorClass = 'text-yellow-600';
 
-                                return (
-                                    <div key={item.id} className={`text-xs font-medium ${colorClass}`}>
-                                        {vendorData.industryCode && <>IndustryCode: {vendorData.industryCode} • </>}
-                                        Price: ${item.unitPrice} •
-                                        {vendorData.leadTime && <>LeadTime: {vendorData.leadTime} • </>}
-                                        Manufacturer: {vendorData.manufacturer || 'Pilkington'}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
+                                    return (
+                                        <div key={item.id} className={`text-xs font-medium ${colorClass}`}>
+                                            {vendorData.industryCode && <>IndustryCode: {vendorData.industryCode} • </>}
+                                            Price: ${item.unitPrice} •
+                                            {vendorData.leadTime && <>LeadTime: {vendorData.leadTime} • </>}
+                                            Manufacturer: {vendorData.manufacturer || 'Pilkington'}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )
+                    }
 
                     {/* Document Metadata */}
-                    {docMetadata && (
-                        <div className="flex flex-col gap-2 mt-2">
-                            {/* Document # */}
-                            <div className="flex flex-col">
-                                <span className="text-[10px] text-sky-700 font-bold uppercase tracking-wider mb-0.5">Document #</span>
-                                <span className="font-mono text-lg font-bold text-slate-800">{docMetadata.documentNumber}</span>
-                            </div>
+                    {
+                        docMetadata && (
+                            <div className="flex flex-col gap-2 mt-2">
+                                {/* Document # */}
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] text-sky-700 font-bold uppercase tracking-wider mb-0.5">Document #</span>
+                                    <span className="font-mono text-lg font-bold text-slate-800">{docMetadata.documentNumber}</span>
+                                </div>
 
-                            {/* Created / Updated Grid */}
-                            <div className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
-                                <span className="uppercase text-[10px] font-bold text-slate-400 tracking-wider self-center">Created</span>
-                                <span className="font-medium text-slate-700">{formatDate(docMetadata.createdAt)}</span>
+                                {/* Created / Updated Grid */}
+                                <div className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
+                                    <span className="uppercase text-[10px] font-bold text-slate-400 tracking-wider self-center">Created</span>
+                                    <span className="font-medium text-slate-700">{formatDate(docMetadata.createdAt)}</span>
 
-                                <span className="uppercase text-[10px] font-bold text-slate-400 tracking-wider self-center">Updated</span>
-                                <span className="font-medium text-slate-700">{formatDate(docMetadata.updatedAt)}</span>
+                                    <span className="uppercase text-[10px] font-bold text-slate-400 tracking-wider self-center">Updated</span>
+                                    <span className="font-medium text-slate-700">{formatDate(docMetadata.updatedAt)}</span>
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )
+                    }
                 </div>
 
                 {/* Right side - Add Button + Totals Table */}
@@ -1680,30 +1686,30 @@ Auto Glass Pro Team`;
                         <button className="flex items-center gap-1 px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded text-xs font-medium transition-colors">
                             Add <DownOutlined className="text-[12px]" />
                         </button>
-                    </Dropdown>
+                    </Dropdown >
 
                     {/* Totals Table */}
-                    <table className="w-full max-w-xs border border-slate-300 text-sm">
+                    <table className="w-full max-w-xs border border-slate-100 text-sm">
                         <tbody>
                             {/* Labor Row */}
-                            <tr className="border-b border-slate-300">
-                                <td className="px-2 py-1 text-slate-600 border-r border-slate-300">Labor</td>
+                            <tr className="border-b border-slate-100">
+                                <td className="px-2 py-1 text-slate-600">Labor</td>
                                 <td className="px-2 py-1 text-right text-slate-900">{currency(laborCostDisplay)}</td>
                             </tr>
                             {/* Subtotal Row */}
-                            <tr className="border-b border-slate-300">
-                                <td className="px-2 py-1 text-slate-600 border-r border-slate-300">Subtotal</td>
+                            <tr className="border-b border-slate-100">
+                                <td className="px-2 py-1 text-slate-600">Subtotal</td>
                                 <td className="px-2 py-1 text-right text-slate-900">{currency(subtotal)}</td>
                             </tr>
                             {/* Tax Row */}
-                            <tr className="border-b border-slate-300">
-                                <td className="px-2 py-1 text-slate-600 border-r border-slate-300">Tax ({globalTaxRate}%)</td>
+                            <tr className="border-b border-slate-100">
+                                <td className="px-2 py-1 text-slate-600">Tax ({globalTaxRate}%)</td>
                                 <td className="px-2 py-1 text-right text-slate-900">{currency(totalTax)}</td>
                             </tr>
 
                             {/* Total Row */}
-                            <tr className="border-b border-slate-300 bg-slate-50">
-                                <td className="px-2 py-1 font-semibold text-slate-700 border-r border-slate-300">
+                            <tr className="border-b border-slate-100 bg-slate-50">
+                                <td className="px-2 py-1 font-semibold text-slate-700">
                                     <div className="flex items-center gap-1">
                                         Total
                                         <button
@@ -1789,8 +1795,8 @@ Auto Glass Pro Team`;
                                     />
                                 </td>
                             </tr>
-                            <tr className="border-b border-slate-300">
-                                <td className="px-2 py-1 text-slate-600 border-r border-slate-300">Paid</td>
+                            <tr className="border-b border-slate-100">
+                                <td className="px-2 py-1 text-slate-600">Paid</td>
                                 <td className="px-2 py-1 text-right text-slate-900">
                                     <input
                                         type="number"
@@ -1802,8 +1808,8 @@ Auto Glass Pro Team`;
                                 </td>
                             </tr>
                             {/* Balance Row */}
-                            <tr className="border-b border-slate-300 bg-slate-50">
-                                <td className="px-2 py-1 font-semibold text-slate-700 border-r border-slate-300">Balance</td>
+                            <tr className="border-b border-slate-100 bg-slate-50">
+                                <td className="px-2 py-1 font-semibold text-slate-700">Balance</td>
                                 <td className="px-2 py-1 text-right font-bold text-slate-900">{currency(balance)}</td>
                             </tr>
                             {/* Action Buttons Row */}
@@ -1822,14 +1828,14 @@ Auto Glass Pro Team`;
                                         <button
                                             onClick={handleSave}
                                             disabled={saveLoading}
-                                            className="flex-1 px-2 py-1 rounded bg-[#00A8E4] text-white text-[10px] font-semibold hover:bg-[#0096cc] transition disabled:opacity-50"
+                                            className="flex-1 px-3 py-1.5 rounded bg-[#3B82F6] text-white text-[11px] font-medium hover:bg-[#7E5CFE] hover:text-white transition shadow-sm disabled:opacity-50"
                                         >
                                             {saveLoading ? '...' : 'Save'}
                                         </button>
                                         <button
                                             onClick={handlePreview}
                                             disabled={previewLoading}
-                                            className="flex-1 px-2 py-1 rounded bg-[#00A8E4] text-white text-[10px] font-semibold hover:bg-[#0096cc] transition disabled:opacity-50"
+                                            className="flex-1 px-3 py-1.5 rounded bg-[#3B82F6] text-white text-[11px] font-medium hover:bg-[#7E5CFE] hover:text-white transition shadow-sm disabled:opacity-50"
                                             title="Preview PDF"
                                         >
                                             {previewLoading ? '...' : 'Print'}
@@ -1837,7 +1843,7 @@ Auto Glass Pro Team`;
                                         <button
                                             onClick={handleEmail}
                                             disabled={emailLoading}
-                                            className="flex-1 px-2 py-1 rounded bg-[#00A8E4] text-white text-[10px] font-semibold hover:bg-[#0096cc] transition disabled:opacity-50"
+                                            className="flex-1 px-3 py-1.5 rounded bg-[#3B82F6] text-white text-[11px] font-medium hover:bg-[#7E5CFE] hover:text-white transition shadow-sm disabled:opacity-50"
                                             title="Send via email"
                                         >
                                             {emailLoading ? '...' : 'Email'}
@@ -1846,21 +1852,22 @@ Auto Glass Pro Team`;
                                 </td>
                             </tr>
                         </tbody>
-                    </table>
-                </div>
-            </div>
+                    </table >
+                </div >
+            </div >
 
             {/* Email Preview Modal */}
-            <Modal
+            < Modal
                 title={`Send ${currentDocType}`}
                 open={showEmailModal}
                 onCancel={handleCloseModal}
-                footer={[
-                    <Button key="cancel" onClick={handleCloseModal}>Cancel</Button>,
-                    <Button key="send" type="primary" loading={emailLoading} onClick={handleConfirmAndSend} className="bg-violet-600">
-                        Confirm & Send
-                    </Button>
-                ]}
+                footer={
+                    [
+                        <Button key="cancel" onClick={handleCloseModal}>Cancel</Button>,
+                        <Button key="send" type="primary" loading={emailLoading} onClick={handleConfirmAndSend} className="bg-violet-600">
+                            Confirm & Send
+                        </Button>
+                    ]}
                 width={800}
             >
                 <div className="flex flex-col md:flex-row gap-6">
@@ -1901,7 +1908,7 @@ Auto Glass Pro Team`;
                         )}
                     </div>
                 </div>
-            </Modal>
+            </Modal >
         </div >
     );
 }

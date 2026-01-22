@@ -500,11 +500,19 @@ export default function SearchByYMM({
   return (
     <div className={`${className} flex flex-col h-full`}>
       <style>{`
-        .ant-select .ant-select-selector {
-          border-radius: 2px !important;
+        /* Ant Select Modernization */
+        .ant-select-selector {
+          border-color: #E2E8F0 !important;
+          border-radius: 6px !important;
+          box-shadow: none !important;
         }
         .ant-select:hover .ant-select-selector {
-          border-color: #7E5CFE !important;
+          border-color: #3B82F6 !important;
+        }
+        .ant-select-focused .ant-select-selector,
+        .ant-select-open .ant-select-selector {
+          border-color: #3B82F6 !important;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
         }
       `}</style>
       {/* Grid: Year / Make / Model - Customized Layout */}
@@ -618,7 +626,7 @@ export default function SearchByYMM({
               disabled={disabled || !makeModelId || !year || !makeId || !bodyType}
               loading={loadingModelId}
               block
-              className="w-full bg-white border border-slate-800 text-slate-900 font-semibold text-sm hover:!border-[#7E5CFE] hover:!text-[#7E5CFE] transition-colors !rounded-md shadow-sm flex-1 h-full min-h-[40px]"
+              className="w-full bg-[#3B82F6] hover:!bg-[#7E5CFE] text-white hover:!text-white font-semibold text-sm border-0 transition-colors !rounded-md shadow-sm flex-1 h-full min-h-[40px]"
             >
               Find Parts
             </Button>
