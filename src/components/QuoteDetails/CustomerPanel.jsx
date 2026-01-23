@@ -7,6 +7,7 @@ import { getCustomers } from "../../api/getCustomers";
 import { getCustomerWithVehicles } from "../../api/getCustomerWithVehicles";
 import { getOrganizations, getOrganizationById, createOrganization, updateOrganizationTaxExempt } from "../../api/organizationApi";
 import { COUNTRIES, US_STATES } from "../../const/locations";
+import ErrorBoundary from "../common/ErrorBoundary";
 
 const { Option } = Select;
 
@@ -50,7 +51,7 @@ const FormSelect = ({ label, name, value, onChange, options, required = false, c
     </div>
 );
 
-export default function CustomerPanel({ formData, setFormData, setCanShowQuotePanel, setPanel }) {
+function CustomerPanel({ formData, setFormData, setCanShowQuotePanel, setPanel }) {
     // Organizations
     const [organizations, setOrganizations] = useState([]);
     const [loadingOrganizations, setLoadingOrganizations] = useState(false);
@@ -324,6 +325,10 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
         } catch (error) {
             console.error("Error loading customer:", error);
+            notification.error({
+                message: "Failed to load customer",
+                description: "Could not retrieve customer details. Please try again."
+            });
         }
     };
 
@@ -505,7 +510,11 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                     className="w-full"
                                     loading={loadingOrganizations}
                                     notFoundContent={loadingOrganizations ? <Spin size="small" /> : "No organizations"}
-                                    filterOption={(input, option) => option.children?.toLowerCase().includes(input.toLowerCase())}
+                                    filterOption={(input, option) => {
+                                        if (!option || !option.children) return false;
+                                        const label = String(option.children);
+                                        return label.toLowerCase().includes(input.toLowerCase());
+                                    }}
                                     onChange={handleOrganizationSelect}
                                     value={selectedOrganizationId}
                                 >
@@ -532,7 +541,14 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                     className="w-full"
                                     loading={loadingCustomers}
                                     notFoundContent={loadingCustomers ? <Spin size="small" /> : "No customers found"}
-                                    filterOption={(input, option) => option.children?.toLowerCase().includes(input.toLowerCase())}
+                                    filterOption={(input, option) => {
+                                        if (!option || !option.children) return false;
+                                        // Handle array of children (react elements/text) or single string
+                                        const label = Array.isArray(option.children)
+                                            ? option.children.join('')
+                                            : String(option.children);
+                                        return label.toLowerCase().includes(input.toLowerCase());
+                                    }}
                                     onChange={handleCustomerSelect}
                                     value={selectedCustomerId}
                                 >
@@ -774,5 +790,13 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                 </div>
             </div>
         </form>
+    );
+}
+
+export default function CustomerPanelWrapper(props) {
+    return (
+        <ErrorBoundary>
+            <CustomerPanel {...props} />
+        </ErrorBoundary>
     );
 }

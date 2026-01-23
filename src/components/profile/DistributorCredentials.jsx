@@ -87,11 +87,11 @@ const DistributorCredentials = () => {
         }
     };
 
-    const handleDelete = async (credentialId) => {
+    const handleDelete = async (distributorName) => {
         try {
             const token = getValidToken(); // Get fresh token
             if (!token) throw new Error("No token found");
-            await deleteDistributorCredential(token, credentialId);
+            await deleteDistributorCredential(token, distributorName);
             notification.success({ message: "Credential deleted successfully" });
             queryClient.invalidateQueries({ queryKey: ['distributorCredentials'] });
         } catch (err) {
@@ -208,7 +208,7 @@ const DistributorCredentials = () => {
                                                 <Popconfirm
                                                     title="Delete credential"
                                                     description="Are you sure you want to delete this credential?"
-                                                    onConfirm={() => handleDelete(cred.id)}
+                                                    onConfirm={() => handleDelete(cred.distributorName)}
                                                     okText="Yes"
                                                     cancelText="No"
                                                     okButtonProps={{ danger: true }}

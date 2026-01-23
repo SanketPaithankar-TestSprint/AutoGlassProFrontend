@@ -901,8 +901,67 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
 
     const total = useMemo(() => manualTotal !== null ? Number(manualTotal) : calculatedTotal, [manualTotal, calculatedTotal]);
 
+    const applyTotalAdjustment = (newTotal) => {
+        if (newTotal === null || isNaN(newTotal)) {
+            setManualTotal(null);
+            return;
+        }
+
+        const difference = newTotal - calculatedTotal;
+
+        if (difference !== 0) {
+            // Find the first Part item, or first Service if no Parts exist
+            const firstPartIndex = items.findIndex(it => it.type === 'Part');
+            const firstServiceIndex = items.findIndex(it => it.type === 'Service' || it.type === 'ADAS');
+
+            let targetIndex = firstPartIndex !== -1 ? firstPartIndex : firstServiceIndex;
+
+            if (targetIndex !== -1) {
+                const targetItem = items[targetIndex];
+
+                // Parts and Kits are taxable, so we need to account for tax when adjusting
+                // Check taxability based on dynamic settings
+                const settings = taxSettings || {
+                    taxParts: true, taxLabor: false, taxService: false, taxAdas: true
+                };
+
+                let isTaxable = false;
+                if (targetItem.type === 'Part' || targetItem.type === 'Kit') isTaxable = settings.taxParts;
+                else if (targetItem.type === 'Labor') isTaxable = settings.taxLabor;
+                else if (targetItem.type === 'Service') isTaxable = settings.taxService;
+                else if (targetItem.type === 'ADAS') isTaxable = settings.taxAdas;
+
+                let amountToAdd = difference;
+                if (isTaxable) {
+                    // Account for tax
+                    const taxMultiplier = 1 + (Number(globalTaxRate) || 0) / 100;
+                    amountToAdd = difference / taxMultiplier;
+                }
+                // Else no tax adjustment needed
+
+                const newAmount = Math.max(0, (Number(targetItem.amount) || 0) + amountToAdd);
+
+                // Update the item's amount
+                setItems(prev => prev.map((it, idx) => {
+                    if (idx === targetIndex) {
+                        return {
+                            ...it,
+                            amount: parseFloat(newAmount.toFixed(2)),
+                            // Also update unitPrice if qty is 1 to keep them in sync
+                            unitPrice: (Number(it.qty) === 1) ? parseFloat(newAmount.toFixed(2)) : it.unitPrice
+                        };
+                    }
+                    return it;
+                }));
+            }
+        }
+
+        // Clear manual total since we've adjusted the item amounts
+        setManualTotal(null);
+    };
+
     const handleRoundUp = () => {
-        setManualTotal(Math.ceil(total));
+        applyTotalAdjustment(Math.ceil(total));
     };
     const numericPayment = Number(payment) || 0;
     const balance = useMemo(() => Math.max(0, total - numericPayment), [total, numericPayment]);
@@ -1058,7 +1117,8 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                         // Kit Details Merged into Part
                         kitPrice: associatedKit ? (Number(associatedKit.amount) || 0) : 0,
                         kitDescription: associatedKit ? (associatedKit.description || "") : "",
-                        kitQuantity: associatedKit ? (Number(associatedKit.qty) || 0) : 0
+                        kitQuantity: associatedKit ? (Number(associatedKit.qty) || 0) : 0,
+                        kitId: associatedKit ? (associatedKit.nagsId || null) : null
                     });
                 } else if (it.type === 'Kit') {
                     // Skip separate kit items as they are now merged into the part
@@ -1740,63 +1800,7 @@ Auto Glass Pro Team`;
                                         onBlur={() => {
                                             if (manualTotal !== null && manualTotal !== '') {
                                                 const newTotal = parseFloat(manualTotal);
-                                                if (isNaN(newTotal)) {
-                                                    setManualTotal(null);
-                                                    return;
-                                                }
-
-                                                // Calculate the difference between new total and calculated total
-                                                const difference = newTotal - calculatedTotal;
-
-                                                if (difference !== 0) {
-                                                    // Find the first Part item, or first Service if no Parts exist
-                                                    const firstPartIndex = items.findIndex(it => it.type === 'Part');
-                                                    const firstServiceIndex = items.findIndex(it => it.type === 'Service' || it.type === 'ADAS');
-
-                                                    let targetIndex = firstPartIndex !== -1 ? firstPartIndex : firstServiceIndex;
-
-                                                    if (targetIndex !== -1) {
-                                                        const targetItem = items[targetIndex];
-
-                                                        // Parts and Kits are taxable, so we need to account for tax when adjusting
-                                                        // Check taxability based on dynamic settings
-                                                        const settings = taxSettings || {
-                                                            taxParts: true, taxLabor: false, taxService: false, taxAdas: true
-                                                        };
-
-                                                        let isTaxable = false;
-                                                        if (targetItem.type === 'Part' || targetItem.type === 'Kit') isTaxable = settings.taxParts;
-                                                        else if (targetItem.type === 'Labor') isTaxable = settings.taxLabor;
-                                                        else if (targetItem.type === 'Service') isTaxable = settings.taxService;
-                                                        else if (targetItem.type === 'ADAS') isTaxable = settings.taxAdas;
-
-                                                        let amountToAdd = difference;
-                                                        if (isTaxable) {
-                                                            // Account for tax
-                                                            const taxMultiplier = 1 + (Number(globalTaxRate) || 0) / 100;
-                                                            amountToAdd = difference / taxMultiplier;
-                                                        }
-                                                        // Else no tax adjustment needed
-
-                                                        const newAmount = Math.max(0, (Number(targetItem.amount) || 0) + amountToAdd);
-
-                                                        // Update the item's amount
-                                                        setItems(prev => prev.map((it, idx) => {
-                                                            if (idx === targetIndex) {
-                                                                return {
-                                                                    ...it,
-                                                                    amount: parseFloat(newAmount.toFixed(2)),
-                                                                    // Also update unitPrice if qty is 1 to keep them in sync
-                                                                    unitPrice: (Number(it.qty) === 1) ? parseFloat(newAmount.toFixed(2)) : it.unitPrice
-                                                                };
-                                                            }
-                                                            return it;
-                                                        }));
-                                                    }
-                                                }
-
-                                                // Clear manual total since we've adjusted the item amounts
-                                                setManualTotal(null);
+                                                applyTotalAdjustment(newTotal);
                                             } else if (manualTotal === '') {
                                                 setManualTotal(null);
                                             }
