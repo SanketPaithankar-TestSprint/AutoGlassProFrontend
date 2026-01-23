@@ -12,7 +12,7 @@ import config from "../config";
 export const sendEmail = async (email, subject, body, file) => {
     try {
         // Get userId from localStorage, fallback to 1 if not found
-        const userId = localStorage.getItem('userId') || '1';
+        const userId = localStorage.getItem('userId') || '';
 
         // Build FormData with email content
         const formData = new FormData();
