@@ -47,7 +47,7 @@ const AuthPage = () => {
                         <div className="h-full flex flex-col items-center justify-center p-8 bg-white">
                             <div className="w-full h-full overflow-y-auto custom-scrollbar flex flex-col items-center">
                                 <div className="w-full max-w-xl bg-white pb-8">
-                                    <h1 className="text-2xl md:text-3xl font-bold mb-4 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent text-center mt-8">Create Account</h1>
+                                    <h1 className="text-2xl md:text-3xl font-bold mb-4 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent text-center mt-8">Join Us</h1>
                                     <SignUpForm onSuccess={handleSignUpSuccess} onCancel={() => setIsSignUpMode(false)} />
                                 </div>
                             </div>
@@ -66,7 +66,7 @@ const AuthPage = () => {
                                     <Logo />
                                 </div> */
                                 }
-                                <h1 className="text-2xl md:text-3xl font-bold mb-6 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">Welcome Back</h1>
+                                <h1 className="text-2xl md:text-3xl font-bold mb-6 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">Login</h1>
                                 <div className="w-full max-w-sm">
                                     <Login
                                         onLoginSuccess={handleLoginSuccess}
@@ -93,10 +93,10 @@ const AuthPage = () => {
                             <div className={`absolute inset-0 flex flex-col items-center justify-center text-center px-8 transition-opacity duration-700
                              ${!isSignUpMode ? 'opacity-100 delay-200 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
                             >
-                                <h1 className="text-3xl md:text-4xl font-bold mb-4">Hello, Friend!</h1>
-                                <p className="text-lg mb-8 text-white/90">Enter your personal details and start your journey with us</p>
+                                <h1 className="text-3xl md:text-4xl font-bold mb-4">New Here?</h1>
+                                <p className="text-lg mb-8 text-white/90">Join our network to access professional quoting and invoicing tools</p>
                                 <button
-                                    className="border-2 border-white rounded-full px-12 py-3 font-bold uppercase tracking-wider transition-transform hover:scale-105 focus:outline-none cursor-pointer"
+                                    className="bg-white border-2 border-white !text-violet-600 rounded-full px-12 py-3 font-bold uppercase tracking-wider transition-transform hover:scale-105 focus:outline-none cursor-pointer"
                                     onClick={() => setIsSignUpMode(true)}
                                 >
                                     Sign Up
@@ -107,10 +107,10 @@ const AuthPage = () => {
                             <div className={`absolute inset-0 flex flex-col items-center justify-center text-center px-8 transition-opacity duration-700
                             ${isSignUpMode ? 'opacity-100 delay-200 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
                             >
-                                <h1 className="text-3xl md:text-4xl font-bold mb-4">Welcome Back!</h1>
-                                <p className="text-lg mb-8 text-white/90">To keep connected with us please login with your personal info</p>
+                                <h1 className="text-3xl md:text-4xl font-bold mb-4">Already a Partner?</h1>
+                                <p className="text-lg mb-8 text-white/90">Log in to your dashboard to manage quotes and invoices</p>
                                 <button
-                                    className="border-2 border-white rounded-full px-12 py-3 font-bold uppercase tracking-wider transition-transform hover:scale-105 focus:outline-none cursor-pointer"
+                                    className="bg-white border-2 border-white !text-violet-600 rounded-full px-12 py-3 font-bold uppercase tracking-wider transition-transform hover:scale-105 focus:outline-none cursor-pointer"
                                     onClick={() => setIsSignUpMode(false)}
                                 >
                                     Sign In
@@ -125,20 +125,20 @@ const AuthPage = () => {
             MOBILE LAYOUT (Simple Toggle) 
             Visible on mobile, hidden on md
         */}
-                <div className="md:hidden p-6 flex flex-col items-center min-h-screen">
+                <div className="md:hidden p-6 flex flex-col items-center">
                     <div className="mb-6">
                         <Logo />
                     </div>
 
                     <div className="w-full bg-slate-100 p-1 rounded-lg mb-6 flex">
                         <button
-                            className={`flex-1 py-2 rounded-md font-semibold transition-all ${!isSignUpMode ? 'bg-white shadow-sm text-violet-600' : 'text-slate-500'}`}
+                            className={`flex-1 py-2 rounded-md font-semibold transition-all ${!isSignUpMode ? 'bg-violet-600 shadow-md text-white' : 'text-slate-500 hover:bg-slate-200'}`}
                             onClick={() => setIsSignUpMode(false)}
                         >
                             Login
                         </button>
                         <button
-                            className={`flex-1 py-2 rounded-md font-semibold transition-all ${isSignUpMode ? 'bg-white shadow-sm text-violet-600' : 'text-slate-500'}`}
+                            className={`flex-1 py-2 rounded-md font-semibold transition-all ${isSignUpMode ? 'bg-violet-600 shadow-md text-white' : 'text-slate-500 hover:bg-slate-200'}`}
                             onClick={() => setIsSignUpMode(true)}
                         >
                             Sign Up

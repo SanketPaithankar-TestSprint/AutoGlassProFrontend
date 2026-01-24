@@ -349,7 +349,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                 </Row>
 
                 <Form.Item style={{ marginBottom: 0, marginTop: '24px' }}>
-                    <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+                    <Space style={{ width: '100%', justifyContent: 'center' }}>
                         <Button onClick={onCancel} disabled={loading}>
                             Cancel
                         </Button>

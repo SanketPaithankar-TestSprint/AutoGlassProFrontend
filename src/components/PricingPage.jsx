@@ -1,6 +1,7 @@
 import React from "react";
-import { Layout, Button } from "antd";
+import { Layout, Button, Tooltip } from "antd";
 import { CheckOutlined } from "@ant-design/icons";
+import { freeTierFeatures, professionalTierFeatures } from "../const/pricingPage";
 
 const { Content } = Layout;
 
@@ -12,9 +13,12 @@ const PricingPage = () => {
         <div className="max-w-5xl mx-auto w-full">
           {/* Compact Header */}
           <div className="text-center mb-6 opacity-0 animate-[fadeInUp_0.6s_ease-out_forwards]">
-            <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight mb-2">
+            <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight mb-2">
               Pricing
             </h1>
+            <p className="text-slate-500 mb-3 text-sm">
+              get started on our free plan and upgrade when you are ready.
+            </p>
             <div className="h-1 w-16 mx-auto rounded-full" style={{ background: 'linear-gradient(90deg, #7E5CFE 0%, #00A8E4 100%)' }} />
           </div>
 
@@ -36,16 +40,12 @@ const PricingPage = () => {
 
               {/* Tighter list spacing */}
               <ul className="space-y-3 mb-6 flex-1">
-                {[
-                  "Try the full Professional experience free for 30 days",
-                  "Test VIN-only and Year/Make/Model searches",
-                  "Create real quotes with live part pricing",
-                  "Invite your team and use custom customer requests",
-                  "Upgrade anytime to keep data & settings active"
-                ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-2 text-slate-700">
+                {freeTierFeatures.map((item, i) => (
+                  <li key={i} className="flex items-center gap-2 text-slate-700">
                     <CheckOutlined className="mt-0.5 text-xs shrink-0" style={{ color: '#7E5CFE' }} />
-                    <span className="text-xs md:text-sm leading-snug">{item}</span>
+                    <Tooltip title={item.description} placement="top">
+                      <span className="text-xs md:text-sm leading-snug cursor-help border-b border-dashed border-slate-300 hover:border-violet-500 transition-colors">{item.label}</span>
+                    </Tooltip>
                   </li>
                 ))}
               </ul>
@@ -85,16 +85,12 @@ const PricingPage = () => {
               </div>
 
               <ul className="space-y-3 mb-6 flex-1">
-                {[
-                  "Full access to VIN and Year/Make/Model search",
-                  "Instant quote creation & AI-assisted pricing",
-                  "Custom customer request forms for your shop",
-                  "Send branded quotes with logo & terms",
-                  "Multi-user access for owners, CSRs, and technicians"
-                ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-2 text-white">
+                {professionalTierFeatures.map((item, i) => (
+                  <li key={i} className="flex items-center gap-2 text-white">
                     <CheckOutlined className="text-blue-100 mt-0.5 text-xs shrink-0" />
-                    <span className="text-xs md:text-sm leading-snug opacity-95">{item}</span>
+                    <Tooltip title={item.description} placement="top" color="#00A8E4">
+                      <span className="text-xs md:text-sm leading-snug opacity-95 cursor-help border-b border-dashed border-blue-300/50 hover:border-white transition-colors">{item.label}</span>
+                    </Tooltip>
                   </li>
                 ))}
               </ul>
@@ -112,7 +108,7 @@ const PricingPage = () => {
           </div>
 
           {/* Reduce margin top for footer link */}
-          <div className="mt-6 text-center">
+          <div className="mt-10 text-center">
             <p className="text-slate-400 text-xs">
               Need help choosing? <a href="#" className="text-blue-600 hover:text-blue-700 font-medium">Contact Sales</a>
             </p>
