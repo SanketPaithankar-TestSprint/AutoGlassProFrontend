@@ -219,29 +219,31 @@ const FeaturesPage = () => {
             </div>
 
             <AnimatedSection>
-                <div className="max-w-4xl mx-auto mt-24 bg-violet-50 rounded-3xl py-12 px-6 md:px-12 text-center relative overflow-hidden border border-violet-100">
-                    <div className="absolute top-0 left-0 w-full h-full opacity-5 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-                    <div className="relative z-10">
-                        <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4 font-outfit">
-                            Ready to Transform Your Business?
-                        </h2>
-                        <p className="text-base text-slate-600 mb-8 max-w-xl mx-auto">
-                            Join the auto glass professionals who are saving time and increasing profits with AutoPaneAI.
-                        </p>
-                        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                            <Button
-                                type="primary"
-                                size="large"
-                                className="!bg-violet-600 !border-violet-600 hover:!bg-violet-500 !h-11 !px-8 !text-base !rounded-full shadow-md shadow-violet-200"
-                            >
-                                Start Your Free Trial
-                            </Button>
-                            <Button
-                                size="large"
-                                className="!bg-transparent !border-violet-600 !text-violet-600 hover:!bg-violet-100 !h-11 !px-8 !text-base !rounded-full"
-                            >
-                                Book a Demo
-                            </Button>
+                <div className='flex items-center justify-center'>
+                    <div className="max-w-4xl mx-5 mt-24 bg-violet-50 rounded-3xl py-12 px-6 md:px-12 text-center relative overflow-hidden border border-violet-100">
+                        <div className="absolute top-0 left-0 w-full h-full opacity-5 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                        <div className="relative z-10">
+                            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4 font-outfit">
+                                Ready to Transform Your Business?
+                            </h2>
+                            <p className="text-base text-slate-600 mb-8 max-w-xl mx-auto">
+                                Join the auto glass professionals who are saving time and increasing profits with AutoPaneAI.
+                            </p>
+                            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                                <Button
+                                    type="primary"
+                                    size="large"
+                                    className="!bg-violet-600 !border-violet-600 hover:!bg-violet-500 !h-11 !px-8 !text-base !rounded-full shadow-md shadow-violet-200"
+                                >
+                                    Start Your Free Trial
+                                </Button>
+                                <Button
+                                    size="large"
+                                    className="!bg-transparent !border-violet-600 !text-violet-600 hover:!bg-violet-100 !h-11 !px-8 !text-base !rounded-full"
+                                >
+                                    Book a Demo
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>
