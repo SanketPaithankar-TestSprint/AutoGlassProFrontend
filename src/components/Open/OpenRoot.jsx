@@ -156,42 +156,42 @@ const OpenRoot = () => {
     const renderDocumentCard = (doc) => {
         const { documentNumber, documentType, status, customerName, vehicleInfo, totalAmount, createdAt } = doc;
 
-        // List view - horizontal layout
+        // List view - horizontal layout with headers
         if (viewMode === 'list') {
             return (
                 <div
                     onClick={() => handleDocumentClick(doc)}
                     className="w-full cursor-pointer hover:bg-slate-50 transition-colors p-4 border border-slate-200 rounded-lg mb-2"
                 >
-                    <div className="flex items-center justify-between gap-6">
+                    <div className="flex items-center justify-between gap-4">
                         {/* Left side - ID, Type, Name */}
                         <div className="flex items-center gap-3 flex-1 min-w-0">
                             <FileTextOutlined className="text-slate-600 text-base flex-shrink-0" />
-                            <span className="font-bold text-slate-900 text-sm whitespace-nowrap">{documentNumber}</span>
-                            <Tag color={getTypeColor(documentType)} className="uppercase font-bold text-[10px] m-0 flex-shrink-0">
+                            <span className="font-bold text-slate-900 text-sm whitespace-nowrap w-[110px]">{documentNumber}</span>
+                            <Tag color={getTypeColor(documentType)} className="uppercase font-bold text-[10px] m-0 flex-shrink-0 w-[80px] text-center">
                                 {documentType?.replace('_', ' ')}
                             </Tag>
-                            <div className="flex items-center gap-2 text-slate-600 text-sm min-w-0">
+                            <div className="flex items-center gap-2 text-slate-600 text-sm min-w-0 w-[160px]">
                                 <UserOutlined className="text-slate-400 flex-shrink-0" />
                                 <span className="truncate">{customerName}</span>
                             </div>
                         </div>
 
-                        {/* Right side - Vehicle, Date, Status, Price */}
-                        <div className="flex items-center gap-6 flex-shrink-0">
-                            <div className="flex items-center gap-2 text-slate-600 text-sm">
+                        {/* Right side - Vehicle, Date, Total, Balance */}
+                        <div className="flex items-center gap-4 flex-shrink-0">
+                            <div className="flex items-center gap-2 text-slate-600 text-sm w-[130px]">
                                 <CarOutlined className="text-slate-400" />
-                                <span className="whitespace-nowrap">{vehicleInfo}</span>
+                                <span className="whitespace-nowrap truncate">{vehicleInfo}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-slate-600 text-sm">
+                            <div className="flex items-center gap-2 text-slate-600 text-sm w-[100px]">
                                 <CalendarOutlined className="text-slate-400" />
                                 <span className="whitespace-nowrap">{new Date(createdAt).toLocaleDateString()}</span>
                             </div>
-                            <Tag color={getStatusColor(status)} className="capitalize m-0 min-w-[80px] text-center">
-                                {status?.replace('_', ' ')}
-                            </Tag>
-                            <span className="font-bold text-slate-900 text-base whitespace-nowrap min-w-[100px] text-right">
+                            <span className="font-bold text-slate-900 text-sm whitespace-nowrap w-[90px] text-right">
                                 {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalAmount || 0)}
+                            </span>
+                            <span className="font-medium text-amber-600 text-sm whitespace-nowrap w-[90px] text-right">
+                                {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(doc.balanceAmount || 0)}
                             </span>
                             <Tooltip title="Delete Document">
                                 <Button
@@ -244,12 +244,18 @@ const OpenRoot = () => {
                 </div>
 
                 <div className="flex justify-between items-center pt-3 border-t border-slate-100">
-                    <Tag color={getStatusColor(status)} className="capitalize m-0">
-                        {status?.replace('_', ' ')}
-                    </Tag>
-                    <span className="font-bold text-slate-900 text-lg">
-                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalAmount || 0)}
-                    </span>
+                    <div className="flex flex-col">
+                        <span className="text-xs text-slate-500">Total</span>
+                        <span className="font-bold text-slate-900 text-base">
+                            {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalAmount || 0)}
+                        </span>
+                    </div>
+                    <div className="flex flex-col items-end">
+                        <span className="text-xs text-slate-500">Balance</span>
+                        <span className="font-medium text-amber-600 text-base">
+                            {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(doc.balanceAmount || 0)}
+                        </span>
+                    </div>
                     <Tooltip title="Delete Document">
                         <Button
                             type="text"
@@ -350,6 +356,29 @@ const OpenRoot = () => {
                         <SearchBar value={searchTerm} onChange={setSearchTerm} />
                     </div>
                 </div>
+
+                {/* Column Headers for List View */}
+                {viewMode === 'list' && filteredDocuments.length > 0 && !loading && (
+                    <div className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-t-lg mb-0">
+                        <div className="flex items-center justify-between gap-4">
+                            {/* Left side headers */}
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <span className="w-[16px]"></span> {/* Icon spacer */}
+                                <span className="font-semibold text-slate-600 text-xs uppercase tracking-wide w-[110px]">Doc #</span>
+                                <span className="font-semibold text-slate-600 text-xs uppercase tracking-wide w-[80px] text-center">Type</span>
+                                <span className="font-semibold text-slate-600 text-xs uppercase tracking-wide w-[160px]">Name</span>
+                            </div>
+                            {/* Right side headers */}
+                            <div className="flex items-center gap-4 flex-shrink-0">
+                                <span className="font-semibold text-slate-600 text-xs uppercase tracking-wide w-[130px]">Vehicle</span>
+                                <span className="font-semibold text-slate-600 text-xs uppercase tracking-wide w-[100px]">Date</span>
+                                <span className="font-semibold text-slate-600 text-xs uppercase tracking-wide w-[90px] text-right">Total</span>
+                                <span className="font-semibold text-slate-600 text-xs uppercase tracking-wide w-[90px] text-right">Balance</span>
+                                <span className="w-[32px]"></span> {/* Action button spacer */}
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Document List with Ant Design */}
                 <List

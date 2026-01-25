@@ -12,13 +12,14 @@ import ErrorBoundary from "../common/ErrorBoundary";
 const { Option } = Select;
 
 // Reusable Input Component
-const FormInput = ({ label, name, value, onChange, required = false, type = "text", className = "", ...props }) => (
+const FormInput = ({ label, name, value, onChange, onBlur, required = false, type = "text", className = "", ...props }) => (
     <div className={`flex flex-col gap-1 ${className}`}>
         <label className="text-xs font-medium text-gray-500">{label}</label>
         <input
             name={name}
             value={value}
             onChange={onChange}
+            onBlur={onBlur}
             required={required}
             type={type}
             className="border border-gray-200 rounded px-2 py-1.5 text-sm focus:ring-1 focus:ring-violet-500 focus:border-violet-500 focus:outline-none transition-all"
@@ -67,6 +68,10 @@ function CustomerPanel({ formData, setFormData, setCanShowQuotePanel, setPanel }
     const [vehicles, setVehicles] = useState([]);
     const [selectedVehicleId, setSelectedVehicleId] = useState(null);
 
+    // VIN Validation Warning Modal
+    const [showVinWarningModal, setShowVinWarningModal] = useState(false);
+    const [vinWarningAcknowledged, setVinWarningAcknowledged] = useState(false);
+
     // Organization Modal
     const [creatingOrg, setCreatingOrg] = useState(false);
     const [isCreatingNewOrg, setIsCreatingNewOrg] = useState(false); // New State
@@ -74,6 +79,34 @@ function CustomerPanel({ formData, setFormData, setCanShowQuotePanel, setPanel }
         companyName: "", taxId: "", email: "", phone: "", alternatePhone: "",
         addressLine1: "", addressLine2: "", city: "", state: "", postalCode: "", country: "USA", notes: ""
     });
+
+    // VIN Validation Function - validates standard 17-character VIN format
+    const isValidVin = (vin) => {
+        if (!vin || vin.trim() === "") return true; // Empty VIN is considered valid (not entered yet)
+        const cleanVin = vin.trim().toUpperCase();
+        // Standard VIN is exactly 17 characters
+        if (cleanVin.length !== 17) return false;
+        // VIN cannot contain I, O, Q (easily confused with 1, 0)
+        if (/[IOQ]/i.test(cleanVin)) return false;
+        // VIN should only contain alphanumeric characters
+        if (!/^[A-HJ-NPR-Z0-9]+$/i.test(cleanVin)) return false;
+        return true;
+    };
+
+    // Handle VIN blur - check validation when user finishes entering
+    const handleVinBlur = () => {
+        const vin = formData.vin;
+        // Only show warning if VIN is entered but invalid, and not already acknowledged
+        if (vin && vin.trim() !== "" && !isValidVin(vin) && !vinWarningAcknowledged) {
+            setShowVinWarningModal(true);
+        }
+    };
+
+    // Handle VIN change - reset acknowledgement when VIN changes
+    const handleVinChange = (e) => {
+        setVinWarningAcknowledged(false);
+        handleChange(e);
+    };
 
     // Load data on mount
     useEffect(() => {
@@ -590,7 +623,7 @@ function CustomerPanel({ formData, setFormData, setCanShowQuotePanel, setPanel }
                                 <FormInput label="Body Type" name="bodyType" value={formData.bodyType} onChange={handleChange} />
                             </div>
                             <div className="grid grid-cols-2 gap-2">
-                                <FormInput label="VIN" name="vin" value={formData.vin} onChange={handleChange} />
+                                <FormInput label="VIN" name="vin" value={formData.vin} onChange={handleVinChange} onBlur={handleVinBlur} />
                                 <FormInput label="License Plate" name="licensePlateNumber" value={formData.licensePlateNumber} onChange={handleChange} />
                             </div>
                         </div>
@@ -789,6 +822,26 @@ function CustomerPanel({ formData, setFormData, setCanShowQuotePanel, setPanel }
                     )}
                 </div>
             </div>
+
+            {/* VIN Warning Modal */}
+            <Modal
+                title={
+                    <div className="flex items-center gap-2">
+                        <span className="text-amber-500">⚠️</span>
+                        <span>Warning</span>
+                    </div>
+                }
+                open={showVinWarningModal}
+                onCancel={() => setShowVinWarningModal(false)}
+                footer={[
+                    <Button key="no" onClick={() => setShowVinWarningModal(false)}>No</Button>,
+                    <Button key="yes" type="primary" onClick={() => { setVinWarningAcknowledged(true); setShowVinWarningModal(false); }}>Yes</Button>
+                ]}
+                centered
+                width={380}
+            >
+                <p className="text-gray-700 py-2">The VIN does not appear to be valid. Do you wish to continue?</p>
+            </Modal>
         </form>
     );
 }

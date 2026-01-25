@@ -459,7 +459,7 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
             else if (subType === 'Dynamic') description = "Labor/ADAS Recal - Dynamic";
             else if (subType === 'Dual') description = "Labor/ADAS Recal - Static & Dynamic";
         } else {
-            description = type === "Part" ? "Custom Part" : type === "Labor" ? "Custom Labor" : "Service";
+            description = type === "Part" ? "Custom Part" : type === "Labor" ? "Custom Labor" : "Chip Repair";
         }
 
         const newItemData = {
@@ -1067,16 +1067,8 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
             return false;
         }
 
-        // Validation: Items
-        const invalidItems = items.filter(it => !Number(it.amount) || Number(it.amount) === 0);
-        if (invalidItems.length > 0) {
-            modal.warning({
-                title: 'Invalid Items',
-                content: `Please enter a valid amount for: ${invalidItems.map(it => it.type === 'Labor' ? 'Labor' : (it.description || 'Item')).join(', ')}`,
-                okText: 'OK',
-            });
-            return false;
-        }
+        // Note: Zero price validation moved to handleSave as a warning confirmation
+        // Users can save $0 items after confirming (for discounts)
 
         return true;
     };
@@ -1272,6 +1264,42 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
 
     // Handler 1: Save Button (Save & Clear)
     const handleSave = async () => {
+        // Check for zero price items (Labor, Kit, Service)
+        const zeroPriceItems = items.filter(item => {
+            const types = ['Labor', 'Kit', 'Service'];
+            if (!types.includes(item.type)) return false;
+            const amount = Number(item.amount) || 0;
+            return amount === 0;
+        });
+
+        if (zeroPriceItems.length > 0) {
+            const itemDescriptions = zeroPriceItems.map(item =>
+                `• ${item.type}: ${item.description || 'No description'}`
+            ).join('\n');
+
+            modal.confirm({
+                title: '⚠️ Items with $0.00 Price',
+                content: (
+                    <div>
+                        <p className="mb-2">The following items have $0.00 price:</p>
+                        <pre className="text-xs bg-slate-100 p-2 rounded whitespace-pre-wrap">{itemDescriptions}</pre>
+                        <p className="mt-2 text-slate-500 text-sm">Are you sure you want to save with these prices? This might be intentional for discounts.</p>
+                    </div>
+                ),
+                okText: 'Yes, Save Anyway',
+                cancelText: 'Cancel & Fix',
+                onOk: async () => {
+                    const { success } = await performSave();
+                    if (success) {
+                        if (onClear) {
+                            onClear(true); // Clear without confirmation
+                        }
+                    }
+                }
+            });
+            return;
+        }
+
         const { success } = await performSave();
         if (success) {
             if (onClear) {
@@ -1833,7 +1861,8 @@ Auto Glass Pro Team`;
                                         <select
                                             value={manualDocType}
                                             onChange={(e) => setManualDocType(e.target.value)}
-                                            className="flex-1 px-2 py-1 text-[10px] font-medium border border-slate-300 rounded bg-white text-slate-700 outline-none"
+                                            disabled={isSaved && docMetadata?.documentType === 'INVOICE'}
+                                            className={`flex-1 px-2 py-1 text-[10px] font-medium border border-slate-300 rounded bg-white text-slate-700 outline-none ${isSaved && docMetadata?.documentType === 'INVOICE' ? 'opacity-50 cursor-not-allowed' : ''}`}
                                         >
                                             <option value="Quote">Quote</option>
                                             <option value="Work Order">W.Order</option>

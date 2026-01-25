@@ -459,41 +459,32 @@ export function generateServiceDocumentPDF({
     // Track the Y position after vehicle grid
     let insuranceY = vY4 + vRowH;
 
-    // --- Additional Insurance Details Section (if included) ---
-    if (includeInsurance && insuranceData) {
-        insuranceY += 10;
-        const insRowH = 20;
-
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "normal");
-
-        // Row 1: Insurance Company | Deductible
-        doc.rect(margin, insuranceY, 80, insRowH);
-        doc.text("Insurance Co.", margin + 2, insuranceY + 14);
-        doc.rect(margin + 80, insuranceY, 280, insRowH);
-        doc.text(insuranceData?.companyName || "", margin + 85, insuranceY + 14);
-
-        doc.rect(margin + 360, insuranceY, 80, insRowH);
-        doc.text("Deductible", margin + 362, insuranceY + 14);
-        doc.rect(margin + 440, insuranceY, 100, insRowH);
-        doc.text(insuranceData?.deductible ? `$${insuranceData.deductible}` : "", margin + 445, insuranceY + 14);
-
-        insuranceY = insuranceY + insRowH;
-    }
+    // Insurance details section removed - info is in vehicle table above
 
     // --- Items Table (Modern Style) ---
     const tableY = insuranceY + 25; // 25pt gap before parts table
     autoTable(doc, {
         startY: tableY,
-        head: [["Qty", "Part #", "Description", "List", "Price", "Total"]],
-        body: items.map((it) => [
-            String(Number(it.qty) || 0),
-            it.type === 'Labor' ? "Labor" : (it.nagsId || it.oemId || "-"),
-            it.description || "-",
-            (Number(it.unitPrice) || 0).toFixed(2), // List
-            (Number(it.unitPrice) || 0).toFixed(2), // Price
-            (Number(it.amount) || 0).toFixed(2)     // Total
-        ]),
+        head: [["Qty", "Part #", "Description", "List", "Price"]],
+        body: items.map((it) => {
+            // Determine Part # display - show SERVICE for Service type, LABOR for Labor
+            let partDisplay = it.nagsId || it.oemId || "-";
+            if (it.type === 'Labor') partDisplay = "Labor";
+            else if (it.type === 'Service') partDisplay = "SERVICE";
+
+            // For price, use amount if unitPrice is 0 (for chip repair where only amount is set)
+            const displayPrice = (Number(it.unitPrice) || 0) > 0
+                ? Number(it.unitPrice)
+                : Number(it.amount) || 0;
+
+            return [
+                String(Number(it.qty) || 1),
+                partDisplay,
+                it.description || "-",
+                (Number(it.listPrice) || displayPrice).toFixed(2), // List
+                (Number(it.amount) || 0).toFixed(2)  // Price (total amount)
+            ];
+        }),
         styles: {
             fontSize: 9,
             cellPadding: 5,
@@ -518,12 +509,11 @@ export function generateServiceDocumentPDF({
         theme: "grid",
         tableWidth: contentWidth,  // Force table to use exact content width
         columnStyles: {
-            0: { halign: "center", cellWidth: 35 },   // Qty (35)
-            1: { cellWidth: 95, fontStyle: 'normal' },  // Part # (95)
-            2: { cellWidth: 220 },                     // Description (220)
-            3: { halign: "right", cellWidth: 60 },    // List (60)
-            4: { halign: "right", cellWidth: 60 },    // Price (60)
-            5: { halign: "right", cellWidth: 65, fontStyle: 'normal' }  // Total (65) = 535 total
+            0: { halign: "center", cellWidth: 40 },   // Qty (40)
+            1: { cellWidth: 100, fontStyle: 'normal' },  // Part # (100)
+            2: { cellWidth: 265 },                     // Description (265)
+            3: { halign: "right", cellWidth: 65 },    // List (65)
+            4: { halign: "right", cellWidth: 65, fontStyle: 'normal' }  // Price (65) = 535 total
         },
         margin: { left: margin, right: margin },
         didDrawPage: (data) => {
