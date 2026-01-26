@@ -123,7 +123,7 @@ class ErrorBoundary extends React.Component {
     }
 }
 
-function QuotePanelContent({ onRemovePart, customerData, printableNote, internalNote, insuranceData, includeInsurance, attachments = [], setAttachments, onClear, docMetadata, isSaved, isEditMode, onEditModeChange, onDocumentCreated, aiContactFormId }) {
+const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internalNote, insuranceData, includeInsurance, attachments = [], setAttachments, onClear, docMetadata, isSaved, isEditMode, onEditModeChange, onDocumentCreated, aiContactFormId, paymentData, onTotalChange }) => {
     const navigate = useNavigate();
 
     const formatDate = (dateStr) => {
@@ -346,6 +346,13 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
     const [isManualTax, setIsManualTax] = useState(false);
     const [payment, setPayment] = useState(0);
     const [manualDocType, setManualDocType] = useState("Quote"); // Default to Quote, no Auto
+
+    // Sync local payment state with paymentData from Payment Tab
+    useEffect(() => {
+        if (paymentData && paymentData.amount !== undefined) {
+            setPayment(paymentData.amount);
+        }
+    }, [paymentData]);
 
     // Sync document type from loaded document metadata
     useEffect(() => {
@@ -901,6 +908,13 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
 
     const total = useMemo(() => manualTotal !== null ? Number(manualTotal) : calculatedTotal, [manualTotal, calculatedTotal]);
 
+    // Notify parent of total change
+    useEffect(() => {
+        if (onTotalChange) {
+            onTotalChange(total);
+        }
+    }, [total, onTotalChange]);
+
     const applyTotalAdjustment = (newTotal) => {
         if (newTotal === null || isNaN(newTotal)) {
             setManualTotal(null);
@@ -1206,7 +1220,13 @@ function QuotePanelContent({ onRemovePart, customerData, printableNote, internal
                 vehicle: vehiclePayload,
                 insurance: includeInsurance ? insuranceData : null,
                 items: serviceDocumentItems,
-                attachments: attachmentMetadata
+                attachments: attachmentMetadata,
+                payments: paymentData && paymentData.amount > 0 ? [{
+                    amount: Number(paymentData.amount) || 0,
+                    paymentMethod: paymentData.paymentMethod || "CREDIT_CARD",
+                    transactionReference: paymentData.transactionReference || "",
+                    notes: paymentData.notes || ""
+                }] : []
             };
 
             console.log("Sending Composite Payload:", compositePayload);

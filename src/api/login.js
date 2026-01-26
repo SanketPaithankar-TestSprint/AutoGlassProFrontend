@@ -1,6 +1,7 @@
 import urls from '../config';
 import { getUserSlugByUserId } from './userSlugInfo';
 import { getUserLogo } from './getUserLogo';
+import { getSpecialInstructions } from './specialInstructions';
 
 /**
  * Login API call
@@ -98,6 +99,17 @@ export function handleLoginSuccess(loginResponse, rememberMe = false) {
                         window.dispatchEvent(new Event('userLogoUpdated'));
                     })
                     .catch(err => console.error("Failed to fetch user logo on login", err));
+
+                // Fetch and store special instructions
+                getSpecialInstructions(token)
+                    .then(instructions => {
+                        if (instructions !== null) {
+                            localStorage.setItem('user_special_instructions', instructions);
+                        } else {
+                            localStorage.removeItem('user_special_instructions');
+                        }
+                    })
+                    .catch(err => console.error("Failed to fetch special instructions on login", err));
             }
         }
     }

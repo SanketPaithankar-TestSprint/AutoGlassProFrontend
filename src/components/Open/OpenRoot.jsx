@@ -191,7 +191,7 @@ const OpenRoot = () => {
                                 {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalAmount || 0)}
                             </span>
                             <span className="font-medium text-amber-600 text-sm whitespace-nowrap w-[90px] text-right">
-                                {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(doc.balanceAmount || 0)}
+                                {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(doc.balanceDue || 0)}
                             </span>
                             <Tooltip title="Delete Document">
                                 <Button
@@ -253,7 +253,7 @@ const OpenRoot = () => {
                     <div className="flex flex-col items-end">
                         <span className="text-xs text-slate-500">Balance</span>
                         <span className="font-medium text-amber-600 text-base">
-                            {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(doc.balanceAmount || 0)}
+                            {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(doc.balanceDue || 0)}
                         </span>
                     </div>
                     <Tooltip title="Delete Document">
