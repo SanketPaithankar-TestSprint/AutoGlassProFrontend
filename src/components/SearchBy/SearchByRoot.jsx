@@ -736,18 +736,18 @@ const SearchByRoot = () => {
         partNumber={pendingKitData?.partNumber || ''}
       />
 
-      <div className="w-full mx-auto space-y-2 flex flex-col max-w-full px-4 2xl:max-w-[1900px] flex-1">
+      <div className="w-full mx-auto space-y-2 flex flex-col max-w-full px-2 lg:px-4 2xl:max-w-[1900px] flex-1">
 
 
 
         {/* TABS & ACTIONS */}
-        <div className="flex justify-between items-center gap-0 mb-3 mt-2">
-          <div className="flex justify-start gap-2">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-3 mt-2">
+          <div className="flex justify-start gap-2 overflow-x-auto w-full md:w-auto pb-1 no-scrollbar">
             {tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-1.5 font-bold text-xs tracking-wide transition-all rounded-md shadow-sm border ${activeTab === tab.id
+                className={`px-4 py-1.5 font-bold text-xs tracking-wide transition-all rounded-md shadow-sm border whitespace-nowrap flex-shrink-0 ${activeTab === tab.id
                   ? 'bg-white text-blue-600 border-blue-600'
                   : 'bg-white text-slate-600 border-slate-200 hover:text-slate-900 hover:border-slate-300'
                   }`}
@@ -757,7 +757,7 @@ const SearchByRoot = () => {
             ))}
           </div>
 
-          <div className="pr-4">
+          <div className="md:pr-4 w-full md:w-auto flex justify-end">
             <button
               onClick={handleGlobalClear}
               className="px-3 py-1.5 rounded-md bg-transparent border border-red-200 text-red-600 font-medium text-sm transition-colors hover:bg-red-50 hover:text-red-700 flex items-center gap-1"
@@ -780,7 +780,7 @@ const SearchByRoot = () => {
               <div className={activeTab === 'quote' ? 'block' : 'hidden'}>
                 <div className="flex flex-col md:flex-row gap-2 md:h-[280px]">
                   {/* LEFT: SEARCH */}
-                  <div className="bg-white p-2 flex flex-col gap-1 overflow-visible shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg w-full md:w-[380px] md:flex-shrink-0">
+                  <div className="bg-white p-4 flex flex-col gap-1 overflow-visible shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg w-full md:w-[380px] md:flex-shrink-0">
                     {/* VIN */}
                     <div>
                       <h2 className="text-xs font-bold text-slate-800 mb-1 uppercase tracking-wide">Search by VIN:</h2>

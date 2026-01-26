@@ -94,7 +94,9 @@ const Profile = () => {
         enabled: activeTab === 'employees', // Only fetch when tab is active
         staleTime: 1000 * 60 * 30 // Cache for 30 minutes
     });
+    useEffect(() => {
 
+    }, [employees]);
     // Logo State
     const [logoUrl, setLogoUrl] = useState(localStorage.getItem('userLogo'));
     const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -227,6 +229,7 @@ const Profile = () => {
             notification.success({ message: "Employee created successfully" });
 
             setIsEmployeeModalVisible(false);
+            localStorage.removeItem("agp_employees");
             queryClient.invalidateQueries({ queryKey: ['employees'] });
         } catch (err) {
             console.error(err);

@@ -117,7 +117,7 @@ const ReportsRoot = () => {
     }, [pdfUrl]);
 
     return (
-        <div className="min-h-full bg-gradient-to-br from-slate-50 via-white to-violet-50 p-6">
+        <div className="min-h-full bg-gradient-to-br from-slate-50 via-white to-violet-50 p-3 pt-5 md:p-6">
             {/* Header */}
             <div className="mb-8">
                 <div className="flex items-center gap-3 mb-2">
@@ -132,12 +132,9 @@ const ReportsRoot = () => {
             </div>
 
             {/* Controls Card */}
-            <Card
-                className="mb-6 shadow-md border-0 rounded-2xl overflow-hidden"
-                styles={{ body: { padding: '24px' } }}
-            >
-                <div className="flex flex-wrap items-end gap-4">
-                    <div className="flex-1 min-w-[280px]">
+            <div className="mb-6 bg-white shadow-md rounded-2xl overflow-hidden p-3 md:p-6">
+                <div className="flex flex-col md:flex-row md:items-end gap-4 max-w-full">
+                    <div className="w-full md:flex-1 md:min-w-[280px]">
                         <label className="block text-sm font-medium text-slate-700 mb-2">
                             Select Date Range
                         </label>
@@ -159,28 +156,30 @@ const ReportsRoot = () => {
                         />
                     </div>
 
-                    <Button
-                        type="primary"
-                        size="large"
-                        icon={<SearchOutlined />}
-                        onClick={handleGenerateReport}
-                        loading={loading}
-                        className="h-10 px-6 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 border-0 shadow-lg hover:shadow-xl transition-all duration-300"
-                    >
-                        Generate Report
-                    </Button>
+                    <div className="flex gap-2 w-full md:w-auto">
+                        <Button
+                            type="primary"
+                            size="large"
+                            icon={<SearchOutlined />}
+                            onClick={handleGenerateReport}
+                            loading={loading}
+                            className="flex-1 md:flex-none h-10 px-6 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 border-0 shadow-lg hover:shadow-xl transition-all duration-300"
+                        >
+                            Generate Report
+                        </Button>
 
-                    <Button
-                        size="large"
-                        icon={<DownloadOutlined />}
-                        onClick={handleDownload}
-                        disabled={!pdfBlob}
-                        className="h-10 px-6 rounded-xl border-violet-300 text-violet-600 hover:bg-violet-50 hover:border-violet-400 transition-all duration-300"
-                    >
-                        Download PDF
-                    </Button>
+                        <Button
+                            size="large"
+                            icon={<DownloadOutlined />}
+                            onClick={handleDownload}
+                            disabled={!pdfBlob}
+                            className="flex-1 md:flex-none h-10 px-6 rounded-xl border-violet-300 text-violet-600 hover:bg-violet-50 hover:border-violet-400 transition-all duration-300"
+                        >
+                            Download PDF
+                        </Button>
+                    </div>
                 </div>
-            </Card>
+            </div>
 
             {/* PDF Viewer */}
             <Card

@@ -213,7 +213,7 @@ const CreateTaskModal = ({ visible, onClose, task = null }) => {
                 layout="vertical"
             // Initial values are handled by useEffect
             >
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Form.Item
                         name="documentNumber"
                         label="Service Document"
@@ -266,7 +266,7 @@ const CreateTaskModal = ({ visible, onClose, task = null }) => {
                     </Form.Item>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Form.Item
                         name="assignmentDate"
                         label="Assignment Date"
@@ -297,7 +297,7 @@ const CreateTaskModal = ({ visible, onClose, task = null }) => {
                     </Form.Item>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Form.Item
                         name="estimatedDurationMinutes"
                         label="Est. Duration (mins)"

@@ -1535,17 +1535,17 @@ Auto Glass Pro Team`;
                 </h3>
 
                 {/* Line Items Table - Height for 6 rows + header */}
-                <div className="border border-slate-100 bg-white rounded-sm max-h-[400px] overflow-y-auto">
+                <div className="border border-slate-100 bg-white rounded-sm max-h-[400px] overflow-auto">
                     <table className="min-w-full divide-y divide-slate-100">
                         <thead className="bg-slate-50 sticky top-0 z-10">
                             <tr className="text-left text-sm font-bold text-slate-700 tracking-tight">
-                                <th className="px-2 py-2 w-[160px] bg-slate-50">Part</th>
-                                <th className="px-2 py-2 bg-slate-50">Description</th>
-                                <th className="px-2 py-2 w-[110px] bg-slate-50">Manufacturer</th>
-                                <th className="px-2 py-2 text-right w-[70px] bg-slate-50">Quantity</th>
-                                <th className="px-2 py-2 text-right w-[100px] bg-slate-50">List</th>
-                                <th className="px-2 py-2 text-right w-[100px] bg-slate-50">Amount</th>
-                                <th className="px-2 py-2 w-5 bg-slate-50"></th>
+                                <th className="px-3 py-3 w-[160px] bg-slate-50">Part</th>
+                                <th className="px-3 py-3 bg-slate-50">Description</th>
+                                <th className="px-3 py-3 w-[110px] bg-slate-50">Manufacturer</th>
+                                <th className="px-3 py-3 text-right w-[70px] bg-slate-50">Qty</th>
+                                <th className="px-3 py-3 text-right w-[100px] bg-slate-50">List</th>
+                                <th className="px-3 py-3 text-right w-[100px] bg-slate-50">Amount</th>
+                                <th className="px-3 py-3 w-8 bg-slate-50"></th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-slate-100">
@@ -1570,7 +1570,7 @@ Auto Glass Pro Team`;
 
                                 return (
                                     <tr key={it.id} className="hover:bg-slate-50 transition group">
-                                        <td className="px-2 py-1 align-middle">
+                                        <td className="px-2 py-2 align-middle">
                                             <div className="relative">
                                                 {it.type === 'Part' ? (
                                                     <input
@@ -1585,7 +1585,7 @@ Auto Glass Pro Team`;
                                                                 e.currentTarget.blur();
                                                             }
                                                         }}
-                                                        className="w-full h-7 px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all font-medium text-xs"
+                                                        className="w-full h-9 px-3 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all font-medium text-sm"
                                                         placeholder="Part No"
                                                     />
                                                 ) : (
@@ -1593,16 +1593,16 @@ Auto Glass Pro Team`;
                                                         type="text"
                                                         value={it.type === 'Labor' ? 'LABOR' : it.type === 'ADAS' ? 'ADAS' : it.type === 'Kit' ? (it.nagsId || 'KIT') : 'SERVICE'}
                                                         readOnly
-                                                        className="w-full h-7 px-2 rounded border-none outline-none bg-transparent text-slate-500 font-medium cursor-default text-xs"
+                                                        className="w-full h-9 px-3 rounded border-none outline-none bg-transparent text-slate-500 font-medium cursor-default text-xs"
                                                     />
                                                 )}
                                             </div>
                                         </td>
-                                        <td className="px-2 py-1 align-middle">
+                                        <td className="px-2 py-2 align-middle">
                                             {it.type === 'ADAS' ? (
                                                 <Select
                                                     className="w-full text-xs custom-select-borderless"
-                                                    size="small"
+                                                    size="middle"
                                                     bordered={false}
                                                     placeholder="Select Type"
                                                     value={it.adasCode || null}
@@ -1619,48 +1619,48 @@ Auto Glass Pro Team`;
                                                 <input
                                                     value={it.description || ''}
                                                     onChange={(e) => updateItem(it.id, "description", e.target.value)}
-                                                    className="w-full h-7 px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all text-xs"
+                                                    className="w-full h-9 px-3 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all text-sm"
                                                 />
                                             )}
                                         </td>
-                                        <td className="px-2 py-1 align-middle">
+                                        <td className="px-2 py-2 align-middle">
                                             <input
                                                 value={it.manufacturer}
                                                 onChange={(e) => updateItem(it.id, "manufacturer", e.target.value)}
-                                                className="w-full h-7 px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all text-xs"
+                                                className="w-full h-9 px-3 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all text-sm"
                                                 disabled={!it.isManual && it.type === 'Labor'}
                                             />
                                         </td>
-                                        <td className="px-2 py-1 text-right align-middle">
+                                        <td className="px-2 py-2 text-right align-middle">
                                             <input
                                                 type="number"
                                                 value={it.qty}
                                                 onChange={(e) => updateItem(it.id, "qty", e.target.value)}
-                                                className="w-full h-7 px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-right outline-none bg-transparent text-slate-700 transition-all font-medium text-xs"
+                                                className="w-full min-w-[40px] h-9 px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-right outline-none bg-transparent text-slate-700 transition-all font-medium text-sm"
                                                 disabled={!it.isManual && it.type === 'Labor'}
                                             />
                                         </td>
-                                        <td className="px-2 py-1 text-right align-middle">
+                                        <td className="px-2 py-2 text-right align-middle">
                                             <CurrencyInput
                                                 value={it.listPrice}
                                                 onChange={(val) => updateItem(it.id, "listPrice", val)}
-                                                className="w-full h-7 px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-right outline-none bg-transparent text-slate-700 transition-all text-xs"
+                                                className="w-full min-w-[70px] h-9 px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-right outline-none bg-transparent text-slate-700 transition-all text-sm"
                                                 disabled={!it.isManual && it.type === 'Labor'}
                                                 placeholder="$0.00"
                                             />
                                         </td>
-                                        <td className="px-2 py-1 text-right align-middle">
+                                        <td className="px-2 py-2 text-right align-middle">
                                             <CurrencyInput
                                                 value={it.amount}
                                                 onChange={(val) => updateItem(it.id, "amount", val)}
-                                                className="w-full h-7 px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-right outline-none bg-transparent text-slate-900 font-bold transition-all text-xs"
+                                                className="w-full min-w-[70px] h-9 px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-right outline-none bg-transparent text-slate-900 font-bold transition-all text-sm"
                                                 placeholder="$0.00"
                                             />
                                         </td>
                                         {showDeleteButton && (
-                                            <td className="px-1 py-0.5 text-center align-middle" rowSpan={rowSpan}>
-                                                <button type="button" onClick={() => handleDeleteItem(it.id)} className="text-slate-400 hover:text-red-500 transition-colors p-1 rounded hover:bg-red-50" title="Remove Item">
-                                                    <DeleteOutlined style={{ fontSize: '14px' }} />
+                                            <td className="px-1 py-1 text-center align-middle" rowSpan={rowSpan}>
+                                                <button type="button" onClick={() => handleDeleteItem(it.id)} className="text-slate-400 hover:text-red-500 transition-colors p-2 rounded-full hover:bg-red-50" title="Remove Item">
+                                                    <DeleteOutlined style={{ fontSize: '16px' }} />
                                                 </button>
                                             </td>
                                         )}
@@ -1669,14 +1669,14 @@ Auto Glass Pro Team`;
                             })}
                             {/* Empty placeholder rows to fill up to 6 rows */}
                             {Array.from({ length: Math.max(0, 6 - items.length) }).map((_, index) => (
-                                <tr key={`empty-${index}`} className="h-10">
-                                    <td className="px-2 py-1">&nbsp;</td>
-                                    <td className="px-2 py-1"></td>
-                                    <td className="px-2 py-1"></td>
-                                    <td className="px-2 py-1"></td>
-                                    <td className="px-2 py-1"></td>
-                                    <td className="px-2 py-1"></td>
-                                    <td className="px-2 py-1"></td>
+                                <tr key={`empty-${index}`} className="h-12">
+                                    <td className="px-2 py-2">&nbsp;</td>
+                                    <td className="px-2 py-2"></td>
+                                    <td className="px-2 py-2"></td>
+                                    <td className="px-2 py-2"></td>
+                                    <td className="px-2 py-2"></td>
+                                    <td className="px-2 py-2"></td>
+                                    <td className="px-2 py-2"></td>
                                 </tr>
                             ))}
                         </tbody>
@@ -1685,9 +1685,9 @@ Auto Glass Pro Team`;
             </div>
 
             {/* Totals & Actions */}
-            <div className="bg-white p-4 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg flex flex-col md:flex-row justify-between items-start gap-6">
+            <div className="bg-white p-4 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg flex flex-col md:flex-row justify-between items-start gap-6 overflow-x-auto whitespace-nowrap">
                 {/* Left side - Vendor Pricing & Metadata */}
-                <div className="flex flex-col gap-2 flex-1">
+                <div className="flex flex-col gap-2 flex-1 w-full md:w-auto">
                     {/* Vendor Pricing Data Display */}
                     {
                         items.filter(it => it.vendorData).length > 0 && (
@@ -1739,7 +1739,7 @@ Auto Glass Pro Team`;
                 </div>
 
                 {/* Right side - Add Button + Totals Table */}
-                <div className="flex items-start gap-2 flex-shrink-0">
+                <div className="flex flex-col md:flex-row gap-4 flex-shrink-0 w-full md:w-auto items-end md:items-start">
                     {/* Add Button */}
                     <Dropdown
                         menu={{
@@ -1749,139 +1749,139 @@ Auto Glass Pro Team`;
                                 { key: 'Service', label: <span className="text-xs">Chip Repair</span>, onClick: () => handleAddRow("Service") },
                                 { key: 'ADAS', label: <span className="text-xs">ADAS Recalibration</span>, onClick: () => handleAddRow("ADAS") },
                             ],
-                            // You can add styles to the dropdown menu here
                             className: "min-w-[160px] [&_.ant-dropdown-menu-item]:!py-1.5 [&_.ant-dropdown-menu-item]:font-semibold"
                         }}
                     >
-                        <button className="flex items-center gap-1 px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded text-xs font-medium transition-colors">
+                        <button className="flex items-center gap-1 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded text-sm font-medium transition-colors md:ml-0">
                             Add <DownOutlined className="text-[12px]" />
                         </button>
                     </Dropdown >
 
                     {/* Totals Table */}
-                    <table className="w-full max-w-xs text-sm rounded-xl overflow-hidden bg-slate-50/50">
-                        <tbody>
-                            {/* Labor Row */}
-                            <tr className="">
-                                <td className="px-2 py-1 text-slate-600">Labor</td>
-                                <td className="px-2 py-1 text-right text-slate-900">{currency(laborCostDisplay)}</td>
-                            </tr>
-                            {/* Subtotal Row */}
-                            <tr className="">
-                                <td className="px-2 py-1 text-slate-600">Subtotal</td>
-                                <td className="px-2 py-1 text-right text-slate-900">{currency(subtotal)}</td>
-                            </tr>
-                            {/* Tax Row */}
-                            <tr className="">
-                                <td className="px-2 py-1 text-slate-600">Tax ({globalTaxRate}%)</td>
-                                <td className="px-2 py-1 text-right text-slate-900">{currency(totalTax)}</td>
-                            </tr>
+                    <div className="w-fit max-w-full overflow-x-auto ml-auto md:ml-0 rounded-xl overflow-hidden bg-slate-50/50 block">
+                        <table className="w-auto text-sm border-collapse">
+                            <tbody>
+                                {/* Labor Row */}
+                                <tr className="">
+                                    <td className="px-2 py-1 text-slate-600 text-right whitespace-nowrap">Labor</td>
+                                    <td className="px-2 py-1 text-right text-slate-900 whitespace-nowrap">{currency(laborCostDisplay)}</td>
+                                </tr>
+                                {/* Subtotal Row */}
+                                <tr className="">
+                                    <td className="px-2 py-1 text-slate-600 text-right whitespace-nowrap">Subtotal</td>
+                                    <td className="px-2 py-1 text-right text-slate-900 whitespace-nowrap">{currency(subtotal)}</td>
+                                </tr>
+                                {/* Tax Row */}
+                                <tr className="">
+                                    <td className="px-2 py-1 text-slate-600 text-right whitespace-nowrap">Tax ({globalTaxRate}%)</td>
+                                    <td className="px-2 py-1 text-right text-slate-900 whitespace-nowrap">{currency(totalTax)}</td>
+                                </tr>
 
-                            {/* Total Row */}
-                            <tr className="bg-slate-50">
-                                <td className="px-2 py-1 font-semibold text-slate-700">
-                                    <div className="flex items-center gap-1">
-                                        Total
-                                        <button
-                                            onClick={handleRoundUp}
-                                            className="w-4 h-4 flex items-center justify-center bg-sky-100 hover:bg-sky-200 text-sky-600 rounded text-[10px] font-bold"
-                                            title="Round Up"
-                                        >↑</button>
-                                    </div>
-                                </td>
-                                <td className="px-2 py-1 text-right font-bold text-slate-900">
-                                    <input
-                                        type="text"
-                                        value={manualTotal !== null ? `$${manualTotal}` : currency(total)}
-                                        onChange={(e) => {
-                                            const val = e.target.value.replace(/[^0-9.]/g, '');
-                                            setManualTotal(val);
-                                        }}
-                                        onBlur={() => {
-                                            if (manualTotal !== null && manualTotal !== '') {
-                                                const newTotal = parseFloat(manualTotal);
-                                                applyTotalAdjustment(newTotal);
-                                            } else if (manualTotal === '') {
-                                                setManualTotal(null);
-                                            }
-                                        }}
-                                        className="w-full text-right bg-transparent text-sm font-bold text-slate-900 outline-none border-b border-transparent hover:border-slate-300 focus:border-sky-400"
-                                    />
-                                </td>
-                            </tr>
-                            <tr className="">
-                                <td className="px-2 py-1 text-slate-600">Paid</td>
-                                <td className="px-2 py-1 text-right text-slate-900">
-                                    <input
-                                        type="number"
-                                        value={payment}
-                                        onChange={(e) => setPayment(e.target.value)}
-                                        className="w-full text-right bg-transparent text-sm text-slate-900 outline-none border-b border-transparent hover:border-slate-300 focus:border-sky-400"
-                                        placeholder="$0"
-                                    />
-                                </td>
-                            </tr>
-                            {/* Balance Row */}
-                            <tr className="bg-slate-50">
-                                <td className="px-2 py-1 font-semibold text-slate-700">Balance</td>
-                                <td className="px-2 py-1 text-right font-bold text-slate-900">{currency(balance)}</td>
-                            </tr>
-                            {/* Action Buttons Row */}
-                            <tr>
-                                <td colSpan="2" className="p-1">
-                                    <div className="flex gap-1">
-                                        <select
-                                            value={manualDocType}
-                                            onChange={(e) => setManualDocType(e.target.value)}
-                                            className="flex-1 px-2 py-1 text-[10px] font-medium border border-slate-300 rounded bg-white text-slate-700 outline-none"
-                                        >
-                                            <option value="Quote">Quote</option>
-                                            <option value="Work Order">W.Order</option>
-                                            <option value="Invoice">Invoice</option>
-                                        </select>
-                                        <button
-                                            onClick={handleSave}
-                                            disabled={saveLoading}
-                                            className="flex-1 px-3 py-1.5 rounded bg-[#3B82F6] text-white text-[11px] font-medium hover:bg-[#7E5CFE] hover:text-white transition shadow-sm disabled:opacity-50"
-                                        >
-                                            {saveLoading ? '...' : 'Save'}
-                                        </button>
-                                        <button
-                                            onClick={handlePreview}
-                                            disabled={previewLoading}
-                                            className="flex-1 px-3 py-1.5 rounded bg-[#3B82F6] text-white text-[11px] font-medium hover:bg-[#7E5CFE] hover:text-white transition shadow-sm disabled:opacity-50"
-                                            title="Preview PDF"
-                                        >
-                                            {previewLoading ? '...' : 'Print'}
-                                        </button>
-                                        <button
-                                            onClick={handleEmail}
-                                            disabled={emailLoading}
-                                            className="flex-1 px-3 py-1.5 rounded bg-[#3B82F6] text-white text-[11px] font-medium hover:bg-[#7E5CFE] hover:text-white transition shadow-sm disabled:opacity-50"
-                                            title="Send via email"
-                                        >
-                                            {emailLoading ? '...' : 'Email'}
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table >
-                </div >
-            </div >
+                                {/* Total Row */}
+                                <tr className="bg-slate-50">
+                                    <td className="px-2 py-1 font-semibold text-slate-700 text-right">
+                                        <div className="flex items-center justify-end gap-1">
+                                            Total
+                                            <button
+                                                onClick={handleRoundUp}
+                                                className="w-4 h-4 flex items-center justify-center bg-sky-100 hover:bg-sky-200 text-sky-600 rounded text-[10px] font-bold"
+                                                title="Round Up"
+                                            >↑</button>
+                                        </div>
+                                    </td>
+                                    <td className="px-2 py-1 text-right font-bold text-slate-900 whitespace-nowrap">
+                                        <input
+                                            type="text"
+                                            value={manualTotal !== null ? `$${manualTotal}` : currency(total)}
+                                            onChange={(e) => {
+                                                const val = e.target.value.replace(/[^0-9.]/g, '');
+                                                setManualTotal(val);
+                                            }}
+                                            onBlur={() => {
+                                                if (manualTotal !== null && manualTotal !== '') {
+                                                    const newTotal = parseFloat(manualTotal);
+                                                    applyTotalAdjustment(newTotal);
+                                                } else if (manualTotal === '') {
+                                                    setManualTotal(null);
+                                                }
+                                            }}
+                                            className="min-w-[80px] w-auto max-w-[100px] text-right bg-transparent text-sm font-bold text-slate-900 outline-none border-b border-transparent hover:border-slate-300 focus:border-sky-400"
+                                        />
+                                    </td>
+                                </tr>
+                                <tr className="">
+                                    <td className="px-2 py-1 text-slate-600 text-right whitespace-nowrap">Paid</td>
+                                    <td className="px-2 py-1 text-right text-slate-900 whitespace-nowrap">
+                                        <input
+                                            type="number"
+                                            value={payment}
+                                            onChange={(e) => setPayment(e.target.value)}
+                                            className="min-w-[60px] w-auto max-w-[80px] text-right bg-transparent text-sm text-slate-900 outline-none border-b border-transparent hover:border-slate-300 focus:border-sky-400"
+                                            placeholder="$0"
+                                        />
+                                    </td>
+                                </tr>
+                                {/* Balance Row */}
+                                <tr className="bg-slate-50">
+                                    <td className="px-2 py-1 font-semibold text-slate-700 text-right whitespace-nowrap">Balance</td>
+                                    <td className="px-2 py-1 text-right font-bold text-slate-900 whitespace-nowrap">{currency(balance)}</td>
+                                </tr>
+                                {/* Action Buttons Row */}
+                                <tr>
+                                    <td colSpan="2" className="p-1">
+                                        <div className="flex gap-1 justify-end">
+                                            <select
+                                                value={manualDocType}
+                                                onChange={(e) => setManualDocType(e.target.value)}
+                                                className="w-auto px-2 py-1 text-[10px] font-medium border border-slate-300 rounded bg-white text-slate-700 outline-none"
+                                            >
+                                                <option value="Quote">Quote</option>
+                                                <option value="Work Order">W.Order</option>
+                                                <option value="Invoice">Invoice</option>
+                                            </select>
+                                            <button
+                                                onClick={handleSave}
+                                                disabled={saveLoading}
+                                                className="px-3 py-1.5 rounded bg-[#3B82F6] text-white text-[11px] font-medium hover:bg-[#7E5CFE] hover:text-white transition shadow-sm disabled:opacity-50 whitespace-nowrap"
+                                            >
+                                                {saveLoading ? '...' : 'Save'}
+                                            </button>
+                                            <button
+                                                onClick={handlePreview}
+                                                disabled={previewLoading}
+                                                className="px-3 py-1.5 rounded bg-[#3B82F6] text-white text-[11px] font-medium hover:bg-[#7E5CFE] hover:text-white transition shadow-sm disabled:opacity-50 whitespace-nowrap"
+                                                title="Preview PDF"
+                                            >
+                                                {previewLoading ? '...' : 'Print'}
+                                            </button>
+                                            <button
+                                                onClick={handleEmail}
+                                                disabled={emailLoading}
+                                                className="px-3 py-1.5 rounded bg-[#3B82F6] text-white text-[11px] font-medium hover:bg-[#7E5CFE] hover:text-white transition shadow-sm disabled:opacity-50 whitespace-nowrap"
+                                                title="Send via email"
+                                            >
+                                                {emailLoading ? '...' : 'Email'}
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
 
             {/* Email Preview Modal */}
-            < Modal
+            <Modal
                 title={`Send ${currentDocType}`}
                 open={showEmailModal}
                 onCancel={handleCloseModal}
-                footer={
-                    [
-                        <Button key="cancel" onClick={handleCloseModal}>Cancel</Button>,
-                        <Button key="send" type="primary" loading={emailLoading} onClick={handleConfirmAndSend} className="bg-violet-600">
-                            Confirm & Send
-                        </Button>
-                    ]}
+                footer={[
+                    <Button key="cancel" onClick={handleCloseModal}>Cancel</Button>,
+                    <Button key="send" type="primary" loading={emailLoading} onClick={handleConfirmAndSend} className="bg-violet-600">
+                        Confirm & Send
+                    </Button>
+                ]}
                 width={800}
             >
                 <div className="flex flex-col md:flex-row gap-6">

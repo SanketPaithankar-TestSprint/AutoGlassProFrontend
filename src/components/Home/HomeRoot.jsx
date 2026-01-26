@@ -33,8 +33,6 @@ const Home = () => {
             {/* Hero */}
             <HeroSection />
 
-
-
             {/* Main content - Value Proposition & Features */}
             <div
                 className={`transition-all duration-700 ${mounted
