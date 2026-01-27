@@ -349,7 +349,7 @@ const OpenRoot = () => {
                             <option value="all">All Documents</option>
                             <option value="quote">Quote</option>
                             <option value="invoice">Invoice</option>
-                            <option value="workorder">Work Order</option>
+                            <option value="work_order">Work Order</option>
                         </select>
 
                         {/* Search Bar */}
