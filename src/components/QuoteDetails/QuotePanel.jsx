@@ -24,6 +24,32 @@ import {
 import KitSelectionModal from "./KitSelectionModal";
 import CurrencyInput from "../common/CurrencyInput";
 import { getTaxSettings } from "../../api/taxSettings";
+import { label } from "three/tsl";
+
+const SERVICE_OPTIONS = [
+    { label: "Window Regulator", value: "WINDOW_REGULATOR" },
+    { label: "Window Regulator w/ Motor", value: "WINDOW_REGULATOR_WITH_MOTOR" },
+    { label: "Window Switch", value: "WINDOW_SWITCH" },
+    { label: "Other", value: "OTHER" }
+];
+const LABOR_OPTIONS = [
+    {
+        label:"chip repair", value: "CHIP_REPAIR"
+    },
+    {
+        label:"windshield leaking", value: "WINDSHIELD_LEAKING"
+    },
+    {
+        label:"rear view mirror repair", value: "REAR_VIEW_MIRROR_REPAIR"
+    }
+    ,
+    {
+        label:"reinstallation of windshield", value: "REINSTALLATION_OF_WINDSHIELD"
+    },
+    {
+        label:"other", value: "OTHER"
+    }
+];
 
 function currency(n) {
     const num = Number.isFinite(n) ? n : 0;
@@ -452,11 +478,17 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
         let actualType = type;
         let description = "Custom Part";
         let isAdas = false;
+        let isService = false;
+        let isLabor = false;
 
         if (type === "ADAS") {
             actualType = "ADAS"; // Distinct type for UI logic
             description = "ADAS Recalibration"; // Default, to be selected from dropdown
             isAdas = true;
+        } else if (type === "Service") {
+            actualType = "Service";
+            description = "";
+            isService = true;
         } else if (type.startsWith("ADAS_")) {
             // ... legacy or specific if needed, but we probably want to consolidate to just "ADAS"
             actualType = "Service"; // Legacy mapping? Or maybe just map to ADAS too?
@@ -465,10 +497,8 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
             if (subType === 'Static') description = "Labor/ADAS Recal - Static";
             else if (subType === 'Dynamic') description = "Labor/ADAS Recal - Dynamic";
             else if (subType === 'Dual') description = "Labor/ADAS Recal - Static & Dynamic";
-        } else {
-            description = type === "Part" ? "Custom Part" : type === "Labor" ? "Custom Labor" : "Chip Repair";
-        }
-
+        } 
+        
         const newItemData = {
             ...newItem(),
             id: Math.random().toString(36).substring(2, 9),
@@ -482,6 +512,10 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
             newItemData.labor = 1;
             newItemData.pricingType = "hourly";
             newItemData.amount = globalLaborRate;
+        }
+
+        if (isService) {
+            newItemData.serviceType = null;
         }
 
         setItems(prev => [...prev, newItemData]);
@@ -1494,6 +1528,54 @@ Auto Glass Pro Team`;
         }));
     };
 
+    const handleServiceChange = (id, serviceType) => {
+        const selectedOption = SERVICE_OPTIONS.find(opt => opt.value === serviceType);
+
+        setItems(prev => prev.map(it => {
+            if (it.id !== id) return it;
+            if (!serviceType) {
+                return { ...it, serviceType: null };
+            }
+            if (serviceType === "OTHER") {
+                // When "Other" is selected, clear description to let user enter custom text
+                return {
+                    ...it,
+                    serviceType,
+                    description: it.description || ""
+                };
+            }
+            return {
+                ...it,
+                serviceType,
+                description: selectedOption?.label || it.description
+            };
+        }));
+    };
+
+    const handleLaborChange = (id, laborType) => {
+        const selectedOption = LABOR_OPTIONS.find(opt => opt.value === laborType);
+
+        setItems(prev => prev.map(it => {
+            if (it.id !== id) return it;
+            if (!laborType) {
+                return { ...it, laborType: null };
+            }
+            if (laborType === "OTHER") {
+                // When "Other" is selected, let user enter custom text
+                return {
+                    ...it,
+                    laborType,
+                    description: it.description || ""
+                };
+            }
+            return {
+                ...it,
+                laborType,
+                description: selectedOption?.label || it.description
+            };
+        }));
+    };
+
     return (
         <div className="relative">
             {contextHolder}
@@ -1625,6 +1707,26 @@ Auto Glass Pro Team`;
                                     showDeleteButton = false;
                                 }
 
+                                const serviceOptionsWithCustom = [...SERVICE_OPTIONS];
+                                if (it.type === 'Service' && it.description && !SERVICE_OPTIONS.some(opt => opt.label === it.description)) {
+                                    serviceOptionsWithCustom.push({ label: it.description, value: "__custom__" });
+                                }
+                                const serviceSelectValue = it.type === 'Service'
+                                    ? (it.serviceType
+                                        || SERVICE_OPTIONS.find(opt => opt.label === it.description)?.value
+                                        || (serviceOptionsWithCustom.some(opt => opt.value === "__custom__") ? "__custom__" : null))
+                                    : null;
+
+                                const laborOptionsWithCustom = [...LABOR_OPTIONS];
+                                if (it.type === 'Labor' && it.description && !LABOR_OPTIONS.some(opt => opt.label === it.description)) {
+                                    laborOptionsWithCustom.push({ label: it.description, value: "__custom__" });
+                                }
+                                const laborSelectValue = it.type === 'Labor'
+                                    ? (it.laborType
+                                        || LABOR_OPTIONS.find(opt => opt.label === it.description)?.value
+                                        || (laborOptionsWithCustom.some(opt => opt.value === "__custom__") ? "__custom__" : null))
+                                    : null;
+
                                 return (
                                     <tr key={it.id} className="hover:bg-slate-50 transition group">
                                         <td className="px-1 sm:px-2 py-1 align-middle">
@@ -1672,6 +1774,52 @@ Auto Glass Pro Team`;
                                                     })}
                                                     dropdownMatchSelectWidth={false}
                                                 />
+                                            ) : it.type === 'Service' ? (
+                                                serviceSelectValue === "OTHER" ? (
+                                                    <input
+                                                        type="text"
+                                                        value={it.description || ''}
+                                                        onChange={(e) => updateItem(it.id, "description", e.target.value)}
+                                                        placeholder="Enter service details"
+                                                        className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all text-xs"
+                                                    />
+                                                ) : (
+                                                    <Select
+                                                        className="w-full text-xs custom-select-borderless"
+                                                        size="small"
+                                                        bordered={false}
+                                                        placeholder="Select Service"
+                                                        value={serviceSelectValue}
+                                                        onChange={(val) => handleServiceChange(it.id, val)}
+                                                        options={serviceOptionsWithCustom}
+                                                        dropdownMatchSelectWidth={false}
+                                                        optionFilterProp="label"
+                                                        showSearch
+                                                    />
+                                                )
+                                            ) : it.type === 'Labor' ? (
+                                                laborSelectValue === "OTHER" ? (
+                                                    <input
+                                                        type="text"
+                                                        value={it.description || ''}
+                                                        onChange={(e) => updateItem(it.id, "description", e.target.value)}
+                                                        placeholder="Enter labor details"
+                                                        className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all text-xs"
+                                                    />
+                                                ) : (
+                                                    <Select
+                                                        className="w-full text-xs custom-select-borderless"
+                                                        size="small"
+                                                        bordered={false}
+                                                        placeholder="Select Labor"
+                                                        value={laborSelectValue}
+                                                        onChange={(val) => handleLaborChange(it.id, val)}
+                                                        options={laborOptionsWithCustom}
+                                                        dropdownMatchSelectWidth={false}
+                                                        optionFilterProp="label"
+                                                        showSearch
+                                                    />
+                                                )
                                             ) : (
                                                 <input
                                                     value={it.description || ''}
@@ -1803,7 +1951,7 @@ Auto Glass Pro Team`;
                             items: [
                                 { key: 'Part', label: <span className="text-xs">Part</span>, onClick: () => handleAddRow("Part") },
                                 { key: 'Labor', label: <span className="text-xs">Labor</span>, onClick: () => handleAddRow("Labor") },
-                                { key: 'Service', label: <span className="text-xs">Chip Repair</span>, onClick: () => handleAddRow("Service") },
+                                { key: 'Service', label: <span className="text-xs">Service</span>, onClick: () => handleAddRow("Service") },
                                 { key: 'ADAS', label: <span className="text-xs">ADAS Recalibration</span>, onClick: () => handleAddRow("ADAS") },
                             ],
                             // You can add styles to the dropdown menu here
