@@ -186,10 +186,11 @@ const SearchByRoot = () => {
           result.push({
             id: partId,
             originalPartId: item.partId,
-            type: item.itemType === 'PART' ? 'Part' : (item.itemType === 'LABOR' ? 'Labor' : 'Service'),
+            type: item.itemType === 'PART' ? 'Part' : (item.itemType === 'LABOR' ? 'Labor' : (item.itemType === 'ADAS' ? 'ADAS' : 'Service')),
             nagsId: item.nagsGlassId || "",
             oemId: "",
             description: item.partDescription || "",
+            adasCode: item.itemType === 'ADAS' && item.partDescription ? item.partDescription.replace('ADAS Recalibration - ', '') : null,
             manufacturer: "",
             qty: item.quantity || 1,
             unitPrice: item.partPrice || 0,

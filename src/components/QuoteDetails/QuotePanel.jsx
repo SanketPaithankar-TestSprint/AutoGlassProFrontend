@@ -843,10 +843,9 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
 
 
 
-    // Subtotal = sum of Part + Kit amounts only (partPrice + kitPrice)
+    // Subtotal = sum of all items (Parts, Labor, Kits, Services, ADAS)
     const subtotal = useMemo(() =>
         items
-            .filter(it => it.type === 'Part' || it.type === 'Kit')
             .reduce((sum, it) => sum + (Number(it.amount) || 0), 0),
         [items]
     );
@@ -901,8 +900,8 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
         [items]
     );
 
-    // Total = subtotal (Part+Kit) + labor + service + tax
-    const calculatedTotal = useMemo(() => Math.max(0, subtotal + laborCostDisplay + serviceTotal + totalTax), [subtotal, laborCostDisplay, serviceTotal, totalTax]);
+    // Total = subtotal (All Items) + tax
+    const calculatedTotal = useMemo(() => Math.max(0, subtotal + totalTax), [subtotal, totalTax]);
 
     const [manualTotal, setManualTotal] = useState(null);
 
@@ -1153,7 +1152,7 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                 const isLabor = manualIt.type === 'Labor';
                 serviceDocumentItems.push({
                     partId: manualIt.originalPartId || null,
-                    itemType: manualIt.type === 'Service' ? 'SERVICE' : (manualIt.type === 'ADAS' ? 'SERVICE' : (isLabor ? 'LABOR' : 'PART')),
+                    itemType: manualIt.type === 'Service' ? 'SERVICE' : (manualIt.type === 'ADAS' ? 'ADAS' : (isLabor ? 'LABOR' : 'PART')),
                     partDescription: manualIt.description,
                     partPrice: Number(manualIt.amount) || 0,
                     quantity: 1,

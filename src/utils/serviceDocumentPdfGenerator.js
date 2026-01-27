@@ -471,6 +471,7 @@ export function generateServiceDocumentPDF({
             let partDisplay = it.nagsId || it.oemId || "-";
             if (it.type === 'Labor') partDisplay = "Labor";
             else if (it.type === 'Service') partDisplay = "SERVICE";
+            else if (it.type === 'ADAS') partDisplay = "ADAS";
 
             // For price, use amount if unitPrice is 0 (for chip repair where only amount is set)
             const displayPrice = (Number(it.unitPrice) || 0) > 0
