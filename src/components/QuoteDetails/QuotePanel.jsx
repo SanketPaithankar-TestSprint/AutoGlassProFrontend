@@ -591,7 +591,7 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
             // Update the main part item first (without kit)
             setItems(prev => {
                 const filtered = prev.filter(it => it.parentPartId !== itemId);
-                return filtered.map(it => {
+                const updated = filtered.map(it => {
                     if (it.id === itemId) {
                         return {
                             ...it,
@@ -611,6 +611,7 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                     }
                     return it;
                 });
+                return updated;
             });
 
             // Fetch vendor price in background
@@ -622,6 +623,14 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
 
         // Single kit or no kit - apply directly
         await applyGlassWithKit(itemId, glassData, glassData.kit?.[0] || null);
+        
+        // Scroll to table to show updated items
+        setTimeout(() => {
+            const tableElement = document.querySelector('[data-quote-details-table]');
+            if (tableElement) {
+                tableElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }, 100);
     };
 
     // Apply glass with a specific kit (or no kit)
@@ -1583,7 +1592,7 @@ Auto Glass Pro Team`;
                 </h3>
 
                 {/* Line Items Table - Height for 6 rows + header */}
-                <div className="border border-slate-100 bg-white rounded-sm max-h-[350px] sm:max-h-[400px] overflow-x-auto overflow-y-auto">
+                <div className="border border-slate-100 bg-white rounded-sm max-h-[350px] sm:max-h-[400px] overflow-x-auto overflow-y-auto" data-quote-details-table>
                     <table className="min-w-full divide-y divide-slate-100">
                         <thead className="bg-slate-50 sticky top-0 z-10">
                             <tr className="text-left text-xs sm:text-sm font-bold text-slate-700 tracking-tight">
@@ -1733,9 +1742,9 @@ Auto Glass Pro Team`;
             </div>
 
             {/* Totals & Actions */}
-            <div className="bg-white p-2 sm:p-4 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg flex flex-col gap-4">
+            <div className="bg-white p-2 sm:p-4 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg flex flex-col lg:flex-row gap-4">
                 {/* Left side - Vendor Pricing & Metadata */}
-                <div className="flex flex-col gap-2 flex-1">
+                <div className="flex flex-col gap-2 flex-1 lg:order-1">
                     {/* Vendor Pricing Data Display */}
                     {
                         items.filter(it => it.vendorData).length > 0 && (
@@ -1787,7 +1796,7 @@ Auto Glass Pro Team`;
                 </div>
 
                 {/* Right side - Add Button + Totals Table */}
-                <div className="flex flex-col sm:flex-row items-start gap-2 w-full">
+                <div className="flex flex-col sm:flex-row items-start gap-2 w-full sm:w-auto lg:order-2 lg:flex-col lg:items-stretch">
                     {/* Add Button */}
                     <Dropdown
                         menu={{
@@ -1798,16 +1807,16 @@ Auto Glass Pro Team`;
                                 { key: 'ADAS', label: <span className="text-xs">ADAS Recalibration</span>, onClick: () => handleAddRow("ADAS") },
                             ],
                             // You can add styles to the dropdown menu here
-                            className: "min-w-[160px] [&_.ant-dropdown-menu-item]:!py-1.5 [&_.ant-dropdown-menu-item]:font-semibold"
+                            className: "min-w-auto [&_.ant-dropdown-menu-item]:!py-1.5 [&_.ant-dropdown-menu-item]:font-semibold"
                         }}
                     >
-                        <button className="flex items-center gap-1 px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded text-xs font-medium transition-colors">
-                            Add <DownOutlined className="text-[12px]" />
+                        <button className="flex items-center gap-0.5 px-1.5 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded text-xs font-medium transition-colors">
+                            Add <DownOutlined className="text-[10px]" />
                         </button>
                     </Dropdown >
 
                     {/* Totals Table */}
-                    <table className="w-full sm:max-w-xs text-xs sm:text-sm rounded-xl overflow-hidden bg-slate-50/50">
+                    <table className="w-full text-xs sm:text-sm rounded-xl overflow-hidden bg-slate-50/50">
                         <tbody>
                             {/* Labor Row */}
                             <tr className="">
