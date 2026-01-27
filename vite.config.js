@@ -8,13 +8,16 @@ export default defineConfig({
   build: {
     sourcemap: false,
     target: 'esnext',
+    chunkSizeWarningLimit: 1600,
     rollupOptions: {
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom', 'zustand', 'axios'],
-          ui: ['antd', '@ant-design/icons'],
+          ui: ['antd', '@ant-design/icons', 'antd-img-crop'],
           three: ['three', '@react-three/fiber', '@react-three/drei'],
           pdf: ['jspdf', 'jspdf-autotable'],
+          editor: ['react-quill-new'],
+          utils: ['browser-image-compression'],
         },
       },
     },

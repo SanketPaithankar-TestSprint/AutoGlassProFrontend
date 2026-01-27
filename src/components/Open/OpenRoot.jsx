@@ -156,54 +156,59 @@ const OpenRoot = () => {
     const renderDocumentCard = (doc) => {
         const { documentNumber, documentType, status, customerName, vehicleInfo, totalAmount, createdAt } = doc;
 
-        // List view - horizontal layout
+        // List view - responsive layout (stacks on mobile, horizontal on desktop)
         if (viewMode === 'list') {
             return (
                 <div
                     onClick={() => handleDocumentClick(doc)}
-                    className="w-full cursor-pointer hover:bg-slate-50 transition-colors p-4 border border-slate-200 rounded-lg mb-2"
+                    className="w-full cursor-pointer hover:bg-slate-50 transition-colors p-2 sm:p-4 border border-slate-200 rounded-lg mb-2"
                 >
-                    <div className="flex items-center justify-between gap-6">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4">
                         {/* Left side - ID, Type, Name */}
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <FileTextOutlined className="text-slate-600 text-base flex-shrink-0" />
-                            <span className="font-bold text-slate-900 text-sm whitespace-nowrap">{documentNumber}</span>
-                            <Tag color={getTypeColor(documentType)} className="uppercase font-bold text-[10px] m-0 flex-shrink-0">
+                        <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+                            <FileTextOutlined className="text-slate-600 text-sm md:text-base flex-shrink-0" />
+                            <span className="font-bold text-slate-900 text-xs sm:text-sm whitespace-nowrap">{documentNumber}</span>
+                            <Tag color={getTypeColor(documentType)} className="uppercase font-bold text-[9px] sm:text-[10px] m-0 flex-shrink-0">
                                 {documentType?.replace('_', ' ')}
                             </Tag>
-                            <div className="flex items-center gap-2 text-slate-600 text-sm min-w-0">
+                            <div className="flex items-center gap-1 md:gap-2 text-slate-600 text-xs sm:text-sm min-w-0 flex-1">
                                 <UserOutlined className="text-slate-400 flex-shrink-0" />
                                 <span className="truncate">{customerName}</span>
                             </div>
                         </div>
 
-                        {/* Right side - Vehicle, Date, Status, Price */}
-                        <div className="flex items-center gap-6 flex-shrink-0">
-                            <div className="flex items-center gap-2 text-slate-600 text-sm">
+                        {/* Right side - Vehicle, Date, Total, Balance */}
+                        <div className="flex items-center justify-between md:gap-4 flex-shrink-0">
+                            <div className="flex items-center gap-1 md:gap-2 text-slate-600 text-xs sm:text-sm flex-1 md:flex-initial md:w-[130px]">
                                 <CarOutlined className="text-slate-400" />
-                                <span className="whitespace-nowrap">{vehicleInfo}</span>
+                                <span className="truncate">{vehicleInfo}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-slate-600 text-sm">
+                            <div className="hidden md:flex items-center gap-2 text-slate-600 text-sm w-[100px]">
                                 <CalendarOutlined className="text-slate-400" />
                                 <span className="whitespace-nowrap">{new Date(createdAt).toLocaleDateString()}</span>
                             </div>
-                            <Tag color={getStatusColor(status)} className="capitalize m-0 min-w-[80px] text-center">
-                                {status?.replace('_', ' ')}
-                            </Tag>
-                            <span className="font-bold text-slate-900 text-base whitespace-nowrap min-w-[100px] text-right">
-                                {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalAmount || 0)}
-                            </span>
-                            <Tooltip title="Delete Document">
-                                <Button
-                                    type="text"
-                                    danger
-                                    icon={<DeleteOutlined />}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setDeleteTarget(doc);
-                                    }}
-                                />
-                            </Tooltip>
+                            <div className="flex items-center gap-2">
+                                <div className="flex flex-col items-end">
+                                    <span className="font-bold text-slate-900 text-xs sm:text-sm whitespace-nowrap">
+                                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalAmount || 0)}
+                                    </span>
+                                    <span className="font-medium text-amber-600 text-[10px] sm:text-xs whitespace-nowrap">
+                                        Bal: {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(doc.balanceDue || 0)}
+                                    </span>
+                                </div>
+                                <Tooltip title="Delete Document">
+                                    <Button
+                                        type="text"
+                                        danger
+                                        size="small"
+                                        icon={<DeleteOutlined />}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setDeleteTarget(doc);
+                                        }}
+                                    />
+                                </Tooltip>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -216,45 +221,52 @@ const OpenRoot = () => {
                 hoverable
                 onClick={() => handleDocumentClick(doc)}
                 className="w-full transition-all duration-300 hover:shadow-lg border border-slate-200 rounded-xl"
-                bodyStyle={{ padding: '16px' }}
+                bodyStyle={{ padding: '12px' }}
             >
-                <div className="flex justify-between items-start mb-3">
-                    <div className="flex items-center gap-2">
-                        <FileTextOutlined className="text-violet-600 text-lg" />
-                        <span className="font-bold text-slate-800 text-base">{documentNumber}</span>
+                <div className="flex justify-between items-start mb-2">
+                    <div className="flex items-center gap-1.5">
+                        <FileTextOutlined className="text-violet-600 text-sm sm:text-lg" />
+                        <span className="font-bold text-slate-800 text-xs sm:text-base">{documentNumber}</span>
                     </div>
-                    <Tag color={getTypeColor(documentType)} className="uppercase font-bold text-[10px] m-0">
+                    <Tag color={getTypeColor(documentType)} className="uppercase font-bold text-[8px] sm:text-[10px] m-0">
                         {documentType?.replace('_', ' ')}
                     </Tag>
                 </div>
 
-                <div className="space-y-2 mb-4">
-                    <div className="flex items-center gap-2 text-slate-600 text-sm">
-                        <UserOutlined className="text-slate-400" />
+                <div className="space-y-1.5 mb-3">
+                    <div className="flex items-center gap-1.5 text-slate-600 text-xs sm:text-sm">
+                        <UserOutlined className="text-slate-400 text-xs" />
                         <span className="truncate">{customerName}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-slate-600 text-sm">
-                        <CarOutlined className="text-slate-400" />
+                    <div className="flex items-center gap-1.5 text-slate-600 text-xs sm:text-sm">
+                        <CarOutlined className="text-slate-400 text-xs" />
                         <span className="truncate">{vehicleInfo}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-slate-600 text-sm">
-                        <CalendarOutlined className="text-slate-400" />
+                    <div className="hidden sm:flex items-center gap-1.5 text-slate-600 text-xs sm:text-sm">
+                        <CalendarOutlined className="text-slate-400 text-xs" />
                         <span>{new Date(createdAt).toLocaleDateString()}</span>
                     </div>
                 </div>
 
-                <div className="flex justify-between items-center pt-3 border-t border-slate-100">
-                    <Tag color={getStatusColor(status)} className="capitalize m-0">
-                        {status?.replace('_', ' ')}
-                    </Tag>
-                    <span className="font-bold text-slate-900 text-lg">
-                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalAmount || 0)}
-                    </span>
+                <div className="flex justify-between items-center pt-2 border-t border-slate-100">
+                    <div className="flex flex-col">
+                        <span className="text-[9px] sm:text-xs text-slate-500">Total</span>
+                        <span className="font-bold text-slate-900 text-xs sm:text-base">
+                            {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalAmount || 0)}
+                        </span>
+                    </div>
+                    <div className="flex flex-col items-end">
+                        <span className="text-[9px] sm:text-xs text-slate-500">Balance</span>
+                        <span className="font-medium text-amber-600 text-xs sm:text-base">
+                            {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(doc.balanceDue || 0)}
+                        </span>
+                    </div>
                     <Tooltip title="Delete Document">
                         <Button
                             type="text"
                             danger
-                            icon={<DeleteOutlined />}
+                            size="small"
+                            icon={<DeleteOutlined className="text-xs" />}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 setDeleteTarget(doc);
@@ -343,7 +355,7 @@ const OpenRoot = () => {
                             <option value="all">All Documents</option>
                             <option value="quote">Quote</option>
                             <option value="invoice">Invoice</option>
-                            <option value="workorder">Work Order</option>
+                            <option value="work_order">Work Order</option>
                         </select>
 
                         {/* Search Bar */}
@@ -351,9 +363,32 @@ const OpenRoot = () => {
                     </div>
                 </div>
 
+                {/* Column Headers for List View */}
+                {viewMode === 'list' && filteredDocuments.length > 0 && !loading && (
+                    <div className="hidden md:block w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-t-lg mb-0">
+                        <div className="flex items-center justify-between gap-4">
+                            {/* Left side headers */}
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <span className="w-[16px]"></span> {/* Icon spacer */}
+                                <span className="font-semibold text-slate-600 text-xs uppercase tracking-wide w-[110px]">Doc #</span>
+                                <span className="font-semibold text-slate-600 text-xs uppercase tracking-wide w-[80px] text-center">Type</span>
+                                <span className="font-semibold text-slate-600 text-xs uppercase tracking-wide w-[160px]">Name</span>
+                            </div>
+                            {/* Right side headers */}
+                            <div className="flex items-center gap-4 flex-shrink-0">
+                                <span className="font-semibold text-slate-600 text-xs uppercase tracking-wide w-[130px]">Vehicle</span>
+                                <span className="font-semibold text-slate-600 text-xs uppercase tracking-wide w-[100px]">Date</span>
+                                <span className="font-semibold text-slate-600 text-xs uppercase tracking-wide w-[90px] text-right">Total</span>
+                                <span className="font-semibold text-slate-600 text-xs uppercase tracking-wide w-[90px] text-right">Balance</span>
+                                <span className="w-[32px]"></span> {/* Action button spacer */}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Document List with Ant Design */}
                 <List
-                    grid={viewMode === 'grid' ? { gutter: 16, column: 4, xs: 1, sm: 2, md: 3, lg: 4 } : null}
+                    grid={viewMode === 'grid' ? { gutter: [8, 8], column: 4, xs: 2, sm: 2, md: 3, lg: 4 } : null}
                     dataSource={filteredDocuments}
                     loading={loading}
                     locale={{

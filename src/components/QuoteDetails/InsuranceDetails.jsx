@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { Switch } from 'antd';
+import { Switch, DatePicker } from 'antd';
+import dayjs from 'dayjs';
 
 export default function InsuranceDetails({ data, onChange, enabled, onToggle }) {
     const handleChange = (field, value) => {
@@ -79,11 +80,13 @@ export default function InsuranceDetails({ data, onChange, enabled, onToggle }) 
                         {/* Incident Date */}
                         <div>
                             <label className="block text-[11px] font-medium text-slate-500 mb-1">Incident Date</label>
-                            <input
-                                type="date"
-                                value={data.incidentDate || ''}
-                                onChange={(e) => handleChange('incidentDate', e.target.value)}
-                                className="w-full h-8 rounded border border-slate-300 px-2 text-xs focus:ring-1 focus:ring-violet-500 outline-none"
+                            <DatePicker
+                                value={data.incidentDate ? dayjs(data.incidentDate) : null}
+                                onChange={(date, dateString) => handleChange('incidentDate', dateString)}
+                                className="w-full h-8 text-xs"
+                                format="MM/DD/YYYY"
+                                placeholder="Select date"
+                                size="small"
                             />
                         </div>
 

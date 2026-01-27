@@ -17,6 +17,7 @@ import { getPrefixCd, getPosCd, getSideCd, extractGlassInfo } from "../carGlassV
 import InsuranceDetails from "../QuoteDetails/InsuranceDetails";
 import AttachmentDetails from "../QuoteDetails/AttachmentDetails";
 import { getAttachmentsByDocumentNumber } from "../../api/getAttachmentsByDocumentNumber";
+import PaymentPanel from "../QuoteDetails/PaymentPanel";
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 
@@ -108,6 +109,24 @@ const SearchByRoot = () => {
           createdAt: serviceDocument.createdAt,
           updatedAt: serviceDocument.updatedAt
         });
+
+        // 0.1 Map Payments
+        if (serviceDocument.payments && Array.isArray(serviceDocument.payments) && serviceDocument.payments.length > 0) {
+          // Take the most recent payment or just the first one for now (UI limitation to single payment entry)
+          const pay = serviceDocument.payments[0];
+          setPaymentData({
+            amount: pay.amount || 0,
+            paymentMethod: pay.paymentMethod || "OTHER",
+            transactionReference: pay.transactionReference || "",
+            paymentMethod: pay.paymentMethod || "OTHER",
+            transactionReference: pay.transactionReference || "",
+            notes: pay.notes || ""
+          });
+          // Store full payment history
+          setExistingPayments(serviceDocument.payments);
+        } else {
+          setExistingPayments([]);
+        }
       }
 
       // 1. Map Customer & Vehicle
@@ -670,6 +689,13 @@ const SearchByRoot = () => {
       setAttachments([]);
       setSavedAttachments([]);
       setCreatedDocumentNumber(null); // Clear document number
+      setExistingPayments([]); // Clear existing payments
+      setPaymentData({        // Reset current payment entry
+        amount: 0,
+        paymentMethod: "CREDIT_CARD",
+        transactionReference: "",
+        notes: ""
+      });
 
       // 4. Reset Customer & Vehicle
       setCustomerData({ ...initialCustomerData });
@@ -715,11 +741,24 @@ const SearchByRoot = () => {
   const [attachments, setAttachments] = useState([]); // Array { id, file, description }
   const [savedAttachments, setSavedAttachments] = useState([]); // Array of saved attachments from backend
 
+  // Lifted Payment State
+  const [paymentData, setPaymentData] = useState({
+    amount: 0,
+    paymentMethod: "CREDIT_CARD",
+    transactionReference: "",
+    notes: ""
+  });
+  // Lifted Existing Payments State (Payment History)
+  const [existingPayments, setExistingPayments] = useState([]);
+  // Lifted Total Amount State (for validation in PaymentPanel)
+  const [currentTotalAmount, setCurrentTotalAmount] = useState(0);
+
   const tabs = [
     { id: 'quote', label: 'Quote' },
     { id: 'customer', label: 'Customer Information' },
     { id: 'insurance', label: 'Insurance' },
     { id: 'attachment', label: 'Attachment' },
+    { id: 'payment', label: 'Payment' },
     { id: 'notes', label: 'Notes' },
   ];
 
@@ -742,7 +781,7 @@ const SearchByRoot = () => {
 
         {/* TABS & ACTIONS */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-3 mt-2">
-          <div className="flex justify-start gap-2 overflow-x-auto w-full md:w-auto pb-1 no-scrollbar">
+          <div className="flex justify-start gap-1 overflow-x-auto w-full md:w-auto pb-1 no-scrollbar">
             {tabs.map(tab => (
               <button
                 key={tab.id}
@@ -862,6 +901,17 @@ const SearchByRoot = () => {
                 </div>
               )}
 
+              {activeTab === 'payment' && (
+                <div className="p-4">
+                  <PaymentPanel
+                    paymentData={paymentData}
+                    setPaymentData={setPaymentData}
+                    existingPayments={existingPayments}
+                    totalAmount={currentTotalAmount}
+                  />
+                </div>
+              )}
+
               {activeTab === 'notes' && (
                 <div className="p-2 grid grid-cols-1 md:grid-cols-2 gap-4 bg-white shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg">
                   <div className="space-y-2 h-[250px] flex flex-col ">
@@ -909,7 +959,8 @@ const SearchByRoot = () => {
                     onEditModeChange={setIsEditMode}
                     onDocumentCreated={handleDocumentCreated}
                     onClear={handleGlobalClear}
-
+                    paymentData={paymentData}
+                    onTotalChange={setCurrentTotalAmount}
                   />
                 </div>
               </div>
