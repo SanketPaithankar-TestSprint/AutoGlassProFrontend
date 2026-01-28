@@ -112,13 +112,13 @@ const SearchByRoot = () => {
 
         // 0.1 Map Payments
         if (serviceDocument.payments && Array.isArray(serviceDocument.payments) && serviceDocument.payments.length > 0) {
-          // Take the most recent payment or just the first one for now (UI limitation to single payment entry)
-          const pay = serviceDocument.payments[0];
+          // Do NOT pre-fill paymentData - the form is for NEW payments only. 
+          // Previous logic copied history to new form, causing duplication/confusion.
           setPaymentData({
-            amount: pay.amount || 0,
-            paymentMethod: pay.paymentMethod || "OTHER",
-            transactionReference: pay.transactionReference || "",
-            notes: pay.notes || ""
+            amount: 0,
+            paymentMethod: "CREDIT_CARD",
+            transactionReference: "",
+            notes: ""
           });
           // Store full payment history
           setExistingPayments(serviceDocument.payments);
@@ -1005,6 +1005,7 @@ const SearchByRoot = () => {
                     onDocumentCreated={handleDocumentCreated}
                     onClear={handleGlobalClear}
                     paymentData={paymentData}
+                    existingPayments={existingPayments}
                     onTotalChange={setCurrentTotalAmount}
                   />
                 </div>
