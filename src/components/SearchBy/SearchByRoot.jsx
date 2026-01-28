@@ -790,8 +790,8 @@ const SearchByRoot = () => {
 
   // Handle payment deletion - remove from state to trigger re-render
   const handlePaymentDeleted = (paymentId) => {
-    setExistingPayments(prevPayments => 
-      prevPayments.filter(payment => 
+    setExistingPayments(prevPayments =>
+      prevPayments.filter(payment =>
         (payment.paymentId || payment.id) !== paymentId
       )
     );
