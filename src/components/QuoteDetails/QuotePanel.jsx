@@ -1019,8 +1019,17 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
     const handleRoundUp = () => {
         applyTotalAdjustment(Math.ceil(total));
     };
-    const numericPayment = Number(payment) || 0;
-    const balance = useMemo(() => Math.max(0, total - numericPayment), [total, numericPayment]);
+    const totalExistingPaid = useMemo(() => {
+        return (existingPayments || []).reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+    }, [existingPayments]);
+
+    // Total Paid = History + New Payment (from Payment Tab/Panel)
+    const totalPaid = useMemo(() => {
+        return totalExistingPaid + (Number(paymentData?.amount) || 0);
+    }, [totalExistingPaid, paymentData]);
+
+    // Balance = Total - Total Paid
+    const balance = useMemo(() => Math.max(0, total - totalPaid), [total, totalPaid]);
 
     let calculatedDocType = "Invoice";
     // Auto-calculation removed per request, strict manual selection
@@ -2096,14 +2105,8 @@ Auto Glass Pro Team`;
                             </tr>
                             <tr className="">
                                 <td className="px-2 py-1 text-slate-600">Paid</td>
-                                <td className="px-2 py-1 text-right text-slate-900">
-                                    <input
-                                        type="number"
-                                        value={payment}
-                                        onChange={(e) => setPayment(e.target.value)}
-                                        className="w-full text-right bg-transparent text-sm text-slate-900 outline-none border-b border-transparent hover:border-slate-300 focus:border-sky-400"
-                                        placeholder="$0"
-                                    />
+                                <td className="px-2 py-1 text-right text-slate-900 font-medium">
+                                    {currency(totalPaid)}
                                 </td>
                             </tr>
                             {/* Balance Row */}
