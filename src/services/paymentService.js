@@ -11,16 +11,12 @@ const paymentService = {
                 throw new Error('Authentication token not found. Please login.');
             }
             
-            console.log('Attempting to delete payment with ID:', id);
-            console.log('API URL:', `${urls.javaApiUrl}/v1/payments/${id}`);
-            
             const response = await axios.delete(`${urls.javaApiUrl}/v1/payments/${id}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
             });
             
-            console.log('Delete successful:', response.data);
             return response.data;
         } catch (error) {
             console.error('Payment delete error details:', {
