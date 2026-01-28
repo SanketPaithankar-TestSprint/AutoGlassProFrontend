@@ -592,12 +592,12 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
                     {/* Action Bar */}
                     <div className="mt-auto flex justify-end">
-                        <button
+                        {/* <button
                             type="submit"
                             className="bg-violet-600 hover:bg-violet-700 text-white px-6 py-2 rounded-md font-semibold text-sm transition-colors shadow-sm"
                         >
                             Continue to Quote
-                        </button>
+                        </button> */}
                     </div>
 
                 </div>
