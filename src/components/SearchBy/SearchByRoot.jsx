@@ -97,7 +97,7 @@ const SearchByRoot = () => {
   // Handle Incoming Composite Data (Edit Mode) OR Prefill Data (New Quote)
   useEffect(() => {
     if (location.state?.compositeData) {
-      const { serviceDocument, customer, vehicle, insurance, attachments: atts } = location.state.compositeData;
+      const { serviceDocument, customer, vehicle, insurance, attachments: atts, organization } = location.state.compositeData;
 
       // 0. Set Metadata & Saved State
       setIsSaved(true);
@@ -118,8 +118,6 @@ const SearchByRoot = () => {
             amount: pay.amount || 0,
             paymentMethod: pay.paymentMethod || "OTHER",
             transactionReference: pay.transactionReference || "",
-            paymentMethod: pay.paymentMethod || "OTHER",
-            transactionReference: pay.transactionReference || "",
             notes: pay.notes || ""
           });
           // Store full payment history
@@ -130,27 +128,63 @@ const SearchByRoot = () => {
       }
 
       // 1. Map Customer & Vehicle
-      const newCustomerData = {
-        firstName: customer?.firstName || "",
-        lastName: customer?.lastName || "",
-        email: customer?.email || "",
-        // Organization Mapping
-        customerType: customer?.customerType || "INDIVIDUAL",
-        organizationId: customer?.organizationId || null,
-        organizationName: customer?.organizationName || "",
-        taxId: customer?.taxId || "", // If preserved in customer object
-        isTaxExempt: customer?.isTaxExempt || false, // If preserved
+      // Logic: Prefer Customer object if exists. If not, and we have Organization, map Organization details.
 
-        phone: customer?.phone || "",
-        alternatePhone: customer?.alternatePhone || "",
-        addressLine1: customer?.addressLine1 || "",
-        addressLine2: customer?.addressLine2 || "",
-        city: customer?.city || "",
-        state: customer?.state || "",
-        postalCode: customer?.postalCode || "",
-        country: customer?.country || "",
-        preferredContactMethod: customer?.preferredContactMethod || "email",
-        notes: customer?.notes || "",
+      let baseData = {};
+
+      if (customer) {
+        baseData = {
+          firstName: customer.firstName || "",
+          lastName: customer.lastName || "",
+          email: customer.email || "",
+          phone: customer.phone || "",
+          alternatePhone: customer.alternatePhone || "",
+          addressLine1: customer.addressLine1 || "",
+          addressLine2: customer.addressLine2 || "",
+          city: customer.city || "",
+          state: customer.state || "",
+          postalCode: customer.postalCode || "",
+          country: customer.country || "USA",
+          preferredContactMethod: customer.preferredContactMethod || "email",
+          notes: customer.notes || "",
+
+          // Org fields potentially on customer object
+          customerType: customer.customerType || (organization ? "BUSINESS" : "INDIVIDUAL"),
+          organizationId: customer.organizationId || organization?.organizationId || null,
+          organizationName: customer.organizationName || organization?.companyName || "",
+          taxId: customer.taxId || organization?.taxId || "",
+          isTaxExempt: customer.isTaxExempt || organization?.taxExempt || false,
+        };
+      } else if (organization) {
+        // No customer, but we have organization -> Map to "Business" mode defaults
+        baseData = {
+          firstName: "",
+          lastName: "",
+          email: organization.email || "",
+          phone: organization.phone || "",
+          alternatePhone: organization.alternatePhone || "",
+          addressLine1: organization.addressLine1 || "",
+          addressLine2: organization.addressLine2 || "",
+          city: organization.city || "",
+          state: organization.state || "",
+          postalCode: organization.postalCode || "",
+          country: organization.country || "USA",
+          preferredContactMethod: "phone",
+          notes: organization.notes || "",
+
+          customerType: "BUSINESS",
+          organizationId: organization.organizationId,
+          organizationName: organization.companyName || "",
+          taxId: organization.taxId || "",
+          isTaxExempt: organization.taxExempt || false,
+
+          // Map specific Org Form Data for prefill
+          companyName: organization.companyName || ""
+        };
+      }
+
+      const newCustomerData = {
+        ...baseData,
         // Vehicle
         vehicleYear: vehicle?.vehicleYear || "",
         vehicleMake: vehicle?.vehicleMake || "",

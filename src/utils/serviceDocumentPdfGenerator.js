@@ -59,7 +59,7 @@ export function generateServiceDocumentPDF({
 
     // Set PDF document properties (title shows in browser tab)
     const customerName = customerData ?
-        `${customerData.firstName || ''} ${customerData.lastName || ''}`.trim() : '';
+        (customerData.organizationName || customerData.companyName || `${customerData.firstName || ''} ${customerData.lastName || ''}`.trim()) : '';
     const vehicleInfo = customerData ?
         `${customerData.vehicleYear || ''} ${customerData.vehicleMake || ''} ${customerData.vehicleModel || ''}`.trim() : '';
     const pdfTitle = customerName && vehicleInfo
@@ -278,12 +278,27 @@ export function generateServiceDocumentPDF({
     if (customerData) {
         let textY = addrY + 18;
 
-        // Customer Name (bold, larger)
+        // Customer Name OR Organization Name (bold, larger)
         doc.setFontSize(11);
         doc.setFont("helvetica", "normal");
         doc.setTextColor(40, 50, 70);
+
+        const orgName = customerData.organizationName || customerData.companyName || "";
         const fullName = `${customerData.firstName || ''} ${customerData.lastName || ''}`.trim();
-        if (fullName) {
+
+        if (orgName) {
+            // Display Organization Name
+            doc.text(orgName, cardX + 14, textY);
+            textY += lineHeight + 2;
+
+            // Display Attention line if contact name exists
+            if (fullName) {
+                doc.setFontSize(9);
+                doc.setTextColor(80, 80, 80);
+                doc.text(`Attn: ${fullName}`, cardX + 14, textY);
+                textY += lineHeight;
+            }
+        } else if (fullName) {
             doc.text(fullName, cardX + 14, textY);
             textY += lineHeight + 2;
         }
