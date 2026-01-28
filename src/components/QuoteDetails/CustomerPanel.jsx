@@ -297,6 +297,11 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
         if (name === 'phone' || name === 'alternatePhone') finalValue = formatPhoneNumber(value);
         setOrgFormData(prev => ({ ...prev, [name]: finalValue }));
 
+        // Always sync email and phone to formData for validation
+        if (name === 'email' || name === 'phone') {
+            setFormData(prev => ({ ...prev, [name]: finalValue }));
+        }
+
         // Sync specific fields to main formData if in NEW mode
         if (orgMode === "NEW") {
             setFormData(prev => ({
@@ -550,8 +555,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                             <div className="p-4 grid grid-cols-4 gap-3">
                                 <FormInput label="Company Name *" name="companyName" value={orgFormData.companyName} onChange={handleOrgFormChange} required disabled={orgMode === "EXISTING"} />
                                 <FormInput label="Tax ID" name="taxId" value={orgFormData.taxId} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING"} />
-                                <FormInput label="Email " name="email" value={orgFormData.email} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING"} />
-                                <FormInput label="Phone " name="phone" value={orgFormData.phone} onChange={handleOrgFormChange} required disabled={orgMode === "EXISTING"} />
+                                <FormInput label="Email " name="email" value={orgFormData.email} onChange={handleOrgFormChange} />
+                                <FormInput label="Phone " name="phone" value={orgFormData.phone} onChange={handleOrgFormChange} />
 
                                 <FormInput label="Address Line 1" name="addressLine1" value={orgFormData.addressLine1} onChange={handleOrgFormChange} required className="col-span-2" disabled={orgMode === "EXISTING"} />
                                 <FormInput label="City" name="city" value={orgFormData.city} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING"} />
