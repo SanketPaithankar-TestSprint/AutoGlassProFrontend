@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useQuoteStore } from "../../store";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
-import { Modal, Input, Button, message, Dropdown, Select, InputNumber } from "antd";
+import { Modal, Input, Button, message, notification, Dropdown, Select, InputNumber } from "antd";
 import { DownOutlined, UnorderedListOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { createCompositeServiceDocument } from "../../api/createCompositeServiceDocument";
@@ -1107,6 +1107,20 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
             modal.warning({
                 title: 'Missing Customer',
                 content: 'Please select or enter a customer before saving.',
+                okText: 'OK',
+            });
+            return false;
+        }
+
+        // Validation: Contact Information (Email or Phone Required)
+        const email = customerData.email || "";
+        const phone = customerData.phone || "";
+        const hasContactInfo = email.trim().length > 0 || phone.trim().length > 0;
+
+        if (!hasContactInfo) {
+            modal.warning({
+                title: 'Missing Contact Information',
+                content: 'Please provide at least one contact method (email or phone number) for the customer or organization before saving.',
                 okText: 'OK',
             });
             return false;

@@ -343,6 +343,41 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        e.stopPropagation();
+        
+        // Validation: Check at least one contact field is filled
+        if (clientType === "BUSINESS") {
+            // Check Organization contact
+            const email = orgFormData.email || "";
+            const phone = orgFormData.phone || "";
+            const hasOrgContact = email.trim().length > 0 || phone.trim().length > 0;
+            
+            if (!hasOrgContact) {
+                notification.error({
+                    message: "Missing Contact Information",
+                    description: "Please provide at least one contact method (email or phone number) for the organization.",
+                    placement: "topRight",
+                    duration: 4
+                });
+                return false;
+            }
+        } else {
+            // Check Customer contact
+            const email = formData.email || "";
+            const phone = formData.phone || "";
+            const hasCustomerContact = email.trim().length > 0 || phone.trim().length > 0;
+            
+            if (!hasCustomerContact) {
+                notification.error({
+                    message: "Missing Contact Information",
+                    description: "Please provide at least one contact method (email or phone number) for the customer.",
+                    placement: "topRight",
+                    duration: 4
+                });
+                return false;
+            }
+        }
+        
         localStorage.setItem("agp_customer_data", JSON.stringify(formData));
         if (setCanShowQuotePanel) setCanShowQuotePanel(true);
         if (setPanel) setPanel("quote");
@@ -515,10 +550,10 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                             <div className="p-4 grid grid-cols-4 gap-3">
                                 <FormInput label="Company Name *" name="companyName" value={orgFormData.companyName} onChange={handleOrgFormChange} required disabled={orgMode === "EXISTING"} />
                                 <FormInput label="Tax ID" name="taxId" value={orgFormData.taxId} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING"} />
-                                <FormInput label="Email" name="email" value={orgFormData.email} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING"} />
-                                <FormInput label="Phone *" name="phone" value={orgFormData.phone} onChange={handleOrgFormChange} required disabled={orgMode === "EXISTING"} />
+                                <FormInput label="Email " name="email" value={orgFormData.email} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING"} />
+                                <FormInput label="Phone " name="phone" value={orgFormData.phone} onChange={handleOrgFormChange} required disabled={orgMode === "EXISTING"} />
 
-                                <FormInput label="Address Line 1 *" name="addressLine1" value={orgFormData.addressLine1} onChange={handleOrgFormChange} required className="col-span-2" disabled={orgMode === "EXISTING"} />
+                                <FormInput label="Address Line 1" name="addressLine1" value={orgFormData.addressLine1} onChange={handleOrgFormChange} required className="col-span-2" disabled={orgMode === "EXISTING"} />
                                 <FormInput label="City" name="city" value={orgFormData.city} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING"} />
                                 <FormSelect label="State" name="state" value={orgFormData.state} onChange={handleOrgFormChange} options={US_STATES} disabled={orgMode === "EXISTING"} />
                                 <FormInput label="Zip" name="postalCode" value={orgFormData.postalCode} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING"} />
