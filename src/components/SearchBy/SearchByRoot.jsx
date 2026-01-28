@@ -98,7 +98,6 @@ const SearchByRoot = () => {
   useEffect(() => {
     if (location.state?.compositeData) {
       const { serviceDocument, customer, vehicle, insurance, attachments: atts } = location.state.compositeData;
-      console.log("[SearchByRoot] Loading Composite Data for Edit:", serviceDocument);
       // 0. Set Metadata & Saved State
       setIsSaved(true);
       if (serviceDocument) {
