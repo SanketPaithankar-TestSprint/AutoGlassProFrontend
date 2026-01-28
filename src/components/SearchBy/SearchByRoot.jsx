@@ -98,7 +98,7 @@ const SearchByRoot = () => {
   useEffect(() => {
     if (location.state?.compositeData) {
       const { serviceDocument, customer, vehicle, insurance, attachments: atts } = location.state.compositeData;
-
+      console.log("[SearchByRoot] Loading Composite Data for Edit:", serviceDocument);
       // 0. Set Metadata & Saved State
       setIsSaved(true);
       if (serviceDocument) {
@@ -754,6 +754,15 @@ const SearchByRoot = () => {
   // Lifted Total Amount State (for validation in PaymentPanel)
   const [currentTotalAmount, setCurrentTotalAmount] = useState(0);
 
+  // Handle payment deletion - remove from state to trigger re-render
+  const handlePaymentDeleted = (paymentId) => {
+    setExistingPayments(prevPayments => 
+      prevPayments.filter(payment => 
+        (payment.paymentId || payment.id) !== paymentId
+      )
+    );
+  };
+
   const tabs = [
     { id: 'quote', label: 'Quote' },
     { id: 'customer', label: 'Customer Information' },
@@ -909,6 +918,7 @@ const SearchByRoot = () => {
                     setPaymentData={setPaymentData}
                     existingPayments={existingPayments}
                     totalAmount={currentTotalAmount}
+                    onPaymentDeleted={handlePaymentDeleted}
                   />
                 </div>
               )}
