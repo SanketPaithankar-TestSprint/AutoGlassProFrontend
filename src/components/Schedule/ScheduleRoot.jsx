@@ -88,12 +88,12 @@ const ScheduleRoot = () => {
 
     return (
         <div className="p-6 h-full flex flex-col bg-slate-50 overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-800 m-0">Schedule & Tasks</h1>
                     <p className="text-slate-500 m-0">Manage your assignments and daily workflow</p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2 w-full md:w-auto">
                     {/* Scope Switcher */}
                     <div className="bg-white border p-1 rounded-lg flex mr-2">
                         <Button
@@ -139,22 +139,22 @@ const ScheduleRoot = () => {
 
             {/* Filters & Actions */}
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4 bg-white p-4 rounded-lg shadow-sm border border-slate-100">
-                <div className="flex items-center gap-3 flex-1 w-full">
+                <div className="flex flex-col md:flex-row items-center gap-3 flex-1 w-full">
                     <Search
                         placeholder="Search tasks..."
                         allowClear
                         onSearch={val => setSearchText(val)}
                         onChange={e => setSearchText(e.target.value)}
-                        style={{ width: 250 }}
+                        className="w-full md:w-[250px]"
                     />
                     <Select
                         value={filterStatus}
                         onChange={setFilterStatus}
                         options={statusOptions}
-                        style={{ width: 150 }}
+                        className="w-full md:w-[150px]"
                     />
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 w-full md:w-auto justify-end">
                     <Button icon={<ReloadOutlined />} onClick={() => refetch()} loading={isLoading}>Refresh</Button>
                     <Button
                         type="primary"

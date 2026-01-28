@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Button, Avatar, Dropdown, Space } from 'antd';
+import { Layout, Menu, Button, Avatar, Dropdown, Space, Drawer } from 'antd';
 import {
     HomeOutlined,
     FileTextOutlined,
@@ -10,7 +10,8 @@ import {
     DownOutlined,
     FolderOpenOutlined,
     BarChartOutlined,
-    CalendarOutlined
+    CalendarOutlined,
+    MenuOutlined
 } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 import Logo from './logo';
@@ -18,6 +19,16 @@ import { getUserLogo } from '../api/getUserLogo';
 import { getValidToken } from '../api/getValidToken';
 
 const { Sider } = Layout;
+
+const useIsMobile = () => {
+    const [isMobile, setIsMobile] = useState(() => window.innerWidth < 1024);
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+    return isMobile;
+};
 
 const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
     const location = useLocation();

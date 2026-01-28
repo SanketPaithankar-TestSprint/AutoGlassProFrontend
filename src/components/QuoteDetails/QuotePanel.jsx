@@ -24,6 +24,32 @@ import {
 import KitSelectionModal from "./KitSelectionModal";
 import CurrencyInput from "../common/CurrencyInput";
 import { getTaxSettings } from "../../api/taxSettings";
+import { label } from "three/tsl";
+
+const SERVICE_OPTIONS = [
+    { label: "Window Regulator", value: "WINDOW_REGULATOR" },
+    { label: "Window Regulator w/ Motor", value: "WINDOW_REGULATOR_WITH_MOTOR" },
+    { label: "Window Switch", value: "WINDOW_SWITCH" },
+    { label: "Other", value: "OTHER" }
+];
+const LABOR_OPTIONS = [
+    {
+        label:"chip repair", value: "CHIP_REPAIR"
+    },
+    {
+        label:"windshield leaking", value: "WINDSHIELD_LEAKING"
+    },
+    {
+        label:"rear view mirror repair", value: "REAR_VIEW_MIRROR_REPAIR"
+    }
+    ,
+    {
+        label:"reinstallation of windshield", value: "REINSTALLATION_OF_WINDSHIELD"
+    },
+    {
+        label:"other", value: "OTHER"
+    }
+];
 
 function currency(n) {
     const num = Number.isFinite(n) ? n : 0;
@@ -452,11 +478,17 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
         let actualType = type;
         let description = "Custom Part";
         let isAdas = false;
+        let isService = false;
+        let isLabor = false;
 
         if (type === "ADAS") {
             actualType = "ADAS"; // Distinct type for UI logic
             description = "ADAS Recalibration"; // Default, to be selected from dropdown
             isAdas = true;
+        } else if (type === "Service") {
+            actualType = "Service";
+            description = "";
+            isService = true;
         } else if (type.startsWith("ADAS_")) {
             // ... legacy or specific if needed, but we probably want to consolidate to just "ADAS"
             actualType = "Service"; // Legacy mapping? Or maybe just map to ADAS too?
@@ -465,10 +497,8 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
             if (subType === 'Static') description = "Labor/ADAS Recal - Static";
             else if (subType === 'Dynamic') description = "Labor/ADAS Recal - Dynamic";
             else if (subType === 'Dual') description = "Labor/ADAS Recal - Static & Dynamic";
-        } else {
-            description = type === "Part" ? "Custom Part" : type === "Labor" ? "Custom Labor" : "Chip Repair";
-        }
-
+        } 
+        
         const newItemData = {
             ...newItem(),
             id: Math.random().toString(36).substring(2, 9),
@@ -482,6 +512,10 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
             newItemData.labor = 1;
             newItemData.pricingType = "hourly";
             newItemData.amount = globalLaborRate;
+        }
+
+        if (isService) {
+            newItemData.serviceType = null;
         }
 
         setItems(prev => [...prev, newItemData]);
@@ -591,7 +625,7 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
             // Update the main part item first (without kit)
             setItems(prev => {
                 const filtered = prev.filter(it => it.parentPartId !== itemId);
-                return filtered.map(it => {
+                const updated = filtered.map(it => {
                     if (it.id === itemId) {
                         return {
                             ...it,
@@ -611,6 +645,7 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                     }
                     return it;
                 });
+                return updated;
             });
 
             // Fetch vendor price in background
@@ -622,6 +657,14 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
 
         // Single kit or no kit - apply directly
         await applyGlassWithKit(itemId, glassData, glassData.kit?.[0] || null);
+        
+        // Scroll to table to show updated items
+        setTimeout(() => {
+            const tableElement = document.querySelector('[data-quote-details-table]');
+            if (tableElement) {
+                tableElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }, 100);
     };
 
     // Apply glass with a specific kit (or no kit)
@@ -1525,6 +1568,54 @@ Auto Glass Pro Team`;
         }));
     };
 
+    const handleServiceChange = (id, serviceType) => {
+        const selectedOption = SERVICE_OPTIONS.find(opt => opt.value === serviceType);
+
+        setItems(prev => prev.map(it => {
+            if (it.id !== id) return it;
+            if (!serviceType) {
+                return { ...it, serviceType: null };
+            }
+            if (serviceType === "OTHER") {
+                // When "Other" is selected, clear description to let user enter custom text
+                return {
+                    ...it,
+                    serviceType,
+                    description: it.description || ""
+                };
+            }
+            return {
+                ...it,
+                serviceType,
+                description: selectedOption?.label || it.description
+            };
+        }));
+    };
+
+    const handleLaborChange = (id, laborType) => {
+        const selectedOption = LABOR_OPTIONS.find(opt => opt.value === laborType);
+
+        setItems(prev => prev.map(it => {
+            if (it.id !== id) return it;
+            if (!laborType) {
+                return { ...it, laborType: null };
+            }
+            if (laborType === "OTHER") {
+                // When "Other" is selected, let user enter custom text
+                return {
+                    ...it,
+                    laborType,
+                    description: it.description || ""
+                };
+            }
+            return {
+                ...it,
+                laborType,
+                description: selectedOption?.label || it.description
+            };
+        }));
+    };
+
     return (
         <div className="relative">
             {contextHolder}
@@ -1617,23 +1708,23 @@ Auto Glass Pro Team`;
             />
 
             {/* Header / Metadata */}
-            <div className="bg-white p-2 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg mb-4">
-                <h3 className="text-base font-bold text-[#7E5CFE] mb-1">
+            <div className="bg-white p-2 sm:p-3 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg mb-3 sm:mb-4">
+                <h3 className="text-sm sm:text-base font-bold text-[#7E5CFE] mb-1">
                     Quote Details
                 </h3>
 
                 {/* Line Items Table - Height for 6 rows + header */}
-                <div className="border border-slate-100 bg-white rounded-sm max-h-[400px] overflow-y-auto">
+                <div className="border border-slate-100 bg-white rounded-sm max-h-[350px] sm:max-h-[400px] overflow-x-auto overflow-y-auto" data-quote-details-table>
                     <table className="min-w-full divide-y divide-slate-100">
                         <thead className="bg-slate-50 sticky top-0 z-10">
-                            <tr className="text-left text-sm font-bold text-slate-700 tracking-tight">
-                                <th className="px-2 py-2 w-[160px] bg-slate-50">Part</th>
-                                <th className="px-2 py-2 bg-slate-50">Description</th>
-                                <th className="px-2 py-2 w-[110px] bg-slate-50">Manufacturer</th>
-                                <th className="px-2 py-2 text-right w-[70px] bg-slate-50">Quantity</th>
-                                <th className="px-2 py-2 text-right w-[100px] bg-slate-50">List</th>
-                                <th className="px-2 py-2 text-right w-[100px] bg-slate-50">Amount</th>
-                                <th className="px-2 py-2 w-5 bg-slate-50"></th>
+                            <tr className="text-left text-xs sm:text-sm font-bold text-slate-700 tracking-tight">
+                                <th className="px-1 sm:px-2 py-2 w-[100px] sm:w-[160px] bg-slate-50">Part</th>
+                                <th className="px-1 sm:px-2 py-2 bg-slate-50">Description</th>
+                                <th className="px-1 sm:px-2 py-2 w-[80px] sm:w-[110px] bg-slate-50 hidden md:table-cell">Manufacturer</th>
+                                <th className="px-1 sm:px-2 py-2 text-right w-[60px] sm:w-[70px] bg-slate-50">Qty</th>
+                                <th className="px-1 sm:px-2 py-2 text-right w-[80px] sm:w-[100px] bg-slate-50">List</th>
+                                <th className="px-1 sm:px-2 py-2 text-right w-[80px] sm:w-[100px] bg-slate-50">Amount</th>
+                                <th className="px-1 sm:px-2 py-2 w-5 bg-slate-50"></th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-slate-100">
@@ -1656,9 +1747,29 @@ Auto Glass Pro Team`;
                                     showDeleteButton = false;
                                 }
 
+                                const serviceOptionsWithCustom = [...SERVICE_OPTIONS];
+                                if (it.type === 'Service' && it.description && !SERVICE_OPTIONS.some(opt => opt.label === it.description)) {
+                                    serviceOptionsWithCustom.push({ label: it.description, value: "__custom__" });
+                                }
+                                const serviceSelectValue = it.type === 'Service'
+                                    ? (it.serviceType
+                                        || SERVICE_OPTIONS.find(opt => opt.label === it.description)?.value
+                                        || (serviceOptionsWithCustom.some(opt => opt.value === "__custom__") ? "__custom__" : null))
+                                    : null;
+
+                                const laborOptionsWithCustom = [...LABOR_OPTIONS];
+                                if (it.type === 'Labor' && it.description && !LABOR_OPTIONS.some(opt => opt.label === it.description)) {
+                                    laborOptionsWithCustom.push({ label: it.description, value: "__custom__" });
+                                }
+                                const laborSelectValue = it.type === 'Labor'
+                                    ? (it.laborType
+                                        || LABOR_OPTIONS.find(opt => opt.label === it.description)?.value
+                                        || (laborOptionsWithCustom.some(opt => opt.value === "__custom__") ? "__custom__" : null))
+                                    : null;
+
                                 return (
                                     <tr key={it.id} className="hover:bg-slate-50 transition group">
-                                        <td className="px-2 py-1 align-middle">
+                                        <td className="px-1 sm:px-2 py-1 align-middle">
                                             <div className="relative">
                                                 {it.type === 'Part' ? (
                                                     <input
@@ -1673,7 +1784,7 @@ Auto Glass Pro Team`;
                                                                 e.currentTarget.blur();
                                                             }
                                                         }}
-                                                        className="w-full h-7 px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all font-medium text-xs"
+                                                        className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all font-medium text-xs"
                                                         placeholder="Part No"
                                                     />
                                                 ) : (
@@ -1681,12 +1792,12 @@ Auto Glass Pro Team`;
                                                         type="text"
                                                         value={it.type === 'Labor' ? 'LABOR' : it.type === 'ADAS' ? 'ADAS' : it.type === 'Kit' ? (it.nagsId || 'KIT') : 'SERVICE'}
                                                         readOnly
-                                                        className="w-full h-7 px-2 rounded border-none outline-none bg-transparent text-slate-500 font-medium cursor-default text-xs"
+                                                        className="w-full h-7 px-1 sm:px-2 rounded border-none outline-none bg-transparent text-slate-500 font-medium cursor-default text-xs"
                                                     />
                                                 )}
                                             </div>
                                         </td>
-                                        <td className="px-2 py-1 align-middle">
+                                        <td className="px-1 sm:px-2 py-1 align-middle">
                                             {it.type === 'ADAS' ? (
                                                 <Select
                                                     className="w-full text-xs custom-select-borderless"
@@ -1703,45 +1814,91 @@ Auto Glass Pro Team`;
                                                     })}
                                                     dropdownMatchSelectWidth={false}
                                                 />
+                                            ) : it.type === 'Service' ? (
+                                                serviceSelectValue === "OTHER" ? (
+                                                    <input
+                                                        type="text"
+                                                        value={it.description || ''}
+                                                        onChange={(e) => updateItem(it.id, "description", e.target.value)}
+                                                        placeholder="Enter service details"
+                                                        className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all text-xs"
+                                                    />
+                                                ) : (
+                                                    <Select
+                                                        className="w-full text-xs custom-select-borderless"
+                                                        size="small"
+                                                        bordered={false}
+                                                        placeholder="Select Service"
+                                                        value={serviceSelectValue}
+                                                        onChange={(val) => handleServiceChange(it.id, val)}
+                                                        options={serviceOptionsWithCustom}
+                                                        dropdownMatchSelectWidth={false}
+                                                        optionFilterProp="label"
+                                                        showSearch
+                                                    />
+                                                )
+                                            ) : it.type === 'Labor' ? (
+                                                laborSelectValue === "OTHER" ? (
+                                                    <input
+                                                        type="text"
+                                                        value={it.description || ''}
+                                                        onChange={(e) => updateItem(it.id, "description", e.target.value)}
+                                                        placeholder="Enter labor details"
+                                                        className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all text-xs"
+                                                    />
+                                                ) : (
+                                                    <Select
+                                                        className="w-full text-xs custom-select-borderless"
+                                                        size="small"
+                                                        bordered={false}
+                                                        placeholder="Select Labor"
+                                                        value={laborSelectValue}
+                                                        onChange={(val) => handleLaborChange(it.id, val)}
+                                                        options={laborOptionsWithCustom}
+                                                        dropdownMatchSelectWidth={false}
+                                                        optionFilterProp="label"
+                                                        showSearch
+                                                    />
+                                                )
                                             ) : (
                                                 <input
                                                     value={it.description || ''}
                                                     onChange={(e) => updateItem(it.id, "description", e.target.value)}
-                                                    className="w-full h-7 px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all text-xs"
+                                                    className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all text-xs"
                                                 />
                                             )}
                                         </td>
-                                        <td className="px-2 py-1 align-middle">
+                                        <td className="px-1 sm:px-2 py-1 align-middle hidden md:table-cell">
                                             <input
                                                 value={it.manufacturer}
                                                 onChange={(e) => updateItem(it.id, "manufacturer", e.target.value)}
-                                                className="w-full h-7 px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all text-xs"
+                                                className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all text-xs"
                                                 disabled={!it.isManual && it.type === 'Labor'}
                                             />
                                         </td>
-                                        <td className="px-2 py-1 text-right align-middle">
+                                        <td className="px-1 sm:px-2 py-1 text-right align-middle">
                                             <input
                                                 type="number"
                                                 value={it.qty}
                                                 onChange={(e) => updateItem(it.id, "qty", e.target.value)}
-                                                className="w-full h-7 px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-right outline-none bg-transparent text-slate-700 transition-all font-medium text-xs"
+                                                className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-right outline-none bg-transparent text-slate-700 transition-all font-medium text-xs"
                                                 disabled={!it.isManual && it.type === 'Labor'}
                                             />
                                         </td>
-                                        <td className="px-2 py-1 text-right align-middle">
+                                        <td className="px-1 sm:px-2 py-1 text-right align-middle">
                                             <CurrencyInput
                                                 value={it.listPrice}
                                                 onChange={(val) => updateItem(it.id, "listPrice", val)}
-                                                className="w-full h-7 px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-right outline-none bg-transparent text-slate-700 transition-all text-xs"
+                                                className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-right outline-none bg-transparent text-slate-700 transition-all text-xs"
                                                 disabled={!it.isManual && it.type === 'Labor'}
                                                 placeholder="$0.00"
                                             />
                                         </td>
-                                        <td className="px-2 py-1 text-right align-middle">
+                                        <td className="px-1 sm:px-2 py-1 text-right align-middle">
                                             <CurrencyInput
                                                 value={it.amount}
                                                 onChange={(val) => updateItem(it.id, "amount", val)}
-                                                className="w-full h-7 px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-right outline-none bg-transparent text-slate-900 font-bold transition-all text-xs"
+                                                className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-right outline-none bg-transparent text-slate-900 font-bold transition-all text-xs"
                                                 placeholder="$0.00"
                                             />
                                         </td>
@@ -1758,13 +1915,13 @@ Auto Glass Pro Team`;
                             {/* Empty placeholder rows to fill up to 6 rows */}
                             {Array.from({ length: Math.max(0, 6 - items.length) }).map((_, index) => (
                                 <tr key={`empty-${index}`} className="h-10">
-                                    <td className="px-2 py-1">&nbsp;</td>
-                                    <td className="px-2 py-1"></td>
-                                    <td className="px-2 py-1"></td>
-                                    <td className="px-2 py-1"></td>
-                                    <td className="px-2 py-1"></td>
-                                    <td className="px-2 py-1"></td>
-                                    <td className="px-2 py-1"></td>
+                                    <td className="px-1 sm:px-2 py-1">&nbsp;</td>
+                                    <td className="px-1 sm:px-2 py-1"></td>
+                                    <td className="px-1 sm:px-2 py-1 hidden md:table-cell"></td>
+                                    <td className="px-1 sm:px-2 py-1"></td>
+                                    <td className="px-1 sm:px-2 py-1"></td>
+                                    <td className="px-1 sm:px-2 py-1"></td>
+                                    <td className="px-1 sm:px-2 py-1"></td>
                                 </tr>
                             ))}
                         </tbody>
@@ -1773,9 +1930,9 @@ Auto Glass Pro Team`;
             </div>
 
             {/* Totals & Actions */}
-            <div className="bg-white p-4 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg flex flex-col md:flex-row justify-between items-start gap-6">
+            <div className="bg-white p-2 sm:p-4 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg flex flex-col lg:flex-row gap-4">
                 {/* Left side - Vendor Pricing & Metadata */}
-                <div className="flex flex-col gap-2 flex-1">
+                <div className="flex flex-col gap-2 flex-1 lg:order-1">
                     {/* Vendor Pricing Data Display */}
                     {
                         items.filter(it => it.vendorData).length > 0 && (
@@ -1827,27 +1984,27 @@ Auto Glass Pro Team`;
                 </div>
 
                 {/* Right side - Add Button + Totals Table */}
-                <div className="flex items-start gap-2 flex-shrink-0">
+                <div className="flex flex-col sm:flex-row items-start gap-2 w-full sm:w-auto lg:order-2 lg:flex-col lg:items-stretch">
                     {/* Add Button */}
                     <Dropdown
                         menu={{
                             items: [
                                 { key: 'Part', label: <span className="text-xs">Part</span>, onClick: () => handleAddRow("Part") },
                                 { key: 'Labor', label: <span className="text-xs">Labor</span>, onClick: () => handleAddRow("Labor") },
-                                { key: 'Service', label: <span className="text-xs">Chip Repair</span>, onClick: () => handleAddRow("Service") },
+                                { key: 'Service', label: <span className="text-xs">Service</span>, onClick: () => handleAddRow("Service") },
                                 { key: 'ADAS', label: <span className="text-xs">ADAS Recalibration</span>, onClick: () => handleAddRow("ADAS") },
                             ],
                             // You can add styles to the dropdown menu here
-                            className: "min-w-[160px] [&_.ant-dropdown-menu-item]:!py-1.5 [&_.ant-dropdown-menu-item]:font-semibold"
+                            className: "min-w-auto [&_.ant-dropdown-menu-item]:!py-1.5 [&_.ant-dropdown-menu-item]:font-semibold"
                         }}
                     >
-                        <button className="flex items-center gap-1 px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded text-xs font-medium transition-colors">
-                            Add <DownOutlined className="text-[12px]" />
+                        <button className="flex items-center gap-0.5 px-1.5 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded text-xs font-medium transition-colors">
+                            Add <DownOutlined className="text-[10px]" />
                         </button>
                     </Dropdown >
 
                     {/* Totals Table */}
-                    <table className="w-full max-w-xs text-sm rounded-xl overflow-hidden bg-slate-50/50">
+                    <table className="w-full text-xs sm:text-sm rounded-xl overflow-hidden bg-slate-50/50">
                         <tbody>
                             {/* Labor Row */}
                             <tr className="">
@@ -1972,8 +2129,9 @@ Auto Glass Pro Team`;
                         </Button>
                     ]}
                 width={800}
+                className="[&_.ant-modal-body]:p-3 sm:[&_.ant-modal-body]:p-6"
             >
-                <div className="flex flex-col md:flex-row gap-6">
+                <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
                     {/* Form Section */}
                     <div className="flex-1 space-y-4">
                         <div>
@@ -2003,7 +2161,7 @@ Auto Glass Pro Team`;
                         </div>
                     </div>
                     {/* Preview Section */}
-                    <div className="flex-1 h-[400px] border border-slate-200 rounded-lg bg-slate-50 overflow-hidden">
+                    <div className="flex-1 h-[300px] sm:h-[400px] border border-slate-200 rounded-lg bg-slate-50 overflow-hidden">
                         {previewUrl ? (
                             <iframe src={previewUrl} className="w-full h-full" title="PDF Preview" />
                         ) : (

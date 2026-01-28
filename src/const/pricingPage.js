@@ -12,8 +12,8 @@ const commonTierFeatures = [
     description: "Connect directly with glass distributors for real-time pricing and availability checks."
   },
   {
-    label: "AI Contact Forms",
-    description: "Smart contact forms that use AI to follow up with leads and schedule appointments automatically."
+    label: "AI Contact Chat",
+    description: "Smart contact chat that use AI to follow up with leads and schedule appointments automatically."
   },
   {
     label: "Analytics & ADAS Reports",
@@ -63,13 +63,31 @@ export const professionalTierFeatures = [
     description: "Send professional, branded quotes featuring your shop's logo and custom terms."
   },
   {
-    label: "Multi-User Access",
-    description: "Grant specific access rights to owners, CSRs, and technicians for better team management."
+    label: "Team Roles & Employee Management",
+    description: "Add employees ($49.99/user/mo) and grant specific access rights (managed by superuser)."
   },
   ...commonTierFeatures.map(feature => {
     if (feature.label === "Job Dashboard & Invoices") {
       return { ...feature, label: "Unlimited Job Dashboard & Invoices" };
     }
     return feature;
-  })
+  }),
+
+];
+
+export const enterpriseTierFeatures = [
+
+  {
+    label: "Dedicated Account Manager",
+    description: "Your own personal point of contact for priority support and onboarding."
+  },
+  {
+    label: "SSO & Advanced Security",
+    description: "Single Sign-On (SSO) integration and advanced security controls for your team."
+  },
+  {
+    label: "Custom Contracts & SLA",
+    description: "Tailored contracts with guaranteed Service Level Agreements (SLA)."
+  },
+
 ];

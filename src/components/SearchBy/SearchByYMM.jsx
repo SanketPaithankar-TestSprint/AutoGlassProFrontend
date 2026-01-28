@@ -498,7 +498,7 @@ export default function SearchByYMM({
     : null;
 
   return (
-    <div className={`${className} flex flex-col h-full`}>
+    <div className={`${className} flex flex-col h-full pb-3`}>
       <style>{`
         /* Ant Select Modernization */
         .ant-select-selector {
@@ -518,7 +518,7 @@ export default function SearchByYMM({
       {/* Grid: Year / Make / Model - Customized Layout */}
       <div className="flex flex-col gap-2 w-full flex-1">
         {/* Row 1: Year & Make */}
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {/* Year */}
           <div className="w-full">
             <label className="block text-gray-800 text-xs font-medium mb-1">Year</label>
@@ -566,7 +566,7 @@ export default function SearchByYMM({
         </div>
 
         {/* Row 2: Model & Body Type */}
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {/* Model */}
           <div className="w-full">
             <label className="block text-gray-800 text-xs font-medium mb-1">Model</label>
@@ -619,7 +619,7 @@ export default function SearchByYMM({
 
         {/* Row 3: Find Parts Button */}
         <div className="w-full flex-1 flex flex-col">
-          <div className="mt-2 flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col">
             <Button
               htmlType="button"
               onClick={handleFindParts}

@@ -108,7 +108,13 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
       { key: "about", label: "About", href: "/about" },
       { key: "contact", label: "Contact", href: "/contact" },
     ] : []),
-    ...(isAuthed ? [{ key: "Quote", label: "Quote", href: "/search-by-root" }] : []),
+    ...(isAuthed ? [
+      { key: "Quote", label: "Quote", href: "/search-by-root" },
+      { key: "schedule", label: "Schedule", href: "/schedule" },
+      { key: "dashboard", label: "Dashboard", href: "/open" },
+      { key: "reports", label: "Reports", href: "/reports" },
+      { key: "aicontact", label: "AI Contact Form", href: "/ai-contact-form" },
+    ] : []),
   ];
 
   const NavLink = ({ label, href }) => (
@@ -138,7 +144,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
           flex items-center
           px-4 sm:px-6 md:px-8
           transition-all duration-300
-          ${scrolled ? "h-16" : "h-20"}
+          ${(isMobile || scrolled) ? "h-16" : "h-20"}
         `}
         style={{ paddingInline: 0, boxShadow: scrolled ? '0 2px 8px rgba(0,0,0,0.12)' : 'none', minWidth: 0 }}
       >
@@ -208,11 +214,24 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
       </AntHeader>
 
       {/* Mobile Drawer */}
-      {isMobile && (
+      {isAuthed && isMobile && (
         <Drawer
           title={
-            <div className="flex items-center gap-2">
-              <Logo className="w-24 h-auto" />
+            <div className="flex items-center justify-between w-full pr-8">
+              <div className="flex items-center gap-2">
+                <Logo className="w-24 h-auto" />
+              </div>
+
+              {/* User Avatar Circle */}
+              <Link to="/profile" onClick={() => setDrawerOpen(false)}>
+                <div className="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center border border-violet-200 overflow-hidden">
+                  {localStorage.getItem('userLogo') ? (
+                    <img src={localStorage.getItem('userLogo')} alt="User" className="w-full h-full object-cover" />
+                  ) : (
+                    <UserOutlined className="text-violet-600 text-lg" />
+                  )}
+                </div>
+              </Link>
             </div>
           }
           placement="right"
@@ -224,7 +243,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
           className="ap-header-drawer"
         >
           <nav className="p-4 text-slate-700">
-            <ul className="space-y-2">
+            <ul className="space-y-2 pl-0 m-0 list-none">
               {menuItems.map((item) => (
                 <li key={item.key}>
                   <Link
@@ -238,6 +257,44 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
                 </li>
               ))}
             </ul>
+
+            {isAuthed && (
+              <div className="pt-4 border-t border-slate-200 mt-4">
+                <ul className="space-y-2 pl-0 m-0 list-none">
+                  <li>
+                    <Link
+                      to="/profile"
+                      className="block px-4 py-2 rounded-md text-base text-slate-700 hover:text-violet-700 hover:bg-violet-100 outline-none transition-colors duration-150"
+                      onClick={() => setDrawerOpen(false)}
+                    >
+                      View Profile
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/work"
+                      className="block px-4 py-2 rounded-md text-base text-slate-700 hover:text-violet-700 hover:bg-violet-100 outline-none transition-colors duration-150"
+                      onClick={() => setDrawerOpen(false)}
+                    >
+                      Work
+                    </Link>
+                  </li>
+                  <li>
+                    <div
+                      className="block px-4 py-2 rounded-md text-base text-red-500 hover:bg-red-50 hover:text-red-600 cursor-pointer transition-colors duration-150"
+                      onClick={() => {
+                        setDrawerOpen(false);
+                        localStorage.removeItem("ApiToken");
+                        sessionStorage.removeItem("ApiToken");
+                        window.location.href = "/";
+                      }}
+                    >
+                      Logout
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            )}
 
             {!isAuthed && (
               <div className="px-4 pt-4 border-t border-slate-200 mt-4">
@@ -261,6 +318,62 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
                 </Button>
               </div>
             )}
+          </nav>
+        </Drawer>
+      )}
+
+      {/* Guest Mobile Drawer */}
+      {!isAuthed && isMobile && (
+        <Drawer
+          title={
+            <div className="flex items-center gap-2">
+              <Logo className="w-24 h-auto" />
+            </div>
+          }
+          placement="right"
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          bodyStyle={{ padding: 0, background: "#f7f7fa", borderRadius: '16px 0 0 16px' }}
+          maskClosable
+          destroyOnClose
+          className="ap-header-drawer"
+        >
+          <nav className="p-4 text-slate-700">
+            <ul className="space-y-2 pl-0 m-0 list-none">
+              {menuItems.map((item) => (
+                <li key={item.key}>
+                  <Link
+                    to={item.href}
+                    className="block px-4 py-2 rounded-md text-base text-slate-700 hover:text-violet-700 hover:bg-violet-100 outline-none transition-colors duration-150"
+                    style={{ WebkitTapHighlightColor: "transparent" }}
+                    onClick={() => setDrawerOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+            <div className="px-4 pt-4 border-t border-slate-200 mt-4">
+              <Link to="/auth" onClick={() => setDrawerOpen(false)}>
+                <Button
+                  type="text"
+                  className="w-full !h-10 !text-slate-700 !bg-transparent hover:!bg-violet-100 !border-0 text-base"
+                >
+                  Login
+                </Button>
+              </Link>
+              <Button
+                type="primary"
+                onClick={() => {
+                  setDrawerOpen(false);
+                  navigate('/auth', { state: { mode: 'signup' } });
+                }}
+                className="w-full !h-10 !mt-2 !rounded-full !bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:!from-violet-400 hover:!to-fuchsia-400 !border-0 !text-white text-base shadow-lg shadow-violet-800/40"
+              >
+                Sign Up
+              </Button>
+            </div>
           </nav>
         </Drawer>
       )}

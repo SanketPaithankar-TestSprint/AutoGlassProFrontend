@@ -31,12 +31,23 @@ const { Content } = Layout;
 
 
 
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  return isMobile;
+};
+
 function AppContent() {
   const [isAuthed, setIsAuthed] = useState(false);
   const [collapsed, setCollapsed] = useState(true); // Default collapsed
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
+  const isMobile = useIsMobile();
 
   // Prefetch data when authenticated
   useProfileDataPrefetch(isAuthed);
@@ -88,16 +99,24 @@ function AppContent() {
 
   return (
     <Layout className={isAuthed ? "h-screen overflow-hidden" : "min-h-screen overflow-x-hidden"}>
+      {isAuthed && isMobile && (
+        <Header onLoginSuccess={handleLoginSuccess} />
+      )}
+
       {isAuthed ? (
-        // Authenticated Layout: Sidebar + Content Area
-        <Layout hasSider className="h-full">
-          <Sidebar
-            key={isAuthed ? 'authed' : 'guest'}
-            onLogout={handleLogout}
-            collapsed={collapsed}
-            onCollapse={setCollapsed}
-          />
-          <Layout className="flex flex-col h-full bg-slate-50 transition-all duration-300 overflow-hidden">
+        // Authenticated Layout
+        <Layout className="h-full" hasSider={!isMobile}>
+          {/* Show Sidebar on DESKTOP only */}
+          {!isMobile && (
+            <Sidebar
+              key={isAuthed ? 'authed' : 'guest'}
+              onLogout={handleLogout}
+              collapsed={collapsed}
+              onCollapse={setCollapsed}
+            />
+          )}
+
+          <Layout className={`flex flex-col h-full bg-slate-50 transition-all duration-300 overflow-hidden flex-1 w-full ${isMobile ? 'pt-16' : ''}`}> {/* Add padding top for legacy header spacer if mobile */}
             <Content className="flex-1 flex flex-col overflow-y-auto custom-scrollbar">
               <div className={`flex-1 flex-col flex`}>
                 <Suspense fallback={

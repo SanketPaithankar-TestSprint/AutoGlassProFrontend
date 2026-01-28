@@ -88,6 +88,7 @@ const TaskTableView = ({ tasks = [], onStatusChange, onViewDetails }) => {
             rowKey="id"
             pagination={{ pageSize: 10 }}
             className="shadow-sm border border-slate-200 rounded-lg"
+            scroll={{ x: 'max-content' }}
         />
     );
 };
