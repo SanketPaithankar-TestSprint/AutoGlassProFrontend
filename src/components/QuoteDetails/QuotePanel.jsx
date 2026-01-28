@@ -1050,10 +1050,14 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
     // Validation helper function
     const validateDocumentData = () => {
         // Validation: Customer Data
+        // Validation: Customer Data
         const hasCustomerIdentity = customerData && (
+            customerData.customerId ||
+            customerData.organizationId ||
             (customerData.firstName && customerData.firstName.trim() !== "") ||
             (customerData.lastName && customerData.lastName.trim() !== "") ||
-            (customerData.companyName && customerData.companyName.trim() !== "")
+            (customerData.companyName && customerData.companyName.trim() !== "") ||
+            (customerData.organizationName && customerData.organizationName.trim() !== "")
         );
 
         if (!hasCustomerIdentity) {
@@ -1162,34 +1166,70 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
             });
 
             // Separate Customer and Vehicle Data
-            const customerPayload = {
-                firstName: customerData.firstName || "",
-                lastName: customerData.lastName || "",
-                email: customerData.email || "",
-                phone: customerData.phone || "",
-                alternatePhone: customerData.alternatePhone || "",
-                addressLine1: customerData.addressLine1 || "",
-                addressLine2: customerData.addressLine2 || "",
-                city: customerData.city || "",
-                state: customerData.state || "",
-                postalCode: customerData.postalCode || "",
-                country: customerData.country || "USA",
-                preferredContactMethod: customerData.preferredContactMethod || "email",
-                customerType: customerData.customerType || "INDIVIDUAL",
-                taxExempt: customerData.isTaxExempt || false,
-                notes: customerData.notes || ""
-            };
+            let customerPayload = null;
+            let organizationPayload = null;
+
+            // --- CUSTOMER LOGIC ---
+            if (customerData.customerId) {
+                // Link EXISTING Customer
+                customerPayload = {
+                    customerId: customerData.customerId
+                };
+            } else if (customerData.firstName || customerData.lastName || customerData.companyName) {
+                // Create NEW Customer - Only if identity fields are present
+                customerPayload = {
+                    firstName: customerData.firstName || "",
+                    lastName: customerData.lastName || "",
+                    email: customerData.email || "",
+                    phone: customerData.phone || "",
+                    alternatePhone: customerData.alternatePhone || "",
+                    addressLine1: customerData.addressLine1 || "",
+                    addressLine2: customerData.addressLine2 || "",
+                    city: customerData.city || "",
+                    state: customerData.state || "",
+                    postalCode: customerData.postalCode || "",
+                    country: customerData.country || "USA",
+                    preferredContactMethod: customerData.preferredContactMethod || "email",
+                    customerType: "INDIVIDUAL", // Default to INDIVIDUAL when creating explicit customer
+                    taxExempt: false,
+                    notes: customerData.notes || ""
+                };
+            }
+
+            // --- ORGANIZATION LOGIC ---
+            if (customerData.organizationId) {
+                // Link EXISTING Organization
+                organizationPayload = {
+                    organizationId: customerData.organizationId
+                };
+            } else if (customerData.newOrganizationDetails && customerData.newOrganizationDetails.companyName) {
+                // Create NEW Organization (using dedicated details from CustomerPanel)
+                organizationPayload = {
+                    ...customerData.newOrganizationDetails,
+                    phone: customerData.newOrganizationDetails.phone?.replace(/[^\d]/g, '') || "",
+                    alternatePhone: customerData.newOrganizationDetails.alternatePhone?.replace(/[^\d]/g, '') || ""
+                };
+            } else if (customerData.organizationName) {
+                // Fallback: If no dedicated object but name exists (Legacy/Edge Case)
+                organizationPayload = {
+                    companyName: customerData.organizationName,
+                    phone: customerData.phone || "", // Fallback to main phone
+                    addressLine1: customerData.addressLine1 || "",
+                    city: customerData.city || "",
+                    state: customerData.state || "",
+                    postalCode: customerData.postalCode || ""
+                };
+            }
 
             const vehiclePayload = {
-                vehicleYear: Number(customerData.vehicleYear) || 2024, // fallback per request/logic
+                vehicleYear: Number(customerData.vehicleYear) || 2024,
                 vehicleMake: customerData.vehicleMake || "",
                 vehicleModel: customerData.vehicleModel || "",
-                bodyType: customerData.bodyType || "", // e.g. SUV/Crossover
+                bodyType: customerData.bodyType || "",
                 vin: customerData.vin || "",
                 licensePlateNumber: customerData.licensePlateNumber || "",
                 notes: customerData.vehicleNotes || "",
-                // IDs if available (often from search)
-                makeId: customerData.makeId || null, // Assuming these might be present in customerData/vehicleInfo
+                makeId: customerData.makeId || null,
                 modelId: customerData.modelId || null,
                 bodyStyleId: customerData.bodyStyleId || null,
                 masterVehId: customerData.vehId || null
@@ -1197,14 +1237,14 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
 
             const attachmentMetadata = attachments.map(att => ({
                 description: att.description || att.file.name,
-                category: "GENERAL" // Default category? Or passed from AttachmentDetails?
+                category: "GENERAL"
             }));
 
             // Construct Flat Root Object
             const compositePayload = {
                 documentType: currentDocType.replace(" ", "_").toUpperCase(),
                 documentDate: new Date().toISOString(),
-                scheduledDate: new Date().toISOString(), // This might need a date picker in UI? defaulting to now
+                scheduledDate: new Date().toISOString(),
                 estimatedCompletion: new Date().toISOString(),
                 dueDate: new Date().toISOString().split('T')[0],
                 paymentTerms: "Due upon receipt",
@@ -1213,9 +1253,10 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                 serviceLocation: "SHOP",
                 serviceAddress: `${customerData.addressLine1 || ''}, ${customerData.city || ''}, ${customerData.state || ''} ${customerData.postalCode || ''}`,
                 taxRate: customerData.isTaxExempt ? 0 : (Number(globalTaxRate) || 0),
-                discountAmount: 0.00, // No discount logic in UI yet
+                discountAmount: 0.00,
 
                 customer: customerPayload,
+                organization: organizationPayload, // Add Organization Object
                 vehicle: vehiclePayload,
                 insurance: includeInsurance ? insuranceData : null,
                 items: serviceDocumentItems,

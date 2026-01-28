@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { notification, Select, Spin, Modal, Button, Switch } from "antd";
-import { PlusOutlined, DownOutlined, UpOutlined } from "@ant-design/icons";
-import urls from "../../config";
+import { notification, Select, Spin, Radio, Switch, Segmented } from "antd";
+import { UserOutlined, ShopOutlined } from "@ant-design/icons";
 import { getValidToken } from "../../api/getValidToken";
 import { getCustomers } from "../../api/getCustomers";
 import { getCustomerWithVehicles } from "../../api/getCustomerWithVehicles";
 import { getOrganizations, getOrganizationById, createOrganization, updateOrganizationTaxExempt } from "../../api/organizationApi";
 import { COUNTRIES, US_STATES } from "../../const/locations";
-import ErrorBoundary from "../common/ErrorBoundary";
 
 const { Option } = Select;
 
@@ -17,7 +15,7 @@ const FormInput = ({ label, name, value, onChange, onBlur, required = false, typ
         <label className="text-xs font-medium text-gray-500">{label}</label>
         <input
             name={name}
-            value={value}
+            value={value || ""}
             onChange={onChange}
             onBlur={onBlur}
             required={required}
@@ -29,14 +27,12 @@ const FormInput = ({ label, name, value, onChange, onBlur, required = false, typ
     </div>
 );
 
-
-
 const FormSelect = ({ label, name, value, onChange, options, required = false, className = "", ...props }) => (
     <div className={`flex flex-col gap-1 ${className}`}>
         <label className="text-xs font-medium text-gray-500">{label}</label>
         <select
             name={name}
-            value={value}
+            value={value || ""}
             onChange={onChange}
             required={required}
             className="border border-gray-200 rounded px-2 py-1.5 text-sm focus:ring-1 focus:ring-violet-500 focus:border-violet-500 focus:outline-none transition-all bg-white"
@@ -52,77 +48,54 @@ const FormSelect = ({ label, name, value, onChange, options, required = false, c
     </div>
 );
 
-function CustomerPanel({ formData, setFormData, setCanShowQuotePanel, setPanel }) {
+export default function CustomerPanel({ formData, setFormData, setCanShowQuotePanel, setPanel }) {
     // Organizations
     const [organizations, setOrganizations] = useState([]);
     const [loadingOrganizations, setLoadingOrganizations] = useState(false);
-    const [isOrgCollapsed, setIsOrgCollapsed] = useState(false); // New state for collapsible panel
-    const [selectedOrganizationId, setSelectedOrganizationId] = useState(null);
 
     // Customers  
     const [customers, setCustomers] = useState([]);
     const [loadingCustomers, setLoadingCustomers] = useState(false);
-    const [selectedCustomerId, setSelectedCustomerId] = useState(null);
 
-    // Vehicles (from organization or customer)
+    // Vehicles
     const [vehicles, setVehicles] = useState([]);
-    const [selectedVehicleId, setSelectedVehicleId] = useState(null);
 
-    // VIN Validation Warning Modal
-    const [showVinWarningModal, setShowVinWarningModal] = useState(false);
-    const [vinWarningAcknowledged, setVinWarningAcknowledged] = useState(false);
+    // Master Mode: INDIVIDUAL vs BUSINESS
+    const [clientType, setClientType] = useState("INDIVIDUAL");
 
-    // Organization Modal
-    const [creatingOrg, setCreatingOrg] = useState(false);
-    const [isCreatingNewOrg, setIsCreatingNewOrg] = useState(false); // New State
-    const [orgFormData, setOrgFormData] = useState({
-        companyName: "", taxId: "", email: "", phone: "", alternatePhone: "",
-        addressLine1: "", addressLine2: "", city: "", state: "", postalCode: "", country: "USA", notes: ""
-    });
+    // Internal Modes
+    const [customerMode, setCustomerMode] = useState("NEW"); // "NEW" | "EXISTING"
+    const [orgMode, setOrgMode] = useState("NEW"); // "NEW" | "EXISTING" (No "NONE" anymore in Business mode)
 
-    // VIN Validation Function - validates standard 17-character VIN format
-    const isValidVin = (vin) => {
-        if (!vin || vin.trim() === "") return true; // Empty VIN is considered valid (not entered yet)
-        const cleanVin = vin.trim().toUpperCase();
-        // Standard VIN is exactly 17 characters
-        if (cleanVin.length !== 17) return false;
-        // VIN cannot contain I, O, Q (easily confused with 1, 0)
-        if (/[IOQ]/i.test(cleanVin)) return false;
-        // VIN should only contain alphanumeric characters
-        if (!/^[A-HJ-NPR-Z0-9]+$/i.test(cleanVin)) return false;
-        return true;
-    };
-
-    // Handle VIN blur - check validation when user finishes entering
-    const handleVinBlur = () => {
-        const vin = formData.vin;
-        // Only show warning if VIN is entered but invalid, and not already acknowledged
-        if (vin && vin.trim() !== "" && !isValidVin(vin) && !vinWarningAcknowledged) {
-            setShowVinWarningModal(true);
-        }
-    };
-
-    // Handle VIN change - reset acknowledgement when VIN changes
-    const handleVinChange = (e) => {
-        setVinWarningAcknowledged(false);
-        handleChange(e);
-    };
-
-    // Load data on mount
+    // Initial Load & Sync
     useEffect(() => {
         fetchOrganizations();
         fetchCustomers();
 
-        // Fix: Ensure customerType defaults to INDIVIDUAL if not set, 
-        // preventing the "Waiting for Selection" state on initial load
-        if (!formData.customerType) {
-            setFormData(prev => ({ ...prev, customerType: "INDIVIDUAL" }));
-        }
-    }, []);
+        // Detect current mode based on existing data
+        if (formData.organizationId || (formData.companyName && !formData.firstName)) {
+            setClientType("BUSINESS");
+            setOrgMode(formData.organizationId ? "EXISTING" : "NEW");
 
-    // Also re-fetch customers if a new one is created via other means (optional, but good practice)
-    useEffect(() => {
-        // If we needed to auto-refresh
+            // Populate Org Form from passed data
+            setOrgFormData({
+                companyName: formData.companyName || formData.organizationName || "",
+                taxId: formData.taxId || "",
+                email: formData.email || "",
+                phone: formData.phone || "",
+                alternatePhone: formData.alternatePhone || "",
+                addressLine1: formData.addressLine1 || "",
+                addressLine2: formData.addressLine2 || "",
+                city: formData.city || "",
+                state: formData.state || "",
+                postalCode: formData.postalCode || "",
+                country: formData.country || "USA",
+                notes: formData.notes || ""
+            });
+        } else {
+            setClientType("INDIVIDUAL");
+            setCustomerMode(formData.customerId ? "EXISTING" : "NEW");
+        }
     }, []);
 
     const fetchOrganizations = async () => {
@@ -150,99 +123,84 @@ function CustomerPanel({ formData, setFormData, setCanShowQuotePanel, setPanel }
         }
     };
 
-    // Initialize/Sync Organization Data from Props (e.g. when opening existing document)
-    useEffect(() => {
-        const initOrgData = async () => {
-            if (formData.organizationId && formData.organizationId !== selectedOrganizationId) {
-                try {
-                    setLoadingOrganizations(true);
-                    // Ensure organizations are loaded first to show in dropdown
-                    // (Though getOrganizations is called on mount, we might need to wait or rely on value)
+    // --- Mode Switching Logic ---
 
-                    setSelectedOrganizationId(formData.organizationId);
-                    setIsCreatingNewOrg(false);
+    const handleClientTypeChange = (value) => {
+        setClientType(value);
+        if (value === "INDIVIDUAL") {
+            // Reset Org Data
+            setFormData(prev => ({
+                ...prev,
+                organizationId: null,
+                organizationName: "",
+                companyName: "",
+                isTaxExempt: false,
+                newOrganizationDetails: null,
+                // Ensure Customer Mode is valid
+                customerId: null
+            }));
+            setCustomerMode("NEW");
+            setOrgFormData(initialOrgForm);
+        } else {
+            // Reset Customer Data
+            setFormData(prev => ({
+                ...prev,
+                customerId: null,
+                firstName: "",
+                lastName: "",
+                email: "",
+                phone: "",
+                alternatePhone: "",
+                addressLine1: "",
+                addressLine2: "",
+                city: "",
+                state: "",
+                postalCode: "",
+                // Ensure Org Mode is valid
+                organizationId: null
+            }));
+            setOrgMode("NEW");
+        }
+    };
 
-                    // Fetch full details to populate the Org Form
-                    const orgDetails = await getOrganizationById(formData.organizationId);
+    // --- Organization Handlers ---
 
-                    if (orgDetails) {
-                        setOrgFormData({
-                            companyName: orgDetails.companyName || "",
-                            taxId: orgDetails.taxId || "",
-                            email: orgDetails.email || "",
-                            phone: orgDetails.phone || "",
-                            alternatePhone: orgDetails.alternatePhone || "",
-                            addressLine1: orgDetails.addressLine1 || "",
-                            addressLine2: orgDetails.addressLine2 || "",
-                            city: orgDetails.city || "",
-                            state: orgDetails.state || "",
-                            postalCode: orgDetails.postalCode || "",
-                            country: orgDetails.country || "USA",
-                            notes: orgDetails.notes || ""
-                        });
+    const handleOrgModeChange = (e) => {
+        const mode = e.target.value;
+        setOrgMode(mode);
 
-                        // Important: Do NOT overwrite customer contact info here (firstName, lastName) 
-                        // as it comes from the document prefill.
-
-                        // Update Tax Exempt status from Org details
-                        setFormData(prev => ({
-                            ...prev,
-                            // If the organization is tax exempt, respect that setting
-                            isTaxExempt: orgDetails.taxExempt === true
-                        }));
-                    }
-                } catch (err) {
-                    console.error("Failed to load initial organization details", err);
-                } finally {
-                    setLoadingOrganizations(false);
-                }
+        if (mode === "NEW") {
+            setFormData(prev => ({
+                ...prev,
+                organizationId: null,
+                isTaxExempt: false
+            }));
+            setOrgFormData(initialOrgForm);
+        } else if (mode === "EXISTING") {
+            // Keep existing ID if we already had one, else clear
+            setFormData(prev => ({ ...prev, newOrganizationDetails: null }));
+            if (!formData.organizationId) {
+                setOrgFormData(initialOrgForm);
             }
-        };
-
-        initOrgData();
-    }, [formData.organizationId]); // Depend on the ID properly
+        }
+    };
 
     const handleOrganizationSelect = async (val) => {
-        // If selection is cleared (val is null/undefined), default back to Create Mode
-        if (val === null || val === undefined) {
-            setIsCreatingNewOrg(true);
-            setSelectedOrganizationId(null);
-            setSelectedCustomerId(null);
-            setSelectedVehicleId(null);
-            setVehicles([]);
-            clearFormData();
+        if (!val) {
+            setFormData(prev => ({ ...prev, organizationId: null, organizationName: "", isTaxExempt: false }));
+            setOrgFormData(initialOrgForm);
             return;
         }
 
-        setIsCreatingNewOrg(false);
-        setSelectedOrganizationId(val);
-        setSelectedCustomerId(null);
-        setSelectedVehicleId(null);
-        setVehicles([]);
-
         try {
             const orgDetails = await getOrganizationById(val);
-
-            // Populate Main Form Data
             setFormData(prev => ({
                 ...prev,
                 organizationId: val,
-                firstName: "",
-                lastName: "",
-                // Keep organization details as defaults but clear personal info
                 organizationName: orgDetails.companyName || "",
-                addressLine1: orgDetails.addressLine1 || "",
-                addressLine2: orgDetails.addressLine2 || "",
-                city: orgDetails.city || "",
-                state: orgDetails.state || "",
-                postalCode: orgDetails.postalCode || "",
-                country: orgDetails.country || "USA",
-                email: orgDetails.email || "",
-                phone: orgDetails.phone || "",
-                isTaxExempt: orgDetails.taxExempt === true // Set tax exemption from org details
+                isTaxExempt: orgDetails.taxExempt === true
             }));
 
-            // Populate Org Form Data (for display in Org Panel)
             setOrgFormData({
                 companyName: orgDetails.companyName || "",
                 taxId: orgDetails.taxId || "",
@@ -257,119 +215,116 @@ function CustomerPanel({ formData, setFormData, setCanShowQuotePanel, setPanel }
                 country: orgDetails.country || "USA",
                 notes: orgDetails.notes || ""
             });
-
-            // Note: getOrganizationById might not return vehicles directly depending on API.
-            // If vehicles are needed, we might need a separate call or insure API returns them.
-            // The user requested specifically to show details to "add a customer", implying the focus is on adding a contact.
-            setVehicles(orgDetails.vehicles || []);
         } catch (error) {
             console.error("Error loading organization:", error);
         }
     };
 
-    // Handle Customer Selection
-    const handleCustomerSelect = async (customerId) => {
-        setSelectedCustomerId(customerId);
-        setSelectedVehicleId(null);
+    // --- Customer Handlers ---
 
-        if (customerId === null || customerId === undefined) {
-            // If cleared, and we are in Org mode, maybe keep Org details? 
-            // Better to just clear specific contact fields but keep Type/Org.
-            if (!selectedOrganizationId) {
-                clearFormData();
-                setVehicles([]);
-            } else {
-                // If in Org mode, just reset contact fields but keep Org info
-                // For simplicity, let's just re-trigger Org Select to reset to Org defaults
-                handleOrganizationSelect(selectedOrganizationId);
-            }
-            return;
+    const handleCustomerModeChange = (e) => {
+        const mode = e.target.value;
+        setCustomerMode(mode);
+
+        if (mode === "NEW") {
+            setFormData(prev => ({
+                ...prev,
+                customerId: null,
+                firstName: "",
+                lastName: "",
+                email: "",
+                phone: "",
+                alternatePhone: "",
+                addressLine1: "",
+                addressLine2: "",
+                city: "",
+                state: "",
+                postalCode: ""
+            }));
         }
+    };
+
+    const handleCustomerSelect = async (customerId) => {
+        if (!customerId) return;
 
         try {
             const response = await getCustomerWithVehicles(customerId);
             const customer = response.customer || {};
             const customerVehicles = response.vehicles || [];
 
-            // If customer belongs to an organization, update org selection if not already set or different
-            if (customer.organizationId && (!selectedOrganizationId || selectedOrganizationId !== customer.organizationId)) {
-                setSelectedOrganizationId(customer.organizationId);
-                // Also optionally load org vehicles if needed? existing logic prefers customer vehicles if customer selected.
-            }
-
             setFormData(prev => ({
                 ...prev,
                 customerId: customer.customerId,
-                customerType: customer.customerType || "INDIVIDUAL",
-                organizationId: customer.organizationId || null,
-                organizationName: customer.organizationName || "",
                 firstName: customer.firstName || "",
                 lastName: customer.lastName || "",
                 email: customer.email || "",
                 phone: customer.phone || "",
                 alternatePhone: customer.alternatePhone || "",
                 preferredContactMethod: customer.preferredContactMethod || "phone",
-                addressLine1: customer.addressLine1 || prev.addressLine1 || "",
-                addressLine2: customer.addressLine2 || prev.addressLine2 || "",
-                city: customer.city || prev.city || "",
-                state: customer.state || prev.state || "",
-                postalCode: customer.postalCode || prev.postalCode || "",
-                country: customer.country || prev.country || "USA"
+                addressLine1: customer.addressLine1 || "",
+                addressLine2: customer.addressLine2 || "",
+                city: customer.city || "",
+                state: customer.state || "",
+                postalCode: customer.postalCode || "",
+                country: customer.country || "USA",
             }));
 
-            // If org selected, we usually want Org vehicles available. 
-            // But if specific customer selected, maybe they have personal vehicles? 
-            // Logic: If Org Customer, use Org Vehicles + maybe Personal?
-            // Existing logic: "If org selected, keep org vehicles, else use customer vehicles"
-            // Wait, existing logic in Step 127 snippet line 161:
-            // if (!selectedOrganizationId) { setVehicles(customerVehicles); }
-
-            // Refined Logic for this view:
-            // If Org Contact, we likely want the Org's Fleet.
-            // If Individual, we want their vehicles.
-            if (customer.organizationId) {
-                // It's an org contact, get Org vehicles again just in case (or rely on what we have)
-                if (selectedOrganizationId !== customer.organizationId) {
-                    // Fetch org details to get fleet
-                    const orgDetails = await getOrganizationWithDetails(customer.organizationId);
-                    setVehicles(orgDetails.vehicles || []);
-
-                    // Populate Org Form Data
-                    setOrgFormData({
-                        companyName: orgDetails.companyName || "",
-                        taxId: orgDetails.taxId || "",
-                        email: orgDetails.email || "",
-                        phone: orgDetails.phone || "",
-                        alternatePhone: orgDetails.alternatePhone || "",
-                        addressLine1: orgDetails.addressLine1 || "",
-                        addressLine2: orgDetails.addressLine2 || "",
-                        city: orgDetails.city || "",
-                        state: orgDetails.state || "",
-                        postalCode: orgDetails.postalCode || "",
-                        country: orgDetails.country || "USA",
-                        notes: orgDetails.notes || ""
-                    });
-                    setIsCreatingNewOrg(false);
-                }
-                // If we already have vehicles from org selection, keep them.
-            } else {
-                setVehicles(customerVehicles);
-            }
+            setVehicles(customerVehicles);
 
         } catch (error) {
             console.error("Error loading customer:", error);
-            notification.error({
-                message: "Failed to load customer",
-                description: "Could not retrieve customer details. Please try again."
-            });
         }
     };
 
-    // Handle Vehicle Selection
-    const handleVehicleSelect = (vehicleId) => {
-        setSelectedVehicleId(vehicleId);
-        const vehicle = vehicles.find(v => v.vehicleId === vehicleId);
+    // --- Form Data Handling ---
 
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        let finalValue = value;
+        if (name === 'phone' || name === 'alternatePhone') finalValue = formatPhoneNumber(value);
+        setFormData(prev => ({ ...prev, [name]: finalValue }));
+    };
+
+    const initialOrgForm = {
+        companyName: "", taxId: "", email: "", phone: "", alternatePhone: "",
+        addressLine1: "", addressLine2: "", city: "", state: "", postalCode: "", country: "USA", notes: ""
+    };
+    const [orgFormData, setOrgFormData] = useState(initialOrgForm);
+
+    const handleOrgFormChange = (e) => {
+        const { name, value } = e.target;
+        let finalValue = value;
+        if (name === 'phone' || name === 'alternatePhone') finalValue = formatPhoneNumber(value);
+        setOrgFormData(prev => ({ ...prev, [name]: finalValue }));
+
+        // Sync specific fields to main formData if in NEW mode
+        if (orgMode === "NEW") {
+            setFormData(prev => ({
+                ...prev,
+                organizationName: name === 'companyName' ? finalValue : prev.organizationName,
+                companyName: name === 'companyName' ? finalValue : prev.companyName,
+                newOrganizationDetails: {
+                    ...(prev.newOrganizationDetails || {}),
+                    ...orgFormData,
+                    [name]: finalValue
+                }
+            }));
+        }
+    };
+
+    const formatPhoneNumber = (value) => {
+        if (!value) return value;
+        const phoneNumber = value.replace(/[^\d]/g, '');
+        const phoneNumberLength = phoneNumber.length;
+        if (phoneNumberLength < 4) return phoneNumber;
+        if (phoneNumberLength < 7) {
+            return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
+        }
+        return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+    };
+
+    const handleVehicleSelect = (vehicleId) => {
+        const vehicle = vehicles.find(v => v.vehicleId === vehicleId);
         if (vehicle) {
             setFormData(prev => ({
                 ...prev,
@@ -386,470 +341,232 @@ function CustomerPanel({ formData, setFormData, setCanShowQuotePanel, setPanel }
         }
     };
 
-    const clearFormData = () => {
-        setFormData({
-            customerType: "INDIVIDUAL", organizationId: null, organizationName: "",
-            firstName: "", lastName: "", email: "", phone: "",
-            alternatePhone: "", preferredContactMethod: "phone",
-            addressLine1: "", addressLine2: "", city: "", state: "",
-            postalCode: "", country: "USA",
-            vehicleYear: "", vehicleMake: "", vehicleModel: "",
-            vehicleStyle: "", bodyType: "", licensePlateNumber: "", vin: "", vehicleNotes: ""
-        });
-    };
-
-    // Helper to format phone number as (XXX) XXX-XXXX
-    const formatPhoneNumber = (value) => {
-        if (!value) return value;
-        const phoneNumber = value.replace(/[^\d]/g, '');
-        const phoneNumberLength = phoneNumber.length;
-        if (phoneNumberLength < 4) return phoneNumber;
-        if (phoneNumberLength < 7) {
-            return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
-        }
-        return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
-    };
-
-    // React to formData being cleared (Global Clear)
-    useEffect(() => {
-        if (!formData.firstName && !formData.lastName && !formData.organizationName && !formData.vehicleMake) {
-            setSelectedOrganizationId(null);
-            setSelectedCustomerId(null);
-            setSelectedVehicleId(null);
-            setVehicles([]);
-        }
-    }, [formData]);
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        let finalValue = value;
-        if (name === 'phone' || name === 'alternatePhone') {
-            finalValue = formatPhoneNumber(value);
-        }
-        setFormData(prev => ({ ...prev, [name]: finalValue }));
-    };
-
-    const handleOrgChange = (e) => {
-        const { name, value } = e.target;
-        let finalValue = value;
-        if (name === 'phone' || name === 'alternatePhone') {
-            finalValue = formatPhoneNumber(value);
-        }
-        setOrgFormData(prev => ({ ...prev, [name]: finalValue }));
-    };
-
-    const handleCreateOrganization = async () => {
-        if (!orgFormData.companyName || !orgFormData.phone || !orgFormData.addressLine1) {
-            notification.warning({ message: 'Required Fields', description: 'Company name, phone, and address are required.' });
-            return;
-        }
-
-        try {
-            setCreatingOrg(true);
-            const payload = {
-                ...orgFormData,
-                phone: orgFormData.phone.replace(/[^\d]/g, ''),
-                alternatePhone: orgFormData.alternatePhone ? orgFormData.alternatePhone.replace(/[^\d]/g, '') : ''
-            };
-            const newOrg = await createOrganization(payload);
-            notification.success({ message: 'Organization Created', description: `${newOrg.companyName} created successfully!` });
-
-            // Refresh organizations list and select the new one
-            await fetchOrganizations();
-            setSelectedOrganizationId(newOrg.organizationId);
-            handleOrganizationSelect(newOrg.organizationId);
-
-            // Reset and close modal
-            setOrgFormData({
-                companyName: "", taxId: "", email: "", phone: "", alternatePhone: "",
-                addressLine1: "", addressLine2: "", city: "", state: "", postalCode: "", country: "USA", notes: ""
-            });
-            setShowOrgModal(false);
-        } catch (error) {
-            notification.error({ message: 'Failed', description: error.message });
-        } finally {
-            setCreatingOrg(false);
-        }
-    };
-
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
-
-        // Save form data to localStorage
         localStorage.setItem("agp_customer_data", JSON.stringify(formData));
-
-        // Switch to quote tab
         if (setCanShowQuotePanel) setCanShowQuotePanel(true);
         if (setPanel) setPanel("quote");
     };
 
     return (
         <form onSubmit={handleSubmit} className="h-full">
-            {/* 2-Column Grid Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-[450px_1fr] gap-4 h-full">
+            <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-4 h-full">
 
-                {/* LEFT COLUMN (SIDEBAR) */}
+                {/* LEFT SIDEBAR: Selection Modes */}
                 <div className="flex flex-col gap-4">
 
-                    {/* CONTAINER FOR SELECTIONS */}
-                    <div className="bg-white rounded-md border border-gray-200 shadow-sm p-4 text-sm">
+                    {/* Client Type Toggle */}
+                    <div className="bg-white rounded-md border border-gray-200 shadow-sm p-4">
+                        <label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Client Type</label>
+                        <Segmented
+                            block
+                            options={[
+                                { label: 'Individual', value: 'INDIVIDUAL', icon: <UserOutlined /> },
+                                { label: 'Business', value: 'BUSINESS', icon: <ShopOutlined /> },
+                            ]}
+                            value={clientType}
+                            onChange={handleClientTypeChange}
+                        />
+                    </div>
 
-                        {/* 1. Customer Type */}
-                        <div className="mb-4">
-                            <label className="text-xs font-semibold text-gray-500 mb-1 block">Customer Type</label>
-                            <select
-                                name="customerType"
-                                value={formData.customerType || "INDIVIDUAL"}
-                                onChange={(e) => {
-                                    const newType = e.target.value;
+                    {/* Customer Selection Card (INDIVIDUAL ONLY) */}
+                    {clientType === "INDIVIDUAL" && (
+                        <div className="bg-white rounded-md border border-gray-200 shadow-sm p-4 text-sm animate-fade-in">
+                            <h4 className="text-xs font-bold text-gray-800 uppercase border-b pb-2 mb-3">Customer Selection</h4>
 
-                                    // Logic for switching types
-                                    if (newType === "ORGANIZATION_CONTACT") {
-                                        // Default to Creating New Org Mode
-                                        setIsCreatingNewOrg(true);
-                                    } else {
-                                        setIsCreatingNewOrg(false);
-                                    }
-
-                                    setFormData(prev => ({
-                                        ...prev,
-                                        customerType: newType,
-                                        organizationId: newType === "INDIVIDUAL" ? null : prev.organizationId,
-                                        organizationName: newType === "INDIVIDUAL" ? "" : prev.organizationName
-                                    }));
-                                    if (newType === "INDIVIDUAL") {
-                                        setSelectedOrganizationId(null);
-                                        if (selectedCustomerId) {
-                                            setSelectedCustomerId(null);
-                                            setVehicles([]);
-                                        }
-                                    }
-                                }}
-                                className="w-full border border-gray-300 rounded px-2 py-1.5 focus:ring-1 focus:ring-violet-500 outline-none"
-                            >
-                                <option value="INDIVIDUAL">Individual Customer</option>
-                                <option value="ORGANIZATION_CONTACT">Organization Contact</option>
-                            </select>
-                        </div>
-
-                        {/* 2. Organization (Conditional) */}
-                        {formData.customerType === "ORGANIZATION_CONTACT" && (
-                            <div className="mb-4 animate-fade-in">
-                                <label className="text-xs font-semibold text-gray-500 mb-1 block">Organization</label>
-                                <Select
-                                    showSearch
-                                    allowClear
-                                    placeholder="Select Organization"
-                                    className="w-full"
-                                    loading={loadingOrganizations}
-                                    notFoundContent={loadingOrganizations ? <Spin size="small" /> : "No organizations"}
-                                    filterOption={(input, option) => {
-                                        if (!option || !option.children) return false;
-                                        const label = String(option.children);
-                                        return label.toLowerCase().includes(input.toLowerCase());
-                                    }}
-                                    onChange={handleOrganizationSelect}
-                                    value={selectedOrganizationId}
+                            <div className="flex flex-col gap-3">
+                                <Radio.Group
+                                    onChange={handleCustomerModeChange}
+                                    value={customerMode}
+                                    className="flex flex-col gap-2"
                                 >
-                                    {organizations.map(org => (
-                                        <Option key={org.organizationId} value={org.organizationId}>
-                                            {org.companyName}
+                                    <Radio value="NEW">New Customer</Radio>
+                                    <Radio value="EXISTING">Existing Customer</Radio>
+                                </Radio.Group>
+
+                                {customerMode === "EXISTING" && (
+                                    <div className="mt-2 animate-fade-in">
+                                        <label className="text-xs font-semibold text-gray-500 mb-1 block">Search Customer</label>
+                                        <Select
+                                            showSearch
+                                            allowClear
+                                            placeholder="Search by name/phone"
+                                            className="w-full"
+                                            loading={loadingCustomers}
+                                            filterOption={(input, option) =>
+                                                String(option.children).toLowerCase().includes(input.toLowerCase())
+                                            }
+                                            onChange={handleCustomerSelect}
+                                            value={formData.customerId}
+                                        >
+                                            {customers.map(c => (
+                                                <Option key={c.customerId} value={c.customerId}>
+                                                    {c.firstName} {c.lastName}
+                                                </Option>
+                                            ))}
+                                        </Select>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Organization Selection Card (BUSINESS ONLY) */}
+                    {clientType === "BUSINESS" && (
+                        <div className="bg-white rounded-md border border-gray-200 shadow-sm p-4 text-sm animate-fade-in">
+                            <h4 className="text-xs font-bold text-gray-800 uppercase border-b pb-2 mb-3">Organization Selection</h4>
+
+                            <div className="flex flex-col gap-3">
+                                <Radio.Group
+                                    onChange={handleOrgModeChange}
+                                    value={orgMode}
+                                    className="flex flex-col gap-2"
+                                >
+                                    <Radio value="NEW">New Organization</Radio>
+                                    <Radio value="EXISTING">Existing Organization</Radio>
+                                </Radio.Group>
+
+                                {orgMode === "EXISTING" && (
+                                    <div className="mt-2 animate-fade-in">
+                                        <label className="text-xs font-semibold text-gray-500 mb-1 block">Search Organization</label>
+                                        <Select
+                                            showSearch
+                                            allowClear
+                                            placeholder="Search Company..."
+                                            className="w-full"
+                                            loading={loadingOrganizations}
+                                            filterOption={(input, option) =>
+                                                String(option.children).toLowerCase().includes(input.toLowerCase())
+                                            }
+                                            onChange={handleOrganizationSelect}
+                                            value={formData.organizationId}
+                                        >
+                                            {organizations.map(org => (
+                                                <Option key={org.organizationId} value={org.organizationId}>
+                                                    {org.companyName}
+                                                </Option>
+                                            ))}
+                                        </Select>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Vehicle Quick Info (Common) */}
+                    <div className="bg-white rounded-md border border-gray-200 shadow-sm p-4 animate-fade-in">
+                        <div className="flex justify-between items-center border-b pb-1 mb-3">
+                            <h4 className="text-xs font-bold text-gray-800 uppercase">Vehicle Details</h4>
+                            {vehicles.length > 0 && (
+                                <Select
+                                    size="small"
+                                    placeholder="Select Saved Vehicle"
+                                    className="w-40"
+                                    onChange={handleVehicleSelect}
+                                    allowClear
+                                >
+                                    {vehicles.map(v => (
+                                        <Option key={v.vehicleId} value={v.vehicleId}>
+                                            {v.vehicleYear} {v.vehicleMake}
                                         </Option>
                                     ))}
                                 </Select>
-                            </div>
-                        )}
-
-
-                        {/* 3. Customer Lookup (Filtered - INDIVIDUAL ONLY) */}
-                        {!isCreatingNewOrg && formData.customerType === "INDIVIDUAL" && (
-                            <div className="mb-4">
-                                <label className="text-xs font-semibold text-gray-500 mb-1 block">
-                                    Select Existing Customer
-                                </label>
-                                <Select
-                                    showSearch
-                                    allowClear
-                                    placeholder={formData.customerType === "INDIVIDUAL" ? "Search Individual..." : "Search Contact..."}
-                                    className="w-full"
-                                    loading={loadingCustomers}
-                                    notFoundContent={loadingCustomers ? <Spin size="small" /> : "No customers found"}
-                                    filterOption={(input, option) => {
-                                        if (!option || !option.children) return false;
-                                        // Handle array of children (react elements/text) or single string
-                                        const label = Array.isArray(option.children)
-                                            ? option.children.join('')
-                                            : String(option.children);
-                                        return label.toLowerCase().includes(input.toLowerCase());
-                                    }}
-                                    onChange={handleCustomerSelect}
-                                    value={selectedCustomerId}
-                                >
-                                    {customers
-                                        .filter(c => {
-                                            if (formData.customerType === "INDIVIDUAL") {
-                                                return !c.organizationId;
-                                            } else {
-                                                if (selectedOrganizationId) {
-                                                    return c.organizationId === selectedOrganizationId;
-                                                }
-                                                return false;
-                                            }
-                                        })
-                                        .map(customer => (
-                                            <Option key={customer.customerId} value={customer.customerId}>
-                                                {customer.firstName} {customer.lastName} - {customer.phone}
-                                            </Option>
-                                        ))}
-                                </Select>
-                            </div>
-                        )}
-
-
-
-                    </div>
-
-                    {/* VEHICLE DETAILS CARD */}
-                    <div className="bg-white rounded-md border border-gray-200 shadow-sm p-4">
-                        <h4 className="text-xs font-bold text-gray-800 uppercase border-b pb-1 mb-3">Vehicle Information</h4>
-                        <div className="space-y-3">
-                            <div className="grid grid-cols-3 gap-2">
-                                <FormInput label="Year" name="vehicleYear" value={formData.vehicleYear} onChange={handleChange} type="number" />
-                                <FormInput label="Make" name="vehicleMake" value={formData.vehicleMake} onChange={handleChange} />
-                                <FormInput label="Model" name="vehicleModel" value={formData.vehicleModel} onChange={handleChange} />
-                            </div>
-                            <div className="grid grid-cols-3 gap-2">
-                                <FormInput label="Style" name="vehicleStyle" value={formData.vehicleStyle} onChange={handleChange} />
-                                <FormInput label="Body Type" name="bodyType" value={formData.bodyType} onChange={handleChange} />
-                            </div>
-                            <div className="grid grid-cols-2 gap-2">
-                                <FormInput label="VIN" name="vin" value={formData.vin} onChange={handleVinChange} onBlur={handleVinBlur} />
-                                <FormInput label="License Plate" name="licensePlateNumber" value={formData.licensePlateNumber} onChange={handleChange} />
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                {/* RIGHT COLUMN (MAIN FORM) */}
-                <div className="flex flex-col h-full overflow-y-auto pr-1">
-
-                    {/* CASE 1: ORGANIZATION FORM (Create NEW or View EXISTING) */}
-                    {(isCreatingNewOrg || (formData.customerType === "ORGANIZATION_CONTACT" && selectedOrganizationId !== null)) && (
-                        <div className={`bg-white rounded-md border border-gray-200 shadow-sm flex flex-col ${isCreatingNewOrg ? "h-full" : "mb-4 shrink-0"} overflow-hidden animate-slide-up`}>
-                            <div
-                                className="bg-violet-50 border-b border-violet-100 px-4 py-2 flex items-center justify-between cursor-pointer transition-colors hover:bg-violet-100"
-                                onClick={() => !isCreatingNewOrg && setIsOrgCollapsed(!isOrgCollapsed)}
-                            >
-                                <div className="flex items-center gap-2">
-                                    <h3 className="text-sm font-bold text-violet-900">
-                                        {isCreatingNewOrg ? "Create New Organization" : "Organization Details"}
-                                    </h3>
-                                    <span className="text-xs text-violet-500 font-normal">
-                                        {isCreatingNewOrg ? "- Enter details below" : "- View or edit organization details"}
-                                    </span>
-                                </div>
-                                {!isCreatingNewOrg && (
-                                    <button type="button" className="text-violet-500 hover:text-violet-700 w-6 h-6 flex items-center justify-center rounded-full hover:bg-violet-200/50 transition-all">
-                                        {isOrgCollapsed ? <DownOutlined style={{ fontSize: '12px' }} /> : <UpOutlined style={{ fontSize: '12px' }} />}
-                                    </button>
-                                )}
-                            </div>
-
-                            {/* Collapsible Content */}
-                            {(!isOrgCollapsed || isCreatingNewOrg) && (
-                                <div className="p-4 overflow-y-auto flex-1 animate-fade-in">
-                                    <div className="grid grid-cols-4 gap-3 mb-3">
-                                        <FormInput label="Company Name *" name="companyName" value={orgFormData.companyName} onChange={handleOrgChange} required />
-                                        <FormInput label="Tax ID / EIN" name="taxId" value={orgFormData.taxId} onChange={handleOrgChange} />
-                                        <div className="flex flex-col gap-1">
-                                            <label className="text-xs font-medium text-gray-500">Tax Exempt</label>
-                                            <div className="flex items-center gap-2 h-[34px]">
-                                                <Switch
-                                                    size="small"
-                                                    checked={formData.isTaxExempt}
-                                                    disabled={!orgFormData.taxId}
-                                                    onChange={async (checked) => {
-                                                        // Optimistically update UI
-                                                        setFormData(prev => ({ ...prev, isTaxExempt: checked }));
-
-                                                        // Call Backend API to persist if not creating new org
-                                                        if (!isCreatingNewOrg && selectedOrganizationId) {
-                                                            try {
-                                                                await updateOrganizationTaxExempt(selectedOrganizationId, checked);
-                                                                notification.success({
-                                                                    message: 'Tax Exempt Status Updated',
-                                                                    description: `Organization is now ${checked ? 'Tax Exempt' : 'Subject to Tax'}.`
-                                                                });
-                                                            } catch (error) {
-                                                                // Revert on failure
-                                                                setFormData(prev => ({ ...prev, isTaxExempt: !checked }));
-                                                                notification.error({
-                                                                    message: 'Update Failed',
-                                                                    description: 'Failed to update tax exempt status. Please try again.'
-                                                                });
-                                                            }
-                                                        }
-                                                    }}
-                                                />
-                                                <span className={`text-xs ${formData.isTaxExempt ? "text-violet-600 font-semibold" : "text-gray-400"}`}>
-                                                    {formData.isTaxExempt ? "Exempt" : "Standard Tax"}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <FormInput label="Email" name="email" value={orgFormData.email} onChange={handleOrgChange} type="email" />
-                                        <FormInput label="Phone *" name="phone" value={orgFormData.phone} onChange={handleOrgChange} required />
-                                    </div>
-                                    <div className="grid grid-cols-4 gap-3 mb-3">
-                                        <FormInput label="Alternate Phone" name="alternatePhone" value={orgFormData.alternatePhone} onChange={handleOrgChange} />
-                                        <FormInput label="Address Line 1 *" name="addressLine1" value={orgFormData.addressLine1} onChange={handleOrgChange} required />
-                                        <FormInput label="Address Line 2" name="addressLine2" value={orgFormData.addressLine2} onChange={handleOrgChange} />
-                                        <FormInput label="City *" name="city" value={orgFormData.city} onChange={handleOrgChange} required />
-                                    </div>
-
-                                    <div className="grid grid-cols-4 gap-3 mb-3">
-                                        <FormSelect
-                                            label="State *"
-                                            name="state"
-                                            value={orgFormData.state}
-                                            onChange={handleOrgChange}
-                                            options={US_STATES}
-                                            required
-                                        />
-                                        <FormInput label="Postal Code *" name="postalCode" value={orgFormData.postalCode} onChange={handleOrgChange} required />
-                                        <FormInput label="Country" name="country" value={orgFormData.country} onChange={handleOrgChange} />
-                                    </div>
-                                    <div className="mb-2">
-                                        <label className="block text-xs font-medium text-gray-500 mb-1">Notes</label>
-                                        <textarea
-                                            name="notes"
-                                            value={orgFormData.notes}
-                                            onChange={(e) => setOrgFormData(prev => ({ ...prev, notes: e.target.value }))}
-                                            className="w-full rounded border border-gray-300 px-3 py-1.5 text-sm focus:border-violet-500 focus:outline-none transition-colors resize-none h-16"
-                                            placeholder="Add notes about this organization..."
-                                        />
-                                    </div>
-                                    {/* Action Buttons for Org Form */}
-                                    <div className="flex justify-end gap-2 mt-2 pt-2 border-t border-gray-100">
-                                        {/* Show Confirm button only when creating NEW or if we want to allow editing existing */}
-                                        {isCreatingNewOrg && (
-                                            <button
-                                                type="button"
-                                                className="px-4 py-1.5 bg-violet-600 text-white text-xs font-semibold rounded hover:bg-violet-700 transition shadow-sm"
-                                                onClick={handleCreateOrganization}
-                                                disabled={creatingOrg}
-                                            >
-                                                {creatingOrg ? "Creating..." : "Create Organization"}
-                                            </button>
-                                        )}
-                                        {/* If Viewing Existing, maybe an 'Update' button? */}
-                                        {!isCreatingNewOrg && (
-                                            <button
-                                                type="button"
-                                                className="px-4 py-1.5 bg-[#7E5CFE] text-white text-xs font-semibold rounded hover:bg-[#6c4df0] transition shadow-sm"
-                                                onClick={() => {
-                                                    // Update logic if needed, or just collapse
-                                                    setIsOrgCollapsed(true);
-                                                }}
-                                            >
-                                                Continue
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
                             )}
                         </div>
-                    )}
+                        <div className="space-y-2">
+                            <div className="grid grid-cols-2 gap-2">
+                                <FormInput label="Year" name="vehicleYear" value={formData.vehicleYear} onChange={handleChange} type="number" />
+                                <FormInput label="Make" name="vehicleMake" value={formData.vehicleMake} onChange={handleChange} />
+                            </div>
+                            <FormInput label="Model" name="vehicleModel" value={formData.vehicleModel} onChange={handleChange} />
+                            <FormInput label="VIN" name="vin" value={formData.vin} onChange={handleChange} />
+                        </div>
+                    </div>
 
-                    {/* CASE 2: CUSTOMER FORM (Individual OR Organization Contact when Org Selected) */}
-                    {!isCreatingNewOrg && (formData.customerType === "INDIVIDUAL" || (formData.customerType === "ORGANIZATION_CONTACT" && selectedOrganizationId !== null)) && (
-                        <div className="bg-white rounded-md border border-gray-200 shadow-sm flex flex-col shrink-0 animate-slide-up mb-4">
+                </div>
 
-                            {/* Header */}
-                            <div
-                                className="bg-gray-50 border-b border-gray-100 px-4 py-2 flex items-center gap-2 cursor-pointer transition-colors hover:bg-gray-100"
-                                onClick={() => setIsCustomerCollapsed(!isCustomerCollapsed)}
-                            >
-                                <h3 className="text-sm font-bold text-gray-800">Customer Information</h3>
-                                <span className="text-xs text-gray-500 font-normal">-
-                                    {formData.customerType === "INDIVIDUAL" ? " Contact details" : " Organization contact"}
-                                </span>
+                {/* RIGHT PANEL: Single Form Area */}
+                <div className="flex flex-col h-full overflow-y-auto pr-1 gap-4">
+
+                    {/* Organization Form (BUSINESS Mode) */}
+                    {clientType === "BUSINESS" && (
+                        <div className="bg-white rounded-md border border-gray-200 shadow-sm flex flex-col shrink-0 animate-slide-up">
+                            <div className="bg-violet-50 border-b border-violet-100 px-4 py-2 flex items-center justify-between">
+                                <h3 className="text-sm font-bold text-violet-900">
+                                    {orgMode === "NEW" ? "New Organization Details" : "Organization Details"}
+                                </h3>
+                                {/* Tax Exempt Switch (Only for existing? Or Allow setting for New too?) */}
+                                <div className="flex items-center gap-1 bg-white/50 px-2 py-0.5 rounded">
+                                    <Switch
+                                        size="small"
+                                        checked={formData.isTaxExempt}
+                                        disabled={orgMode === "EXISTING"} // Usually strict for existing unless admin? Allowing view
+                                        onChange={(checked) => {
+                                            setFormData(prev => ({ ...prev, isTaxExempt: checked }));
+                                            if (formData.organizationId && orgMode === "EXISTING") {
+                                                updateOrganizationTaxExempt(formData.organizationId, checked).catch(console.error);
+                                            }
+                                        }}
+                                    />
+                                    <span className="text-xs text-violet-700">{formData.isTaxExempt ? "Tax Exempt" : "Taxable"}</span>
+                                </div>
                             </div>
 
-                            {/* Form Content */}
-                            <div className="p-4 overflow-y-auto flex-1">
+                            <div className="p-4 grid grid-cols-4 gap-3">
+                                <FormInput label="Company Name *" name="companyName" value={orgFormData.companyName} onChange={handleOrgFormChange} required disabled={orgMode === "EXISTING"} />
+                                <FormInput label="Tax ID" name="taxId" value={orgFormData.taxId} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING"} />
+                                <FormInput label="Email" name="email" value={orgFormData.email} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING"} />
+                                <FormInput label="Phone *" name="phone" value={orgFormData.phone} onChange={handleOrgFormChange} required disabled={orgMode === "EXISTING"} />
+
+                                <FormInput label="Address Line 1 *" name="addressLine1" value={orgFormData.addressLine1} onChange={handleOrgFormChange} required className="col-span-2" disabled={orgMode === "EXISTING"} />
+                                <FormInput label="City" name="city" value={orgFormData.city} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING"} />
+                                <FormSelect label="State" name="state" value={orgFormData.state} onChange={handleOrgFormChange} options={US_STATES} disabled={orgMode === "EXISTING"} />
+                                <FormInput label="Zip" name="postalCode" value={orgFormData.postalCode} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING"} />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Customer Form (INDIVIDUAL Mode) */}
+                    {clientType === "INDIVIDUAL" && (
+                        <div className="bg-white rounded-md border border-gray-200 shadow-sm flex flex-col shrink-0 animate-slide-up">
+                            <div className="bg-gray-50 border-b border-gray-100 px-4 py-2 flex items-center justify-between">
+                                <h3 className="text-sm font-bold text-gray-800">
+                                    {customerMode === "NEW" ? "New Customer Details" : "Customer Details"}
+                                </h3>
+                            </div>
+
+                            <div className="p-4">
                                 <div className="grid grid-cols-4 gap-3 mb-3">
-                                    <FormInput label="First Name" name="firstName" value={formData.firstName} onChange={handleChange} required />
-                                    <FormInput label="Last Name" name="lastName" value={formData.lastName} onChange={handleChange} />
-                                    <FormInput label="Email Address" name="email" value={formData.email} onChange={handleChange} type="email" />
-                                    <FormInput label="Phone Number" name="phone" value={formData.phone} onChange={handleChange} required type="tel" />
+                                    <FormInput label="First Name" name="firstName" value={formData.firstName} onChange={handleChange} required disabled={customerMode === "EXISTING"} />
+                                    <FormInput label="Last Name" name="lastName" value={formData.lastName} onChange={handleChange} disabled={customerMode === "EXISTING"} />
+                                    <FormInput label="Email" name="email" value={formData.email} onChange={handleChange} type="email" disabled={customerMode === "EXISTING"} />
+                                    <FormInput label="Phone" name="phone" value={formData.phone} onChange={handleChange} required disabled={customerMode === "EXISTING"} />
                                 </div>
-
                                 <div className="border-t pt-3 mt-2">
-                                    <h5 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Address & Location</h5>
-
-                                    <div className="grid grid-cols-4 gap-3 mb-3">
-                                        <FormInput label="Address Line 1" name="addressLine1" value={formData.addressLine1} onChange={handleChange} className="col-span-2" />
-                                        <FormInput label="City" name="city" value={formData.city} onChange={handleChange} />
-                                        <FormSelect label="State" name="state" value={formData.state} onChange={handleChange} options={US_STATES} />
-                                    </div>
+                                    <h5 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Address</h5>
                                     <div className="grid grid-cols-4 gap-3">
-                                        <FormInput label="Zip Code" name="postalCode" value={formData.postalCode} onChange={handleChange} />
-                                        <FormSelect label="Country" name="country" value={formData.country || "USA"} onChange={handleChange} options={COUNTRIES} />
-
+                                        <FormInput label="Address Line 1" name="addressLine1" value={formData.addressLine1} onChange={handleChange} className="col-span-2" disabled={customerMode === "EXISTING"} />
+                                        <FormInput label="City" name="city" value={formData.city} onChange={handleChange} disabled={customerMode === "EXISTING"} />
+                                        <FormSelect label="State" name="state" value={formData.state} onChange={handleChange} options={US_STATES} disabled={customerMode === "EXISTING"} />
+                                        <FormInput label="Zip" name="postalCode" value={formData.postalCode} onChange={handleChange} disabled={customerMode === "EXISTING"} />
                                     </div>
                                 </div>
                             </div>
-
-
-
                         </div>
                     )}
 
-                    {/* CASE 3: PLACEHOLDER */}
-                    {!isCreatingNewOrg && !(formData.customerType === "INDIVIDUAL" || selectedOrganizationId !== null) && (
-                        <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-md h-full flex flex-col items-center justify-center p-8 text-center opacity-60">
-                            <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center mb-3 shadow-sm text-2xl text-slate-400">
-                                <PlusOutlined />
-                            </div>
-                            <h3 className="text-lg font-semibold text-slate-700">Waiting for Selection</h3>
-                            <p className="text-sm text-slate-500 max-w-xs mt-1">
-                                {formData.customerType === "ORGANIZATION_CONTACT"
-                                    ? "Select an Organization to proceed, or create a new one."
-                                    : "Select a customer type to begin."}
-                            </p>
-                        </div>
-                    )}
+                    {/* Action Bar */}
+                    <div className="mt-auto flex justify-end">
+                        <button
+                            type="submit"
+                            className="bg-violet-600 hover:bg-violet-700 text-white px-6 py-2 rounded-md font-semibold text-sm transition-colors shadow-sm"
+                        >
+                            Continue to Quote
+                        </button>
+                    </div>
+
                 </div>
             </div>
-
-            {/* VIN Warning Modal */}
-            <Modal
-                title={
-                    <div className="flex items-center gap-2">
-                        <span className="text-amber-500">⚠️</span>
-                        <span>Warning</span>
-                    </div>
-                }
-                open={showVinWarningModal}
-                onCancel={() => setShowVinWarningModal(false)}
-                footer={[
-                    <Button key="no" onClick={() => setShowVinWarningModal(false)}>No</Button>,
-                    <Button key="yes" type="primary" onClick={() => { setVinWarningAcknowledged(true); setShowVinWarningModal(false); }}>Yes</Button>
-                ]}
-                centered
-                width={380}
-            >
-                <p className="text-gray-700 py-2">The VIN does not appear to be valid. Do you wish to continue?</p>
-            </Modal>
         </form>
-    );
-}
-
-export default function CustomerPanelWrapper(props) {
-    return (
-        <ErrorBoundary>
-            <CustomerPanel {...props} />
-        </ErrorBoundary>
     );
 }
