@@ -99,7 +99,7 @@ const SidebarFilters = ({
                     className="mb-2"
                 >
                     <Select
-                        mode="multiple"
+                        mode="single"
                         style={{ width: '100%' }}
                         placeholder="Select document types"
                         value={documentTypeFilter}
