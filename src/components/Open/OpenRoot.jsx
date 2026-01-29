@@ -161,8 +161,8 @@ const OpenRoot = () => {
     useEffect(() => {
         const filters = {
             searchTerm,
-            documentType: documentTypeFilter.length > 0 ? documentTypeFilter : 'all',
-            status: statusFilter.length > 0 ? statusFilter : 'all',
+            documentType: documentTypeFilter?.length > 0 ? documentTypeFilter : 'all',
+            status: statusFilter?.length > 0 ? statusFilter : 'all',
             dateRange: dateRangeFilter,
             customStartDate: customDateRange?.[0]?.toDate?.() || customDateRange?.[0],
             customEndDate: customDateRange?.[1]?.toDate?.() || customDateRange?.[1],
