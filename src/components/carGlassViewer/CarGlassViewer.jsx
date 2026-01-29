@@ -204,7 +204,6 @@ export default function CarGlassViewer({
     };
 
     fetchGlassTypes();
-    fetchGlassTypes();
   }, [modelId, vehId]);
 
   // ---------- 1.5) Handle Pre-selection ----------

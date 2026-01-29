@@ -119,10 +119,13 @@ export default function SearchByYMM({
 
       // Handle veh_id from VIN decode - if present, we have complete data
       if (value.vehId) {
-        setVinVehId(value.vehId);
+        console.log('[SearchByYMM] Received vehId from props:', value.vehId);
+        // Just set the local vehId state - don't trigger vinVehId effect
         setVehId(value.vehId);
+        setVinVehId(null);
       } else {
         // Reset veh_id when not provided
+        console.log('[SearchByYMM] No vehId in props, resetting state');
         setVinVehId(null);
         setVehId(null);
       }
@@ -204,157 +207,162 @@ export default function SearchByYMM({
     }
   }, [bodyTypes, pendingBodyType]);
 
-  // Fetch makes when year changes
+  // Helper to pre-populate single item list if we have data (for lazy loading)
   useEffect(() => {
-    let ignore = false;
-    const loadMakes = async (y) => {
-      if (!y) {
-        setMakes([]);
-        return;
+    // If we have make data but no list, populate with just that one to satisfy the Select
+    if (makeId && makeName && makes.length === 0) {
+      setMakes([{ make_id: makeId, name: makeName }]);
+    }
+    // If we have model data but no list
+    if (makeModelId && modelName && models.length === 0) {
+      setModels([{ make_model_id: makeModelId, model_name: modelName, veh_modifier_id: vehModifierId }]);
+    }
+    // If we have body type data but no list
+    if (bodyType && (value?.body || value?.bodyType) && bodyTypes.length === 0) {
+      const desc = value.body || value.bodyType;
+      // We need to match the structure expected by Select options
+      setBodyTypes([{ body_style_id: bodyType, desc: desc, abbrev: "" }]);
+    }
+  }, [makeId, makeName, makeModelId, modelName, bodyType, value]);
+
+  // Fetch makes when year changes OR user interacts
+  const loadMakes = async (y) => {
+    if (!y) {
+      setMakes([]);
+      return;
+    }
+    const cacheKey = `makes|${y}`;
+    if (makesCache.current.has(cacheKey)) {
+      setMakes(makesCache.current.get(cacheKey));
+      return;
+    }
+    setLoadingMakes(true);
+    try {
+      const data = await getMakes(y);
+      const results = Array.isArray(data?.makes) ? data.makes : [];
+      const norm = results.map((m) => ({ make_id: m.make_id, name: m.name || m.abbrev }));
+      norm.sort((a, b) => a.name.localeCompare(b.name));
+      makesCache.current.set(cacheKey, norm);
+      setMakes(norm);
+    } catch (e) {
+      console.error("Failed to load makes:", e);
+    } finally {
+      setLoadingMakes(false);
+    }
+  };
+
+  // Triggered when user opens Make dropdown
+  const handleMakeDropdownVisibleChange = (open) => {
+    if (open && year) {
+      // Fetch full list if we only have the single pre-filled item or empty
+      if (makes.length <= 1) {
+        loadMakes(year);
       }
+    }
+  };
 
-      const cacheKey = `makes|${y}`;
-      if (makesCache.current.has(cacheKey)) {
-        setMakes(makesCache.current.get(cacheKey));
-        return;
+  // Fetch models when year + makeId set OR user interacts
+  const loadModels = async (mId, y) => {
+    const cacheKey = `${mId}|${y}`;
+    if (modelsCache.current.has(cacheKey)) {
+      setModels(modelsCache.current.get(cacheKey));
+      return;
+    }
+    setLoadingModels(true);
+    try {
+      const data = await getModels(y, mId);
+      const modelsList = Array.isArray(data?.models) ? data.models : [];
+      const norm = modelsList.map(m => ({
+        make_model_id: m.make_model_id,
+        model_name: m.model_name,
+        veh_modifier_id: m.veh_modifier_id || null,
+      }));
+      norm.sort((a, b) => a.model_name.localeCompare(b.model_name));
+      modelsCache.current.set(cacheKey, norm);
+      setModels(norm);
+    } catch (e) {
+      console.error("Failed to load models:", e);
+    } finally {
+      setLoadingModels(false);
+    }
+  };
+
+  // Triggered when user opens Model dropdown
+  const handleModelDropdownVisibleChange = (open) => {
+    if (open && year && makeId) {
+      if (models.length <= 1) {
+        loadModels(makeId, year);
       }
-      setLoadingMakes(true);
-      try {
-        const data = await getMakes(y);
-        const results = Array.isArray(data?.makes) ? data.makes : [];
+    }
+  };
 
-        // Normalize: ensure we have make_id and name
-        const norm = results.map((m) => ({
-          make_id: m.make_id,
-          name: m.name || m.abbrev,
-        }));
+  // Fetch body types
+  const loadBodyTypes = async (y, mId, mmId, vModId) => {
+    const cacheKey = `${y}|${mId}|${mmId}|${vModId || 'null'}`;
+    if (bodyTypesCache.current.has(cacheKey)) {
+      setBodyTypes(bodyTypesCache.current.get(cacheKey));
+      return;
+    }
+    setLoadingBodyTypes(true);
+    try {
+      const data = await getBodyTypes(y, mId, mmId, vModId);
+      const bodyTypesList = Array.isArray(data?.body_types) ? data.body_types : [];
+      bodyTypesCache.current.set(cacheKey, bodyTypesList);
+      setBodyTypes(bodyTypesList);
+    } catch (e) {
+      console.error("Failed to load body types:", e);
+    } finally {
+      setLoadingBodyTypes(false);
+    }
+  };
 
-        norm.sort((a, b) => a.name.localeCompare(b.name));
-
-        if (!ignore) {
-
-          // Auto-resolve Make ID if we have a name but no ID
-          if (makeName && !makeId) {
-            const match = norm.find(m => m.name.toLowerCase() === makeName.toLowerCase());
-            if (match) {
-              setMakeId(match.make_id);
-            }
-          }
-
-          makesCache.current.set(cacheKey, norm);
-          setMakes(norm);
-        }
-      } catch (e) {
-        console.error("Failed to load makes:", e);
-        if (!ignore) setMakes([]);
-      } finally {
-        if (!ignore) setLoadingMakes(false);
+  // Triggered when user opens Body Type dropdown
+  const handleBodyTypeDropdownVisibleChange = (open) => {
+    if (open && year && makeId && makeModelId) {
+      if (bodyTypes.length <= 1) {
+        loadBodyTypes(year, makeId, makeModelId, vehModifierId);
       }
-    };
+    }
+  };
 
-    if (year) {
+  // --- Initial Effects (REPLACED by lazy logic) ---
+  // We still need to react to changes if the user manually changes upstream selections
+  // But we want to avoid the "initial load" cascade.
+
+  // Rule: If the user changes State (Year/Make), we MUST fetch downstream.
+  // But how to distinguish "User changed" from "Initial Load"?
+  // Initial load sets everything at once.
+
+  // We can use the 'makes' length check. If empty or 1, and the user just changed 'year',
+  // well if user changed 'year', makes should be cleared, so length is 0.
+  // Then we can fetch.
+
+  useEffect(() => {
+    if (year && makes.length === 0 && !makeId) {
+      // Year selected, but no make yet (normal manual flow) -> Fetch
       loadMakes(year);
-    } else {
+    } else if (!year) {
       setMakes([]);
     }
+  }, [year, makeId]); // Added makeId to deps to prevent re-fetching if makeId gets set by value prop
 
-    return () => {
-      ignore = true;
-    };
-  }, [year, makeId, makeName]);
-
-  // Fetch models when year + makeId set
   useEffect(() => {
-    let ignore = false;
-    const loadModels = async (mId, y) => {
-      const cacheKey = `${mId}|${y}`;
-      if (modelsCache.current.has(cacheKey)) {
-        setModels(modelsCache.current.get(cacheKey));
-        return;
-      }
-      setLoadingModels(true);
-      try {
-        const data = await getModels(y, mId);
-        const modelsList = Array.isArray(data?.models) ? data.models : [];
-
-        // Normalize model data - each item has make_model_id, model_name, veh_modifier_id
-        const norm = modelsList.map(m => ({
-          make_model_id: m.make_model_id,
-          model_name: m.model_name,
-          veh_modifier_id: m.veh_modifier_id || null,
-        }));
-
-        norm.sort((a, b) => a.model_name.localeCompare(b.model_name));
-
-        if (!ignore) {
-
-          // Auto-resolve Model ID if we have a name but no ID
-          if (modelName && !makeModelId) {
-            const match = norm.find(m => m.model_name.toLowerCase() === modelName.toLowerCase());
-            if (match) {
-              setMakeModelId(match.make_model_id);
-              setVehModifierId(match.veh_modifier_id || null);
-            }
-          }
-
-          modelsCache.current.set(cacheKey, norm);
-          setModels(norm);
-        }
-      } catch (e) {
-        console.error("Failed to load models:", e);
-        if (!ignore) setModels([]);
-      } finally {
-        if (!ignore) setLoadingModels(false);
-      }
-    };
-
-    if (year && makeId) {
+    if (year && makeId && models.length === 0 && !makeModelId) {
+      // Make selected, no model yet (manual flow) -> Fetch
       loadModels(makeId, year);
-    } else {
+    } else if (!makeId) {
       setModels([]);
     }
+  }, [year, makeId, makeModelId]); // Added makeModelId to deps
 
-    return () => {
-      ignore = true;
-    };
-  }, [year, makeId, makeModelId, modelName]);
-
-  // Fetch body types when year + makeId + makeModelId set
   useEffect(() => {
-    let ignore = false;
-    const loadBodyTypes = async (y, mId, mmId, vModId) => {
-      const cacheKey = `${y}|${mId}|${mmId}|${vModId || 'null'}`;
-      if (bodyTypesCache.current.has(cacheKey)) {
-        setBodyTypes(bodyTypesCache.current.get(cacheKey));
-        return;
-      }
-      setLoadingBodyTypes(true);
-      try {
-        const data = await getBodyTypes(y, mId, mmId, vModId);
-        const bodyTypesList = Array.isArray(data?.body_types) ? data.body_types : [];
-
-        if (!ignore) {
-          bodyTypesCache.current.set(cacheKey, bodyTypesList);
-          setBodyTypes(bodyTypesList);
-        }
-      } catch (e) {
-        console.error("Failed to load body types:", e);
-        if (!ignore) setBodyTypes([]);
-      } finally {
-        if (!ignore) setLoadingBodyTypes(false);
-      }
-    };
-
-    if (year && makeId && makeModelId) {
+    if (year && makeId && makeModelId && bodyTypes.length === 0 && !bodyType) {
+      // Model selected, no body yet (manual flow) -> Fetch
       loadBodyTypes(year, makeId, makeModelId, vehModifierId);
-    } else {
+    } else if (!makeModelId) {
       setBodyTypes([]);
     }
-
-    return () => {
-      ignore = true;
-    };
-  }, [year, makeId, makeModelId, vehModifierId]);
+  }, [year, makeId, makeModelId, vehModifierId, bodyType]); // Added bodyType to deps
 
   // Auto-trigger Find Parts whenever all required fields are selected
   useEffect(() => {
@@ -376,7 +384,10 @@ export default function SearchByYMM({
 
   // Fetch vehicle details and parts when "Find Parts" is clicked
   const handleFindParts = async () => {
+    console.log('[SearchByYMM] handleFindParts triggered. Current State:', { year, makeId, makeModelId, bodyType, vehId });
+
     if (!year || !makeId || !makeModelId || !bodyType) {
+      console.log('[SearchByYMM] Missing required fields, skipping search');
       message.warning("Please select year, make, model, and body type");
       return;
     }
@@ -384,6 +395,36 @@ export default function SearchByYMM({
     // Update ref to prevent auto-trigger from firing immediately after manual search works
     lastAutoSearch.current = `${year}|${makeId}|${makeModelId}|${bodyType}`;
 
+    // Optimization: If we already have the vehId (e.g. from service document), skip the API call
+    if (vehId) {
+      console.log('[SearchByYMM] Using existing veh_id, skipping duplicate lookup:', vehId);
+
+      // Notify parent components with the vehicle info directly
+      onModelIdFetched?.(modelId || makeModelId);
+
+      // Find the selected body type description
+      const selectedBodyType = bodyTypes.find(bt => bt.body_style_id === bodyType);
+      const bodyTypeDescription = selectedBodyType ? selectedBodyType.desc : String(bodyType);
+
+      onVehicleInfoUpdate?.({
+        year,
+        make: makeName,           // Display name
+        makeId,                   // ID for API calls
+        model: modelName,         // Display name
+        makeModelId,              // ID for API calls
+        vehModifierId,            // Optional modifier ID
+        bodyType: bodyTypeDescription,
+        bodyTypeId: bodyType,
+        veh_id: vehId,
+        model_id: modelId || makeModelId,
+        image: modelImage || null,
+        description: modelDescription || `${year} ${makeName} ${modelName}`
+      });
+
+      return;
+    }
+
+    console.log('[SearchByYMM] No existing vehId, fetching from API...');
     setLoadingModelId(true);
     try {
       // Fetch vehicle details using all IDs
@@ -547,6 +588,7 @@ export default function SearchByYMM({
               placeholder="Make"
               value={makeId}
               onChange={handleMake}
+              onDropdownVisibleChange={handleMakeDropdownVisibleChange}
               disabled={disabled || !year}
               notFoundContent={loadingMakes ? <Spin size="small" /> : null}
               options={makes.map(m => ({
@@ -576,6 +618,7 @@ export default function SearchByYMM({
               placeholder="Model"
               value={currentModelValue}
               onChange={handleModel}
+              onDropdownVisibleChange={handleModelDropdownVisibleChange}
               disabled={disabled || !year || !makeId}
               notFoundContent={loadingModels ? <Spin size="small" /> : null}
               options={modelOptions}
@@ -597,13 +640,15 @@ export default function SearchByYMM({
               size="middle"
               className="w-full !rounded-lg"
               placeholder="Body Type"
-              value={bodyType}
-              onChange={setBodyType}
+              value={bodyType ? String(bodyType) : undefined}
+              onChange={(val) => setBodyType(Number(val))}
+              onDropdownVisibleChange={handleBodyTypeDropdownVisibleChange}
               disabled={disabled || !year || !makeId || !makeModelId}
               notFoundContent={loadingBodyTypes ? <Spin size="small" /> : null}
-              options={bodyTypes.map(bt => ({
-                label: `${bt.desc} (${bt.abbrev})`,
-                value: bt.body_style_id
+              // Format options: label = full description, value = ID
+              options={bodyTypes.map((bt) => ({
+                label: bt.desc,
+                value: String(bt.body_style_id),
               }))}
               showSearch={showSearch}
               filterOption={(input, option) =>

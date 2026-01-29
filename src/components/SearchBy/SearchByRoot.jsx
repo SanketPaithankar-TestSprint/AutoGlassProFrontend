@@ -199,14 +199,33 @@ const SearchByRoot = () => {
 
       // 1.1 Update Vehicle Info State (for YMM Component)
       if (vehicle) {
+        // Prioritize masterVehId for parts lookup, fallback to vehicleId
+        const activeVehId = vehicle.masterVehId || vehicle.vehicleId;
+
         setVehicleInfo({
           year: vehicle.vehicleYear?.toString() || "",
           make: vehicle.vehicleMake || "",
           model: vehicle.vehicleModel || "",
           style: vehicle.vehicleStyle || "",
           bodyType: vehicle.bodyType || "", // Pass body type description
-          vin: vehicle.vin || ""
+          vin: vehicle.vin || "",
+          // Add IDs to avoid redundant lookups if available
+          vehId: activeVehId, // Use the correct ID for parts
+          makeId: vehicle.makeId,
+          makeModelId: vehicle.modelId, // SearchByYMM expects makeModelId
+          bodyStyleId: vehicle.bodyStyleId,
+          vehModifierId: null // Typically null unless specified
         });
+
+        // Use existing vehicleId and modelId if available to avoid redundant API calls
+        if (activeVehId) {
+          setVehId(activeVehId);
+        }
+
+        if (vehicle.modelId) {
+          setModelId(vehicle.modelId);
+        }
+
         if (vehicle.vin) setVinData({ vin: vehicle.vin });
       }
 
