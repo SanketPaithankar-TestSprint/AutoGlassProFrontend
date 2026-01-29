@@ -395,9 +395,11 @@ export default function SearchByYMM({
     // Update ref to prevent auto-trigger from firing immediately after manual search works
     lastAutoSearch.current = `${year}|${makeId}|${makeModelId}|${bodyType}`;
 
-    // Optimization: If we already have the vehId (e.g. from service document), skip the API call
-    if (vehId) {
-      console.log('[SearchByYMM] Using existing veh_id, skipping duplicate lookup:', vehId);
+    // Optimization: If we already have the vehId AND the image, skip the duplicate lookup.
+    // We strictly check for modelImage because the user wants the car image populated from the API
+    // even if we restored the IDs from a saved document.
+    if (vehId && modelImage) {
+      console.log('[SearchByYMM] Using existing veh_id & image, skipping duplicate lookup:', vehId);
 
       // Notify parent components with the vehicle info directly
       onModelIdFetched?.(modelId || makeModelId);

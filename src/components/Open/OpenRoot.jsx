@@ -14,30 +14,30 @@ import HeaderBar from './HeaderBar';
 import PremiumDocumentCard from './PremiumDocumentCard';
 
 // Import utility functions
-import { 
-    applyAllFilters, 
-    getOverdueDocuments, 
-    formatCurrency 
+import {
+    applyAllFilters,
+    getOverdueDocuments,
+    formatCurrency
 } from './helpers/utils';
 
 const OpenRoot = () => {
     const navigate = useNavigate();
     const { message, notification } = App.useApp();
-    
+
     // Data states
     const [documents, setDocuments] = useState([]);
     const [filteredDocuments, setFilteredDocuments] = useState([]);
     const [loading, setLoading] = useState(true);
-    
+
     // Pagination states
     const [currentPage, setCurrentPage] = useState(0);
     const [pageSize, setPageSize] = useState(100);
     const [totalElements, setTotalElements] = useState(0);
-    
+
     // View states
     const [viewMode, setViewMode] = useState('grid');
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
-    
+
     // Filter states
     const [searchTerm, setSearchTerm] = useState('');
     const [documentTypeFilter, setDocumentTypeFilter] = useState([]);
@@ -46,10 +46,10 @@ const OpenRoot = () => {
     const [customDateRange, setCustomDateRange] = useState(null);
     const [amountRange, setAmountRange] = useState([0, 100000]);
     const [overdueFilter, setOverdueFilter] = useState(false);
-    
+
     // Delete modal state
     const [deleteTarget, setDeleteTarget] = useState(null);
-    
+
     // Track if overdue notifications have been shown
     const [overdueNotified, setOverdueNotified] = useState(false);
 
@@ -58,7 +58,7 @@ const OpenRoot = () => {
         const handleResize = () => {
             setIsMobile(window.innerWidth < 1024);
         };
-        
+
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
@@ -95,12 +95,12 @@ const OpenRoot = () => {
     const wasNotificationShownRecently = () => {
         const storedData = localStorage.getItem('overdueNotificationShown');
         if (!storedData) return false;
-        
+
         try {
             const { timestamp } = JSON.parse(storedData);
             const sixHoursInMs = 6 * 60 * 60 * 1000;
             const now = Date.now();
-            
+
             // Check if 6 hours have passed
             if (now - timestamp > sixHoursInMs) {
                 localStorage.removeItem('overdueNotificationShown');
@@ -128,9 +128,9 @@ const OpenRoot = () => {
                 setOverdueNotified(true);
                 return;
             }
-            
+
             const overdueDocuments = getOverdueDocuments(documents);
-            
+
             if (overdueDocuments.length > 0) {
                 // Show notification for each overdue document
                 overdueDocuments.forEach((doc, index) => {
@@ -148,11 +148,11 @@ const OpenRoot = () => {
                         });
                     }, index * 500); // Stagger notifications by 500ms each
                 });
-                
+
                 // Set flag in localStorage after showing notifications
                 setNotificationShown();
             }
-            
+
             setOverdueNotified(true);
         }
     }, [documents, overdueNotified, loading]);
@@ -170,7 +170,7 @@ const OpenRoot = () => {
             amountTo: amountRange[1],
             overdueOnly: overdueFilter,
         };
-        
+
         const filtered = applyAllFilters(documents, filters);
         setFilteredDocuments(filtered);
     }, [searchTerm, documentTypeFilter, statusFilter, dateRangeFilter, customDateRange, amountRange, overdueFilter, documents]);
@@ -178,8 +178,8 @@ const OpenRoot = () => {
     // Calculate active filter count
     const activeFilterCount = useMemo(() => {
         let count = 0;
-        if (documentTypeFilter.length > 0) count++;
-        if (statusFilter.length > 0) count++;
+        if (documentTypeFilter?.length > 0) count++;
+        if (statusFilter?.length > 0) count++;
         if (dateRangeFilter && dateRangeFilter !== 'all') count++;
         if (amountRange[0] > 0 || amountRange[1] < 100000) count++;
         if (overdueFilter) count++;
@@ -219,11 +219,11 @@ const OpenRoot = () => {
             hide();
             message.success(isHardDelete ? 'Document deleted permanently.' : 'Document cancelled.');
             setDeleteTarget(null);
-            
+
             if (isHardDelete) {
                 setDocuments(prev => prev.filter(d => d.documentNumber !== doc.documentNumber));
             } else {
-                setDocuments(prev => prev.map(d => 
+                setDocuments(prev => prev.map(d =>
                     d.documentNumber === doc.documentNumber ? { ...d, status: 'cancelled' } : d
                 ));
             }
