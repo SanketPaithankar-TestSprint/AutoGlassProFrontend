@@ -26,6 +26,7 @@ const FeaturesPage = React.lazy(() => import('./components/FeaturesPage/Features
 const AboutPage = React.lazy(() => import('./components/About/AboutPage.jsx'));
 const PublicContactRoot = React.lazy(() => import('./components/PublicContact/PublicContactRoot.jsx'));
 const ServiceContactFormRoot = React.lazy(() => import('./components/ServiceContactForm/ServiceContactFormRoot.jsx'));
+const ServiceInquiryView = React.lazy(() => import('./components/ServiceContactForm/ServiceInquiryView.jsx'));
 import ErrorBoundary from './components/PublicContact/ErrorBoundary';
 
 
@@ -86,7 +87,9 @@ function AppContent() {
 
   // Check if we're on the public contact form page - render standalone without main layout
   const isContactPage = location.pathname.startsWith('/contact/');
-  if (isContactPage) {
+  const isServiceView = location.pathname.startsWith('/service-inquiry-view/');
+
+  if (isContactPage || isServiceView) {
     return (
       <ErrorBoundary>
         <Suspense fallback={
@@ -95,7 +98,8 @@ function AppContent() {
           </div>
         }>
           <Routes>
-            <Route path="/contact/:slug" element={<PublicContactRoot />} />
+            {isContactPage && <Route path="/contact/:slug" element={<PublicContactRoot />} />}
+            {isServiceView && <Route path="/service-inquiry-view/:id" element={<ServiceInquiryView />} />}
           </Routes>
         </Suspense>
       </ErrorBoundary>

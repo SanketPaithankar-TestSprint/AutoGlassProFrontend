@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Card, Tag, Button, Statistic, Row, Col, Typography } from 'antd';
-import { ReloadOutlined } from '@ant-design/icons';
+import { ReloadOutlined, EyeOutlined } from '@ant-design/icons';
 import { getValidToken } from '../../api/getValidToken';
 import urls from '../../config';
 
@@ -9,21 +9,11 @@ const { Title } = Typography;
 const ServiceContactFormRoot = () => {
     const [inquiries, setInquiries] = useState([]);
     const [loading, setLoading] = useState(false);
-
-    // Function to fetch inquiries (Simulated or Real if endpoint exists)
-    // Assuming we might have a GET endpoint or we just want to show this empty for now until real data is streamed/fetched.
-    // For now, I will assume a GET endpoint exists or I will create a placeholder.
-    // The user requirement said: "endpoint this endpoint in it curl -X 'GET' ... stream"
-    // But also "accessable so that i can see the response from the get". 
-    // I will try to fetch from the same base URL but GET /service-inquiries if standard REST.
-    // However, I'll stick to a basic fetch implementation.
+    const [total, setTotal] = useState(0);
 
     const fetchInquiries = async () => {
         setLoading(true);
         try {
-            // Placeholder: The actual GET endpoint for list might be different. 
-            // If NOT provided, I will leave this as a placeholder or try to hit the collection resource.
-            // Based on previous task, we created POST /v1/service-inquiries. Usually GET is on the same.
             const token = getValidToken();
             const response = await fetch(`${urls.javaApiUrl}/v1/service-inquiries/my?page=0&size=20&sort=createdAt,desc`, {
                 headers: {
@@ -34,9 +24,10 @@ const ServiceContactFormRoot = () => {
 
             if (response.ok) {
                 const data = await response.json();
-                // Ensure data is array
-                const safeData = Array.isArray(data) ? data : (data.content || []);
+                // API returns paginated response with 'content' array
+                const safeData = data.content || [];
                 setInquiries(safeData);
+                setTotal(data.totalElements || safeData.length);
             } else {
                 console.error("Failed to fetch inquiries");
             }
@@ -60,13 +51,13 @@ const ServiceContactFormRoot = () => {
         },
         {
             title: 'Name',
+            dataIndex: 'name',
             key: 'name',
-            render: (text, record) => `${record.firstName || ''} ${record.lastName || ''}`,
         },
         {
             title: 'Vehicle',
+            dataIndex: 'vehicle',
             key: 'vehicle',
-            render: (text, record) => `${record.vehicleYear || ''} ${record.vehicleMake || ''} ${record.vehicleModel || ''}`,
         },
         {
             title: 'Service Type',
@@ -94,11 +85,57 @@ const ServiceContactFormRoot = () => {
         },
         {
             title: 'Created At',
-            dataIndex: 'createdAt', // Adjust field name based on API
+            dataIndex: 'createdAt',
             key: 'createdAt',
             render: (date) => date ? new Date(date).toLocaleString() : '-',
+        },
+        {
+            title: 'Actions',
+            key: 'actions',
+            render: (text, record) => (
+                <Button
+                    icon={<EyeOutlined />}
+                    onClick={() => handleViewDetails(record)}
+                    shape="circle"
+                />
+            ),
         }
     ];
+
+    const handleViewDetails = async (record) => {
+        // Open the window immediately
+        const width = 800;
+        const height = 900;
+        const left = (window.screen.width - width) / 2;
+        const top = (window.screen.height - height) / 2;
+
+        window.open(
+            `/service-inquiry-view/${record.id}`,
+            '_blank',
+            `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,resizable=yes`
+        );
+
+        // Update status to READ if it's NEW
+        if (record.status !== 'READ') {
+            try {
+                const token = getValidToken();
+                await fetch(`${urls.javaApiUrl}/v1/service-inquiries/${record.id}/status?status=READ`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': '*/*'
+                    }
+                });
+
+                // Update local state
+                setInquiries(prev => prev.map(item =>
+                    item.id === record.id ? { ...item, status: 'READ' } : item
+                ));
+            } catch (error) {
+                console.error("Failed to update status", error);
+            }
+        }
+    };
 
     return (
         <div style={{ padding: '24px' }}>
@@ -116,7 +153,7 @@ const ServiceContactFormRoot = () => {
             <Row gutter={16} style={{ marginBottom: '24px' }}>
                 <Col span={8}>
                     <Card>
-                        <Statistic title="Total Inquiries" value={inquiries.length} />
+                        <Statistic title="Total Inquiries" value={total} />
                     </Card>
                 </Col>
             </Row>
@@ -126,6 +163,11 @@ const ServiceContactFormRoot = () => {
                 columns={columns}
                 rowKey="id"
                 loading={loading}
+                pagination={{
+                    total: total,
+                    pageSize: 20,
+                    showSizeChanger: false
+                }}
             />
         </div>
     );
