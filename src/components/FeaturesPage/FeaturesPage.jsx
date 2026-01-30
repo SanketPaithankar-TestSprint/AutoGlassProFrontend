@@ -15,6 +15,7 @@ import {
     BarChartOutlined,
     CheckCircleFilled
 } from '@ant-design/icons';
+import VideoModal from '../VideoModal/VideoModal';
 
 // Intersection Observer Hook for scroll animations
 const useIntersectionObserver = (options = {}) => {
@@ -74,6 +75,8 @@ const FeatureBlock = ({ icon, title, description }) => (
 );
 
 const FeaturesPage = () => {
+    const [isVideoOpen, setIsVideoOpen] = useState(false);
+
     useEffect(() => {
         window.scrollTo(0, 0);
         document.title = "APAI | Features";
@@ -240,14 +243,18 @@ const FeaturesPage = () => {
                                 <Button
                                     size="large"
                                     className="!bg-transparent !border-violet-600 !text-violet-600 hover:!bg-violet-100 !h-11 !px-8 !text-base !rounded-full"
+                                    onClick={() => setIsVideoOpen(true)}
                                 >
-                                    Book a Demo
+                                    Watch a Demo
                                 </Button>
                             </div>
                         </div>
                     </div>
                 </div>
             </AnimatedSection>
+
+            {/* Video Modal */}
+            <VideoModal isOpen={isVideoOpen} onClose={() => setIsVideoOpen(false)} />
         </div>
     );
 };

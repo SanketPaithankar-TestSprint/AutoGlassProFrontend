@@ -124,11 +124,11 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
                 label: <Link to="/profile">Profile</Link>,
                 icon: <UserOutlined />
             },
-            {
+           /* {
                 key: 'work',
                 label: <Link to="/work">Work</Link>,
                 icon: <FileTextOutlined /> // Or a better icon for Work
-            },
+            }, */
             {
                 type: 'divider'
             },
