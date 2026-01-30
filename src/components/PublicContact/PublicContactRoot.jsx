@@ -1,19 +1,11 @@
 // src/components/PublicContact/PublicContactRoot.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { validateSlug, sendAiChatMessage } from '../../api/publicContactForm';
-import { getOrCreateSessionId, clearSessionId, generateSessionId } from '../../utils/sessionUtils';
+import { validateSlug, submitContactForm } from '../../api/publicContactForm';
+import { clearSessionId, generateSessionId } from '../../utils/sessionUtils';
 
 // Import components
 import BrandedHeader from './BrandedHeader';
-import ProgressIndicator from './ProgressIndicator';
-import MessageBubble from './MessageBubble';
-import OptionTiles from './OptionTiles';
-import GroupedOptionTiles from './GroupedOptionTiles';
-import GlassSelector from './GlassSelector';
-import WindshieldFeaturesSelector from './WindshieldFeaturesSelector';
-import ChatInput from './ChatInput';
-import CompletionScreen from './CompletionScreen';
 import NotFoundPage from './NotFoundPage';
 import PublicContactFooter from './PublicContactFooter';
 
@@ -32,18 +24,27 @@ const PublicContactRoot = () => {
     const [userId, setUserId] = useState(null);
     const [businessInfo, setBusinessInfo] = useState(null);
 
-    // Chat state
-    const [sessionId, setSessionId] = useState(null);
-    const [messages, setMessages] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
-    const [availableOptions, setAvailableOptions] = useState(null);
-    const [collectedData, setCollectedData] = useState({});
-    const [currentPhase, setCurrentPhase] = useState('info');
-    const [isComplete, setIsComplete] = useState(false);
-
-    // Refs
-    const messagesEndRef = useRef(null);
-    const chatContainerRef = useRef(null);
+    // Form state
+    const [formLoading, setFormLoading] = useState(false);
+    const [isSubmitted, setIsSubmitted] = useState(false);
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        location: '',
+        vin: '',
+        year: '',
+        make: '',
+        model: '',
+        serviceType: '',
+        servicePreference: '',
+        windshieldFeatures: [],
+        windowRollingLocation: '',
+        ventGlassLocation: '',
+        doorGlassLocation: '',
+        quarterGlassLocation: '',
+        message: ''
+    });
 
     // Theme color with fallback
     const themeColor = businessInfo?.themeColor || '#7E5CFE';
@@ -54,6 +55,62 @@ const PublicContactRoot = () => {
             document.documentElement.style.setProperty('--theme-color', themeColor);
         }
     }, [themeColor]);
+
+    // Service Type Options
+    // Service Type Options
+    const serviceTypeOptions = [
+        'Windshield Replacement',
+        'Door Glass Replacement',
+        'Vent Glass Replacement',
+        'Quarter Glass Replacement',
+        'Back Glass Replacement',
+        'Sunroof Glass Replacement',
+        'Windshield Chip repair',
+        'Window Rolling Issue'
+    ];
+
+    // Windshield Features Options
+    const windshieldFeatureOptions = [
+        'Rain Sensor',
+        'No Sensor',
+        'Lane Departure Warning',
+        'Condensation Sensor',
+        'Humidity Sensor',
+        'Forward Collision Sensor',
+        'Headsup Display'
+    ];
+
+    // Window Rolling Options
+    const windowRollingOptions = [
+        'Front Left Door',
+        'Rear Left Door',
+        'Front Right Door',
+        'Rear Right Door'
+    ];
+
+    // Vent Glass Options
+    const ventGlassOptions = [
+        'Front Left Vent Glass',
+        'Rear Left Vent Glass',
+        'Front Right Vent Glass',
+        'Rear Right Vent Glass'
+    ];
+
+    // Door Glass Options (same as Window Rolling)
+    const doorGlassOptions = [
+        'Front Left Door',
+        'Rear Left Door',
+        'Front Right Door',
+        'Rear Right Door'
+    ];
+
+    // Quarter Glass Options
+    const quarterGlassOptions = [
+        'Front Left Quarter Glass',
+        'Rear Left Quarter Glass',
+        'Front Right Quarter Glass',
+        'Rear Right Quarter Glass'
+    ];
 
     // Validate slug on mount
     useEffect(() => {
@@ -78,19 +135,9 @@ const PublicContactRoot = () => {
                         themeColor: response.data.theme_color,
                         tagline: response.data.tagline,
                         logoUrl: response.data.logo_url,
+                        phone: response.data.phone, // Assuming phone might be available
+                        email: response.data.email  // Assuming email might be available
                     });
-
-                    // Generate session ID
-                    const newSessionId = generateSessionId();
-                    setSessionId(newSessionId);
-
-                    // Add initial greeting message
-                    const greeting = {
-                        id: Date.now(),
-                        text: `Hi! I'm here to help you get a quote for ${response.data.business_name}. To get started, could you please share your name, email, and phone number?`,
-                        sender: 'ai',
-                    };
-                    setMessages([greeting]);
                 } else {
                     setIsValidSlug(false);
                     setValidationError(response.message || 'Invalid business slug');
@@ -107,193 +154,65 @@ const PublicContactRoot = () => {
         validateBusinessSlug();
     }, [slug]);
 
-    // Scroll to bottom when messages change
-    useEffect(() => {
-        if (messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-        }
-    }, [messages, availableOptions]);
-
-    // Determine phase from action
-    const determinePhase = (action) => {
-        const infoActions = ['ask_name', 'ask_email', 'ask_phone', 'greeting'];
-        const vehicleActions = ['ask_year', 'ask_make', 'ask_model', 'ask_body', 'ask_body_style'];
-        const glassActions = ['ask_glass', 'ask_glass_type', 'confirm', 'complete'];
-
-        if (infoActions.includes(action)) return 'info';
-        if (vehicleActions.includes(action)) return 'vehicle';
-        if (glassActions.includes(action)) return 'glass';
-        return currentPhase; // Keep current if unknown
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
     };
 
-    // Handle sending a message
-    const handleSendMessage = async (messageText) => {
-        if (!messageText.trim() || isLoading) return;
+    const handleCheckboxChange = (e) => {
+        const { value, checked } = e.target;
+        setFormData(prev => {
+            const currentFeatures = prev.windshieldFeatures || [];
+            if (checked) {
+                return { ...prev, windshieldFeatures: [...currentFeatures, value] };
+            } else {
+                return { ...prev, windshieldFeatures: currentFeatures.filter(item => item !== value) };
+            }
+        });
+    };
 
-        // Add user message
-        const userMessage = {
-            id: Date.now(),
-            text: messageText,
-            sender: 'user',
-        };
-        setMessages(prev => [...prev, userMessage]);
-        setIsLoading(true);
-        setAvailableOptions(null); // Clear options while loading
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setFormLoading(true);
 
         try {
-            const response = await sendAiChatMessage(sessionId, messageText, userId);
+            // Generate a session ID for tracking this submission
+            const sessionId = generateSessionId();
 
-            // Add AI response message
-            if (response.message) {
-                const aiMessage = {
-                    id: Date.now() + 1,
-                    text: response.message,
-                    sender: 'ai',
-                };
-                setMessages(prev => [...prev, aiMessage]);
-            }
-
-            // Update collected data
-            if (response.collected_data) {
-                setCollectedData(response.collected_data);
-            }
-
-            // Update phase
-            if (response.action) {
-                setCurrentPhase(determinePhase(response.action));
-            }
-
-            // Handle available options with proper parsing based on API response format
-            if (response.available_options) {
-                try {
-                    const opts = response.available_options;
-
-                    // Debug log to see what we're receiving
-                    console.log('Available options received:', opts);
-
-                    // Handle based on type field from API
-                    if (opts.type === 'body_styles' && Array.isArray(opts.options)) {
-                        // Body styles: flat list with {index, abbrev, desc, id}
-                        // Map to use 'desc' as the display label
-                        const mappedOptions = opts.options.map(opt => ({
-                            ...opt,
-                            label: opt.desc, // Use desc as the display label
-                            value: opt.id,   // Use id as the value
-                        }));
-                        setAvailableOptions({
-                            type: 'flat',
-                            data: mappedOptions,
-                            label: opts.label || 'Select body style',
-                        });
-                    } else if (opts.type === 'glass_types' && opts.grouped && Array.isArray(opts.groups)) {
-                        // Glass types: grouped format with {group, options: [{index, type, prefix, code, desc}]}
-                        // Convert groups array to object format for GroupedOptionTiles
-                        const groupedData = {};
-                        opts.groups.forEach(grp => {
-                            groupedData[grp.group] = grp.options.map(opt => ({
-                                ...opt,
-                                label: opt.desc, // Use desc as the display label
-                                value: opt.code, // Use code as the value
-                            }));
-                        });
-                        setAvailableOptions({
-                            type: 'grouped',
-                            data: groupedData,
-                            label: opts.label || 'Select glass type',
-                        });
-                    } else if (opts.type === 'windshield_features' && Array.isArray(opts.options)) {
-                        // Windshield features: multi-select list with {id, name}
-                        setAvailableOptions({
-                            type: 'windshield_features',
-                            data: opts.options,
-                            label: opts.label || 'Select windshield features',
-                            multiple: opts.multiple || true,
-                        });
-                    } else if (Array.isArray(opts.options)) {
-                        // Generic flat options with {index, desc, id} or similar
-                        const mappedOptions = opts.options.map(opt => ({
-                            ...opt,
-                            label: opt.desc || opt.name || opt.label || JSON.stringify(opt),
-                            value: opt.id || opt.value || opt.index,
-                        }));
-                        setAvailableOptions({
-                            type: 'flat',
-                            data: mappedOptions,
-                            label: opts.label || 'Select an option',
-                        });
-                    } else if (Array.isArray(opts)) {
-                        // Direct array of options (fallback)
-                        setAvailableOptions({
-                            type: 'flat',
-                            data: opts,
-                            label: response.available_options_label || '',
-                        });
-                    } else {
-                        // Unknown format - log and skip
-                        console.warn('Unknown available_options format:', opts);
-                        setAvailableOptions(null);
-                    }
-                } catch (parseError) {
-                    console.error('Error parsing available_options:', parseError);
-                    setAvailableOptions(null);
-                }
-            } else {
-                setAvailableOptions(null);
-            }
-
-            // Check if complete
-            if (response.status === 'complete') {
-                setIsComplete(true);
-            }
-
+            await submitContactForm(formData, sessionId, userId);
+            setIsSubmitted(true);
+            clearSessionId(slug); // Clear any old sessions
         } catch (error) {
-            console.error('Chat error:', error);
-            const errorMessage = {
-                id: Date.now() + 1,
-                text: "I'm sorry, something went wrong. Please try again.",
-                sender: 'ai',
-            };
-            setMessages(prev => [...prev, errorMessage]);
+            console.error('Form submission error:', error);
+            // Optionally show error message
         } finally {
-            setIsLoading(false);
+            setFormLoading(false);
         }
     };
 
-    // Handle option tile selection (for body styles, makes, models)
-    const handleOptionSelect = (option) => {
-        const optionText = option.label || option.name || option.value || option;
-        handleSendMessage(String(optionText));
-    };
-
-    // Handle glass selection submit (for multi-select glass types)
-    const handleGlassSelection = (selection) => {
-        // selection = { type: 'multiple', glasses: [...], displayText: '...' }
-        handleSendMessage(selection.displayText);
-    };
-
-    // Handle windshield features selection submit (for multi-select features)
-    const handleWindshieldFeaturesSelection = (selection) => {
-        // selection = { type: 'windshield_features', features: [...], displayText: '...' }
-        handleSendMessage(selection.displayText);
-    };
-
-    // Handle starting a new inquiry
-    const handleNewInquiry = () => {
-        // Clear session
-        clearSessionId(slug);
-
-        // Reset state
-        const newSessionId = generateSessionId();
-        setSessionId(newSessionId);
-        setMessages([{
-            id: Date.now(),
-            text: `Hi! I'm here to help you get a quote for ${businessInfo?.businessName || 'our service'}. To get started, could you please share your name, email, and phone number?`,
-            sender: 'ai',
-        }]);
-        setAvailableOptions(null);
-        setCollectedData({});
-        setCurrentPhase('info');
-        setIsComplete(false);
+    const handleNewMessage = () => {
+        setIsSubmitted(false);
+        setFormData({
+            name: '',
+            email: '',
+            phone: '',
+            location: '',
+            vin: '',
+            year: '',
+            make: '',
+            model: '',
+            serviceType: '',
+            servicePreference: '',
+            windshieldFeatures: [],
+            windowRollingLocation: '',
+            ventGlassLocation: '',
+            quarterGlassLocation: '',
+            doorGlassLocation: '',
+            message: ''
+        });
     };
 
     // Loading state
@@ -313,8 +232,8 @@ const PublicContactRoot = () => {
         return <NotFoundPage />;
     }
 
-    // Completion screen
-    if (isComplete) {
+    // Success Screen
+    if (isSubmitted) {
         return (
             <div className="public-contact-page" style={{ '--theme-color': themeColor }}>
                 <BrandedHeader
@@ -323,18 +242,25 @@ const PublicContactRoot = () => {
                     tagline={businessInfo?.tagline}
                     themeColor={themeColor}
                 />
-                <CompletionScreen
-                    businessName={businessInfo?.businessName}
-                    collectedData={collectedData}
-                    onNewInquiry={handleNewInquiry}
-                    themeColor={themeColor}
-                />
+                <div className="completion-screen">
+                    <div className="completion-icon">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                    </div>
+                    <h2 className="completion-title">Message Sent!</h2>
+                    <p className="completion-subtitle">Thank you for contacting {businessInfo?.businessName}. We will get back to you shortly.</p>
+
+                    <button className="new-inquiry-btn" onClick={handleNewMessage}>
+                        Send Another Message
+                    </button>
+                </div>
                 <PublicContactFooter />
             </div>
         );
     }
 
-    // Main chat interface
+    // Main Contact Form
     return (
         <div className="public-contact-page" style={{ '--theme-color': themeColor }}>
             <BrandedHeader
@@ -344,76 +270,295 @@ const PublicContactRoot = () => {
                 themeColor={themeColor}
             />
 
-            <ProgressIndicator
-                currentPhase={currentPhase}
-                themeColor={themeColor}
-            />
+            <div className="contact-form-container">
+                <div className="contact-card">
+                    {/* Removed Get in Touch header to match style more closely if needed, 
+                        but keeping it for structure as per previous layout, or I can make it simpler.
+                        The example image has fields directly. I will keep the header for branded feel but simplify. */}
 
-            <div className="chat-container" ref={chatContainerRef}>
-                <div className="message-list">
-                    {messages.map((message) => (
-                        <MessageBubble
-                            key={message.id}
-                            message={message.text}
-                            sender={message.sender}
-                            themeColor={themeColor}
-                        />
-                    ))}
+                    <form className="contact-form" onSubmit={handleSubmit}>
+                        <div className="form-group">
+                            <label htmlFor="name">Full Name <span className="required">*</span></label>
+                            <input
+                                type="text"
+                                id="name"
+                                name="name"
+                                value={formData.name}
+                                onChange={handleInputChange}
+                                required
+                                className="form-input"
+                            />
+                        </div>
 
-                    {/* Typing indicator */}
-                    {isLoading && (
-                        <div className="message-wrapper ai">
-                            <div className="message-avatar ai">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z" />
-                                </svg>
+                        <div className="form-group">
+                            <label htmlFor="email">Email <span className="required">*</span></label>
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleInputChange}
+                                required
+                                className="form-input"
+                            />
+                        </div>
+
+                        <div className="form-row">
+                            <div className="form-group">
+                                <label htmlFor="phone">Phone Number <span className="required">*</span></label>
+                                <input
+                                    type="tel"
+                                    id="phone"
+                                    name="phone"
+                                    value={formData.phone}
+                                    onChange={handleInputChange}
+                                    placeholder="(408) 565-5523"
+                                    required
+                                    className="form-input"
+                                />
                             </div>
-                            <div className="message-bubble ai">
-                                <div className="typing-indicator">
-                                    <div className="typing-dot"></div>
-                                    <div className="typing-dot"></div>
-                                    <div className="typing-dot"></div>
-                                </div>
+
+                            <div className="form-group">
+                                <label htmlFor="location">Location <span className="required">*</span></label>
+                                <select
+                                    id="location"
+                                    name="location"
+                                    value={formData.location}
+                                    onChange={handleInputChange}
+                                    required
+                                    className="form-input form-select"
+                                >
+                                    <option value="">-Select-</option>
+                                    <option value="Main Service Area">Main Service Area</option>
+                                    {/* Add more options if available dynamically */}
+                                </select>
                             </div>
                         </div>
-                    )}
 
-                    {/* Option tiles */}
-                    {availableOptions && !isLoading && (
-                        availableOptions.type === 'grouped' ? (
-                            <GlassSelector
-                                groupedOptions={availableOptions.data}
-                                onSubmit={handleGlassSelection}
-                                themeColor={themeColor}
-                                label={availableOptions.label}
+                        <div className="form-group">
+                            <label htmlFor="vin">VIN</label>
+                            <input
+                                type="text"
+                                id="vin"
+                                name="vin"
+                                value={formData.vin}
+                                onChange={handleInputChange}
+                                className="form-input"
                             />
-                        ) : availableOptions.type === 'windshield_features' ? (
-                            <WindshieldFeaturesSelector
-                                options={availableOptions.data}
-                                onSubmit={handleWindshieldFeaturesSelection}
-                                themeColor={themeColor}
-                                label={availableOptions.label}
-                            />
-                        ) : (
-                            <OptionTiles
-                                options={availableOptions.data}
-                                onSelect={handleOptionSelect}
-                                themeColor={themeColor}
-                                label={availableOptions.label}
-                            />
-                        )
-                    )}
+                        </div>
 
-                    <div ref={messagesEndRef} />
+                        {/* Lookup Button (Visual only as per instructions) */}
+                        <div className="form-group">
+                            <button type="button" className="lookup-btn" disabled>
+                                Lookup Vehicle Info
+                            </button>
+                        </div>
+
+                        <div className="form-row three-col">
+                            <div className="form-group">
+                                <label htmlFor="year">Year</label>
+                                {/* Image shows dropdown for Year, but user said keep as text field. 
+                                     I'll use text input to strictly follow 'keep them as text fields'. 
+                                     Actually, usually Year is a dropdown. But user said "text fields". 
+                                     I will use text to be safe with the instruction. */}
+                                <input
+                                    type="text"
+                                    id="year"
+                                    name="year"
+                                    value={formData.year}
+                                    onChange={handleInputChange}
+                                    placeholder=""
+                                    className="form-input"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="make">Make</label>
+                                <input
+                                    type="text"
+                                    id="make"
+                                    name="make"
+                                    value={formData.make}
+                                    onChange={handleInputChange}
+                                    className="form-input"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="model">Model</label>
+                                <input
+                                    type="text"
+                                    id="model"
+                                    name="model"
+                                    value={formData.model}
+                                    onChange={handleInputChange}
+                                    className="form-input"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="serviceType">What type of service you are looking for? <span className="required">*</span></label>
+                            <select
+                                id="serviceType"
+                                name="serviceType"
+                                value={formData.serviceType}
+                                onChange={handleInputChange}
+                                required
+                                className="form-input form-select"
+                            >
+                                <option value="">- Select -</option>
+                                {serviceTypeOptions.map((opt, idx) => (
+                                    <option key={idx} value={opt}>{opt}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {formData.serviceType === 'Windshield Replacement' && (
+                            <div className="form-group animate-fade-in">
+                                <label className="radio-label">Windshield Replacement <span className="required">*</span></label>
+                                <div className="checkbox-group">
+                                    {windshieldFeatureOptions.map((feature, idx) => (
+                                        <label key={idx} className="checkbox-option">
+                                            <input
+                                                type="checkbox"
+                                                name="windshieldFeatures"
+                                                value={feature}
+                                                checked={(formData.windshieldFeatures || []).includes(feature)}
+                                                onChange={handleCheckboxChange}
+                                            />
+                                            {feature}
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {formData.serviceType === 'Window Rolling Issue' && (
+                            <div className="form-group animate-fade-in">
+                                <label className="radio-label">Window Rolling Issue <span className="required">*</span></label>
+                                <div className="radio-group">
+                                    {windowRollingOptions.map((option, idx) => (
+                                        <label key={idx} className="radio-option">
+                                            <input
+                                                type="radio"
+                                                name="windowRollingLocation"
+                                                value={option}
+                                                checked={formData.windowRollingLocation === option}
+                                                onChange={handleInputChange}
+                                                required
+                                            />
+                                            {option}
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {formData.serviceType === 'Vent Glass Replacement' && (
+                            <div className="form-group animate-fade-in">
+                                <label className="radio-label">Vent Glass Replacement <span className="required">*</span></label>
+                                <div className="radio-group">
+                                    {ventGlassOptions.map((option, idx) => (
+                                        <label key={idx} className="radio-option">
+                                            <input
+                                                type="radio"
+                                                name="ventGlassLocation"
+                                                value={option}
+                                                checked={formData.ventGlassLocation === option}
+                                                onChange={handleInputChange}
+                                                required
+                                            />
+                                            {option}
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {formData.serviceType === 'Door Glass Replacement' && (
+                            <div className="form-group animate-fade-in">
+                                <label className="radio-label">Door Glass Replacement <span className="required">*</span></label>
+                                <div className="radio-group">
+                                    {doorGlassOptions.map((option, idx) => (
+                                        <label key={idx} className="radio-option">
+                                            <input
+                                                type="radio"
+                                                name="doorGlassLocation"
+                                                value={option}
+                                                checked={formData.doorGlassLocation === option}
+                                                onChange={handleInputChange}
+                                                required
+                                            />
+                                            {option}
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {formData.serviceType === 'Quarter Glass Replacement' && (
+                            <div className="form-group animate-fade-in">
+                                <label className="radio-label">Quarter Glass Replacement <span className="required">*</span></label>
+                                <div className="radio-group">
+                                    {quarterGlassOptions.map((option, idx) => (
+                                        <label key={idx} className="radio-option">
+                                            <input
+                                                type="radio"
+                                                name="quarterGlassLocation"
+                                                value={option}
+                                                checked={formData.quarterGlassLocation === option}
+                                                onChange={handleInputChange}
+                                                required
+                                            />
+                                            {option}
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="form-group">
+                            <label className="radio-label">Type of service <span className="required">*</span></label>
+                            <div className="radio-group">
+                                <label className="radio-option">
+                                    <input
+                                        type="radio"
+                                        name="servicePreference"
+                                        value="In-shop service"
+                                        checked={formData.servicePreference === 'In-shop service'}
+                                        onChange={handleInputChange}
+                                        required
+                                    />
+                                    In-shop service
+                                </label>
+                                <label className="radio-option">
+                                    <input
+                                        type="radio"
+                                        name="servicePreference"
+                                        value="Mobile service"
+                                        checked={formData.servicePreference === 'Mobile service'}
+                                        onChange={handleInputChange}
+                                        required
+                                    />
+                                    Mobile service
+                                </label>
+                            </div>
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="submit-btn full-width-btn"
+                            disabled={formLoading}
+                        >
+                            {formLoading ? (
+                                <span className="flex items-center gap-2">
+                                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                    Sending...
+                                </span>
+                            ) : 'Submit'}
+                        </button>
+                    </form>
                 </div>
             </div>
-
-            <ChatInput
-                onSend={handleSendMessage}
-                disabled={isLoading}
-                themeColor={themeColor}
-                placeholder="Type your message..."
-            />
 
             <PublicContactFooter />
         </div>
