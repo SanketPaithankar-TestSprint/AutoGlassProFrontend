@@ -177,7 +177,7 @@ const SidebarFilters = ({
                 </Panel>
 
                 {/* Amount Range Filter */}
-                <Panel
+              {/*  <Panel
                     header={
                         <div className="flex items-center gap-2">
                             <DollarOutlined className="text-slate-400" />
@@ -228,7 +228,7 @@ const SidebarFilters = ({
                             </Space.Compact>
                         </div>
                     </div>
-                </Panel>
+                </Panel> */}
             </Collapse>
 
             {/* Filter Summary */}

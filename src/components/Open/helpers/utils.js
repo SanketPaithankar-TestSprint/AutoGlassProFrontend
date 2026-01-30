@@ -1,4 +1,4 @@
-const BASELINE_DAYS_FOR_OVERDUE = 5;
+const BASELINE_DAYS_FOR_OVERDUE = 0;
 // =====================================================
 // FILTER FUNCTIONS
 // =====================================================
@@ -194,7 +194,8 @@ const applyAllFilters = (documents, filters) => {
  */
 const isOverdue = (doc) => {
     if (!doc.createdAt) return false;
-    
+    console.log('Checking overdue for doc:', doc);
+    if (!(doc.documentType?.toLowerCase() === 'invoice')) return false;
     // Only check overdue for unpaid documents with balance due
     if ((doc.balanceDue || 0) <= 0) return false;
     if (doc.status?.toLowerCase() === 'paid' || doc.status?.toLowerCase() === 'cancelled') return false;

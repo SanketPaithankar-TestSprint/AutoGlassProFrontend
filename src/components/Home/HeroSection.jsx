@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "antd";
 import { LinkOutlined } from "@ant-design/icons";
 import Logo from "../logo";
+import VideoModal from "../VideoModal/VideoModal";
 
 const HeroSection = () => {
+  const [isVideoOpen, setIsVideoOpen] = useState(false);
+
   return (
     <section
       id="hero"
@@ -87,13 +90,15 @@ const HeroSection = () => {
               e.currentTarget.style.borderColor = '#e2e8f0'; // slate-200
               e.currentTarget.style.color = '#334155'; // slate-700
             }}
+            onClick={() => setIsVideoOpen(true)}
           >
-            Book a Demo
+            Watch a Demo
           </Button>
         </div>
       </div>
 
-
+      {/* Video Modal */}
+      <VideoModal isOpen={isVideoOpen} onClose={() => setIsVideoOpen(false)} />
     </section>
   );
 };
