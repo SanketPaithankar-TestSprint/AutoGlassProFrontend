@@ -84,6 +84,35 @@ export function generateServiceDocumentPDF({
         doc.rect(x, y, w, h, 'FD');
     };
 
+    /**
+     * Helper to draw text wrapped within a max width
+     * Centers text vertically if possible, or starts from top padding
+     */
+    const drawWrappedText = (text, x, y, maxWidth, rowHeight = 22) => {
+        if (!text) return;
+
+        // Ensure text is a string
+        const str = String(text);
+
+        // Split text to fit width
+        // Subtract a small padding from maxWidth to avoid touching borders
+        const lines = doc.splitTextToSize(str, maxWidth - 10);
+
+        let startY = y + 14; // Default baseline for single line (approx vertical center for 22pt row)
+
+        if (lines.length > 1) {
+            // If multiple lines, adjust start Y to center the block or just start higher
+            // Line height approx 10-11pt for 9pt font
+            // For 2 lines: total height ~20pt. Box is 22pt. Very tight.
+            // Let's start at y + 9 to give room for 2 lines. 
+            // y+9 (line 1), y+19 (line 2) -> fits in 0-22 range? 
+            // 9 + 10 = 19. Bottom of text at ~19 + descent.
+            startY = y + 9;
+        }
+
+        doc.text(lines, x, startY);
+    };
+
     // Right grid dimensions - positioned to align with right edge
     const topGridY = 35;
     const rowH = 22;
@@ -403,9 +432,11 @@ export function generateServiceDocumentPDF({
 
     doc.setTextColor(...textColor);
     doc.setFont("helvetica", "normal");
-    doc.text(String(customerData?.vehicleYear || ""), col2 + 6, vY + 14);
-    doc.text(customerData?.vehicleMake || "", col4 + 6, vY + 14);
-    doc.text(customerData?.vehicleModel || "", col6 + 6, vY + 14);
+
+    // Row 1 Values
+    drawWrappedText(customerData?.vehicleYear || "", col2 + 6, vY, valueW1, vRowH);
+    drawWrappedText(customerData?.vehicleMake || "", col4 + 6, vY, valueW2, vRowH);
+    drawWrappedText(customerData?.vehicleModel || "", col6 + 6, vY, valueW3, vRowH);
 
     // Row 2: Body Style | Lic # | VIN
     const vY2 = vY + vRowH;
@@ -425,9 +456,12 @@ export function generateServiceDocumentPDF({
 
     doc.setTextColor(...textColor);
     doc.setFont("helvetica", "normal");
-    doc.text(String(customerData?.bodyType || ""), col2 + 6, vY2 + 14);
-    doc.text(customerData?.licensePlateNumber || "", col4 + 6, vY2 + 14);
-    doc.text("", col6 + 6, vY2 + 14);
+
+    // Row 2 Values
+    drawWrappedText(customerData?.bodyType || "", col2 + 6, vY2, valueW1, vRowH);
+    drawWrappedText(customerData?.licensePlateNumber || "", col4 + 6, vY2, valueW2, vRowH);
+    // Auth by is empty in original code, keeping it empty or wrapping if data existed
+    // doc.text("", col6 + 6, vY2 + 14);
 
     // Row 3: Policy # | Claim # | Loss Date
     const vY3 = vY2 + vRowH;
@@ -447,9 +481,11 @@ export function generateServiceDocumentPDF({
 
     doc.setTextColor(...textColor);
     doc.setFont("helvetica", "normal");
-    doc.text(insuranceData?.policyNumber || "", col2 + 6, vY3 + 14);
-    doc.text(customerData?.claimNumber || insuranceData?.claimNumber || "", col4 + 6, vY3 + 14);
-    doc.text(now, col6 + 6, vY3 + 14);
+
+    // Row 3 Values
+    drawWrappedText(insuranceData?.policyNumber || "", col2 + 6, vY3, valueW1, vRowH);
+    drawWrappedText(customerData?.claimNumber || insuranceData?.claimNumber || "", col4 + 6, vY3, valueW2, vRowH);
+    drawWrappedText(now, col6 + 6, vY3, valueW3, vRowH);
 
     // Row 4: Auth by | Damage/Cause
     const vY4 = vY3 + vRowH;
@@ -465,7 +501,11 @@ export function generateServiceDocumentPDF({
     doc.text("Damage/Cause", col5 + 6, vY4 + 14);
 
     doc.setTextColor(...textColor);
-    doc.text(customerData?.vin || "", col2 + 6, vY4 + 14);
+    // Row 4 Values (VIN spans 3 cols logic in drawModernCell, here we just draw text)
+    // Note: V.I.N cell width is effectively valueW1 + labelW + valueW2
+    // We should pass that wider width to drawWrappedText
+    const vinWidth = valueW1 + labelW + valueW2;
+    drawWrappedText(customerData?.vin || "", col2 + 6, vY4, vinWidth, vRowH);
 
     // Reset colors for rest of document
     doc.setTextColor(0, 0, 0);
