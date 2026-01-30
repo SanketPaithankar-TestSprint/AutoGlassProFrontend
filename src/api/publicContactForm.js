@@ -134,3 +134,72 @@ export async function createServiceInquiry(payload) {
     const data = await response.json();
     return data;
 }
+
+/**
+ * Decode VIN using NHTSA API
+ * @param {string} vin - Vehicle Identification Number
+ * @param {string} modelYear - Optional model year to refine search
+ * @returns {Promise<Object>} - Decoded vehicle info
+ */
+export async function decodeVin(vin, modelYear = '') {
+    try {
+        const response = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/${vin}?format=json&modelyear=${modelYear}`);
+
+        if (!response.ok) {
+            throw new Error('Failed to decode VIN');
+        }
+
+        const data = await response.json();
+
+        if (data.Results && data.Results.length > 0) {
+            return data.Results[0];
+        }
+
+        return null;
+    } catch (error) {
+        console.error('Error decoding VIN:', error);
+        throw error;
+    }
+}
+
+/**
+ * Fetch all vehicle makes from NHTSA API
+ * @returns {Promise<Array>} - List of vehicle makes
+ */
+export async function fetchVehicleMakes() {
+    try {
+        const response = await fetch('https://vpic.nhtsa.dot.gov/api/vehicles/getallmakes?format=json');
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch vehicle makes');
+        }
+
+        const data = await response.json();
+        return data.Results || [];
+    } catch (error) {
+        console.error('Error fetching vehicle makes:', error);
+        return [];
+    }
+}
+
+/**
+ * Fetch vehicle models for a specific make from NHTSA API
+ * @param {string} make - Vehicle make name
+ * @returns {Promise<Array>} - List of vehicle models
+ */
+export async function fetchVehicleModels(make) {
+    if (!make) return [];
+    try {
+        const response = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/getmodelsformake/${encodeURIComponent(make)}?format=json`);
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch vehicle models');
+        }
+
+        const data = await response.json();
+        return data.Results || [];
+    } catch (error) {
+        console.error('Error fetching vehicle models:', error);
+        return [];
+    }
+}

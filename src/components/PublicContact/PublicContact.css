@@ -191,16 +191,34 @@
 
 /* Lookup Button - Secondary Style */
 .lookup-btn {
-    background: transparent;
+    background: white;
     color: var(--theme-color);
     font-weight: 600;
-    padding: 0.5rem 0;
-    border: none;
-    cursor: default;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--theme-color);
+    border-radius: var(--radius-md);
+    cursor: pointer;
     width: fit-content;
     font-size: 0.9rem;
-    margin-top: -0.25rem;
-    opacity: 0.8;
+    margin-top: 0.5rem;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lookup-btn:hover:not(:disabled) {
+    background: var(--theme-color-lighter);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.lookup-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #94a3b8;
 }
 
 /* Checkbox & Radio Groups */
