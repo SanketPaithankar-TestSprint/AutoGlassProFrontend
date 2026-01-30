@@ -111,3 +111,26 @@ Please create a lead for this customer.`;
 
     return await sendAiChatMessage(sessionId, formattedMessage, userId);
 }
+
+/**
+ * Create a new service inquiry
+ * @param {Object} payload - The service inquiry payload
+ * @returns {Promise<Object>} - The created service inquiry
+ */
+export async function createServiceInquiry(payload) {
+    const response = await fetch(`${urls.javaApiUrl}/v1/service-inquiries`, {
+        method: 'POST',
+        headers: {
+            'accept': '*/*',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to create service inquiry');
+    }
+
+    const data = await response.json();
+    return data;
+}

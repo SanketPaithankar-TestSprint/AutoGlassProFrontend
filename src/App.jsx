@@ -16,6 +16,7 @@ import ReportsRoot from './components/Reports/ReportsRoot';
 import AiContactForm from './components/AiContactForm/AiContactForm';
 import { getValidToken } from './api/getValidToken';
 import { useProfileDataPrefetch } from './hooks/useProfileDataPrefetch';
+import useInquiryNotifications from './hooks/useInquiryNotifications';
 
 // Lazy Load Main Components
 const Home = React.lazy(() => import('./components/Home/HomeRoot.jsx'));
@@ -24,6 +25,7 @@ const Schedule = React.lazy(() => import('./components/Schedule/ScheduleRoot.jsx
 const FeaturesPage = React.lazy(() => import('./components/FeaturesPage/FeaturesPage.jsx'));
 const AboutPage = React.lazy(() => import('./components/About/AboutPage.jsx'));
 const PublicContactRoot = React.lazy(() => import('./components/PublicContact/PublicContactRoot.jsx'));
+const ServiceContactFormRoot = React.lazy(() => import('./components/ServiceContactForm/ServiceContactFormRoot.jsx'));
 import ErrorBoundary from './components/PublicContact/ErrorBoundary';
 
 
@@ -51,6 +53,9 @@ function AppContent() {
 
   // Prefetch data when authenticated
   useProfileDataPrefetch(isAuthed);
+
+  // Listen for inquiry notifications
+  useInquiryNotifications();
 
   useEffect(() => {
     const token = getValidToken();
@@ -137,6 +142,7 @@ function AppContent() {
                     <Route path="/auth" element={<AuthPage />} />
 
                     <Route path="/ai-contact-form" element={<AiContactForm />} />
+                    <Route path="/service-contact-form" element={<ServiceContactFormRoot />} />
                   </Routes>
                 </Suspense>
               </div>

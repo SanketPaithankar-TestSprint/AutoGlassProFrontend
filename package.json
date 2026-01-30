@@ -22,6 +22,7 @@
     "antd-img-crop": "^4.27.0",
     "axios": "^1.12.2",
     "browser-image-compression": "^2.0.2",
+    "event-source-polyfill": "^1.0.31",
     "jspdf": "^3.0.3",
     "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.563.0",

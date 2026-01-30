@@ -1,7 +1,7 @@
 // src/components/PublicContact/PublicContactRoot.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { validateSlug, submitContactForm } from '../../api/publicContactForm';
+import { validateSlug, submitContactForm, createServiceInquiry } from '../../api/publicContactForm';
 import { clearSessionId, generateSessionId } from '../../utils/sessionUtils';
 
 // Import components
@@ -179,12 +179,54 @@ const PublicContactRoot = () => {
         setFormLoading(true);
 
         try {
-            // Generate a session ID for tracking this submission
-            const sessionId = generateSessionId();
+            // Split name into first and last name
+            const nameParts = formData.name.trim().split(' ');
+            const firstName = nameParts[0] || '';
+            const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
 
-            await submitContactForm(formData, sessionId, userId);
+            // Map sub-options to affectedGlassLocation array
+            let additionalGlassLocation = [];
+            if (formData.serviceType === 'Window Rolling Issue') additionalGlassLocation.push(formData.windowRollingLocation);
+            if (formData.serviceType === 'Vent Glass Replacement') additionalGlassLocation.push(formData.ventGlassLocation);
+            if (formData.serviceType === 'Door Glass Replacement') additionalGlassLocation.push(formData.doorGlassLocation);
+            if (formData.serviceType === 'Quarter Glass Replacement') additionalGlassLocation.push(formData.quarterGlassLocation);
+
+            // Clean up potentially empty values if user switched selections
+            additionalGlassLocation = additionalGlassLocation.filter(Boolean);
+
+            const payload = {
+                userId: userId, // From shop/slug validation
+                firstName: firstName,
+                lastName: lastName, // Fallback if no last name provided? API might require it.
+                email: formData.email,
+                phone: formData.phone,
+                addressLine1: formData.location, // Mapping Location dropdown to addressLine1
+                addressLine2: "",
+                city: "", // Not captured
+                state: "", // Not captured
+                postalCode: "", // Not captured
+                country: "", // Not captured
+                vin: formData.vin,
+                vehicleYear: formData.year ? parseInt(formData.year, 10) : 0,
+                vehicleMake: formData.make,
+                vehicleModel: formData.model,
+                licensePlateNumber: "", // Not captured
+                serviceType: [formData.serviceType], // API expects array
+                servicePreference: formData.servicePreference === 'Mobile service' ? 'MOBILE' : 'SHOP',
+                windshieldFeatures: formData.windshieldFeatures,
+                affectedGlassLocation: [
+                    // Map main service type to a glass location if applicable, plus specific locations
+                    ...(formData.serviceType.includes('Windshield') ? ['Windshield'] : []),
+                    ...additionalGlassLocation
+                ],
+                customerMessage: formData.message
+            };
+
+            console.log("Submitting payload:", payload);
+
+            await createServiceInquiry(payload);
             setIsSubmitted(true);
-            clearSessionId(slug); // Clear any old sessions
+
         } catch (error) {
             console.error('Form submission error:', error);
             // Optionally show error message

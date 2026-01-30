@@ -110,6 +110,11 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
             label: <Link to="/reports">Reports</Link>,
         },
         {
+            key: '/service-contact-form',
+            icon: <FileTextOutlined />,
+            label: <Link to="/service-contact-form">Service Inquiries</Link>,
+        },
+        {
             key: '/ai-contact-form',
             icon: <FileTextOutlined />, // Using FileTextOutlined as placeholder if ContactsOutlined not imported
             label: <Link to="/ai-contact-form">AI Contact Form</Link>,
