@@ -49,7 +49,8 @@ export function generateServiceDocumentPDF({
     specialInstructions = "",
     insuranceData = {},
     includeInsurance = false,
-    documentNumber = ""
+    documentNumber = "",
+    payments = []
 }) {
     const doc = new jsPDF({ unit: "pt", format: "a4" });
     const pageWidth = doc.internal.pageSize.width;
@@ -195,44 +196,60 @@ export function generateServiceDocumentPDF({
     doc.setLineWidth(0.3);
     doc.setDrawColor(200, 200, 200);
 
-    // Row 1: Quote # | Date
-    drawModernHeaderCell(topGridX, topGridY, hLabelW, rowH, true);
-    drawModernHeaderCell(topGridX + hLabelW, topGridY, hValueW, rowH, false);
-    drawModernHeaderCell(topGridX + hLabelW + hValueW, topGridY, hLabelW2, rowH, true);
-    drawModernHeaderCell(topGridX + hLabelW + hValueW + hLabelW2, topGridY, hValueW2, rowH, false);
+    // New Grid Layout: 2 Columns (Label | Value) x 3 Rows
+    // Total Width = rightGridW (235)
+    // Label Width = 80
+    // Value Width = 155
+    const labelColW = 80;
+    const valueColW = 155;
+
+    // Row 1: Quote/Invoice #
+    drawModernHeaderCell(topGridX, topGridY, labelColW, rowH, true);
+    drawModernHeaderCell(topGridX + labelColW, topGridY, valueColW, rowH, false);
 
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(100, 100, 100);
     doc.text(`${docType} #`, topGridX + 5, topGridY + 14);
-    doc.text("Date", topGridX + hLabelW + hValueW + 5, topGridY + 14);
 
     doc.setTextColor(50, 50, 50);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.text(documentNumber || "NEW", topGridX + hLabelW + 5, topGridY + 15);
-    doc.text(now, topGridX + hLabelW + hValueW + hLabelW2 + 5, topGridY + 15);
+    doc.text(documentNumber || "NEW", topGridX + labelColW + 5, topGridY + 15);
 
-    // Row 2: P.O. # | Sold By
+    // Row 2: Date
     const y2 = topGridY + rowH;
-    drawModernHeaderCell(topGridX, y2, hLabelW, rowH, true);
-    drawModernHeaderCell(topGridX + hLabelW, y2, hValueW, rowH, false);
-    drawModernHeaderCell(topGridX + hLabelW + hValueW, y2, hLabelW2, rowH, true);
-    drawModernHeaderCell(topGridX + hLabelW + hValueW + hLabelW2, y2, hValueW2, rowH, false);
+    drawModernHeaderCell(topGridX, y2, labelColW, rowH, true);
+    drawModernHeaderCell(topGridX + labelColW, y2, valueColW, rowH, false);
 
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(100, 100, 100);
-    doc.text("P.O. #", topGridX + 5, y2 + 14);
-    doc.text("Sold By", topGridX + hLabelW + hValueW + 5, y2 + 14);
+    doc.text("Date", topGridX + 5, y2 + 14);
+
+    doc.setTextColor(50, 50, 50);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(now, topGridX + labelColW + 5, y2 + 15);
+
+    // Row 3: Sold By
+    const y3 = y2 + rowH;
+    drawModernHeaderCell(topGridX, y3, labelColW, rowH, true);
+    drawModernHeaderCell(topGridX + labelColW, y3, valueColW, rowH, false);
+
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 100, 100);
+    doc.text("Sold By", topGridX + 5, y3 + 14);
 
     let soldBy = userProfile?.ownerName || (userProfile?.firstName ? `${userProfile.firstName} ${userProfile.lastName || ""}` : "");
-    if (soldBy.length > 12) {
-        soldBy = soldBy.substring(0, 11) + "...";
+    if (soldBy.length > 25) { // Increased truncate length due to wider column
+        soldBy = soldBy.substring(0, 24) + "...";
     }
     doc.setTextColor(50, 50, 50);
-    doc.setFontSize(8);
-    doc.text(soldBy, topGridX + hLabelW + hValueW + hLabelW2 + 5, y2 + 15);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10); // Consistent font size
+    doc.text(soldBy, topGridX + labelColW + 5, y3 + 15);
 
     // Reset for rest of document
     doc.setTextColor(0, 0, 0);
@@ -411,7 +428,7 @@ export function generateServiceDocumentPDF({
         doc.rect(x, y, w, h, 'FD');  // Fill and draw
     };
 
-    // Row 1: Year | Make | Model
+    // Row 1: Year | Make | Body Style
     doc.setFontSize(9);
 
     // Labels (all same width)
@@ -428,7 +445,7 @@ export function generateServiceDocumentPDF({
     doc.setFont("helvetica", "normal");
     doc.text("Year", col1 + 6, vY + 14);
     doc.text("Make", col3 + 6, vY + 14);
-    doc.text("Model", col5 + 6, vY + 14);
+    doc.text("Body Style", col5 + 6, vY + 14);
 
     doc.setTextColor(...textColor);
     doc.setFont("helvetica", "normal");
@@ -436,76 +453,77 @@ export function generateServiceDocumentPDF({
     // Row 1 Values
     drawWrappedText(customerData?.vehicleYear || "", col2 + 6, vY, valueW1, vRowH);
     drawWrappedText(customerData?.vehicleMake || "", col4 + 6, vY, valueW2, vRowH);
-    drawWrappedText(customerData?.vehicleModel || "", col6 + 6, vY, valueW3, vRowH);
+    drawWrappedText(customerData?.bodyType || "", col6 + 6, vY, valueW3, vRowH);
 
-    // Row 2: Body Style | Lic # | VIN
+    // Row 2: Model (Colspan 2) | Lic #
     const vY2 = vY + vRowH;
 
+    // Model Label (Col 1)
     drawModernCell(col1, vY2, labelW, vRowH, true);
-    drawModernCell(col3, vY2, labelW, vRowH, true);
+    // Model Value (Spans Col 1 Value + Col 2 Label + Col 2 Value)
+    // Width = valueW1 + labelW + valueW2
+    const modelValueWidth = valueW1 + labelW + valueW2;
+    drawModernCell(col2, vY2, modelValueWidth, vRowH, false);
+
+    // Lic # Label (Col 3 / Slot 3)
     drawModernCell(col5, vY2, labelW, vRowH, true);
-    drawModernCell(col2, vY2, valueW1, vRowH, false);
-    drawModernCell(col4, vY2, valueW2, vRowH, false);
+    // Lic # Value (Col 3 Value)
     drawModernCell(col6, vY2, valueW3, vRowH, false);
 
     doc.setTextColor(...labelTextColor);
     doc.setFont("helvetica", "normal");
-    doc.text("Body Style", col1 + 6, vY2 + 14);
-    doc.text("Lic. #", col3 + 6, vY2 + 14);
-    doc.text("Auth by", col5 + 6, vY2 + 14);
+    doc.text("Model", col1 + 6, vY2 + 14);
+    doc.text("Lic. #", col5 + 6, vY2 + 14);
 
     doc.setTextColor(...textColor);
     doc.setFont("helvetica", "normal");
 
     // Row 2 Values
-    drawWrappedText(customerData?.bodyType || "", col2 + 6, vY2, valueW1, vRowH);
-    drawWrappedText(customerData?.licensePlateNumber || "", col4 + 6, vY2, valueW2, vRowH);
-    // Auth by is empty in original code, keeping it empty or wrapping if data existed
-    // doc.text("", col6 + 6, vY2 + 14);
+    drawWrappedText(customerData?.vehicleModel || "", col2 + 6, vY2, modelValueWidth, vRowH);
+    drawWrappedText(customerData?.licensePlateNumber || "", col6 + 6, vY2, valueW3, vRowH);
 
-    // Row 3: Policy # | Claim # | Loss Date
+    // Row 3: V.I.N | Damage/Cause
     const vY3 = vY2 + vRowH;
 
     drawModernCell(col1, vY3, labelW, vRowH, true);
-    drawModernCell(col3, vY3, labelW, vRowH, true);
     drawModernCell(col5, vY3, labelW, vRowH, true);
-    drawModernCell(col2, vY3, valueW1, vRowH, false);
-    drawModernCell(col4, vY3, valueW2, vRowH, false);
+    drawModernCell(col2, vY3, valueW1 + labelW + valueW2, vRowH, false);  // Spans 3 columns
     drawModernCell(col6, vY3, valueW3, vRowH, false);
 
     doc.setTextColor(...labelTextColor);
     doc.setFont("helvetica", "normal");
-    doc.text("Policy #", col1 + 6, vY3 + 14);
-    doc.text("Claim #", col3 + 6, vY3 + 14);
-    doc.text("Loss Date", col5 + 6, vY3 + 14);
+    doc.text("V.I.N", col1 + 6, vY3 + 14);
+    doc.text("Damage/Cause", col5 + 6, vY3 + 14);
 
     doc.setTextColor(...textColor);
-    doc.setFont("helvetica", "normal");
+    // Row 3 Values (VIN spans 3 cols logic in drawModernCell, here we just draw text)
+    // Note: V.I.N cell width is effectively valueW1 + labelW + valueW2
+    const vinWidth = valueW1 + labelW + valueW2;
+    drawWrappedText(customerData?.vin || "", col2 + 6, vY3, vinWidth, vRowH);
 
-    // Row 3 Values
-    drawWrappedText(insuranceData?.policyNumber || "", col2 + 6, vY3, valueW1, vRowH);
-    drawWrappedText(customerData?.claimNumber || insuranceData?.claimNumber || "", col4 + 6, vY3, valueW2, vRowH);
-    drawWrappedText(now, col6 + 6, vY3, valueW3, vRowH);
-
-    // Row 4: Auth by | Damage/Cause
+    // Row 4: Policy # | Claim # | Loss Date
     const vY4 = vY3 + vRowH;
 
     drawModernCell(col1, vY4, labelW, vRowH, true);
+    drawModernCell(col3, vY4, labelW, vRowH, true);
     drawModernCell(col5, vY4, labelW, vRowH, true);
-    drawModernCell(col2, vY4, valueW1 + labelW + valueW2, vRowH, false);  // Spans 3 columns
+    drawModernCell(col2, vY4, valueW1, vRowH, false);
+    drawModernCell(col4, vY4, valueW2, vRowH, false);
     drawModernCell(col6, vY4, valueW3, vRowH, false);
 
     doc.setTextColor(...labelTextColor);
     doc.setFont("helvetica", "normal");
-    doc.text("V.I.N", col1 + 6, vY4 + 14);
-    doc.text("Damage/Cause", col5 + 6, vY4 + 14);
+    doc.text("Policy #", col1 + 6, vY4 + 14);
+    doc.text("Claim #", col3 + 6, vY4 + 14);
+    doc.text("Loss Date", col5 + 6, vY4 + 14);
 
     doc.setTextColor(...textColor);
-    // Row 4 Values (VIN spans 3 cols logic in drawModernCell, here we just draw text)
-    // Note: V.I.N cell width is effectively valueW1 + labelW + valueW2
-    // We should pass that wider width to drawWrappedText
-    const vinWidth = valueW1 + labelW + valueW2;
-    drawWrappedText(customerData?.vin || "", col2 + 6, vY4, vinWidth, vRowH);
+    doc.setFont("helvetica", "normal");
+
+    // Row 4 Values
+    drawWrappedText(insuranceData?.policyNumber || "", col2 + 6, vY4, valueW1, vRowH);
+    drawWrappedText(customerData?.claimNumber || insuranceData?.claimNumber || "", col4 + 6, vY4, valueW2, vRowH);
+    drawWrappedText(now, col6 + 6, vY4, valueW3, vRowH);
 
     // Reset colors for rest of document
     doc.setTextColor(0, 0, 0);
@@ -887,7 +905,8 @@ export function generateServiceDocumentPDF({
         doc.text("Special Instructions:", margin + 8, currentNoteY);
         doc.setFont("helvetica", "normal");
         doc.setTextColor(60, 60, 60);
-        renderHtmlToPdf(doc, normalizedSpecialInstructions, margin + 8, currentNoteY + 12, noteWidth);
+        // Update currentNoteY with the bottom Y of the rendered instructions
+        currentNoteY = renderHtmlToPdf(doc, normalizedSpecialInstructions, margin + 8, currentNoteY + 12, noteWidth);
     }
 
     // Right Totals Block (Modern)
@@ -930,15 +949,63 @@ export function generateServiceDocumentPDF({
     doc.text("Total", totalsX + 8, totalBoxY + tRowH * 3 + 12);
     doc.text(total.toFixed(2), totalsX + totalsW - 8, totalBoxY + tRowH * 3 + 12, { align: "right" });
 
-    // Balance row (prominent)
+    let currentTotalsY = totalBoxY + tRowH * 4;
+
+    // Payment Row (if payments exist) - Inserted BEFORE Balance Due
+    if (payments && payments.length > 0) {
+        // Collect unique payment methods
+        const methods = [...new Set(payments.map(p => p.paymentMethod || "Other"))]
+            .filter(m => m) // Remove empty
+            .map(m => m.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())); // Format: CREDIT_CARD -> Credit Card
+
+        const paymentTypeStr = methods.join(", ");
+        const totalPaid = payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+
+        doc.setFillColor(255, 255, 255);
+        doc.rect(totalsX, currentTotalsY, totalsW, tRowH, 'FD');
+        doc.setFontSize(9);
+        doc.setTextColor(100, 100, 100);
+
+        // Truncate payment type if too long - relaxed
+        let label = `Payment (${paymentTypeStr})`;
+
+        // Auto-scale font size to fit
+        const maxLabelW = totalsW - 60; // Leave space for amount
+        doc.setFontSize(9);
+        let textW = doc.getStringUnitWidth(label) * 9;
+
+        if (textW > maxLabelW) {
+            doc.setFontSize(8); // Try smaller
+            textW = doc.getStringUnitWidth(label) * 8;
+            if (textW > maxLabelW) {
+                doc.setFontSize(7); // Try even smaller
+            }
+        }
+
+        doc.text(label, totalsX + 8, currentTotalsY + 12);
+
+        doc.setFontSize(9); // Reset for value
+        doc.setTextColor(50, 50, 50);
+        doc.text(totalPaid.toFixed(2), totalsX + totalsW - 8, currentTotalsY + 12, { align: "right" });
+
+        // Increment Y for Balance Due
+        currentTotalsY += tRowH;
+    }
+
+    // Balance row (prominent) - Always last
     doc.setFillColor(50, 60, 80);
-    doc.rect(totalsX, totalBoxY + tRowH * 4, totalsW, tRowH, 'FD');
+    doc.rect(totalsX, currentTotalsY, totalsW, tRowH, 'FD');
     doc.setTextColor(255, 255, 255);
-    doc.text("Balance Due", totalsX + 8, totalBoxY + tRowH * 4 + 12);
-    doc.text(balance.toFixed(2), totalsX + totalsW - 8, totalBoxY + tRowH * 4 + 12, { align: "right" });
+    doc.text("Balance Due", totalsX + 8, currentTotalsY + 12);
+    doc.text(balance.toFixed(2), totalsX + totalsW - 8, currentTotalsY + 12, { align: "right" });
 
     // Bottom Footer: Received By (Modern - Clean)
-    let recY = totalBoxY + totalBoxH + 5;
+    // Use dynamic bottom to prevent overlapping (max of special instructions or totals table)
+    const totalsBottom = currentTotalsY + tRowH;
+    // ensure currentNoteY is treated as valid bottom (if notes existed)
+    let bottomY = Math.max(totalsBottom, currentNoteY);
+
+    let recY = bottomY + 30; // 30pt margin
 
     // Check if we need a new page for the signature section
     if (recY + 30 > pageHeight - 30) {
@@ -952,7 +1019,7 @@ export function generateServiceDocumentPDF({
     doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(80, 80, 80);
-    doc.text("RECEIVED BY:", margin + 10, recY + 16);
+    doc.text("CUST SIGNATURE:", margin + 10, recY + 16);
 
     // Signature line
     doc.setDrawColor(150, 150, 150);

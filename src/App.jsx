@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { Layout, App as AntApp } from 'antd';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -20,6 +20,7 @@ import useInquiryNotifications from './hooks/useInquiryNotifications';
 
 // Lazy Load Main Components
 const Home = React.lazy(() => import('./components/Home/HomeRoot.jsx'));
+const AnalyticsRoot = React.lazy(() => import('./components/Analytics/AnalyticsRoot.jsx'));
 const SearchByRoot = React.lazy(() => import("./components/SearchBy/SearchByRoot"));
 const Schedule = React.lazy(() => import('./components/Schedule/ScheduleRoot.jsx'));
 const FeaturesPage = React.lazy(() => import('./components/FeaturesPage/FeaturesPage.jsx'));
@@ -67,7 +68,7 @@ function AppContent() {
 
   const handleLoginSuccess = () => {
     setIsAuthed(true);
-    navigate('/search-by-root');
+    navigate('/analytics');
   };
 
   const handleLogout = () => {
@@ -128,27 +129,30 @@ function AppContent() {
           <Layout className={`flex flex-col h-full bg-slate-50 transition-all duration-300 overflow-hidden flex-1 w-full ${isMobile ? 'pt-16' : ''}`}> {/* Add padding top for legacy header spacer if mobile */}
             <Content className="flex-1 flex flex-col overflow-y-auto custom-scrollbar">
               <div className={`flex-1 flex-col flex`}>
-                <Suspense fallback={
-                  <div className="flex items-center justify-center h-full">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
-                  </div>
-                }>
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/search-by-root" element={<SearchByRoot />} />
-                    <Route path="/schedule" element={<Schedule />} />
-                    <Route path="/Profile" element={<Profile />} />
-                    <Route path="/work" element={<Work />} />
-                    <Route path="/Order" element={<OrderPage />} />
-                    <Route path="/Pricing" element={<PricingPage />} />
-                    <Route path="/open" element={<OpenRoot />} />
-                    <Route path="/reports" element={<ReportsRoot />} />
-                    <Route path="/auth" element={<AuthPage />} />
+                <ErrorBoundary>
+                  <Suspense fallback={
+                    <div className="flex items-center justify-center h-full">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+                    </div>
+                  }>
+                    <Routes>
+                      <Route path="/" element={isAuthed ? <Navigate to="/analytics" replace /> : <Home />} />
+                      <Route path="/analytics" element={<AnalyticsRoot />} />
+                      <Route path="/search-by-root" element={<SearchByRoot />} />
+                      <Route path="/schedule" element={<Schedule />} />
+                      <Route path="/Profile" element={<Profile />} />
+                      <Route path="/work" element={<Work />} />
+                      <Route path="/Order" element={<OrderPage />} />
+                      <Route path="/Pricing" element={<PricingPage />} />
+                      <Route path="/open" element={<OpenRoot />} />
+                      <Route path="/reports" element={<ReportsRoot />} />
+                      <Route path="/auth" element={<AuthPage />} />
 
-                    <Route path="/ai-contact-form" element={<AiContactForm />} />
-                    <Route path="/service-contact-form" element={<ServiceContactFormRoot />} />
-                  </Routes>
-                </Suspense>
+                      <Route path="/ai-contact-form" element={<AiContactForm />} />
+                      <Route path="/service-contact-form" element={<ServiceContactFormRoot />} />
+                    </Routes>
+                  </Suspense>
+                </ErrorBoundary>
               </div>
               <Footer />
             </Content>

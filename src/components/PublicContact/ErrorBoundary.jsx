@@ -65,6 +65,21 @@ class ErrorBoundary extends React.Component {
                     }}>
                         We encountered an unexpected error. Please try again.
                     </p>
+                    {this.state.error && (
+                        <div style={{
+                            margin: '0 0 24px 0',
+                            padding: '12px',
+                            background: '#fee2e2',
+                            borderRadius: '8px',
+                            color: '#991b1b',
+                            maxWidth: '90%',
+                            overflow: 'auto',
+                            fontFamily: 'monospace',
+                            textAlign: 'left'
+                        }}>
+                            {this.state.error.toString()}
+                        </div>
+                    )}
                     <button
                         onClick={this.handleRetry}
                         style={{

@@ -146,8 +146,14 @@ const PublicContactRoot = () => {
                         themeColor: response.data.theme_color,
                         tagline: response.data.tagline,
                         logoUrl: response.data.logo_url,
-                        phone: response.data.phone, // Assuming phone might be available
-                        email: response.data.email  // Assuming email might be available
+                        phone: response.data.phone,
+                        email: response.data.email,
+                        name: response.data.name,
+                        address: response.data.address,
+                        alternatePhone: response.data.alternate_phone,
+                        maps: response.data.maps,
+                        latitude: response.data.latitude,
+                        longitude: response.data.longitude
                     });
                 } else {
                     setIsValidSlug(false);
@@ -376,6 +382,52 @@ const PublicContactRoot = () => {
                 tagline={businessInfo?.tagline}
                 themeColor={themeColor}
             />
+
+            {/* Business Contact Info Section */}
+            {(businessInfo?.address || businessInfo?.phone || businessInfo?.maps) && (
+                <div className="business-details-container">
+                    <div className="business-info-card">
+                        <div className="info-grid">
+                            <div className="info-text">
+                                {businessInfo?.name && (
+                                    <div className="info-item">
+                                        <h3 className="info-label">Contact</h3>
+                                        <p className="info-value font-medium">{businessInfo.name}</p>
+                                    </div>
+                                )}
+                                {businessInfo?.address && (
+                                    <div className="info-item">
+                                        <h3 className="info-label">Address</h3>
+                                        <p className="info-value">{businessInfo.address}</p>
+                                    </div>
+                                )}
+                                {(businessInfo?.phone || businessInfo?.alternatePhone) && (
+                                    <div className="info-item">
+                                        <h3 className="info-label">Phone</h3>
+                                        <p className="info-value">
+                                            <a href={`tel:${businessInfo.phone}`} className="hover:underline">{businessInfo.phone}</a>
+                                            {businessInfo?.alternatePhone && (
+                                                <>
+                                                    <span className="mx-2 text-gray-300">|</span>
+                                                    <a href={`tel:${businessInfo.alternatePhone}`} className="hover:underline text-slate-500">{businessInfo.alternatePhone}</a>
+                                                </>
+                                            )}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                            {businessInfo?.maps && (
+                                <div className="info-map">
+                                    <div
+                                        className="map-iframe-container"
+                                        dangerouslySetInnerHTML={{ __html: businessInfo.maps }}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="contact-form-container">
                 <div className="contact-card">

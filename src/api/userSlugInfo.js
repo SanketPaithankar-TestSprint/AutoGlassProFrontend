@@ -9,7 +9,19 @@ import urls from '../config';
  * @param {string} [data.themeColor] - Theme Color (optional)
  * @returns {Promise<Object>} Response data
  */
-export async function createOrUpdateUserSlug(token, { slug, themeColor, businessName, tagline }) {
+export async function createOrUpdateUserSlug(token, {
+    slug,
+    themeColor,
+    businessName,
+    tagline,
+    name,
+    address,
+    phone,
+    alternatePhone,
+    latitude,
+    longitude,
+    maps
+}) {
     const response = await fetch(`${urls.javaApiUrl}/v1/user-slug-info`, {
         method: 'POST', // Based on Swagger link provided: createOrUpdate typically implies POST or PUT. Swagger says POST usually if it's "create". I'll assume POST based on typical usage, user said "createOrUpdate".
         headers: {
@@ -20,7 +32,14 @@ export async function createOrUpdateUserSlug(token, { slug, themeColor, business
             slug,
             themeColor,
             businessName,
-            tagline
+            tagline,
+            name,
+            address,
+            phone,
+            alternatePhone,
+            latitude,
+            longitude,
+            maps
         })
     });
 

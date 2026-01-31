@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "vite",
+    "dev:prod": "vite --mode production",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -22,11 +23,13 @@
     "antd-img-crop": "^4.27.0",
     "axios": "^1.12.2",
     "browser-image-compression": "^2.0.2",
+    "chart.js": "^4.5.1",
     "event-source-polyfill": "^1.0.31",
     "jspdf": "^3.0.3",
     "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.563.0",
     "react": "^19.1.1",
+    "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.1.1",
     "react-quill-new": "^3.7.0",
     "react-router-dom": "^7.9.3",
