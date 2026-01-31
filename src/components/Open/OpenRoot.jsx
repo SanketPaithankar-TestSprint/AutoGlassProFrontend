@@ -40,7 +40,8 @@ const OpenRoot = () => {
 
     // Filter states
     const [searchTerm, setSearchTerm] = useState('');
-    const [documentTypeFilter, setDocumentTypeFilter] = useState([]);
+    // Default document type filter to 'quote'
+    const [documentTypeFilter, setDocumentTypeFilter] = useState(['quote']);
     const [statusFilter, setStatusFilter] = useState([]);
     const [dateRangeFilter, setDateRangeFilter] = useState('all');
     const [customDateRange, setCustomDateRange] = useState(null);

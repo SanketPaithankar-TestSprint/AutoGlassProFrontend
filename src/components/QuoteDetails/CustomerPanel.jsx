@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { notification, Select, Spin, Radio, Switch, Segmented } from "antd";
-import { UserOutlined, ShopOutlined } from "@ant-design/icons";
+import { notification, Select, Spin, Radio, Switch, Segmented, Button, Popconfirm } from "antd";
+import { UserOutlined, ShopOutlined, EditOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import { getValidToken } from "../../api/getValidToken";
 import { getCustomers } from "../../api/getCustomers";
 import { getCustomerWithVehicles } from "../../api/getCustomerWithVehicles";
-import { getOrganizations, getOrganizationById, createOrganization, updateOrganizationTaxExempt } from "../../api/organizationApi";
+import { updateCustomer } from "../../api/updateCustomer";
+import { getOrganizations, getOrganizationById, createOrganization, updateOrganization, updateOrganizationTaxExempt } from "../../api/organizationApi";
 import { COUNTRIES, US_STATES } from "../../const/locations";
 
 const { Option } = Select;
@@ -66,6 +67,13 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
     // Internal Modes
     const [customerMode, setCustomerMode] = useState("NEW"); // "NEW" | "EXISTING"
     const [orgMode, setOrgMode] = useState("NEW"); // "NEW" | "EXISTING" (No "NONE" anymore in Business mode)
+
+    // Edit Mode States
+    const [isEditingCustomer, setIsEditingCustomer] = useState(false);
+    const [isEditingOrg, setIsEditingOrg] = useState(false);
+    const [savingCustomer, setSavingCustomer] = useState(false);
+    const [savingOrg, setSavingOrg] = useState(false);
+    // ...existing code...
 
     // Initial Load & Sync
     useEffect(() => {
@@ -287,6 +295,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
     const initialOrgForm = {
         companyName: "", taxId: "", email: "", phone: "", alternatePhone: "",
+        individualName: "",
         addressLine1: "", addressLine2: "", city: "", state: "", postalCode: "", country: "USA", notes: ""
     };
     const [orgFormData, setOrgFormData] = useState(initialOrgForm);
@@ -346,17 +355,167 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
         }
     };
 
+    // --- Customer Edit/Delete Handlers ---
+    const handleEditCustomer = () => {
+        setIsEditingCustomer(true);
+    };
+
+    const handleCancelEditCustomer = async () => {
+        setIsEditingCustomer(false);
+        // Reload original customer data
+        if (formData.customerId) {
+            await handleCustomerSelect(formData.customerId);
+        }
+    };
+
+    const handleSaveCustomer = async () => {
+        if (!formData.customerId) return;
+
+        try {
+            setSavingCustomer(true);
+            const token = getValidToken();
+
+            const customerPayload = {
+                customerId: formData.customerId,
+                customerType: "INDIVIDUAL",
+                firstName: formData.firstName || "",
+                lastName: formData.lastName || "",
+                email: formData.email || "",
+                phone: formData.phone || "",
+                alternatePhone: formData.alternatePhone || "",
+                addressLine1: formData.addressLine1 || "",
+                addressLine2: formData.addressLine2 || "",
+                city: formData.city || "",
+                state: formData.state || "",
+                postalCode: formData.postalCode || "",
+                country: formData.country || "USA",
+                preferredContactMethod: formData.preferredContactMethod || "phone",
+                notes: formData.notes || ""
+            };
+
+            await updateCustomer(token, formData.customerId, customerPayload);
+
+            notification.success({
+                message: "Customer Updated",
+                description: "Customer information has been updated successfully.",
+                placement: "topRight"
+            });
+
+            setIsEditingCustomer(false);
+            // Refresh customer list
+            await fetchCustomers();
+        } catch (error) {
+            console.error("Error updating customer:", error);
+            notification.error({
+                message: "Update Failed",
+                description: "Failed to update customer. Please try again.",
+                placement: "topRight"
+            });
+        } finally {
+            setSavingCustomer(false);
+        }
+    };
+
+    // ...existing code...
+
+    // --- Organization Edit/Delete Handlers ---
+    const handleEditOrganization = () => {
+        setIsEditingOrg(true);
+    };
+
+    const handleCancelEditOrganization = async () => {
+        setIsEditingOrg(false);
+        // Reload original organization data
+        if (formData.organizationId) {
+            await handleOrganizationSelect(formData.organizationId);
+        }
+    };
+
+    const handleSaveOrganization = async () => {
+        if (!formData.organizationId) return;
+
+        // Validate required fields
+        if (!orgFormData.phone || orgFormData.phone.trim() === "") {
+            notification.error({
+                message: "Validation Error",
+                description: "Phone number is required.",
+                placement: "topRight"
+            });
+            return;
+        }
+
+        if (!orgFormData.companyName || orgFormData.companyName.trim() === "") {
+            notification.error({
+                message: "Validation Error",
+                description: "Company name is required.",
+                placement: "topRight"
+            });
+            return;
+        }
+
+        try {
+            setSavingOrg(true);
+
+            const orgPayload = {
+                organizationId: formData.organizationId,
+                companyName: orgFormData.companyName,
+                taxId: orgFormData.taxId || "",
+                email: orgFormData.email || "",
+                phone: orgFormData.phone,
+                alternatePhone: orgFormData.alternatePhone || "",
+                addressLine1: orgFormData.addressLine1 || "",
+                addressLine2: orgFormData.addressLine2 || "",
+                city: orgFormData.city || "",
+                state: orgFormData.state || "",
+                postalCode: orgFormData.postalCode || "",
+                country: orgFormData.country || "USA",
+                taxExempt: formData.isTaxExempt || false,
+                notes: orgFormData.notes || ""
+            };
+
+            await updateOrganization(formData.organizationId, orgPayload);
+
+            // Update formData
+            setFormData(prev => ({
+                ...prev,
+                organizationName: orgFormData.companyName,
+                companyName: orgFormData.companyName
+            }));
+
+            notification.success({
+                message: "Organization Updated",
+                description: "Organization information has been updated successfully.",
+                placement: "topRight"
+            });
+
+            setIsEditingOrg(false);
+            // Refresh organization list
+            await fetchOrganizations();
+        } catch (error) {
+            console.error("Error updating organization:", error);
+            notification.error({
+                message: "Update Failed",
+                description: "Failed to update organization. Please try again.",
+                placement: "topRight"
+            });
+        } finally {
+            setSavingOrg(false);
+        }
+    };
+
+    // ...existing code...
+
     const handleSubmit = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        
+
         // Validation: Check at least one contact field is filled
         if (clientType === "BUSINESS") {
             // Check Organization contact
             const email = orgFormData.email || "";
             const phone = orgFormData.phone || "";
             const hasOrgContact = email.trim().length > 0 || phone.trim().length > 0;
-            
+
             if (!hasOrgContact) {
                 notification.error({
                     message: "Missing Contact Information",
@@ -371,7 +530,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
             const email = formData.email || "";
             const phone = formData.phone || "";
             const hasCustomerContact = email.trim().length > 0 || phone.trim().length > 0;
-            
+
             if (!hasCustomerContact) {
                 notification.error({
                     message: "Missing Contact Information",
@@ -382,7 +541,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                 return false;
             }
         }
-        
+
         localStorage.setItem("agp_customer_data", JSON.stringify(formData));
         if (setCanShowQuotePanel) setCanShowQuotePanel(true);
         if (setPanel) setPanel("quote");
@@ -445,6 +604,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                                 </Option>
                                             ))}
                                         </Select>
+
+
                                     </div>
                                 )}
                             </div>
@@ -487,6 +648,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                                 </Option>
                                             ))}
                                         </Select>
+
+
                                     </div>
                                 )}
                             </div>
@@ -531,37 +694,61 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                     {/* Organization Form (BUSINESS Mode) */}
                     {clientType === "BUSINESS" && (
                         <div className="bg-white rounded-md border border-gray-200 shadow-sm flex flex-col shrink-0 animate-slide-up">
-                            <div className="bg-violet-50 border-b border-violet-100 px-4 py-2 flex items-center justify-between">
+                            <div className="bg-violet-50 border-b border-violet-100 px-4 py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                                 <h3 className="text-sm font-bold text-violet-900">
-                                    {orgMode === "NEW" ? "New Organization Details" : "Organization Details"}
+                                    {orgMode === "NEW" ? "New Organization Details" : (isEditingOrg ? "Edit Organization" : "Organization Details")}
                                 </h3>
-                                {/* Tax Exempt Switch (Only for existing? Or Allow setting for New too?) */}
-                                <div className="flex items-center gap-1 bg-white/50 px-2 py-0.5 rounded">
-                                    <Switch
-                                        size="small"
-                                        checked={formData.isTaxExempt}
-                                        disabled={orgMode === "EXISTING"} // Usually strict for existing unless admin? Allowing view
-                                        onChange={(checked) => {
-                                            setFormData(prev => ({ ...prev, isTaxExempt: checked }));
-                                            if (formData.organizationId && orgMode === "EXISTING") {
-                                                updateOrganizationTaxExempt(formData.organizationId, checked).catch(console.error);
-                                            }
-                                        }}
-                                    />
-                                    <span className="text-xs text-violet-700">{formData.isTaxExempt ? "Tax Exempt" : "Taxable"}</span>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    {/* Save/Cancel buttons when editing */}
+                                    {isEditingOrg && orgMode === "EXISTING" && (
+                                        <>
+                                            <Button
+                                                size="small"
+                                                icon={<CloseOutlined />}
+                                                onClick={handleCancelEditOrganization}
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                type="primary"
+                                                size="small"
+                                                icon={<SaveOutlined />}
+                                                loading={savingOrg}
+                                                onClick={handleSaveOrganization}
+                                            >
+                                                Save
+                                            </Button>
+                                        </>
+                                    )}
+                                    {/* Tax Exempt Switch */}
+                                    <div className="flex items-center gap-1 bg-white/50 px-2 py-0.5 rounded">
+                                        <Switch
+                                            size="small"
+                                            checked={formData.isTaxExempt}
+                                            disabled={orgMode === "EXISTING" && !isEditingOrg}
+                                            onChange={(checked) => {
+                                                setFormData(prev => ({ ...prev, isTaxExempt: checked }));
+                                                if (formData.organizationId && orgMode === "EXISTING" && !isEditingOrg) {
+                                                    updateOrganizationTaxExempt(formData.organizationId, checked).catch(console.error);
+                                                }
+                                            }}
+                                        />
+                                        <span className="text-xs text-violet-700">{formData.isTaxExempt ? "Tax Exempt" : "Taxable"}</span>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="p-4 grid grid-cols-4 gap-3">
-                                <FormInput label="Company Name *" name="companyName" value={orgFormData.companyName} onChange={handleOrgFormChange} required disabled={orgMode === "EXISTING"} />
-                                <FormInput label="Tax ID" name="taxId" value={orgFormData.taxId} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING"} />
-                                <FormInput label="Email " name="email" value={orgFormData.email} onChange={handleOrgFormChange} />
-                                <FormInput label="Phone " name="phone" value={orgFormData.phone} onChange={handleOrgFormChange} />
+                            <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                <FormInput label="Company Name *" name="companyName" value={orgFormData.companyName} onChange={handleOrgFormChange} required disabled={orgMode === "EXISTING" && !isEditingOrg} />
+                                <FormInput label="Tax ID" name="taxId" value={orgFormData.taxId} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING" && !isEditingOrg} />
+                                <FormInput label="Email" name="email" value={orgFormData.email} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING" && !isEditingOrg} />
+                                <FormInput label="Phone" name="phone" value={orgFormData.phone} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING" && !isEditingOrg} />
+                                <FormInput label="Contact Person" name="individualName" value={orgFormData.individualName} onChange={handleOrgFormChange} className="sm:col-span-2" placeholder="Individual's Name (Optional)" disabled={orgMode === "EXISTING" && !isEditingOrg} />
 
-                                <FormInput label="Address Line 1" name="addressLine1" value={orgFormData.addressLine1} onChange={handleOrgFormChange} required className="col-span-2" disabled={orgMode === "EXISTING"} />
-                                <FormInput label="City" name="city" value={orgFormData.city} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING"} />
-                                <FormSelect label="State" name="state" value={orgFormData.state} onChange={handleOrgFormChange} options={US_STATES} disabled={orgMode === "EXISTING"} />
-                                <FormInput label="Zip" name="postalCode" value={orgFormData.postalCode} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING"} />
+                                <FormInput label="Address Line 1" name="addressLine1" value={orgFormData.addressLine1} onChange={handleOrgFormChange} required className="sm:col-span-2" disabled={orgMode === "EXISTING" && !isEditingOrg} />
+                                <FormInput label="City" name="city" value={orgFormData.city} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING" && !isEditingOrg} />
+                                <FormSelect label="State" name="state" value={orgFormData.state} onChange={handleOrgFormChange} options={US_STATES} disabled={orgMode === "EXISTING" && !isEditingOrg} />
+                                <FormInput label="Zip" name="postalCode" value={orgFormData.postalCode} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING" && !isEditingOrg} />
                             </div>
                         </div>
                     )}
@@ -569,26 +756,47 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                     {/* Customer Form (INDIVIDUAL Mode) */}
                     {clientType === "INDIVIDUAL" && (
                         <div className="bg-white rounded-md border border-gray-200 shadow-sm flex flex-col shrink-0 animate-slide-up">
-                            <div className="bg-gray-50 border-b border-gray-100 px-4 py-2 flex items-center justify-between">
+                            <div className="bg-gray-50 border-b border-gray-100 px-4 py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                                 <h3 className="text-sm font-bold text-gray-800">
-                                    {customerMode === "NEW" ? "New Customer Details" : "Customer Details"}
+                                    {customerMode === "NEW" ? "New Customer Details" : (isEditingCustomer ? "Edit Customer" : "Customer Details")}
                                 </h3>
+                                {/* Save/Cancel buttons when editing */}
+                                {isEditingCustomer && customerMode === "EXISTING" && (
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            size="small"
+                                            icon={<CloseOutlined />}
+                                            onClick={handleCancelEditCustomer}
+                                        >
+                                            Cancel
+                                        </Button>
+                                        <Button
+                                            type="primary"
+                                            size="small"
+                                            icon={<SaveOutlined />}
+                                            loading={savingCustomer}
+                                            onClick={handleSaveCustomer}
+                                        >
+                                            Save
+                                        </Button>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="p-4">
-                                <div className="grid grid-cols-4 gap-3 mb-3">
-                                    <FormInput label="First Name" name="firstName" value={formData.firstName} onChange={handleChange} required disabled={customerMode === "EXISTING"} />
-                                    <FormInput label="Last Name" name="lastName" value={formData.lastName} onChange={handleChange} disabled={customerMode === "EXISTING"} />
-                                    <FormInput label="Email" name="email" value={formData.email} onChange={handleChange} type="email" disabled={customerMode === "EXISTING"} />
-                                    <FormInput label="Phone" name="phone" value={formData.phone} onChange={handleChange} required disabled={customerMode === "EXISTING"} />
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+                                    <FormInput label="First Name" name="firstName" value={formData.firstName} onChange={handleChange} required disabled={customerMode === "EXISTING" && !isEditingCustomer} />
+                                    <FormInput label="Last Name" name="lastName" value={formData.lastName} onChange={handleChange} disabled={customerMode === "EXISTING" && !isEditingCustomer} />
+                                    <FormInput label="Email" name="email" value={formData.email} onChange={handleChange} type="email" disabled={customerMode === "EXISTING" && !isEditingCustomer} />
+                                    <FormInput label="Phone" name="phone" value={formData.phone} onChange={handleChange} required disabled={customerMode === "EXISTING" && !isEditingCustomer} />
                                 </div>
                                 <div className="border-t pt-3 mt-2">
                                     <h5 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Address</h5>
-                                    <div className="grid grid-cols-4 gap-3">
-                                        <FormInput label="Address Line 1" name="addressLine1" value={formData.addressLine1} onChange={handleChange} className="col-span-2" disabled={customerMode === "EXISTING"} />
-                                        <FormInput label="City" name="city" value={formData.city} onChange={handleChange} disabled={customerMode === "EXISTING"} />
-                                        <FormSelect label="State" name="state" value={formData.state} onChange={handleChange} options={US_STATES} disabled={customerMode === "EXISTING"} />
-                                        <FormInput label="Zip" name="postalCode" value={formData.postalCode} onChange={handleChange} disabled={customerMode === "EXISTING"} />
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                        <FormInput label="Address Line 1" name="addressLine1" value={formData.addressLine1} onChange={handleChange} className="sm:col-span-2" disabled={customerMode === "EXISTING" && !isEditingCustomer} />
+                                        <FormInput label="City" name="city" value={formData.city} onChange={handleChange} disabled={customerMode === "EXISTING" && !isEditingCustomer} />
+                                        <FormSelect label="State" name="state" value={formData.state} onChange={handleChange} options={US_STATES} disabled={customerMode === "EXISTING" && !isEditingCustomer} />
+                                        <FormInput label="Zip" name="postalCode" value={formData.postalCode} onChange={handleChange} disabled={customerMode === "EXISTING" && !isEditingCustomer} />
                                     </div>
                                 </div>
                             </div>

@@ -27,7 +27,7 @@ import { getValidToken } from "../../api/getValidToken";
 
 
 const SearchByRoot = () => {
-  console.log("Rendering SearchByRoot - Card Redesign Active");
+
   // Zustand Store
   const {
     vinData, setVinData,

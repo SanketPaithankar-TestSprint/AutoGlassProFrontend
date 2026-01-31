@@ -103,6 +103,7 @@ const SidebarFilters = ({
                         style={{ width: '100%' }}
                         placeholder="Select document types"
                         value={documentTypeFilter}
+                        defaultValue={"Quote"}
                         onChange={setDocumentTypeFilter}
                         options={documentTypeOptions.filter(opt => opt.value !== 'all')}
                         allowClear

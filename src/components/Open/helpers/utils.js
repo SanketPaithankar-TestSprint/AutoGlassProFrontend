@@ -194,7 +194,6 @@ const applyAllFilters = (documents, filters) => {
  */
 const isOverdue = (doc) => {
     if (!doc.createdAt) return false;
-    console.log('Checking overdue for doc:', doc);
     if (!(doc.documentType?.toLowerCase() === 'invoice')) return false;
     // Only check overdue for unpaid documents with balance due
     if ((doc.balanceDue || 0) <= 0) return false;

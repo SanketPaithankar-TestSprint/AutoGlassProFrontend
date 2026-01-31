@@ -12,6 +12,14 @@ import PublicContactFooter from './PublicContactFooter';
 // Import styles
 import './PublicContact.css';
 
+// Memoized Map component to prevent re-renders
+const MapEmbed = React.memo(({ html }) => (
+    <div
+        className="w-full h-full [&>iframe]:w-full [&>iframe]:h-full [&>iframe]:border-0"
+        dangerouslySetInnerHTML={{ __html: html }}
+    />
+));
+
 const PublicContactRoot = () => {
     const { slug } = useParams();
 
@@ -267,9 +275,8 @@ const PublicContactRoot = () => {
                     ...additionalGlassLocation
                 ],
                 customerMessage: formData.message
-            };
 
-            console.log("Submitting payload:", payload);
+            };
 
             await createServiceInquiry(payload);
             setIsSubmitted(true);
@@ -372,371 +379,401 @@ const PublicContactRoot = () => {
             </div>
         );
     }
-
     // Main Contact Form
     return (
-        <div className="public-contact-page" style={{ '--theme-color': themeColor }}>
-            <BrandedHeader
-                businessName={businessInfo?.businessName}
-                logoUrl={businessInfo?.logoUrl}
-                tagline={businessInfo?.tagline}
-                themeColor={themeColor}
-            />
+        <div className="h-screen flex dot-grid-bg overflow-hidden" style={{ '--theme-color': themeColor }}>
+            {/* Full Width Container */}
+            <div className="flex h-full w-full max-w-7xl mx-auto items-stretch px-12 py-6 gap-8">
 
-            {/* Business Contact Info Section */}
-            {(businessInfo?.address || businessInfo?.phone || businessInfo?.maps) && (
-                <div className="business-details-container">
-                    <div className="business-info-card">
-                        <div className="info-grid">
-                            <div className="info-text">
-                                {businessInfo?.name && (
-                                    <div className="info-item">
-                                        <h3 className="info-label">Contact</h3>
-                                        <p className="info-value font-medium">{businessInfo.name}</p>
-                                    </div>
-                                )}
-                                {businessInfo?.address && (
-                                    <div className="info-item">
-                                        <h3 className="info-label">Address</h3>
-                                        <p className="info-value">{businessInfo.address}</p>
-                                    </div>
-                                )}
-                                {(businessInfo?.phone || businessInfo?.alternatePhone) && (
-                                    <div className="info-item">
-                                        <h3 className="info-label">Phone</h3>
-                                        <p className="info-value">
-                                            <a href={`tel:${businessInfo.phone}`} className="hover:underline">{businessInfo.phone}</a>
-                                            {businessInfo?.alternatePhone && (
-                                                <>
-                                                    <span className="mx-2 text-gray-300">|</span>
-                                                    <a href={`tel:${businessInfo.alternatePhone}`} className="hover:underline text-slate-500">{businessInfo.alternatePhone}</a>
-                                                </>
-                                            )}
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-                            {businessInfo?.maps && (
-                                <div className="info-map">
-                                    <div
-                                        className="map-iframe-container"
-                                        dangerouslySetInnerHTML={{ __html: businessInfo.maps }}
-                                    />
+                {/* Left Section - Business Info */}
+                <div className="w-[400px] flex-shrink-0 flex flex-col">
+                    {/* Header - Using headset/support icon instead of location */}
+                    <div className="flex items-center gap-3 mb-6">
+                        <div
+                            className="w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-md"
+                            style={{ background: `linear-gradient(135deg, ${themeColor} 0%, ${themeColor}cc 100%)` }}
+                        >
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-bold text-slate-800">Contact Information</h2>
+                            <p className="text-xs text-slate-500">We'd love to hear from you</p>
+                        </div>
+                    </div>
+
+                    {/* Contact Details */}
+                    <div className="space-y-3 mb-6">
+                        {businessInfo?.name && (
+                            <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200 shadow-sm">
+                                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${themeColor}12`, color: themeColor }}>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
                                 </div>
-                            )}
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold leading-none mb-1">Contact</p>
+                                    <p className="text-sm text-slate-700 font-medium truncate">{businessInfo.name}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {businessInfo?.address && (
+                            <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200 shadow-sm">
+                                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${themeColor}12`, color: themeColor }}>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                    </svg>
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold leading-none mb-1">Address</p>
+                                    <p className="text-sm text-slate-700 font-medium leading-tight">{businessInfo.address}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {(businessInfo?.phone || businessInfo?.alternatePhone) && (
+                            <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200 shadow-sm">
+                                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${themeColor}12`, color: themeColor }}>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                                    </svg>
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold leading-none mb-1">Phone</p>
+                                    <p className="text-sm text-slate-700 font-medium">
+                                        <a href={`tel:${businessInfo.phone}`} className="hover:underline">{businessInfo.phone}</a>
+                                        {businessInfo?.alternatePhone && (
+                                            <span className="text-slate-400"> / <a href={`tel:${businessInfo.alternatePhone}`} className="hover:underline">{businessInfo.alternatePhone}</a></span>
+                                        )}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
+                        {businessInfo?.email && (
+                            <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200 shadow-sm">
+                                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${themeColor}12`, color: themeColor }}>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                        <polyline points="22,6 12,13 2,6"></polyline>
+                                    </svg>
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold leading-none mb-1">Email</p>
+                                    <p className="text-sm text-slate-700 font-medium truncate">
+                                        <a href={`mailto:${businessInfo.email}`} className="hover:underline">{businessInfo.email}</a>
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Map Section - Takes remaining height */}
+                    {businessInfo?.maps && (
+                        <div className="flex-1 flex flex-col min-h-0">
+                            <p className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold mb-2">Our Location</p>
+                            <div className="flex-1 rounded-xl overflow-hidden border border-slate-200 shadow-lg">
+                                <MapEmbed html={businessInfo.maps} />
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Right Section - Form */}
+                <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
+                    {/* Form Container - Grows with content */}
+                    <div className="flex-1 flex items-start justify-center py-2">
+                        {/* Form Card - Content-based height */}
+                        <div className="premium-form-card rounded-2xl p-8 w-full max-w-lg">
+                            {/* Form Header */}
+                            <div className="text-center mb-6">
+                                <h3 className="text-xl font-bold text-slate-800 mb-1">Get a Quote</h3>
+                                <p className="text-sm text-slate-500">Fill the form below and we will get back to you shortly</p>
+                            </div>
+
+                            <form className="space-y-4" onSubmit={handleSubmit}>
+                                {/* Name & Email Row */}
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="premium-label">
+                                            Full Name <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            value={formData.name}
+                                            onChange={handleInputChange}
+                                            placeholder="John Smith"
+                                            required
+                                            className="w-full h-9 px-3 text-sm rounded-lg premium-input"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="premium-label">
+                                            Email <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="email"
+                                            name="email"
+                                            value={formData.email}
+                                            onChange={handleInputChange}
+                                            placeholder="john@example.com"
+                                            required
+                                            className="w-full h-9 px-3 text-sm rounded-lg premium-input"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Phone & Location Row */}
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="premium-label">
+                                            Phone <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="tel"
+                                            name="phone"
+                                            value={formData.phone}
+                                            onChange={handleInputChange}
+                                            placeholder="(408) 565-5523"
+                                            required
+                                            className="w-full h-9 px-3 text-sm rounded-lg premium-input"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="premium-label">
+                                            Location <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="location"
+                                            value={formData.location}
+                                            onChange={handleInputChange}
+                                            placeholder="San Jose, CA"
+                                            required
+                                            className="w-full h-9 px-3 text-sm rounded-lg premium-input"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* VIN with Lookup */}
+                                <div className="flex gap-2 items-end">
+                                    <div className="flex-1">
+                                        <label className="premium-label">VIN</label>
+                                        <input
+                                            type="text"
+                                            name="vin"
+                                            value={formData.vin}
+                                            onChange={handleInputChange}
+                                            placeholder="1HGBH41JXMN109186"
+                                            className="w-full h-9 px-3 text-sm rounded-lg premium-input"
+                                        />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={handleVinLookup}
+                                        disabled={vinLoading || !formData.vin}
+                                        className="h-9 px-5 text-xs font-medium border rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-sm"
+                                        style={{
+                                            borderColor: themeColor,
+                                            color: themeColor,
+                                            backgroundColor: 'white'
+                                        }}
+                                    >
+                                        {vinLoading ? '...' : 'Lookup'}
+                                    </button>
+                                </div>
+
+                                {/* Year, Make, Model Row */}
+                                <div className="grid grid-cols-3 gap-2">
+                                    <div>
+                                        <label className="premium-label">Year</label>
+                                        <select
+                                            name="year"
+                                            value={formData.year}
+                                            onChange={handleInputChange}
+                                            className="w-full h-9 px-3 text-sm rounded-lg premium-select"
+                                        >
+                                            <option value="">Select</option>
+                                            {yearOptions.map(year => (
+                                                <option key={year} value={year}>{year}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="premium-label">Make</label>
+                                        <select
+                                            name="make"
+                                            value={formData.make}
+                                            onChange={handleInputChange}
+                                            className="w-full h-9 px-3 text-sm rounded-lg premium-select"
+                                        >
+                                            <option value="">Select</option>
+                                            {makeOptions.map((make) => (
+                                                <option key={make.Make_ID} value={make.Make_Name}>{make.Make_Name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="premium-label">Model</label>
+                                        <select
+                                            name="model"
+                                            value={formData.model}
+                                            onChange={handleInputChange}
+                                            disabled={!formData.make}
+                                            className="w-full h-9 px-3 text-sm rounded-lg premium-select disabled:opacity-50"
+                                        >
+                                            <option value="">Select</option>
+                                            {modelOptions.map((model) => (
+                                                <option key={model.Model_ID} value={model.Model_Name}>{model.Model_Name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {/* Service Type */}
+                                <div>
+                                    <label className="premium-label">
+                                        Service Type <span className="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        name="serviceType"
+                                        value={formData.serviceType}
+                                        onChange={handleInputChange}
+                                        required
+                                        className="w-full h-9 px-3 text-sm rounded-lg premium-select"
+                                    >
+                                        <option value="">Select service type</option>
+                                        {serviceTypeOptions.map((opt, idx) => (
+                                            <option key={idx} value={opt}>{opt}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Conditional Service Options */}
+                                {formData.serviceType === 'Windshield Replacement' && (
+                                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 animate-fadeIn">
+                                        <p className="text-xs font-medium text-slate-600 mb-2">Features <span className="text-red-500">*</span></p>
+                                        <div className="grid grid-cols-2 gap-1.5">
+                                            {windshieldFeatureOptions.map((feature, idx) => (
+                                                <label key={idx} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer py-1">
+                                                    <input
+                                                        type="checkbox"
+                                                        name="windshieldFeatures"
+                                                        value={feature}
+                                                        checked={(formData.windshieldFeatures || []).includes(feature)}
+                                                        onChange={handleCheckboxChange}
+                                                        className="w-3.5 h-3.5 rounded"
+                                                        style={{ accentColor: themeColor }}
+                                                    />
+                                                    {feature}
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {formData.serviceType === 'Window Rolling Issue' && (
+                                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 animate-fadeIn">
+                                        <p className="text-xs font-medium text-slate-600 mb-2">Location <span className="text-red-500">*</span></p>
+                                        <div className="grid grid-cols-2 gap-1.5">
+                                            {windowRollingOptions.map((option, idx) => (
+                                                <label key={idx} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer py-1">
+                                                    <input type="radio" name="windowRollingLocation" value={option} checked={formData.windowRollingLocation === option} onChange={handleInputChange} required className="w-3.5 h-3.5" style={{ accentColor: themeColor }} />
+                                                    {option}
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {formData.serviceType === 'Vent Glass Replacement' && (
+                                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 animate-fadeIn">
+                                        <p className="text-xs font-medium text-slate-600 mb-2">Location <span className="text-red-500">*</span></p>
+                                        <div className="grid grid-cols-2 gap-1.5">
+                                            {ventGlassOptions.map((option, idx) => (
+                                                <label key={idx} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer py-1">
+                                                    <input type="radio" name="ventGlassLocation" value={option} checked={formData.ventGlassLocation === option} onChange={handleInputChange} required className="w-3.5 h-3.5" style={{ accentColor: themeColor }} />
+                                                    {option}
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {formData.serviceType === 'Door Glass Replacement' && (
+                                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 animate-fadeIn">
+                                        <p className="text-xs font-medium text-slate-600 mb-2">Location <span className="text-red-500">*</span></p>
+                                        <div className="grid grid-cols-2 gap-1.5">
+                                            {doorGlassOptions.map((option, idx) => (
+                                                <label key={idx} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer py-1">
+                                                    <input type="radio" name="doorGlassLocation" value={option} checked={formData.doorGlassLocation === option} onChange={handleInputChange} required className="w-3.5 h-3.5" style={{ accentColor: themeColor }} />
+                                                    {option}
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {formData.serviceType === 'Quarter Glass Replacement' && (
+                                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 animate-fadeIn">
+                                        <p className="text-xs font-medium text-slate-600 mb-2">Location <span className="text-red-500">*</span></p>
+                                        <div className="grid grid-cols-2 gap-1.5">
+                                            {quarterGlassOptions.map((option, idx) => (
+                                                <label key={idx} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer py-1">
+                                                    <input type="radio" name="quarterGlassLocation" value={option} checked={formData.quarterGlassLocation === option} onChange={handleInputChange} required className="w-3.5 h-3.5" style={{ accentColor: themeColor }} />
+                                                    {option}
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Service Preference */}
+                                <div className="flex items-center gap-6 py-2">
+                                    <p className="text-xs font-medium text-slate-600">Service <span className="text-red-500">*</span></p>
+                                    <div className="flex gap-4">
+                                        <label className="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
+                                            <input type="radio" name="servicePreference" value="In-shop service" checked={formData.servicePreference === 'In-shop service'} onChange={handleInputChange} required className="w-3.5 h-3.5" style={{ accentColor: themeColor }} />
+                                            In-shop
+                                        </label>
+                                        <label className="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
+                                            <input type="radio" name="servicePreference" value="Mobile service" checked={formData.servicePreference === 'Mobile service'} onChange={handleInputChange} required className="w-3.5 h-3.5" style={{ accentColor: themeColor }} />
+                                            Mobile
+                                        </label>
+                                    </div>
+                                </div>
+
+                                {/* Submit Button */}
+                                <button
+                                    type="submit"
+                                    disabled={formLoading}
+                                    className="premium-btn w-full h-10 text-sm font-semibold text-white rounded-lg disabled:opacity-60 disabled:cursor-not-allowed mt-4"
+                                    style={{
+                                        background: `linear-gradient(135deg, ${themeColor} 0%, ${themeColor}cc 100%)`
+                                    }}
+                                >
+                                    {formLoading ? (
+                                        <span className="flex items-center justify-center gap-2">
+                                            <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                            Sending...
+                                        </span>
+                                    ) : 'Submit Request'}
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
-            )}
-
-            <div className="contact-form-container">
-                <div className="contact-card">
-                    {/* Removed Get in Touch header to match style more closely if needed, 
-                        but keeping it for structure as per previous layout, or I can make it simpler.
-                        The example image has fields directly. I will keep the header for branded feel but simplify. */}
-
-                    <form className="contact-form" onSubmit={handleSubmit}>
-                        <div className="form-group">
-                            <label htmlFor="name">Full Name <span className="required">*</span></label>
-                            <input
-                                type="text"
-                                id="name"
-                                name="name"
-                                value={formData.name}
-                                onChange={handleInputChange}
-                                required
-                                className="form-input"
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="email">Email <span className="required">*</span></label>
-                            <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleInputChange}
-                                required
-                                className="form-input"
-                            />
-                        </div>
-
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label htmlFor="phone">Phone Number <span className="required">*</span></label>
-                                <input
-                                    type="tel"
-                                    id="phone"
-                                    name="phone"
-                                    value={formData.phone}
-                                    onChange={handleInputChange}
-                                    placeholder="(408) 565-5523"
-                                    required
-                                    className="form-input"
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="location">Location <span className="required">*</span></label>
-                                <input
-                                    type="text"
-                                    id="location"
-                                    name="location"
-                                    value={formData.location}
-                                    onChange={handleInputChange}
-                                    required
-                                    className="form-input"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="vin">VIN</label>
-                            <input
-                                type="text"
-                                id="vin"
-                                name="vin"
-                                value={formData.vin}
-                                onChange={handleInputChange}
-                                className="form-input"
-                            />
-                        </div>
-
-                        {/* Lookup Button (Visual only as per instructions) */}
-                        <div className="form-group">
-                            <button
-                                type="button"
-                                className="lookup-btn"
-                                onClick={handleVinLookup}
-                                disabled={vinLoading || !formData.vin}
-                                style={{ opacity: (vinLoading || !formData.vin) ? 0.5 : 1, cursor: (vinLoading || !formData.vin) ? 'not-allowed' : 'pointer' }}
-                            >
-                                {vinLoading ? 'Looking up...' : 'Lookup Vehicle Info'}
-                            </button>
-                        </div>
-
-                        <div className="form-row three-col">
-                            <div className="form-group">
-                                <label htmlFor="year">Year</label>
-                                <select
-                                    id="year"
-                                    name="year"
-                                    value={formData.year}
-                                    onChange={handleInputChange}
-                                    className="form-input form-select"
-                                >
-                                    <option value="">-Select-</option>
-                                    {yearOptions.map(year => (
-                                        <option key={year} value={year}>{year}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="form-group">
-                                <label htmlFor="make">Make</label>
-                                <select
-                                    id="make"
-                                    name="make"
-                                    value={formData.make}
-                                    onChange={handleInputChange}
-                                    className="form-input form-select"
-                                >
-                                    <option value="">-Select-</option>
-                                    {makeOptions.map((make) => (
-                                        <option key={make.Make_ID} value={make.Make_Name}>
-                                            {make.Make_Name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="form-group">
-                                <label htmlFor="model">Model</label>
-                                <select
-                                    id="model"
-                                    name="model"
-                                    value={formData.model}
-                                    onChange={handleInputChange}
-                                    className="form-input form-select"
-                                    disabled={!formData.make}
-                                >
-                                    <option value="">-Select-</option>
-                                    {modelOptions.map((model) => (
-                                        <option key={model.Model_ID} value={model.Model_Name}>
-                                            {model.Model_Name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="serviceType">What type of service you are looking for? <span className="required">*</span></label>
-                            <select
-                                id="serviceType"
-                                name="serviceType"
-                                value={formData.serviceType}
-                                onChange={handleInputChange}
-                                required
-                                className="form-input form-select"
-                            >
-                                <option value="">- Select -</option>
-                                {serviceTypeOptions.map((opt, idx) => (
-                                    <option key={idx} value={opt}>{opt}</option>
-                                ))}
-                            </select>
-                        </div>
-
-                        {formData.serviceType === 'Windshield Replacement' && (
-                            <div className="form-group animate-fade-in">
-                                <label className="radio-label">Windshield Replacement <span className="required">*</span></label>
-                                <div className="checkbox-group">
-                                    {windshieldFeatureOptions.map((feature, idx) => (
-                                        <label key={idx} className="checkbox-option">
-                                            <input
-                                                type="checkbox"
-                                                name="windshieldFeatures"
-                                                value={feature}
-                                                checked={(formData.windshieldFeatures || []).includes(feature)}
-                                                onChange={handleCheckboxChange}
-                                            />
-                                            {feature}
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {formData.serviceType === 'Window Rolling Issue' && (
-                            <div className="form-group animate-fade-in">
-                                <label className="radio-label">Window Rolling Issue <span className="required">*</span></label>
-                                <div className="radio-group">
-                                    {windowRollingOptions.map((option, idx) => (
-                                        <label key={idx} className="radio-option">
-                                            <input
-                                                type="radio"
-                                                name="windowRollingLocation"
-                                                value={option}
-                                                checked={formData.windowRollingLocation === option}
-                                                onChange={handleInputChange}
-                                                required
-                                            />
-                                            {option}
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {formData.serviceType === 'Vent Glass Replacement' && (
-                            <div className="form-group animate-fade-in">
-                                <label className="radio-label">Vent Glass Replacement <span className="required">*</span></label>
-                                <div className="radio-group">
-                                    {ventGlassOptions.map((option, idx) => (
-                                        <label key={idx} className="radio-option">
-                                            <input
-                                                type="radio"
-                                                name="ventGlassLocation"
-                                                value={option}
-                                                checked={formData.ventGlassLocation === option}
-                                                onChange={handleInputChange}
-                                                required
-                                            />
-                                            {option}
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {formData.serviceType === 'Door Glass Replacement' && (
-                            <div className="form-group animate-fade-in">
-                                <label className="radio-label">Door Glass Replacement <span className="required">*</span></label>
-                                <div className="radio-group">
-                                    {doorGlassOptions.map((option, idx) => (
-                                        <label key={idx} className="radio-option">
-                                            <input
-                                                type="radio"
-                                                name="doorGlassLocation"
-                                                value={option}
-                                                checked={formData.doorGlassLocation === option}
-                                                onChange={handleInputChange}
-                                                required
-                                            />
-                                            {option}
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {formData.serviceType === 'Quarter Glass Replacement' && (
-                            <div className="form-group animate-fade-in">
-                                <label className="radio-label">Quarter Glass Replacement <span className="required">*</span></label>
-                                <div className="radio-group">
-                                    {quarterGlassOptions.map((option, idx) => (
-                                        <label key={idx} className="radio-option">
-                                            <input
-                                                type="radio"
-                                                name="quarterGlassLocation"
-                                                value={option}
-                                                checked={formData.quarterGlassLocation === option}
-                                                onChange={handleInputChange}
-                                                required
-                                            />
-                                            {option}
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        <div className="form-group">
-                            <label className="radio-label">Type of service <span className="required">*</span></label>
-                            <div className="radio-group">
-                                <label className="radio-option">
-                                    <input
-                                        type="radio"
-                                        name="servicePreference"
-                                        value="In-shop service"
-                                        checked={formData.servicePreference === 'In-shop service'}
-                                        onChange={handleInputChange}
-                                        required
-                                    />
-                                    In-shop service
-                                </label>
-                                <label className="radio-option">
-                                    <input
-                                        type="radio"
-                                        name="servicePreference"
-                                        value="Mobile service"
-                                        checked={formData.servicePreference === 'Mobile service'}
-                                        onChange={handleInputChange}
-                                        required
-                                    />
-                                    Mobile service
-                                </label>
-                            </div>
-                        </div>
-
-                        <button
-                            type="submit"
-                            className="submit-btn full-width-btn"
-                            disabled={formLoading}
-                        >
-                            {formLoading ? (
-                                <span className="flex items-center gap-2">
-                                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                                    Sending...
-                                </span>
-                            ) : 'Submit'}
-                        </button>
-                    </form>
-                </div>
             </div>
-
-            <PublicContactFooter />
         </div>
     );
 };
 
 export default PublicContactRoot;
+
+

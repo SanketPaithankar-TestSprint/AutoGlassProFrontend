@@ -1178,7 +1178,7 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
 
     // Internal: Save Document Function (Returns success boolean and doc number)
     const performSave = async () => {
-        console.log("[QuotePanel] performSave called with attachments:", attachments);
+
 
         if (!validateDocumentData()) return { success: false };
 
@@ -1405,16 +1405,16 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                 });
             }
 
-            console.log("Sending Composite Payload:", compositePayload);
+
 
             const files = attachments.map(a => a.file);
-            console.log("Files to upload:", files.length);
+
 
             let createdDocNumber;
 
             if (isSaved && docMetadata?.documentNumber) {
                 // UPDATE EXISTING DOCUMENT
-                console.log(`Updating existing document: ${docMetadata.documentNumber}`);
+
                 // Existing update logic might expect different payload? 
                 // Assuming updateCompositeServiceDocument also needs refactoring or this payload works for it too?
                 // For now, let's use the same payload structure as it's cleaner.
@@ -1712,6 +1712,22 @@ Auto Glass Pro Team`;
     return (
         <div className="relative">
             {contextHolder}
+
+            {/* Document Type Selector (Top) */}
+            <div className="flex items-center gap-2 mb-2">
+                <label className="text-xs font-semibold text-slate-700">Document Type:</label>
+                <select
+                    value={manualDocType}
+                    onChange={e => setManualDocType(e.target.value)}
+                    disabled={isSaved && docMetadata?.documentType === 'INVOICE'}
+                    className={`px-2 py-1 text-xs border border-slate-300 rounded bg-white text-slate-700 outline-none ${isSaved && docMetadata?.documentType === 'INVOICE' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    style={{ maxWidth: 160 }}
+                >
+                    <option value="Quote">Quote</option>
+                    <option value="Work Order">W.Order</option>
+                    <option value="Invoice">Invoice</option>
+                </select>
+            </div>
 
             {/* Glass Selection Modal - shown when multiple glass types are available */}
             <Modal
@@ -2190,7 +2206,7 @@ Auto Glass Pro Team`;
                                         <button
                                             onClick={handleSave}
                                             disabled={saveLoading}
-                                            className="flex-1 px-3 py-1.5 rounded bg-[#3B82F6] text-white text-[11px] font-medium hover:bg-[#7E5CFE] hover:text-white transition shadow-sm disabled:opacity-50"
+                                            className="flex-1 px-3 py-1.5 rounded bg-green-500 text-white text-[11px] font-bold hover:bg-green-600 transition shadow-sm disabled:opacity-50"
                                         >
                                             {saveLoading ? '...' : 'Save'}
                                         </button>
