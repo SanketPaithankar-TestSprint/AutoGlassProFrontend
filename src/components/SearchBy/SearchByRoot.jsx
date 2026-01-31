@@ -4,7 +4,8 @@ import { useQuoteStore } from "../../store";
 import { useQueryClient } from "@tanstack/react-query";
 import { useKitPrices } from "../../hooks/usePricing";
 import { getPilkingtonPrice } from "../../api/getVendorPrices";
-import { Modal } from "antd";
+import { Modal, Dropdown } from "antd";
+import { DownOutlined } from "@ant-design/icons";
 import SearchByVin from "./SearchByvin";
 import SearchByYMM from "./SearchByYMM";
 import CarGlassViewer from "../carGlassViewer/CarGlassViewer";
@@ -57,7 +58,11 @@ const SearchByRoot = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [createdDocumentNumber, setCreatedDocumentNumber] = useState(null);
   const [lastRemovedPartKey, setLastRemovedPartKey] = useState(null); // Track last removed part for CarGlassViewer sync
+
   const [aiContactFormId, setAiContactFormId] = useState(null); // Track AI Contact Form ID to update status on completion
+
+  // Lifted Document Type State
+  const [manualDocType, setManualDocType] = useState('Quote');
 
   // Modal Context for better visibility/theming
   const [modal, contextHolder] = Modal.useModal();
@@ -109,6 +114,15 @@ const SearchByRoot = () => {
           createdAt: serviceDocument.createdAt,
           updatedAt: serviceDocument.updatedAt
         });
+
+        // Sync manualDocType
+        const typeMap = {
+          'QUOTE': 'Quote',
+          'WORK_ORDER': 'Work Order',
+          'INVOICE': 'Invoice'
+        };
+        const mappedType = typeMap[serviceDocument.documentType] || 'Quote'; // Default to Quote if unknown
+        setManualDocType(mappedType);
 
         // 0.1 Map Payments
         if (serviceDocument.payments && Array.isArray(serviceDocument.payments) && serviceDocument.payments.length > 0) {
@@ -751,6 +765,9 @@ const SearchByRoot = () => {
         notes: ""
       });
 
+      // Reset doc type
+      setManualDocType('Quote');
+
       // 4. Reset Customer & Vehicle
       setCustomerData({ ...initialCustomerData });
       setVehicleInfo({});
@@ -845,18 +862,46 @@ const SearchByRoot = () => {
         {/* TABS & ACTIONS */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-3 mt-2">
           <div className="flex justify-start gap-1 overflow-x-auto w-full md:w-auto pb-1 no-scrollbar">
-            {tabs.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-1.5 font-bold text-xs tracking-wide transition-all rounded-md shadow-sm border whitespace-nowrap flex-shrink-0 ${activeTab === tab.id
-                  ? 'bg-white text-blue-600 border-blue-600'
-                  : 'bg-white text-slate-600 border-slate-200 hover:text-slate-900 hover:border-slate-300'
-                  }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+            {tabs.map(tab => {
+              if (tab.id === 'quote') {
+                return (
+                  <Dropdown
+                    key={tab.id}
+                    menu={{
+                      items: [
+                        { key: 'Quote', label: 'Quote', onClick: () => { setActiveTab('quote'); setManualDocType('Quote'); } },
+                        { key: 'Work Order', label: 'Work Order', onClick: () => { setActiveTab('quote'); setManualDocType('Work Order'); } },
+                        { key: 'Invoice', label: 'Invoice', onClick: () => { setActiveTab('quote'); setManualDocType('Invoice'); } },
+                      ]
+                    }}
+                    trigger={['click']}
+                  >
+                    <button
+                      onClick={() => setActiveTab('quote')}
+                      className={`px-4 py-1.5 font-bold text-xs tracking-wide transition-all rounded-md shadow-sm border whitespace-nowrap flex-shrink-0 flex items-center gap-1 ${activeTab === tab.id
+                        ? 'bg-white text-blue-600 border-blue-600'
+                        : 'bg-white text-slate-600 border-slate-200 hover:text-slate-900 hover:border-slate-300'
+                        }`}
+                    >
+                      {manualDocType} <DownOutlined className="text-[10px]" />
+                    </button>
+                  </Dropdown>
+                );
+              }
+
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`px-4 py-1.5 font-bold text-xs tracking-wide transition-all rounded-md shadow-sm border whitespace-nowrap flex-shrink-0 ${activeTab === tab.id
+                    ? 'bg-white text-blue-600 border-blue-600'
+                    : 'bg-white text-slate-600 border-slate-200 hover:text-slate-900 hover:border-slate-300'
+                    }`}
+                >
+                  {tab.label}
+                </button>
+              )
+            })}
           </div>
 
           <div className="md:pr-4 w-full md:w-auto flex justify-end">
@@ -1026,6 +1071,8 @@ const SearchByRoot = () => {
                     paymentData={paymentData}
                     existingPayments={existingPayments}
                     onTotalChange={setCurrentTotalAmount}
+                    manualDocType={manualDocType}
+                    setManualDocType={setManualDocType}
                   />
                 </div>
               </div>

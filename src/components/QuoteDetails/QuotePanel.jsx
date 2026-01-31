@@ -150,7 +150,7 @@ class ErrorBoundary extends React.Component {
     }
 }
 
-const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internalNote, insuranceData, includeInsurance, attachments = [], setAttachments, onClear, docMetadata, isSaved, isEditMode, onEditModeChange, onDocumentCreated, aiContactFormId, paymentData, existingPayments = [], onTotalChange }) => {
+const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internalNote, insuranceData, includeInsurance, attachments = [], setAttachments, onClear, docMetadata, isSaved, isEditMode, onEditModeChange, onDocumentCreated, aiContactFormId, paymentData, existingPayments = [], onTotalChange, manualDocType, setManualDocType }) => {
     const navigate = useNavigate();
 
     const formatDate = (dateStr) => {
@@ -378,7 +378,8 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
 
     const [isManualTax, setIsManualTax] = useState(false);
     const [payment, setPayment] = useState(0);
-    const [manualDocType, setManualDocType] = useState("Quote"); // Default to Quote, no Auto
+    // Local state for manualDocType removed (lifted to SearchByRoot)
+    // const [manualDocType, setManualDocType] = useState("Quote");
 
     // Sync local payment state with paymentData from Payment Tab
     useEffect(() => {
@@ -397,9 +398,11 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                 'INVOICE': 'Invoice'
             };
             const mappedType = typeMap[docMetadata.documentType] || docMetadata.documentType;
-            setManualDocType(mappedType);
+            if (setManualDocType) {
+                setManualDocType(mappedType);
+            }
         }
-    }, [docMetadata?.documentType]);
+    }, [docMetadata?.documentType, setManualDocType]);
 
     const [taxRates, setTaxRates] = useState([]);
 
@@ -1682,23 +1685,6 @@ Auto Glass Pro Team`;
     return (
         <div className="relative">
             {contextHolder}
-
-            {/* Document Type Selector (Top) */}
-            <div className="flex items-center gap-2 mb-2">
-                <label className="text-xs font-semibold text-slate-700">Document Type:</label>
-                <select
-                    value={manualDocType}
-                    onChange={e => setManualDocType(e.target.value)}
-                    disabled={isSaved && docMetadata?.documentType === 'INVOICE'}
-                    className={`px-2 py-1 text-xs border border-slate-300 rounded bg-white text-slate-700 outline-none ${isSaved && docMetadata?.documentType === 'INVOICE' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    style={{ maxWidth: 160 }}
-                >
-                    <option value="Quote">Quote</option>
-                    <option value="Work Order">W.Order</option>
-                    <option value="Invoice">Invoice</option>
-                </select>
-            </div>
-
             {/* Glass Selection Modal - shown when multiple glass types are available */}
             <Modal
                 title={<span className="text-[#7E5CFE] font-semibold">Select Glass Type</span>}
@@ -1788,9 +1774,24 @@ Auto Glass Pro Team`;
 
             {/* Header / Metadata */}
             <div className="bg-white p-2 sm:p-3 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg mb-3 sm:mb-4">
-                <h3 className="text-sm sm:text-base font-bold text-[#7E5CFE] mb-1">
-                    Quote Details
-                </h3>
+                {/* Header with Dropdown */}
+                <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                    <Dropdown
+                        menu={{
+                            items: [
+                                { key: 'Quote', label: <span className="font-semibold text-slate-700">Quote</span>, onClick: () => setManualDocType('Quote') },
+                                { key: 'Work Order', label: <span className="font-semibold text-slate-700">Work Order</span>, onClick: () => setManualDocType('Work Order') },
+                                { key: 'Invoice', label: <span className="font-semibold text-slate-700">Invoice</span>, onClick: () => setManualDocType('Invoice') },
+                            ]
+                        }}
+                        trigger={['click']}
+                        disabled={isSaved && docMetadata?.documentType === 'INVOICE'}
+                    >
+                        <h3 className={`text-sm sm:text-base font-bold text-[#7E5CFE] flex items-center gap-1 cursor-pointer hover:bg-violet-50 px-1 py-0.5 rounded transition-colors select-none ${isSaved && docMetadata?.documentType === 'INVOICE' ? 'cursor-not-allowed opacity-75' : ''}`}>
+                            {manualDocType} Details <DownOutlined style={{ fontSize: '10px', marginTop: '2px' }} />
+                        </h3>
+                    </Dropdown>
+                </div>
 
                 {/* Line Items Table - Height for 6 rows + header */}
                 <div className="border border-slate-100 bg-white rounded-sm max-h-[350px] sm:max-h-[400px] overflow-x-auto overflow-y-auto" data-quote-details-table>
