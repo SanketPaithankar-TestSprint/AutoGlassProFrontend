@@ -11,7 +11,8 @@ import {
     FolderOpenOutlined,
     BarChartOutlined,
     CalendarOutlined,
-    MenuOutlined
+    MenuOutlined,
+    PieChartOutlined
 } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 import Logo from './logo';
@@ -85,10 +86,11 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
     }, []);
 
     const items = [
+
         {
-            key: '/',
-            icon: <HomeOutlined />,
-            label: <Link to="/">Home</Link>,
+            key: '/analytics',
+            icon: <PieChartOutlined />,
+            label: <Link to="/analytics">Analytics</Link>,
         },
         {
             icon: <FileTextOutlined />,
@@ -114,11 +116,7 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
             icon: <FileTextOutlined />,
             label: <Link to="/service-contact-form">Service Inquiries</Link>,
         },
-        {
-            key: '/ai-contact-form',
-            icon: <FileTextOutlined />, // Using FileTextOutlined as placeholder if ContactsOutlined not imported
-            label: <Link to="/ai-contact-form">AI Contact Form</Link>,
-        },
+
         // Add other authenticated links here if needed
     ];
 
@@ -129,11 +127,11 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
                 label: <Link to="/profile">Profile</Link>,
                 icon: <UserOutlined />
             },
-           /* {
-                key: 'work',
-                label: <Link to="/work">Work</Link>,
-                icon: <FileTextOutlined /> // Or a better icon for Work
-            }, */
+            /* {
+                 key: 'work',
+                 label: <Link to="/work">Work</Link>,
+                 icon: <FileTextOutlined /> // Or a better icon for Work
+             }, */
             {
                 type: 'divider'
             },

@@ -1045,6 +1045,12 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
 
     // Generate PDF using utility function
     const generatePdfDoc = (overrideDocumentNumber = null) => {
+        // Collect payments (history + new tentative)
+        const pdfPayments = [...(existingPayments || [])];
+        if (paymentData && Number(paymentData.amount) > 0) {
+            pdfPayments.push(paymentData);
+        }
+
         return generateServiceDocumentPDF({
             items,
             customerData,
@@ -1060,7 +1066,8 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
             specialInstructions: specialInstructions, // Global Special Instructions
             insuranceData,
             includeInsurance,
-            documentNumber: overrideDocumentNumber || docMetadata?.documentNumber || ""
+            documentNumber: overrideDocumentNumber || docMetadata?.documentNumber || "",
+            payments: pdfPayments // Pass combined payments
         });
     };
 

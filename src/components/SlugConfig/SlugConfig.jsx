@@ -24,7 +24,14 @@ const SlugConfig = () => {
                     slug: data.slug,
                     businessName: data.businessName,
                     tagline: data.tagline,
-                    themeColor: data.themeColor || "#1677ff" // Default blue-ish
+                    themeColor: data.themeColor || "#1677ff", // Default blue-ish
+                    name: data.name,
+                    address: data.address,
+                    phone: data.phone,
+                    alternatePhone: data.alternatePhone,
+                    latitude: data.latitude,
+                    longitude: data.longitude,
+                    maps: data.maps
                 });
                 // Update localStorage if changed
                 if (data.slug) {
@@ -62,7 +69,14 @@ const SlugConfig = () => {
                 slug: values.slug,
                 businessName: values.businessName,
                 tagline: values.tagline,
-                themeColor: colorHex
+                themeColor: colorHex,
+                name: values.name,
+                address: values.address,
+                phone: values.phone,
+                alternatePhone: values.alternatePhone,
+                latitude: values.latitude,
+                longitude: values.longitude,
+                maps: values.maps
             };
 
             const result = await createOrUpdateUserSlug(token, payload);
@@ -85,7 +99,7 @@ const SlugConfig = () => {
 
     return (
         <Card
-            title="AI Chat Configuration"
+            title="Contact Form Configuration"
             className="w-full shadow-sm rounded-2xl border-gray-100"
             extra={
                 <Button
@@ -145,6 +159,68 @@ const SlugConfig = () => {
                             tooltip="Primary color for your public pages."
                         >
                             <ColorPicker showText />
+                        </Form.Item>
+
+                        <div className="col-span-1 md:col-span-2 border-t pt-4 mt-2">
+                            <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Contact Details</h3>
+                        </div>
+
+                        <Form.Item
+                            label="Contact Name"
+                            name="name"
+                            tooltip="Name displayed on contact forms."
+                        >
+                            <Input placeholder="e.g. John Doe" />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Primary Phone"
+                            name="phone"
+                            rules={[{ required: true, message: 'Please enter a phone number' }]}
+                        >
+                            <Input placeholder="(555) 123-4567" />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Alternate Phone"
+                            name="alternatePhone"
+                        >
+                            <Input placeholder="Optional secondary number" />
+                        </Form.Item>
+
+                        <div className="col-span-1 md:col-span-2 border-t pt-4 mt-2">
+                            <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Location Settings</h3>
+                        </div>
+
+                        <Form.Item
+                            label="Full Address"
+                            name="address"
+                            className="col-span-1 md:col-span-2"
+                        >
+                            <Input.TextArea rows={2} placeholder="123 Glass St, City, State, Zip" />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Google Maps URL"
+                            name="maps"
+                            className="col-span-1 md:col-span-2"
+                            tooltip="Link to your Google Maps location."
+                        >
+                            <Input placeholder="https://maps.google.com/..." />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Latitude"
+                            name="latitude"
+                        >
+                            <Input placeholder="e.g. 37.7749" />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Longitude"
+                            name="longitude"
+                        >
+                            <Input placeholder="e.g. -122.4194" />
                         </Form.Item>
                     </div>
 
