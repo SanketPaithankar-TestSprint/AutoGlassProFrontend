@@ -726,7 +726,7 @@ const Profile = () => {
                         {renderMenuItem('userKitPrice', 'User Kit Price', <DollarOutlined />)}
                         {renderMenuItem('userAdasPrice', 'ADAS Pricing', <ScanOutlined />)}
                         {renderMenuItem('specialInstructions', 'Special Instructions', <FileTextOutlined />)}
-                        {renderMenuItem('slugConfig', 'AI Chat Config', <KeyOutlined />)}
+                        {renderMenuItem('slugConfig', 'Contact Form Config', <KeyOutlined />)}
                     </div>
                 </div>
             </div>

@@ -10,6 +10,7 @@ import { getActiveTaxRates, getDefaultTaxRate } from "../../api/taxRateApi";
 import { getAttachmentsByDocumentNumber } from "../../api/getAttachmentsByDocumentNumber";
 import { getSpecialInstructions } from "../../api/specialInstructions";
 import { updateAiContactFormStatus } from "../../api/aiContactForm";
+import { getValidToken } from "../../api/getValidToken";
 
 import { sendEmail } from "../../api/sendEmail";
 import { extractGlassInfo } from "../carGlassViewer/carGlassHelpers";
@@ -165,7 +166,7 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
     const setItems = setQuoteItems;
 
     const queryClient = useQueryClient();
-    const token = localStorage.getItem("access_token");
+    const token = getValidToken();
 
     const { data: specialInstructions } = useQuery({
         queryKey: ['specialInstructions'],
@@ -185,7 +186,7 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
             }
         },
         initialData: () => localStorage.getItem("user_special_instructions") || "",
-        staleTime: 1000 * 60 * 60 // 1 hour stale time
+        staleTime: 1000 * 60 * 60 * 24 // 24 hours stale time
     });
 
     // Reverted local notes state. Using props: printableNote, internalNote
@@ -206,6 +207,12 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
     useEffect(() => {
         const loadProfile = () => {
             try {
+                // Update Special Instructions if changed in another tab
+                const instructions = localStorage.getItem("user_special_instructions");
+                if (instructions !== null) {
+                    queryClient.setQueryData(['specialInstructions'], instructions);
+                }
+
                 const saved = localStorage.getItem("agp_profile_data");
                 if (saved) {
                     const parsed = JSON.parse(saved);
@@ -218,7 +225,7 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                     });
                 }
             } catch (e) {
-                console.error("Failed to load profile update", e);
+                console.error("Failed to load profile/instructions update", e);
             }
         };
 
@@ -1038,6 +1045,12 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
 
     // Generate PDF using utility function
     const generatePdfDoc = (overrideDocumentNumber = null) => {
+        // Collect payments (history + new tentative)
+        const pdfPayments = [...(existingPayments || [])];
+        if (paymentData && Number(paymentData.amount) > 0) {
+            pdfPayments.push(paymentData);
+        }
+
         return generateServiceDocumentPDF({
             items,
             customerData,
@@ -1053,7 +1066,8 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
             specialInstructions: specialInstructions, // Global Special Instructions
             insuranceData,
             includeInsurance,
-            documentNumber: overrideDocumentNumber || docMetadata?.documentNumber || ""
+            documentNumber: overrideDocumentNumber || docMetadata?.documentNumber || "",
+            payments: pdfPayments // Pass combined payments
         });
     };
 

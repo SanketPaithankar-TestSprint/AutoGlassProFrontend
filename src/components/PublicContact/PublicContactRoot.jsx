@@ -1,7 +1,7 @@
 // src/components/PublicContact/PublicContactRoot.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { validateSlug, submitContactForm, createServiceInquiry } from '../../api/publicContactForm';
+import { validateSlug, submitContactForm, createServiceInquiry, decodeVin, fetchVehicleMakes, fetchVehicleModels } from '../../api/publicContactForm';
 import { clearSessionId, generateSessionId } from '../../utils/sessionUtils';
 
 // Import components
@@ -26,6 +26,7 @@ const PublicContactRoot = () => {
 
     // Form state
     const [formLoading, setFormLoading] = useState(false);
+    const [vinLoading, setVinLoading] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
@@ -45,6 +46,10 @@ const PublicContactRoot = () => {
         quarterGlassLocation: '',
         message: ''
     });
+
+    // Options state
+    const [makeOptions, setMakeOptions] = useState([]);
+    const [modelOptions, setModelOptions] = useState([]);
 
     // Theme color with fallback
     const themeColor = businessInfo?.themeColor || '#7E5CFE';
@@ -112,6 +117,12 @@ const PublicContactRoot = () => {
         'Rear Right Quarter Glass'
     ];
 
+    // Year Options (1949 - 2026)
+    const yearOptions = [];
+    for (let i = 2026; i >= 1949; i--) {
+        yearOptions.push(i);
+    }
+
     // Validate slug on mount
     useEffect(() => {
         const validateBusinessSlug = async () => {
@@ -135,8 +146,14 @@ const PublicContactRoot = () => {
                         themeColor: response.data.theme_color,
                         tagline: response.data.tagline,
                         logoUrl: response.data.logo_url,
-                        phone: response.data.phone, // Assuming phone might be available
-                        email: response.data.email  // Assuming email might be available
+                        phone: response.data.phone,
+                        email: response.data.email,
+                        name: response.data.name,
+                        address: response.data.address,
+                        alternatePhone: response.data.alternate_phone,
+                        maps: response.data.maps,
+                        latitude: response.data.latitude,
+                        longitude: response.data.longitude
                     });
                 } else {
                     setIsValidSlug(false);
@@ -153,6 +170,36 @@ const PublicContactRoot = () => {
 
         validateBusinessSlug();
     }, [slug]);
+
+    // Fetch vehicle makes on mount
+    useEffect(() => {
+        const loadMakes = async () => {
+            const makes = await fetchVehicleMakes();
+            // Sort makes alphabetically
+            const sortedMakes = makes.sort((a, b) =>
+                (a.Make_Name || '').localeCompare(b.Make_Name || '')
+            );
+            setMakeOptions(sortedMakes);
+        };
+        loadMakes();
+    }, []);
+
+    // Fetch vehicle models when make changes
+    useEffect(() => {
+        const loadModels = async () => {
+            if (formData.make) {
+                const models = await fetchVehicleModels(formData.make);
+                // Sort makes alphabetically
+                const sortedModels = models.sort((a, b) =>
+                    (a.Model_Name || '').localeCompare(b.Model_Name || '')
+                );
+                setModelOptions(sortedModels);
+            } else {
+                setModelOptions([]);
+            }
+        };
+        loadModels();
+    }, [formData.make]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -235,6 +282,30 @@ const PublicContactRoot = () => {
         }
     };
 
+    const handleVinLookup = async () => {
+        if (!formData.vin || formData.vin.length < 17) {
+            // Optional: show a toast or small error if VIN is too short
+            return;
+        }
+
+        setVinLoading(true);
+        try {
+            const vehicleInfo = await decodeVin(formData.vin);
+            if (vehicleInfo) {
+                setFormData(prev => ({
+                    ...prev,
+                    year: vehicleInfo.ModelYear || prev.year,
+                    make: vehicleInfo.Make || prev.make, // API returns uppercase usually, might need matching logic if select values differ
+                    model: vehicleInfo.Model || prev.model
+                }));
+            }
+        } catch (error) {
+            console.error('VIN lookup failed:', error);
+        } finally {
+            setVinLoading(false);
+        }
+    };
+
     const handleNewMessage = () => {
         setIsSubmitted(false);
         setFormData({
@@ -312,6 +383,52 @@ const PublicContactRoot = () => {
                 themeColor={themeColor}
             />
 
+            {/* Business Contact Info Section */}
+            {(businessInfo?.address || businessInfo?.phone || businessInfo?.maps) && (
+                <div className="business-details-container">
+                    <div className="business-info-card">
+                        <div className="info-grid">
+                            <div className="info-text">
+                                {businessInfo?.name && (
+                                    <div className="info-item">
+                                        <h3 className="info-label">Contact</h3>
+                                        <p className="info-value font-medium">{businessInfo.name}</p>
+                                    </div>
+                                )}
+                                {businessInfo?.address && (
+                                    <div className="info-item">
+                                        <h3 className="info-label">Address</h3>
+                                        <p className="info-value">{businessInfo.address}</p>
+                                    </div>
+                                )}
+                                {(businessInfo?.phone || businessInfo?.alternatePhone) && (
+                                    <div className="info-item">
+                                        <h3 className="info-label">Phone</h3>
+                                        <p className="info-value">
+                                            <a href={`tel:${businessInfo.phone}`} className="hover:underline">{businessInfo.phone}</a>
+                                            {businessInfo?.alternatePhone && (
+                                                <>
+                                                    <span className="mx-2 text-gray-300">|</span>
+                                                    <a href={`tel:${businessInfo.alternatePhone}`} className="hover:underline text-slate-500">{businessInfo.alternatePhone}</a>
+                                                </>
+                                            )}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                            {businessInfo?.maps && (
+                                <div className="info-map">
+                                    <div
+                                        className="map-iframe-container"
+                                        dangerouslySetInnerHTML={{ __html: businessInfo.maps }}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="contact-form-container">
                 <div className="contact-card">
                     {/* Removed Get in Touch header to match style more closely if needed, 
@@ -362,18 +479,15 @@ const PublicContactRoot = () => {
 
                             <div className="form-group">
                                 <label htmlFor="location">Location <span className="required">*</span></label>
-                                <select
+                                <input
+                                    type="text"
                                     id="location"
                                     name="location"
                                     value={formData.location}
                                     onChange={handleInputChange}
                                     required
-                                    className="form-input form-select"
-                                >
-                                    <option value="">-Select-</option>
-                                    <option value="Main Service Area">Main Service Area</option>
-                                    {/* Add more options if available dynamically */}
-                                </select>
+                                    className="form-input"
+                                />
                             </div>
                         </div>
 
@@ -391,49 +505,67 @@ const PublicContactRoot = () => {
 
                         {/* Lookup Button (Visual only as per instructions) */}
                         <div className="form-group">
-                            <button type="button" className="lookup-btn" disabled>
-                                Lookup Vehicle Info
+                            <button
+                                type="button"
+                                className="lookup-btn"
+                                onClick={handleVinLookup}
+                                disabled={vinLoading || !formData.vin}
+                                style={{ opacity: (vinLoading || !formData.vin) ? 0.5 : 1, cursor: (vinLoading || !formData.vin) ? 'not-allowed' : 'pointer' }}
+                            >
+                                {vinLoading ? 'Looking up...' : 'Lookup Vehicle Info'}
                             </button>
                         </div>
 
                         <div className="form-row three-col">
                             <div className="form-group">
                                 <label htmlFor="year">Year</label>
-                                {/* Image shows dropdown for Year, but user said keep as text field. 
-                                     I'll use text input to strictly follow 'keep them as text fields'. 
-                                     Actually, usually Year is a dropdown. But user said "text fields". 
-                                     I will use text to be safe with the instruction. */}
-                                <input
-                                    type="text"
+                                <select
                                     id="year"
                                     name="year"
                                     value={formData.year}
                                     onChange={handleInputChange}
-                                    placeholder=""
-                                    className="form-input"
-                                />
+                                    className="form-input form-select"
+                                >
+                                    <option value="">-Select-</option>
+                                    {yearOptions.map(year => (
+                                        <option key={year} value={year}>{year}</option>
+                                    ))}
+                                </select>
                             </div>
                             <div className="form-group">
                                 <label htmlFor="make">Make</label>
-                                <input
-                                    type="text"
+                                <select
                                     id="make"
                                     name="make"
                                     value={formData.make}
                                     onChange={handleInputChange}
-                                    className="form-input"
-                                />
+                                    className="form-input form-select"
+                                >
+                                    <option value="">-Select-</option>
+                                    {makeOptions.map((make) => (
+                                        <option key={make.Make_ID} value={make.Make_Name}>
+                                            {make.Make_Name}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                             <div className="form-group">
                                 <label htmlFor="model">Model</label>
-                                <input
-                                    type="text"
+                                <select
                                     id="model"
                                     name="model"
                                     value={formData.model}
                                     onChange={handleInputChange}
-                                    className="form-input"
-                                />
+                                    className="form-input form-select"
+                                    disabled={!formData.make}
+                                >
+                                    <option value="">-Select-</option>
+                                    {modelOptions.map((model) => (
+                                        <option key={model.Model_ID} value={model.Model_Name}>
+                                            {model.Model_Name}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
 
