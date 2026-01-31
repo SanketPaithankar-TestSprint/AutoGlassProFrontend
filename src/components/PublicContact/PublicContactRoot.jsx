@@ -1,6 +1,7 @@
 // src/components/PublicContact/PublicContactRoot.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
+import { Select } from 'antd'; // Import Select from antd
 import { validateSlug, submitContactForm, createServiceInquiry, decodeVin, fetchVehicleMakes, fetchVehicleModels } from '../../api/publicContactForm';
 import { clearSessionId, generateSessionId } from '../../utils/sessionUtils';
 
@@ -593,46 +594,58 @@ const PublicContactRoot = () => {
                                 <div className="grid grid-cols-3 gap-2">
                                     <div>
                                         <label className="premium-label">Year</label>
-                                        <select
-                                            name="year"
-                                            value={formData.year}
-                                            onChange={handleInputChange}
-                                            className="w-full h-9 px-3 text-sm rounded-lg premium-select"
+                                        <Select
+                                            showSearch
+                                            placeholder="Select"
+                                            value={formData.year || undefined}
+                                            onChange={(val) => handleInputChange({ target: { name: 'year', value: val } })}
+                                            className="w-full h-9 rounded-lg"
+                                            optionFilterProp="children"
+                                            filterOption={(input, option) =>
+                                                (option?.children ?? '').toString().toLowerCase().includes(input.toLowerCase())
+                                            }
                                         >
-                                            <option value="">Select</option>
                                             {yearOptions.map(year => (
-                                                <option key={year} value={year}>{year}</option>
+                                                <Select.Option key={year} value={year}>{year}</Select.Option>
                                             ))}
-                                        </select>
+                                        </Select>
                                     </div>
                                     <div>
                                         <label className="premium-label">Make</label>
-                                        <select
-                                            name="make"
-                                            value={formData.make}
-                                            onChange={handleInputChange}
-                                            className="w-full h-9 px-3 text-sm rounded-lg premium-select"
+                                        <Select
+                                            showSearch
+                                            placeholder="Select"
+                                            value={formData.make || undefined}
+                                            onChange={(val) => handleInputChange({ target: { name: 'make', value: val } })}
+                                            className="w-full h-9 rounded-lg"
+                                            optionFilterProp="children"
+                                            filterOption={(input, option) =>
+                                                (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+                                            }
                                         >
-                                            <option value="">Select</option>
                                             {makeOptions.map((make) => (
-                                                <option key={make.Make_ID} value={make.Make_Name}>{make.Make_Name}</option>
+                                                <Select.Option key={make.Make_ID} value={make.Make_Name}>{make.Make_Name}</Select.Option>
                                             ))}
-                                        </select>
+                                        </Select>
                                     </div>
                                     <div>
                                         <label className="premium-label">Model</label>
-                                        <select
-                                            name="model"
-                                            value={formData.model}
-                                            onChange={handleInputChange}
+                                        <Select
+                                            showSearch
+                                            placeholder="Select"
+                                            value={formData.model || undefined}
+                                            onChange={(val) => handleInputChange({ target: { name: 'model', value: val } })}
                                             disabled={!formData.make}
-                                            className="w-full h-9 px-3 text-sm rounded-lg premium-select disabled:opacity-50"
+                                            className="w-full h-9 rounded-lg"
+                                            optionFilterProp="children"
+                                            filterOption={(input, option) =>
+                                                (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+                                            }
                                         >
-                                            <option value="">Select</option>
                                             {modelOptions.map((model) => (
-                                                <option key={model.Model_ID} value={model.Model_Name}>{model.Model_Name}</option>
+                                                <Select.Option key={model.Model_ID} value={model.Model_Name}>{model.Model_Name}</Select.Option>
                                             ))}
-                                        </select>
+                                        </Select>
                                     </div>
                                 </div>
 
@@ -641,18 +654,18 @@ const PublicContactRoot = () => {
                                     <label className="premium-label">
                                         Service Type <span className="text-red-500">*</span>
                                     </label>
-                                    <select
-                                        name="serviceType"
-                                        value={formData.serviceType}
-                                        onChange={handleInputChange}
-                                        required
-                                        className="w-full h-9 px-3 text-sm rounded-lg premium-select"
+                                    <Select
+                                        placeholder="Select service type"
+                                        value={formData.serviceType || undefined}
+                                        onChange={(val) => handleInputChange({ target: { name: 'serviceType', value: val } })}
+                                        className="w-full h-9 rounded-lg"
+                                        showSearch
+                                        optionFilterProp="children"
                                     >
-                                        <option value="">Select service type</option>
                                         {serviceTypeOptions.map((opt, idx) => (
-                                            <option key={idx} value={opt}>{opt}</option>
+                                            <Select.Option key={idx} value={opt}>{opt}</Select.Option>
                                         ))}
-                                    </select>
+                                    </Select>
                                 </div>
 
                                 {/* Conditional Service Options */}
