@@ -23,7 +23,7 @@ import 'react-quill-new/dist/quill.snow.css';
 
 
 const SearchByRoot = () => {
-  console.log("Rendering SearchByRoot - Card Redesign Active");
+
   // Zustand Store
   const {
     vinData, setVinData,

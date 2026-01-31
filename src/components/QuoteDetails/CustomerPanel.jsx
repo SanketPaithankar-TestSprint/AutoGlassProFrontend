@@ -370,11 +370,11 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
     const handleSaveCustomer = async () => {
         if (!formData.customerId) return;
-        
+
         try {
             setSavingCustomer(true);
             const token = getValidToken();
-            
+
             const customerPayload = {
                 customerId: formData.customerId,
                 customerType: "INDIVIDUAL",
@@ -392,15 +392,15 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                 preferredContactMethod: formData.preferredContactMethod || "phone",
                 notes: formData.notes || ""
             };
-            
+
             await updateCustomer(token, formData.customerId, customerPayload);
-            
+
             notification.success({
                 message: "Customer Updated",
                 description: "Customer information has been updated successfully.",
                 placement: "topRight"
             });
-            
+
             setIsEditingCustomer(false);
             // Refresh customer list
             await fetchCustomers();
@@ -433,7 +433,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
     const handleSaveOrganization = async () => {
         if (!formData.organizationId) return;
-        
+
         // Validate required fields
         if (!orgFormData.phone || orgFormData.phone.trim() === "") {
             notification.error({
@@ -443,7 +443,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
             });
             return;
         }
-        
+
         if (!orgFormData.companyName || orgFormData.companyName.trim() === "") {
             notification.error({
                 message: "Validation Error",
@@ -452,10 +452,10 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
             });
             return;
         }
-        
+
         try {
             setSavingOrg(true);
-            
+
             const orgPayload = {
                 organizationId: formData.organizationId,
                 companyName: orgFormData.companyName,
@@ -472,22 +472,22 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                 taxExempt: formData.isTaxExempt || false,
                 notes: orgFormData.notes || ""
             };
-            
+
             await updateOrganization(formData.organizationId, orgPayload);
-            
+
             // Update formData
             setFormData(prev => ({
                 ...prev,
                 organizationName: orgFormData.companyName,
                 companyName: orgFormData.companyName
             }));
-            
+
             notification.success({
                 message: "Organization Updated",
                 description: "Organization information has been updated successfully.",
                 placement: "topRight"
             });
-            
+
             setIsEditingOrg(false);
             // Refresh organization list
             await fetchOrganizations();
@@ -508,14 +508,14 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
     const handleSubmit = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        
+
         // Validation: Check at least one contact field is filled
         if (clientType === "BUSINESS") {
             // Check Organization contact
             const email = orgFormData.email || "";
             const phone = orgFormData.phone || "";
             const hasOrgContact = email.trim().length > 0 || phone.trim().length > 0;
-            
+
             if (!hasOrgContact) {
                 notification.error({
                     message: "Missing Contact Information",
@@ -530,7 +530,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
             const email = formData.email || "";
             const phone = formData.phone || "";
             const hasCustomerContact = email.trim().length > 0 || phone.trim().length > 0;
-            
+
             if (!hasCustomerContact) {
                 notification.error({
                     message: "Missing Contact Information",
@@ -541,7 +541,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                 return false;
             }
         }
-        
+
         localStorage.setItem("agp_customer_data", JSON.stringify(formData));
         if (setCanShowQuotePanel) setCanShowQuotePanel(true);
         if (setPanel) setPanel("quote");
@@ -604,21 +604,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                                 </Option>
                                             ))}
                                         </Select>
-                                        
-                                        {/* Edit Customer Action Only */}
-                                        {formData.customerId && (
-                                            <div className="flex gap-2 mt-3">
-                                                <Button
-                                                    type="default"
-                                                    icon={<EditOutlined />}
-                                                    size="small"
-                                                    className="flex-1"
-                                                    onClick={handleEditCustomer}
-                                                >
-                                                    Edit
-                                                </Button>
-                                            </div>
-                                        )}
+
+
                                     </div>
                                 )}
                             </div>
@@ -661,21 +648,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                                 </Option>
                                             ))}
                                         </Select>
-                                        
-                                        {/* Edit Organization Action Only */}
-                                        {formData.organizationId && (
-                                            <div className="flex gap-2 mt-3">
-                                                <Button
-                                                    type="default"
-                                                    icon={<EditOutlined />}
-                                                    size="small"
-                                                    className="flex-1"
-                                                    onClick={handleEditOrganization}
-                                                >
-                                                    Edit
-                                                </Button>
-                                            </div>
-                                        )}
+
+
                                     </div>
                                 )}
                             </div>

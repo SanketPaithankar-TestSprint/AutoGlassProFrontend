@@ -119,13 +119,13 @@ export default function SearchByYMM({
 
       // Handle veh_id from VIN decode - if present, we have complete data
       if (value.vehId) {
-        console.log('[SearchByYMM] Received vehId from props:', value.vehId);
+
         // Just set the local vehId state - don't trigger vinVehId effect
         setVehId(value.vehId);
         setVinVehId(null);
       } else {
         // Reset veh_id when not provided
-        console.log('[SearchByYMM] No vehId in props, resetting state');
+
         setVinVehId(null);
         setVehId(null);
       }
@@ -155,7 +155,7 @@ export default function SearchByYMM({
   // Auto-notify parent when VIN provides complete veh_id (skip body type selection)
   useEffect(() => {
     if (vinVehId && year && makeId && makeModelId) {
-      console.log('[SearchByYMM] VIN provided veh_id, auto-notifying parent:', vinVehId);
+
 
       // Find body type description if we have bodyStyleId
       let bodyTypeDescription = value?.body || '';
@@ -384,10 +384,10 @@ export default function SearchByYMM({
 
   // Fetch vehicle details and parts when "Find Parts" is clicked
   const handleFindParts = async () => {
-    console.log('[SearchByYMM] handleFindParts triggered. Current State:', { year, makeId, makeModelId, bodyType, vehId });
+
 
     if (!year || !makeId || !makeModelId || !bodyType) {
-      console.log('[SearchByYMM] Missing required fields, skipping search');
+
       message.warning("Please select year, make, model, and body type");
       return;
     }
@@ -399,7 +399,7 @@ export default function SearchByYMM({
     // We strictly check for modelImage because the user wants the car image populated from the API
     // even if we restored the IDs from a saved document.
     if (vehId && modelImage) {
-      console.log('[SearchByYMM] Using existing veh_id & image, skipping duplicate lookup:', vehId);
+
 
       // Notify parent components with the vehicle info directly
       onModelIdFetched?.(modelId || makeModelId);
@@ -426,7 +426,7 @@ export default function SearchByYMM({
       return;
     }
 
-    console.log('[SearchByYMM] No existing vehId, fetching from API...');
+
     setLoadingModelId(true);
     try {
       // Fetch vehicle details using all IDs

@@ -1172,7 +1172,7 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
 
     // Internal: Save Document Function (Returns success boolean and doc number)
     const performSave = async () => {
-        console.log("[QuotePanel] performSave called with attachments:", attachments);
+
 
         if (!validateDocumentData()) return { success: false };
 
@@ -1375,16 +1375,16 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                 });
             }
 
-            console.log("Sending Composite Payload:", compositePayload);
+
 
             const files = attachments.map(a => a.file);
-            console.log("Files to upload:", files.length);
+
 
             let createdDocNumber;
 
             if (isSaved && docMetadata?.documentNumber) {
                 // UPDATE EXISTING DOCUMENT
-                console.log(`Updating existing document: ${docMetadata.documentNumber}`);
+
                 // Existing update logic might expect different payload? 
                 // Assuming updateCompositeServiceDocument also needs refactoring or this payload works for it too?
                 // For now, let's use the same payload structure as it's cleaner.
@@ -2159,12 +2159,11 @@ Auto Glass Pro Team`;
                                             <option value="Invoice">Invoice</option>
                                         </select>
                                         <button
-                                            onClick={onEditModeChange}
-                                            disabled={isEditMode}
-                                            className="flex-1 px-3 py-1.5 rounded bg-yellow-400 text-slate-900 text-[11px] font-bold border-2 border-yellow-500 shadow-lg hover:bg-yellow-500 hover:text-white transition shadow-sm disabled:opacity-50 animate-pulse"
-                                            style={{ boxShadow: '0 0 0 2px #fde047, 0 2px 8px rgba(0,0,0,0.08)' }}
+                                            onClick={handleSave}
+                                            disabled={saveLoading}
+                                            className="flex-1 px-3 py-1.5 rounded bg-green-500 text-white text-[11px] font-bold hover:bg-green-600 transition shadow-sm disabled:opacity-50"
                                         >
-                                            Edit
+                                            {saveLoading ? '...' : 'Save'}
                                         </button>
                                         <button
                                             onClick={handlePreview}
