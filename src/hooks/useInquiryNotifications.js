@@ -46,11 +46,11 @@ const useInquiryNotifications = () => {
         });
 
         eventSource.onerror = (error) => {
-            console.error('SSE connection error:', error);
+            // console.error('SSE connection error:', error);
             // Polyfill handles reconnection logic, but we can log errors.
             // If 401, maybe token expired?
             if (error?.status === 401) {
-                console.log("SSE Authentication failed.");
+                // console.log("SSE Authentication failed.");
                 eventSource.close();
             }
         };

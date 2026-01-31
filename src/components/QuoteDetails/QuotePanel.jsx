@@ -150,7 +150,9 @@ class ErrorBoundary extends React.Component {
     }
 }
 
-const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internalNote, insuranceData, includeInsurance, attachments = [], setAttachments, onClear, docMetadata, isSaved, isEditMode, onEditModeChange, onDocumentCreated, aiContactFormId, paymentData, existingPayments = [], onTotalChange }) => {
+import { getCustomers } from "../../api/getCustomers";
+
+const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internalNote, insuranceData, includeInsurance, attachments = [], setAttachments, onClear, docMetadata, isSaved, isEditMode, onEditModeChange, onDocumentCreated, aiContactFormId, paymentData, existingPayments = [], onTotalChange, manualDocType, setManualDocType, schedulingData }) => {
     const navigate = useNavigate();
 
     const formatDate = (dateStr) => {
@@ -378,7 +380,8 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
 
     const [isManualTax, setIsManualTax] = useState(false);
     const [payment, setPayment] = useState(0);
-    const [manualDocType, setManualDocType] = useState("Quote"); // Default to Quote, no Auto
+    // Local state for manualDocType removed (lifted to SearchByRoot)
+    // const [manualDocType, setManualDocType] = useState("Quote");
 
     // Sync local payment state with paymentData from Payment Tab
     useEffect(() => {
@@ -397,9 +400,12 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                 'INVOICE': 'Invoice'
             };
             const mappedType = typeMap[docMetadata.documentType] || docMetadata.documentType;
-            setManualDocType(mappedType);
+
+            if (setManualDocType) {
+                setManualDocType(mappedType);
+            }
         }
-    }, [docMetadata?.documentType]);
+    }, [docMetadata?.documentType, setManualDocType]);
 
     const [taxRates, setTaxRates] = useState([]);
 
@@ -1250,10 +1256,32 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
             let organizationPayload = null;
 
             // --- CUSTOMER LOGIC ---
-            if (customerData.customerId) {
+            // 0. CHECK FOR EXISTING CUSTOMER IF ID IS MISSING (Avoid 409 Conflict)
+            let resolvedCustomerId = customerData.customerId || null;
+            if (!resolvedCustomerId && (customerData.email || customerData.phone)) {
+                try {
+                    // Check existing customers to avoid 409 Conflict
+                    const token = await getValidToken();
+                    const customers = await getCustomers(token);
+
+                    const matchingCustomer = customers.find(c =>
+                        (c.email && customerData.email && c.email.toLowerCase() === customerData.email.toLowerCase()) ||
+                        (c.phone && customerData.phone && c.phone === customerData.phone)
+                    );
+
+                    if (matchingCustomer) {
+                        console.log("Found existing customer match via API:", matchingCustomer);
+                        resolvedCustomerId = matchingCustomer.customerId;
+                    }
+                } catch (err) {
+                    console.warn("Failed to check existing customers, proceeding with potential duplicate:", err);
+                }
+            }
+
+            if (resolvedCustomerId) {
                 // Link EXISTING Customer
                 customerPayload = {
-                    customerId: customerData.customerId
+                    customerId: resolvedCustomerId
                 };
             } else if (customerData.firstName || customerData.lastName || customerData.companyName) {
                 // Create NEW Customer - Only if identity fields are present
@@ -1324,10 +1352,12 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
             const compositePayload = {
                 documentType: currentDocType.replace(" ", "_").toUpperCase(),
                 documentDate: new Date().toISOString(),
-                scheduledDate: new Date().toISOString(),
-                estimatedCompletion: new Date().toISOString(),
-                dueDate: new Date().toISOString().split('T')[0],
-                paymentTerms: "Due upon receipt",
+                scheduledDate: schedulingData?.scheduledDate || new Date().toISOString(),
+                estimatedCompletion: schedulingData?.estimatedCompletion || new Date().toISOString(),
+                dueDate: schedulingData?.dueDate || new Date().toISOString().split('T')[0],
+                paymentTerms: schedulingData?.paymentTerms || "Due upon receipt",
+                technicianId: schedulingData?.assignedEmployeeId || null,
+                employeeId: schedulingData?.assignedEmployeeId || null, // Redundant but safe based on API variance
                 notes: printableNote,
                 internalNotes: internalNote,
                 serviceLocation: "SHOP",
@@ -1772,9 +1802,24 @@ Auto Glass Pro Team`;
 
             {/* Header / Metadata */}
             <div className="bg-white p-2 sm:p-3 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg mb-3 sm:mb-4">
-                <h3 className="text-sm sm:text-base font-bold text-[#7E5CFE] mb-1">
-                    Quote Details
-                </h3>
+                {/* Header with Dropdown */}
+                <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                    <Dropdown
+                        menu={{
+                            items: [
+                                { key: 'Quote', label: <span className="font-semibold text-slate-700">Quote</span>, onClick: () => setManualDocType('Quote') },
+                                { key: 'Work Order', label: <span className="font-semibold text-slate-700">Work Order</span>, onClick: () => setManualDocType('Work Order') },
+                                { key: 'Invoice', label: <span className="font-semibold text-slate-700">Invoice</span>, onClick: () => setManualDocType('Invoice') },
+                            ]
+                        }}
+                        trigger={['click']}
+                        disabled={isSaved && docMetadata?.documentType === 'INVOICE'}
+                    >
+                        <h3 className={`text-sm sm:text-base font-bold text-[#7E5CFE] flex items-center gap-1 cursor-pointer hover:bg-violet-50 px-1 py-0.5 rounded transition-colors select-none ${isSaved && docMetadata?.documentType === 'INVOICE' ? 'cursor-not-allowed opacity-75' : ''}`}>
+                            {manualDocType} Details <DownOutlined style={{ fontSize: '10px', marginTop: '2px' }} />
+                        </h3>
+                    </Dropdown>
+                </div>
 
                 {/* Line Items Table - Height for 6 rows + header */}
                 <div className="border border-slate-100 bg-white rounded-sm max-h-[350px] sm:max-h-[400px] overflow-x-auto overflow-y-auto" data-quote-details-table>

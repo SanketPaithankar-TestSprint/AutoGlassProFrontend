@@ -5,6 +5,9 @@ import PaymentPanel from "./PaymentPanel";
 import config from "../../config";
 import { getPrefixCd, getPosCd, getSideCd } from "../carGlassViewer/carGlassHelpers";
 import AttachmentDetails from "./AttachmentDetails";
+import JobSchedulingPanel from "./JobSchedulingPanel";
+import { getEmployees } from "../../api/getEmployees";
+import { getValidToken } from "../../api/getValidToken";
 
 export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel, onPanelSwitch, invoiceItems, setInvoiceItems }) {
     // Internal state fallback if not controlled
@@ -78,6 +81,66 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
         transactionReference: "",
         notes: ""
     });
+
+    // Lifted Scheduling State
+    const [schedulingData, setSchedulingData] = useState({
+        scheduledDate: null,
+        estimatedCompletion: null,
+        dueDate: new Date().toISOString().split('T')[0], // Default to today
+        paymentTerms: "Due upon receipt",
+        assignedEmployeeId: null,
+        customPaymentTerms: ""
+    });
+
+    // Employees State
+    const [employees, setEmployees] = useState([]);
+    const [loadingEmployees, setLoadingEmployees] = useState(false);
+
+    useEffect(() => {
+        const fetchEmployees = async () => {
+            const token = getValidToken();
+            if (!token) return;
+
+            setLoadingEmployees(true);
+            try {
+                const data = await getEmployees(token);
+                // Ensure data is array
+                if (Array.isArray(data)) {
+                    setEmployees(data);
+                } else {
+                    console.error("Expected array of employees, got:", data);
+                    setEmployees([]);
+                }
+            } catch (e) {
+                console.error("Failed to fetch employees", e);
+            } finally {
+                setLoadingEmployees(false);
+            }
+        };
+
+        if (activePanel === 'scheduling' || internalPanel === 'scheduling') {
+            fetchEmployees();
+        } else {
+            // Optional: Fetch on mount regardless, or only when tab clicked?
+            // Let's fetch on mount to have it ready, or just lazily. 
+            // Logic above fetches when tab is active. Let's add a "hasFetched" check to avoid re-fetching?
+            // For now, simpler to fetch when needed or just once on mount.
+        }
+
+    }, [activePanel, internalPanel]);
+
+    // Fetch once on mount to populate dropdown if they go there
+    useEffect(() => {
+        const fetchEmployees = async () => {
+            const token = getValidToken();
+            if (!token) return;
+            try {
+                const data = await getEmployees(token);
+                if (Array.isArray(data)) setEmployees(data);
+            } catch (e) { console.error(e); }
+        };
+        fetchEmployees();
+    }, []);
 
     useEffect(() => {
         if (customerData) {
@@ -187,6 +250,12 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
                 >
                     Payment
                 </button>
+                <button
+                    className={`px-4 py-2 rounded-md font-semibold border transition-all duration-150 ${panel === 'scheduling' ? 'border-violet-500 text-violet-700 bg-white' : 'border-transparent text-slate-500 bg-slate-50 hover:bg-slate-100'}`}
+                    onClick={() => handlePanelSwitch('scheduling')}
+                >
+                    Job Scheduling
+                </button>
             </div>
             {panel === 'customer' && (
                 <CustomerPanel
@@ -205,6 +274,7 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
                         attachments={attachments}
                         setAttachments={setAttachments}
                         paymentData={paymentData}
+                        schedulingData={schedulingData}
                     />
                 </div>
             )}
@@ -223,6 +293,16 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
                     <PaymentPanel
                         paymentData={paymentData}
                         setPaymentData={setPaymentData}
+                    />
+                </div>
+            )}
+            {panel === 'scheduling' && (
+                <div className="min-h-[600px]">
+                    <JobSchedulingPanel
+                        schedulingData={schedulingData}
+                        setSchedulingData={setSchedulingData}
+                        employees={employees}
+                        loadingEmployees={loadingEmployees}
                     />
                 </div>
             )}
