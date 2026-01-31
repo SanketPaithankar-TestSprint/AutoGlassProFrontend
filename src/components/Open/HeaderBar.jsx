@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Segmented, Input } from 'antd';
-import { AppstoreOutlined, UnorderedListOutlined, SearchOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { Segmented, Input, Button } from 'antd';
+import { AppstoreOutlined, UnorderedListOutlined, SearchOutlined, ClockCircleOutlined, FilterOutlined } from '@ant-design/icons';
 
 const HeaderBar = ({
     viewMode,
     setViewMode,
     searchTerm,
     setSearchTerm,
+    onOpenFilters,
 }) => {
     const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -53,24 +54,35 @@ const HeaderBar = ({
 
             {/* Controls Section */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                {/* View Mode Toggle */}
-                <Segmented
-                    value={viewMode}
-                    onChange={setViewMode}
-                    options={[
-                        {
-                            label: 'Grid',
-                            value: 'grid',
-                            icon: <AppstoreOutlined />,
-                        },
-                        {
-                            label: 'List',
-                            value: 'list',
-                            icon: <UnorderedListOutlined />,
-                        },
-                    ]}
-                    className="flex-shrink-0"
-                />
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                    {/* View Mode Toggle */}
+                    <Segmented
+                        value={viewMode}
+                        onChange={setViewMode}
+                        options={[
+                            {
+                                label: 'Grid',
+                                value: 'grid',
+                                icon: <AppstoreOutlined />,
+                            },
+                            {
+                                label: 'List',
+                                value: 'list',
+                                icon: <UnorderedListOutlined />,
+                            },
+                        ]}
+                        className="flex-shrink-0"
+                    />
+
+                    {/* Mobile Filter Button */}
+                    <Button
+                        icon={<FilterOutlined />}
+                        onClick={onOpenFilters}
+                        className="lg:hidden"
+                    >
+                        Filter
+                    </Button>
+                </div>
 
                 {/* Search Input */}
                 <div className="flex-1 w-full sm:max-w-md">

@@ -14,10 +14,7 @@ const ProfileDropdown = ({ onLogout }) => {
       key: "profile",
       label: <Link to="/profile">User Profile</Link>,
     },
-    {
-      key: "work",
-      label: <Link to="/work">Work</Link>,
-    },
+
     {
       key: "logout",
       label: (
@@ -109,11 +106,13 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
       { key: "contact", label: "Contact", href: "/contact" },
     ] : []),
     ...(isAuthed ? [
+      { key: "analytics", label: "Analytics", href: "/analytics" },
+      { key: "customers", label: "Customers", href: "/customers" },
       { key: "Quote", label: "Quote", href: "/search-by-root" },
       { key: "schedule", label: "Schedule", href: "/schedule" },
       { key: "dashboard", label: "Dashboard", href: "/open" },
       { key: "reports", label: "Reports", href: "/reports" },
-      { key: "aicontact", label: "AI Contact Form", href: "/ai-contact-form" },
+      { key: "service-inquiries", label: "Service Inquiries", href: "/service-contact-form" },
     ] : []),
   ];
 
@@ -270,15 +269,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
                       View Profile
                     </Link>
                   </li>
-                  <li>
-                    <Link
-                      to="/work"
-                      className="block px-4 py-2 rounded-md text-base text-slate-700 hover:text-violet-700 hover:bg-violet-100 outline-none transition-colors duration-150"
-                      onClick={() => setDrawerOpen(false)}
-                    >
-                      Work
-                    </Link>
-                  </li>
+
                   <li>
                     <div
                       className="block px-4 py-2 rounded-md text-base text-red-500 hover:bg-red-50 hover:text-red-600 cursor-pointer transition-colors duration-150"

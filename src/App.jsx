@@ -21,6 +21,7 @@ import useInquiryNotifications from './hooks/useInquiryNotifications';
 // Lazy Load Main Components
 const Home = React.lazy(() => import('./components/Home/HomeRoot.jsx'));
 const AnalyticsRoot = React.lazy(() => import('./components/Analytics/AnalyticsRoot.jsx'));
+const CustomersRoot = React.lazy(() => import('./components/Customers/CustomersRoot.jsx'));
 const SearchByRoot = React.lazy(() => import("./components/SearchBy/SearchByRoot"));
 const Schedule = React.lazy(() => import('./components/Schedule/ScheduleRoot.jsx'));
 const FeaturesPage = React.lazy(() => import('./components/FeaturesPage/FeaturesPage.jsx'));
@@ -138,6 +139,7 @@ function AppContent() {
                     <Routes>
                       <Route path="/" element={isAuthed ? <Navigate to="/analytics" replace /> : <Home />} />
                       <Route path="/analytics" element={<AnalyticsRoot />} />
+                      <Route path="/customers" element={<CustomersRoot />} />
                       <Route path="/search-by-root" element={<SearchByRoot />} />
                       <Route path="/schedule" element={<Schedule />} />
                       <Route path="/Profile" element={<Profile />} />

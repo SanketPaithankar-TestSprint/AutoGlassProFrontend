@@ -37,6 +37,7 @@ const OpenRoot = () => {
     // View states
     const [viewMode, setViewMode] = useState('grid');
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+    const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
 
     // Filter states
     const [searchTerm, setSearchTerm] = useState('');
@@ -292,7 +293,7 @@ const OpenRoot = () => {
     );
 
     return (
-        <DashboardLayout sidebar={sidebarContent} isMobile={isMobile}>
+        <DashboardLayout sidebar={sidebarContent} isMobile={isMobile} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}>
             <div className="min-h-screen bg-slate-50">
                 {/* Header */}
                 <HeaderBar
@@ -300,6 +301,7 @@ const OpenRoot = () => {
                     setViewMode={setViewMode}
                     searchTerm={searchTerm}
                     setSearchTerm={setSearchTerm}
+                    onOpenFilters={() => setSidebarOpen(true)}
                 />
 
                 {/* Main Content */}
