@@ -267,9 +267,8 @@ const PublicContactRoot = () => {
                     ...additionalGlassLocation
                 ],
                 customerMessage: formData.message
-            };
 
-            console.log("Submitting payload:", payload);
+            };
 
             await createServiceInquiry(payload);
             setIsSubmitted(true);

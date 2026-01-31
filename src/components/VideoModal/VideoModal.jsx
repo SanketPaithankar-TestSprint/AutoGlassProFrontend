@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { CloseOutlined } from '@ant-design/icons';
-import DemoVideo from '../../assets/Dummy_Video.mp4';
+// Placeholder: No video file imported
 
 const VideoModal = ({ isOpen, onClose }) => {
     const videoRef = useRef(null);
@@ -68,7 +68,7 @@ const VideoModal = ({ isOpen, onClose }) => {
                 {/* Video */}
                 <video
                     ref={videoRef}
-                    src={DemoVideo}
+                    src=""
                     controls
                     autoPlay
                     className="w-full rounded-lg shadow-2xl"
@@ -78,7 +78,7 @@ const VideoModal = ({ isOpen, onClose }) => {
                         backgroundColor: '#000'
                     }}
                 >
-                    Your browser does not support the video tag.
+                    No video available.
                 </video>
             </div>
         </div>

@@ -64,7 +64,6 @@ const AnalyticsRoot = () => {
         );
     }
 
-    console.log("Analytics Dashboard Data:", data);
 
     return (
         <div className="p-6 md:p-8 space-y-6 max-w-[1600px] mx-auto">
