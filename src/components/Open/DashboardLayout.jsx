@@ -1,14 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from 'antd';
-import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
+import React from 'react';
 
-const DashboardLayout = ({ children, sidebar, isMobile }) => {
-    const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
-
-    // Update sidebar state when isMobile changes
-    useEffect(() => {
-        setSidebarOpen(!isMobile);
-    }, [isMobile]);
+const DashboardLayout = ({ children, sidebar, isMobile, sidebarOpen, setSidebarOpen }) => {
 
     return (
         <div className="flex min-h-screen bg-slate-50">
@@ -36,24 +28,6 @@ const DashboardLayout = ({ children, sidebar, isMobile }) => {
 
             {/* Main Content */}
             <main className="flex-1 overflow-y-auto">
-                {/* Mobile Toggle Button */}
-                {isMobile && (
-                    <Button
-                        type="primary"
-                        onClick={() => setSidebarOpen(!sidebarOpen)}
-                        className="fixed bottom-6 right-6 z-20 shadow-lg"
-                        shape="circle"
-                        size="large"
-                        icon={sidebarOpen ? <MenuFoldOutlined /> : <MenuUnfoldOutlined />}
-                        style={{ 
-                            backgroundColor: '#7c3aed', 
-                            borderColor: '#7c3aed',
-                            width: 56,
-                            height: 56
-                        }}
-                    />
-                )}
-
                 {children}
             </main>
         </div>

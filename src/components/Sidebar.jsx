@@ -12,7 +12,8 @@ import {
     BarChartOutlined,
     CalendarOutlined,
     MenuOutlined,
-    PieChartOutlined
+    PieChartOutlined,
+    TeamOutlined
 } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 import Logo from './logo';
@@ -91,6 +92,11 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
             key: '/analytics',
             icon: <PieChartOutlined />,
             label: <Link to="/analytics">Analytics</Link>,
+        },
+        {
+            key: '/customers',
+            icon: <TeamOutlined />,
+            label: <Link to="/customers">Customers</Link>,
         },
         {
             icon: <FileTextOutlined />,

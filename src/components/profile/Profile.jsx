@@ -60,16 +60,7 @@ const Profile = () => {
         }
     });
 
-    const { data: customers = [], isLoading: loadingCustomers } = useQuery({
-        queryKey: ['customers'],
-        queryFn: async () => {
-            if (!token) throw new Error("No token found. Please login.");
-            const res = await getCustomers(token);
-            return Array.isArray(res) ? res : [];
-        },
-        enabled: activeTab === 'customers', // Only fetch when tab is active
-        staleTime: 1000 * 60 * 5 // Cache for 5 minutes
-    });
+
 
     const { data: employees = [], isLoading: loadingEmployees } = useQuery({
         queryKey: ['employees'],
@@ -159,52 +150,7 @@ const Profile = () => {
         }
     };
 
-    // Customer Handlers
-    const handleAddCustomer = () => {
-        setEditingCustomer(null);
-        form.resetFields();
-        setIsCustomerModalVisible(true);
-    };
 
-    const handleEditCustomer = (customer) => {
-        setEditingCustomer(customer);
-        form.setFieldsValue({
-            ...customer,
-            vehicle: null // Vehicle editing not supported in this simple form yet
-        });
-        setIsCustomerModalVisible(true);
-    };
-
-    const handleSaveCustomer = async () => {
-        try {
-            const values = await form.validateFields();
-            setSaving(true);
-
-            if (!token) throw new Error("No token found");
-            if (!profile?.userId) throw new Error("User ID not found");
-
-            const payload = {
-                ...values,
-                userId: profile.userId
-            };
-
-            if (editingCustomer) {
-                await updateCustomer(token, editingCustomer.customerId, payload);
-                notification.success({ message: "Customer updated successfully" });
-            } else {
-                await createCustomer(token, payload);
-                notification.success({ message: "Customer created successfully" });
-            }
-
-            setIsCustomerModalVisible(false);
-            queryClient.invalidateQueries({ queryKey: ['customers'] });
-        } catch (err) {
-            console.error(err);
-            notification.error({ message: "Failed to save customer", description: err.message });
-        } finally {
-            setSaving(false);
-        }
-    };
 
     // Employee Handlers
     const handleAddEmployee = () => {
@@ -521,106 +467,7 @@ const Profile = () => {
     };
 
 
-    const renderCustomersContent = () => {
-        if (loadingCustomers) return <div className="text-center py-12 text-lg text-gray-500 animate-pulse">Loading customers...</div>;
 
-        return (
-            <div className="space-y-6 animate-fadeIn">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-2xl font-bold text-gray-800">Customers</h2>
-                    <button
-                        onClick={handleAddCustomer}
-                        className="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-                    >
-                        <PlusOutlined /> Add Customer
-                    </button>
-                </div>
-                {customers.length === 0 ? (
-                    <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-gray-300">
-                        <TeamOutlined className="text-4xl text-gray-300 mb-3" />
-                        <p className="text-gray-500">No customers found.</p>
-                    </div>
-                ) : (
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="bg-gray-50 border-b border-gray-100">
-                                        <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Name</th>
-                                        <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Email</th>
-                                        <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Phone</th>
-                                        <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Vehicle</th>
-                                        <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100">
-                                    {customers.map((c, i) => (
-                                        <tr key={c.id || i} className="hover:bg-gray-50 transition-colors">
-                                            <td className="p-4 text-sm font-medium text-gray-900">{c.firstName} {c.lastName}</td>
-                                            <td className="p-4 text-sm text-gray-600">{c.email || "-"}</td>
-                                            <td className="p-4 text-sm text-gray-600">{c.phone || "-"}</td>
-                                            <td className="p-4 text-sm text-gray-600">{c.vehicle ? `${c.vehicle.year} ${c.vehicle.make} ${c.vehicle.model}` : "-"}</td>
-                                            <td className="p-4 text-sm text-gray-600">
-                                                <Button
-                                                    type="text"
-                                                    icon={<EditOutlined />}
-                                                    onClick={() => handleEditCustomer(c)}
-                                                />
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                )}
-
-                <Modal
-                    title={editingCustomer ? "Edit Customer" : "Add Customer"}
-                    open={isCustomerModalVisible}
-                    onOk={handleSaveCustomer}
-                    onCancel={() => setIsCustomerModalVisible(false)}
-                    confirmLoading={saving}
-                >
-                    <Form form={form} layout="vertical">
-                        <div className="grid grid-cols-2 gap-4">
-                            <Form.Item name="firstName" label="First Name" rules={[{ required: true }]}>
-                                <Input />
-                            </Form.Item>
-                            <Form.Item name="lastName" label="Last Name" rules={[{ required: true }]}>
-                                <Input />
-                            </Form.Item>
-                        </div>
-                        <Form.Item name="email" label="Email" rules={[{ type: 'email' }]}>
-                            <Input />
-                        </Form.Item>
-                        <Form.Item name="phone" label="Phone" rules={[{ required: true }]}>
-                            <Input />
-                        </Form.Item>
-                        <Form.Item name="addressLine1" label="Address Line 1">
-                            <Input />
-                        </Form.Item>
-                        <div className="grid grid-cols-2 gap-4">
-                            <Form.Item name="city" label="City">
-                                <Input />
-                            </Form.Item>
-                            <Form.Item name="state" label="State">
-                                <Input />
-                            </Form.Item>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <Form.Item name="postalCode" label="Zip Code">
-                                <Input />
-                            </Form.Item>
-                            <Form.Item name="country" label="Country">
-                                <Input />
-                            </Form.Item>
-                        </div>
-                    </Form>
-                </Modal>
-            </div>
-        );
-    };
 
     const renderEmployeesContent = () => {
         if (loadingEmployees) return <div className="text-center py-12 text-lg text-gray-500 animate-pulse">Loading employees...</div>;
@@ -717,7 +564,7 @@ const Profile = () => {
                     <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Menu</h2>
                     <div className="space-y-2">
                         {renderMenuItem('profile', 'Profile', <UserOutlined />)}
-                        {renderMenuItem('customers', 'Customers', <TeamOutlined />)}
+
                         {renderMenuItem('employees', 'Employees', <IdcardOutlined />)}
                         {renderMenuItem('distributorCredentials', 'Distributor Credentials', <KeyOutlined />)}
                         {renderMenuItem('laborRate', 'Labor Rate', <DollarOutlined />)}
@@ -735,7 +582,7 @@ const Profile = () => {
             <div className="flex-1 overflow-y-auto p-4 md:p-8 md:h-[calc(100vh-64px)]">
                 <div className="max-w-4xl mx-auto">
                     {activeTab === 'profile' && renderProfileContent()}
-                    {activeTab === 'customers' && renderCustomersContent()}
+
                     {activeTab === 'employees' && renderEmployeesContent()}
                     {activeTab === 'distributorCredentials' && <DistributorCredentials />}
                     {activeTab === 'laborRate' && <LaborRateConfiguration />}
