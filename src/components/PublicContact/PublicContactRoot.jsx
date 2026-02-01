@@ -12,6 +12,16 @@ import PublicContactFooter from './PublicContactFooter';
 // Import styles
 import './PublicContact.css';
 
+// Import Assets
+import carPreview from '../../assets/car_preview.png';
+import sunroofSvg from '../../assets/sunroof.svg';
+import frontWindshieldSvg from '../../assets/front-wind-shield.svg';
+import frontVentGlassSvg from '../../assets/front-vent-glass.svg';
+import frontDoorGlassSvg from '../../assets/front-door-glass.svg';
+import rearDoorGlassSvg from '../../assets/rear-door-glass.svg';
+import rearVentGlassSvg from '../../assets/rear-vent-glass.svg';
+import rearWindshieldSvg from '../../assets/rear-windshield.svg';
+import rearQuarterGlassSvg from '../../assets/rear-quarter-glass.svg';
 // Memoized Map component to prevent re-renders
 const MapEmbed = React.memo(({ html }) => (
     <div
@@ -335,6 +345,15 @@ const PublicContactRoot = () => {
         });
     };
 
+    // Helper to check if shop is open (Simple placeholder logic)
+    const isShopOpen = () => {
+        const now = new Date();
+        const hour = now.getHours();
+        const day = now.getDay();
+        // Example: Open Mon-Fri, 9am - 6pm
+        return day >= 1 && day <= 5 && hour >= 9 && hour < 18;
+    };
+
     // Loading state
     if (isValidating) {
         return (
@@ -381,116 +400,14 @@ const PublicContactRoot = () => {
     }
     // Main Contact Form
     return (
-        <div className="h-screen flex dot-grid-bg overflow-hidden" style={{ '--theme-color': themeColor }}>
+        <div className="min-h-screen lg:h-screen flex flex-col gradient-to-br from-slate-50 via-white to-slate-50 relative lg:overflow-hidden" style={{ '--theme-color': themeColor }}>
             {/* Full Width Container */}
-            <div className="flex h-full w-full max-w-7xl mx-auto items-stretch px-12 py-6 gap-8">
+            <div className="flex flex-col lg:flex-row w-full h-full max-w-7xl mx-auto items-stretch px-4 md:px-8 lg:px-12 py-4 lg:py-6 gap-6 lg:gap-8">
 
-                {/* Left Section - Business Info */}
-                <div className="w-[400px] flex-shrink-0 flex flex-col">
-                    {/* Header - Using headset/support icon instead of location */}
-                    <div className="flex items-center gap-3 mb-6">
-                        <div
-                            className="w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-md"
-                            style={{ background: `linear-gradient(135deg, ${themeColor} 0%, ${themeColor}cc 100%)` }}
-                        >
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <h2 className="text-lg font-bold text-slate-800">Contact Information</h2>
-                            <p className="text-xs text-slate-500">We'd love to hear from you</p>
-                        </div>
-                    </div>
-
-                    {/* Contact Details */}
-                    <div className="space-y-3 mb-6">
-                        {businessInfo?.name && (
-                            <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200 shadow-sm">
-                                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${themeColor}12`, color: themeColor }}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                        <circle cx="12" cy="7" r="4"></circle>
-                                    </svg>
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                    <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold leading-none mb-1">Contact</p>
-                                    <p className="text-sm text-slate-700 font-medium truncate">{businessInfo.name}</p>
-                                </div>
-                            </div>
-                        )}
-
-                        {businessInfo?.address && (
-                            <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200 shadow-sm">
-                                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${themeColor}12`, color: themeColor }}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                                    </svg>
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                    <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold leading-none mb-1">Address</p>
-                                    <p className="text-sm text-slate-700 font-medium leading-tight">{businessInfo.address}</p>
-                                </div>
-                            </div>
-                        )}
-
-                        {(businessInfo?.phone || businessInfo?.alternatePhone) && (
-                            <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200 shadow-sm">
-                                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${themeColor}12`, color: themeColor }}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                                    </svg>
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                    <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold leading-none mb-1">Phone</p>
-                                    <p className="text-sm text-slate-700 font-medium">
-                                        <a href={`tel:${businessInfo.phone}`} className="hover:underline">{businessInfo.phone}</a>
-                                        {businessInfo?.alternatePhone && (
-                                            <span className="text-slate-400"> / <a href={`tel:${businessInfo.alternatePhone}`} className="hover:underline">{businessInfo.alternatePhone}</a></span>
-                                        )}
-                                    </p>
-                                </div>
-                            </div>
-                        )}
-
-                        {businessInfo?.email && (
-                            <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200 shadow-sm">
-                                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${themeColor}12`, color: themeColor }}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                                        <polyline points="22,6 12,13 2,6"></polyline>
-                                    </svg>
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                    <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold leading-none mb-1">Email</p>
-                                    <p className="text-sm text-slate-700 font-medium truncate">
-                                        <a href={`mailto:${businessInfo.email}`} className="hover:underline">{businessInfo.email}</a>
-                                    </p>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Map Section - Takes remaining height */}
-                    {businessInfo?.maps && (
-                        <div className="flex-1 flex flex-col min-h-0">
-                            <p className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold mb-2">Our Location</p>
-                            <div className="flex-1 rounded-xl overflow-hidden border border-slate-200 shadow-lg">
-                                <MapEmbed html={businessInfo.maps} />
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* Right Section - Form */}
-                <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
-                    {/* Form Container - Grows with content */}
-                    <div className="flex-1 flex items-start justify-center py-2">
-                        {/* Form Card - Content-based height */}
-                        <div className="premium-form-card rounded-2xl p-8 w-full max-w-lg">
-                            {/* Form Header */}
+                {/* Left Column - Form Section */}
+                <div className="w-full lg:w-5/12 order-2 lg:order-1 flex flex-col min-h-0 lg:h-full pr-2">
+                    <div className="flex-1 flex items-center justify-center overflow-y-auto custom-scrollbar">
+                        <div className="premium-form-card rounded-2xl p-8 w-full">
                             <div className="text-center mb-6">
                                 <h3 className="text-xl font-bold text-slate-800 mb-1">Get a Quote</h3>
                                 <p className="text-sm text-slate-500">Fill the form below and we will get back to you shortly</p>
@@ -500,64 +417,24 @@ const PublicContactRoot = () => {
                                 {/* Name & Email Row */}
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label className="premium-label">
-                                            Full Name <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="name"
-                                            value={formData.name}
-                                            onChange={handleInputChange}
-                                            placeholder="John Smith"
-                                            required
-                                            className="w-full h-9 px-3 text-sm rounded-lg premium-input"
-                                        />
+                                        <label className="premium-label">Full Name <span className="text-red-500">*</span></label>
+                                        <input type="text" name="name" value={formData.name} onChange={handleInputChange} placeholder="John Smith" required className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
                                     </div>
                                     <div>
-                                        <label className="premium-label">
-                                            Email <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="email"
-                                            name="email"
-                                            value={formData.email}
-                                            onChange={handleInputChange}
-                                            placeholder="john@example.com"
-                                            required
-                                            className="w-full h-9 px-3 text-sm rounded-lg premium-input"
-                                        />
+                                        <label className="premium-label">Email <span className="text-red-500">*</span></label>
+                                        <input type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="john@example.com" required className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
                                     </div>
                                 </div>
 
                                 {/* Phone & Location Row */}
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label className="premium-label">
-                                            Phone <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="tel"
-                                            name="phone"
-                                            value={formData.phone}
-                                            onChange={handleInputChange}
-                                            placeholder="(408) 565-5523"
-                                            required
-                                            className="w-full h-9 px-3 text-sm rounded-lg premium-input"
-                                        />
+                                        <label className="premium-label">Phone <span className="text-red-500">*</span></label>
+                                        <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} placeholder="(408) 565-5523" required className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
                                     </div>
                                     <div>
-                                        <label className="premium-label">
-                                            Location <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="location"
-                                            value={formData.location}
-                                            onChange={handleInputChange}
-                                            placeholder="San Jose, CA"
-                                            required
-                                            className="w-full h-9 px-3 text-sm rounded-lg premium-input"
-                                        />
+                                        <label className="premium-label">Location <span className="text-red-500">*</span></label>
+                                        <input type="text" name="location" value={formData.location} onChange={handleInputChange} placeholder="San Jose, CA" required className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
                                     </div>
                                 </div>
 
@@ -565,26 +442,9 @@ const PublicContactRoot = () => {
                                 <div className="flex gap-2 items-end">
                                     <div className="flex-1">
                                         <label className="premium-label">VIN</label>
-                                        <input
-                                            type="text"
-                                            name="vin"
-                                            value={formData.vin}
-                                            onChange={handleInputChange}
-                                            placeholder="1HGBH41JXMN109186"
-                                            className="w-full h-9 px-3 text-sm rounded-lg premium-input"
-                                        />
+                                        <input type="text" name="vin" value={formData.vin} onChange={handleInputChange} placeholder="1HGBH41JXMN109186" className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
                                     </div>
-                                    <button
-                                        type="button"
-                                        onClick={handleVinLookup}
-                                        disabled={vinLoading || !formData.vin}
-                                        className="h-9 px-5 text-xs font-medium border rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-sm"
-                                        style={{
-                                            borderColor: themeColor,
-                                            color: themeColor,
-                                            backgroundColor: 'white'
-                                        }}
-                                    >
+                                    <button type="button" onClick={handleVinLookup} disabled={vinLoading || !formData.vin} className="h-9 px-5 text-xs font-medium border rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-sm" style={{ borderColor: themeColor, color: themeColor, backgroundColor: 'white' }}>
                                         {vinLoading ? '...' : 'Lookup'}
                                     </button>
                                 </div>
@@ -593,65 +453,33 @@ const PublicContactRoot = () => {
                                 <div className="grid grid-cols-3 gap-2">
                                     <div>
                                         <label className="premium-label">Year</label>
-                                        <select
-                                            name="year"
-                                            value={formData.year}
-                                            onChange={handleInputChange}
-                                            className="w-full h-9 px-3 text-sm rounded-lg premium-select"
-                                        >
+                                        <select name="year" value={formData.year} onChange={handleInputChange} className="w-full h-9 px-3 text-sm rounded-lg premium-select">
                                             <option value="">Select</option>
-                                            {yearOptions.map(year => (
-                                                <option key={year} value={year}>{year}</option>
-                                            ))}
+                                            {yearOptions.map(year => (<option key={year} value={year}>{year}</option>))}
                                         </select>
                                     </div>
                                     <div>
                                         <label className="premium-label">Make</label>
-                                        <select
-                                            name="make"
-                                            value={formData.make}
-                                            onChange={handleInputChange}
-                                            className="w-full h-9 px-3 text-sm rounded-lg premium-select"
-                                        >
+                                        <select name="make" value={formData.make} onChange={handleInputChange} className="w-full h-9 px-3 text-sm rounded-lg premium-select">
                                             <option value="">Select</option>
-                                            {makeOptions.map((make) => (
-                                                <option key={make.Make_ID} value={make.Make_Name}>{make.Make_Name}</option>
-                                            ))}
+                                            {makeOptions.map((make) => (<option key={make.Make_ID} value={make.Make_Name}>{make.Make_Name}</option>))}
                                         </select>
                                     </div>
                                     <div>
                                         <label className="premium-label">Model</label>
-                                        <select
-                                            name="model"
-                                            value={formData.model}
-                                            onChange={handleInputChange}
-                                            disabled={!formData.make}
-                                            className="w-full h-9 px-3 text-sm rounded-lg premium-select disabled:opacity-50"
-                                        >
+                                        <select name="model" value={formData.model} onChange={handleInputChange} disabled={!formData.make} className="w-full h-9 px-3 text-sm rounded-lg premium-select disabled:opacity-50">
                                             <option value="">Select</option>
-                                            {modelOptions.map((model) => (
-                                                <option key={model.Model_ID} value={model.Model_Name}>{model.Model_Name}</option>
-                                            ))}
+                                            {modelOptions.map((model) => (<option key={model.Model_ID} value={model.Model_Name}>{model.Model_Name}</option>))}
                                         </select>
                                     </div>
                                 </div>
 
                                 {/* Service Type */}
                                 <div>
-                                    <label className="premium-label">
-                                        Service Type <span className="text-red-500">*</span>
-                                    </label>
-                                    <select
-                                        name="serviceType"
-                                        value={formData.serviceType}
-                                        onChange={handleInputChange}
-                                        required
-                                        className="w-full h-9 px-3 text-sm rounded-lg premium-select"
-                                    >
+                                    <label className="premium-label">Service Type <span className="text-red-500">*</span></label>
+                                    <select name="serviceType" value={formData.serviceType} onChange={handleInputChange} required className="w-full h-9 px-3 text-sm rounded-lg premium-select">
                                         <option value="">Select service type</option>
-                                        {serviceTypeOptions.map((opt, idx) => (
-                                            <option key={idx} value={opt}>{opt}</option>
-                                        ))}
+                                        {serviceTypeOptions.map((opt, idx) => (<option key={idx} value={opt}>{opt}</option>))}
                                     </select>
                                 </div>
 
@@ -662,22 +490,13 @@ const PublicContactRoot = () => {
                                         <div className="grid grid-cols-2 gap-1.5">
                                             {windshieldFeatureOptions.map((feature, idx) => (
                                                 <label key={idx} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer py-1">
-                                                    <input
-                                                        type="checkbox"
-                                                        name="windshieldFeatures"
-                                                        value={feature}
-                                                        checked={(formData.windshieldFeatures || []).includes(feature)}
-                                                        onChange={handleCheckboxChange}
-                                                        className="w-3.5 h-3.5 rounded"
-                                                        style={{ accentColor: themeColor }}
-                                                    />
+                                                    <input type="checkbox" name="windshieldFeatures" value={feature} checked={(formData.windshieldFeatures || []).includes(feature)} onChange={handleCheckboxChange} className="w-3.5 h-3.5 rounded" style={{ accentColor: themeColor }} />
                                                     {feature}
                                                 </label>
                                             ))}
                                         </div>
                                     </div>
                                 )}
-
                                 {formData.serviceType === 'Window Rolling Issue' && (
                                     <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 animate-fadeIn">
                                         <p className="text-xs font-medium text-slate-600 mb-2">Location <span className="text-red-500">*</span></p>
@@ -691,7 +510,6 @@ const PublicContactRoot = () => {
                                         </div>
                                     </div>
                                 )}
-
                                 {formData.serviceType === 'Vent Glass Replacement' && (
                                     <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 animate-fadeIn">
                                         <p className="text-xs font-medium text-slate-600 mb-2">Location <span className="text-red-500">*</span></p>
@@ -705,7 +523,6 @@ const PublicContactRoot = () => {
                                         </div>
                                     </div>
                                 )}
-
                                 {formData.serviceType === 'Door Glass Replacement' && (
                                     <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 animate-fadeIn">
                                         <p className="text-xs font-medium text-slate-600 mb-2">Location <span className="text-red-500">*</span></p>
@@ -719,7 +536,6 @@ const PublicContactRoot = () => {
                                         </div>
                                     </div>
                                 )}
-
                                 {formData.serviceType === 'Quarter Glass Replacement' && (
                                     <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 animate-fadeIn">
                                         <p className="text-xs font-medium text-slate-600 mb-2">Location <span className="text-red-500">*</span></p>
@@ -750,25 +566,158 @@ const PublicContactRoot = () => {
                                 </div>
 
                                 {/* Submit Button */}
-                                <button
-                                    type="submit"
-                                    disabled={formLoading}
-                                    className="premium-btn w-full h-10 text-sm font-semibold text-white rounded-lg disabled:opacity-60 disabled:cursor-not-allowed mt-4"
-                                    style={{
-                                        background: `linear-gradient(135deg, ${themeColor} 0%, ${themeColor}cc 100%)`
-                                    }}
-                                >
-                                    {formLoading ? (
-                                        <span className="flex items-center justify-center gap-2">
-                                            <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                                            Sending...
-                                        </span>
-                                    ) : 'Submit Request'}
+                                <button type="submit" disabled={formLoading} className="premium-btn w-full h-10 text-sm font-semibold text-white rounded-lg disabled:opacity-60 disabled:cursor-not-allowed mt-4" style={{ background: `linear-gradient(135deg, ${themeColor} 0%, ${themeColor}cc 100%)` }}>
+                                    {formLoading ? (<span className="flex items-center justify-center gap-2"><span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>Sending...</span>) : 'Submit Request'}
                                 </button>
                             </form>
                         </div>
                     </div>
                 </div>
+
+                {/* Right Column - Info & Glass Reference */}
+                <div className="w-full lg:w-7/12 order-1 lg:order-2 flex flex-col gap-4 lg:h-full lg:overflow-hidden pt-2 pb-2">
+
+                    {/* Card 1: Shop Info & Map Combined */}
+                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col overflow-hidden shrink-0 flex-1 min-h-0">
+                        {/* Main Content Area - Flex Row */}
+                        <div className="flex flex-1 min-h-0 overflow-hidden">
+
+                            {/* Left Column - Shop Info */}
+                            <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                                {/* Header Section - Simplified */}
+                                <div className="px-5 py-3 border-b border-slate-100 bg-slate-50/50 flex-shrink-0">
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex-1 min-w-0">
+                                            <h2 className="text-lg font-bold text-slate-800 truncate leading-tight" style={{ color: themeColor }}>{businessInfo?.businessName || "Our Location"}</h2>
+                                            {businessInfo?.tagline && (
+                                                <p className="text-xs text-slate-500 truncate">{businessInfo.tagline}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Contact Info - Scrollable */}
+                                <div className="px-5 py-2 grid grid-cols-1 gap-1 overflow-y-auto flex-1 custom-scrollbar">
+                                    {/* Owner Row */}
+                                    {businessInfo?.name && (
+                                        <div className="flex items-center gap-3 py-1.5 px-0">
+                                            <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${themeColor}15`, color: themeColor }}>
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                                            </div>
+                                            <div className="text-sm font-semibold text-slate-700">
+                                                {businessInfo.name}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Phone Row */}
+                                    {businessInfo?.phone && (
+                                        <a href={`tel:${businessInfo.phone}`} className="flex items-center gap-3 py-1.5 px-0 rounded-lg hover:bg-slate-50 transition-colors group">
+                                            <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${themeColor}15`, color: themeColor }}>
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-semibold text-slate-700 group-hover:underline">{businessInfo.phone}</p>
+                                            </div>
+                                        </a>
+                                    )}
+
+                                    {/* Address Chip */}
+                                    {businessInfo?.address && (
+                                        <div className="flex items-start gap-3 py-1.5 px-0">
+                                            <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: `${themeColor}15`, color: themeColor }}>
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                            </div>
+                                            <div className="text-xs text-slate-600 leading-snug flex-1">
+                                                {businessInfo.address}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Email Chip */}
+                                    {businessInfo?.email && (
+                                        <a href={`mailto:${businessInfo.email}`} className="flex items-center gap-3 py-1.5 px-0 rounded-lg hover:bg-slate-50 transition-colors group">
+                                            <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${themeColor}15`, color: themeColor }}>
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-semibold text-slate-700 truncate group-hover:underline">{businessInfo.email}</p>
+                                            </div>
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Right Column - Map (45% width) */}
+                            {businessInfo?.maps && (
+                                <div className="flex-shrink-0 relative bg-slate-100 border-l border-slate-100 overflow-hidden" style={{ width: '45%' }}>
+                                    <MapEmbed html={businessInfo.maps} />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Card 2: Glass Reference - Takes ~50% height */}
+                    <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm text-center flex-shrink-0 flex-1 min-h-0 flex flex-col items-center justify-center overflow-hidden relative group">
+                        <div className="relative w-full flex-1 flex items-center justify-center min-h-0">
+                            <img
+                                src={carPreview}
+                                alt="Car Glass Reference"
+                                className="w-auto h-full max-h-[90%] object-contain drop-shadow-lg"
+                            />
+                            {/* Sunroof SVG Overlay */}
+                            <img
+                                src={sunroofSvg}
+                                alt="Sunroof pointer"
+                                className="w-45 h-22 absolute pointer-events-none opacity-0 group-hover:opacity-90 transition-opacity duration-300"
+                                style={{ top: '-4%', left: '40%', transform: 'translateX(-50%)' }}
+                            />
+                            {/* Front Windshield SVG Overlay */}
+                            <img
+                                src={frontWindshieldSvg}
+                                alt="Front windshield pointer"
+                                className="w-40 h-20 absolute pointer-events-none opacity-0 group-hover:opacity-90 transition-opacity duration-300"
+                                style={{ top: '15%', left: '30%', transform: 'translateX(-50%)' }}
+                            />                            {/* Rear Quarter Glass SVG Overlay */}
+                            <img
+                                src={rearQuarterGlassSvg}
+                                alt="Rear quarter glass pointer"
+                                className="w-40 h-20 absolute pointer-events-none opacity-0 group-hover:opacity-90 transition-opacity duration-300"
+                                style={{ top: '10%', left: '89%', transform: 'translateX(-50%)' }}
+                            />                            {/* Front Vent Glass SVG Overlay */}
+                            <img
+                                src={frontVentGlassSvg}
+                                alt="Front vent glass pointer"
+                                className="w-80 h-25 rotate-[-90deg] absolute pointer-events-none opacity-0 group-hover:opacity-90 transition-opacity duration-300"
+                                style={{ top: '9%', left: '33%', transform: 'translateX(-50%)' }}
+                            />                            {/* Rear Windshield SVG Overlay */}
+                            <img
+                                src={rearWindshieldSvg}
+                                alt="Rear windshield pointer"
+                                className="w-30 h-20 absolute pointer-events-none opacity-0 group-hover:opacity-90 transition-opacity duration-300"
+                                style={{ top: '-2%', left: '90%', transform: 'translateX(-50%)' }}
+                            />                            {/* Front Door Glass SVG Overlay */}
+                            <img
+                                src={frontDoorGlassSvg}
+                                alt="Front door glass pointer"
+                                className="w-80 h-25 rotate-[-90deg] absolute pointer-events-none opacity-0 group-hover:opacity-90 transition-opacity duration-300"
+                                style={{ top: '-6%', left: '40%', transform: 'translateX(-50%)' }}
+                            /></div>                            {/* Rear Door Glass SVG Overlay */}
+                        <img
+                            src={rearDoorGlassSvg}
+                            alt="Rear door glass pointer"
+                            className="w-80 h-25 rotate-[-90deg] absolute pointer-events-none opacity-0 group-hover:opacity-90 transition-opacity duration-300"
+                            style={{ top: '-9%', left: '47%', transform: 'translateX(-50%)' }}
+                        />
+                        {/* Rear Vent Glass SVG Overlay */}
+                        <img
+                            src={rearVentGlassSvg}
+                            alt="Rear vent glass pointer"
+                            className="w-40 h-15 absolute pointer-events-none opacity-0 group-hover:opacity-90 transition-opacity duration-300"
+                            style={{ top: '27%', left: '85%', transform: 'translateX(-50%)' }}
+                        />                    </div>
+                </div>
+
             </div>
         </div>
     );
