@@ -79,29 +79,6 @@ const CustomerSidebarFilters = ({
                 expandIconPosition="end"
                 className="bg-transparent filter-collapse"
             >
-                {/* Properties Filter */}
-                <Panel
-                    header={
-                        <div className="flex items-center gap-2">
-                            <CheckSquareOutlined className="text-slate-400" />
-                            <span className="font-semibold text-slate-700">Properties</span>
-                        </div>
-                    }
-                    key="properties"
-                    className="mb-2"
-                >
-                    <div className="flex flex-col gap-3">
-                        <Checkbox checked={hasVehicleFilter} onChange={(e) => setHasVehicleFilter(e.target.checked)}>
-                            Has Vehicle
-                        </Checkbox>
-                        <Checkbox checked={hasEmailFilter} onChange={(e) => setHasEmailFilter(e.target.checked)}>
-                            Has Email
-                        </Checkbox>
-                        <Checkbox checked={taxExemptFilter} onChange={(e) => setTaxExemptFilter(e.target.checked)}>
-                            Tax Exempt (Org)
-                        </Checkbox>
-                    </div>
-                </Panel>
 
                 {/* Date Range Filter */}
                 <Panel

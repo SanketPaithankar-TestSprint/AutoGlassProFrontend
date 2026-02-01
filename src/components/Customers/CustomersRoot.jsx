@@ -4,7 +4,7 @@ import { getCustomers } from "../../api/getCustomers";
 import { createCustomer } from "../../api/createCustomer";
 import { updateCustomer } from "../../api/updateCustomer";
 import { deleteCustomer } from "../../api/deleteCustomer";
-import { getOrganizations, deleteOrganization, createOrganization, updateOrganization } from "../../api/organizationApi";
+import { getOrganizations, deleteOrganization, createOrganization, updateOrganization, getOrganizationById } from "../../api/organizationApi";
 import { getValidToken } from "../../api/getValidToken";
 import { TeamOutlined, EditOutlined, PlusOutlined, DeleteOutlined, ShopOutlined, UserOutlined, FilterOutlined } from "@ant-design/icons";
 import { Modal, Form, Input, Button, notification, Tabs, Popconfirm, Tag, Empty } from "antd";
@@ -84,11 +84,30 @@ const CustomersRoot = () => {
         enabled: !!token
     });
 
-    const { data: organizations = [], isLoading: loadingOrgs } = useQuery({
+    const { data: organizations = [], isLoading: loadingOrgs, refetch: refetchOrgs } = useQuery({
         queryKey: ['organizations'],
         queryFn: async () => {
             if (!token) throw new Error("No token found.");
-            return await getOrganizations();
+            const basicOrgs = await getOrganizations();
+
+            // Fetch details for each organization to get email/phone/address which are missing in list view
+            if (Array.isArray(basicOrgs) && basicOrgs.length > 0) {
+                const detailedOrgs = await Promise.all(
+                    basicOrgs.map(async (org) => {
+                        try {
+                            const details = await getOrganizationById(org.organizationId);
+                            // Merge basic info with details (details usually contain everything, but safe to merge)
+                            return { ...org, ...details };
+                        } catch (err) {
+                            console.error(`Failed to fetch details for org ID ${org.organizationId}`, err);
+                            return org; // Return basic info if details fetch fails
+                        }
+                    })
+                );
+                return detailedOrgs;
+            }
+
+            return [];
         },
         enabled: !!token
     });
@@ -187,7 +206,8 @@ const CustomersRoot = () => {
         try {
             await deleteOrganization(id);
             notification.success({ message: "Organization deleted" });
-            queryClient.invalidateQueries({ queryKey: ['organizations'] });
+            await queryClient.invalidateQueries({ queryKey: ['organizations'] });
+            refetchOrgs();
         } catch (err) {
             notification.error({ message: "Failed to delete organization", description: err.message });
         }
@@ -197,14 +217,16 @@ const CustomersRoot = () => {
             const values = await orgForm.validateFields();
             setSaving(true);
             if (editingItem) {
-                await updateOrganization(editingItem.organizationId, values);
+                const payload = { ...values, userId: editingItem.userId };
+                await updateOrganization(editingItem.organizationId, payload);
                 notification.success({ message: "Organization updated" });
             } else {
                 await createOrganization(values);
                 notification.success({ message: "Organization created" });
             }
             setIsOrgModalVisible(false);
-            queryClient.invalidateQueries({ queryKey: ['organizations'] });
+            await queryClient.invalidateQueries({ queryKey: ['organizations'] });
+            refetchOrgs();
         } catch (err) {
             console.error(err);
             notification.error({ message: "Failed to save organization", description: err.message });
@@ -267,7 +289,6 @@ const CustomersRoot = () => {
                                     <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider pl-6">Name</th>
                                     <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Email</th>
                                     <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Phone</th>
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Vehicle</th>
                                     <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right pr-6">Actions</th>
                                 </tr>
                             </thead>
@@ -277,13 +298,6 @@ const CustomersRoot = () => {
                                         <td className="p-4 pl-6 text-sm font-semibold text-gray-900">{c.firstName} {c.lastName}</td>
                                         <td className="p-4 text-sm text-gray-600">{c.email || "-"}</td>
                                         <td className="p-4 text-sm text-gray-600">{c.phone || "-"}</td>
-                                        <td className="p-4 text-sm text-gray-600">
-                                            {c.vehicle ? (
-                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
-                                                    {c.vehicle.year} {c.vehicle.make}
-                                                </span>
-                                            ) : "-"}
-                                        </td>
                                         <td className="p-4 text-right pr-6">
                                             <div className="flex items-center justify-end gap-2">
                                                 <Button type="text" size="small" className="text-violet-600 hover:bg-violet-100" icon={<EditOutlined />} onClick={() => handleEditCustomer(c)} />
@@ -359,7 +373,8 @@ const CustomersRoot = () => {
                             <thead>
                                 <tr className="bg-gray-50/80 border-b border-gray-100">
                                     <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider pl-6">Company Name</th>
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Contact</th>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Email</th>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Phone</th>
                                     <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Location</th>
                                     <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Tax ID</th>
                                     <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right pr-6">Actions</th>
@@ -373,10 +388,10 @@ const CustomersRoot = () => {
                                             {org.taxExempt && <Tag color="green" className="ml-2">Tax Exempt</Tag>}
                                         </td>
                                         <td className="p-4 text-sm text-gray-600">
-                                            <div className="flex flex-col">
-                                                <span>{org.email}</span>
-                                                <span className="text-xs text-gray-400">{org.phone}</span>
-                                            </div>
+                                            {org.email || org.companyEmail || org.contactEmail || "-"}
+                                        </td>
+                                        <td className="p-4 text-sm text-gray-600">
+                                            {org.phone || org.companyPhone || org.contactPhone || org.phoneNumber || "-"}
                                         </td>
                                         <td className="p-4 text-sm text-gray-600">
                                             {[org.city, org.state].filter(Boolean).join(", ")}
