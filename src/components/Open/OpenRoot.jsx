@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { App, Pagination, List, Empty, Modal, Button, Space } from 'antd';
 import { ExclamationCircleOutlined, WarningOutlined } from '@ant-design/icons';
@@ -6,6 +6,7 @@ import { getValidToken } from '../../api/getValidToken';
 import { getServiceDocuments } from '../../api/getServiceDocuments';
 import { getCompositeServiceDocument } from '../../api/getCompositeServiceDocument';
 import { deleteServiceDocument } from '../../api/deleteServiceDocument';
+import { searchServiceDocuments } from '../../api/searchServiceDocuments';
 
 // Import new components
 import DashboardLayout from './DashboardLayout';
@@ -17,7 +18,8 @@ import PremiumDocumentCard from './PremiumDocumentCard';
 import {
     applyAllFilters,
     getOverdueDocuments,
-    formatCurrency
+    formatCurrency,
+    mergeSearchResults
 } from './helpers/utils';
 
 const OpenRoot = () => {
@@ -54,6 +56,12 @@ const OpenRoot = () => {
 
     // Track if overdue notifications have been shown
     const [overdueNotified, setOverdueNotified] = useState(false);
+
+    // API search states for two-tier search
+    const [isSearchingApi, setIsSearchingApi] = useState(false);
+    const [apiSearchResults, setApiSearchResults] = useState([]);
+    const [searchSource, setSearchSource] = useState('local'); // 'local' | 'api' | 'mixed'
+    const searchTimeoutRef = useRef(null);
 
     // Handle window resize for mobile detection
     useEffect(() => {
@@ -173,9 +181,77 @@ const OpenRoot = () => {
             overdueOnly: overdueFilter,
         };
 
-        const filtered = applyAllFilters(documents, filters);
-        setFilteredDocuments(filtered);
-    }, [searchTerm, documentTypeFilter, statusFilter, dateRangeFilter, customDateRange, amountRange, overdueFilter, documents]);
+        const localFiltered = applyAllFilters(documents, filters);
+
+        // If we have API results and a search term, merge them
+        if (searchTerm && searchTerm.trim().length >= 3 && apiSearchResults.length > 0) {
+            const merged = mergeSearchResults(localFiltered, apiSearchResults);
+            setFilteredDocuments(merged);
+            setSearchSource(localFiltered.length > 0 ? 'mixed' : 'api');
+        } else {
+            setFilteredDocuments(localFiltered);
+            setSearchSource('local');
+        }
+    }, [searchTerm, documentTypeFilter, statusFilter, dateRangeFilter, customDateRange, amountRange, overdueFilter, documents, apiSearchResults]);
+
+    // Two-tier search: Trigger API search when local results are insufficient
+    useEffect(() => {
+        // Clear previous timeout
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
+        }
+
+        // Reset API results if search term is cleared or too short
+        if (!searchTerm || searchTerm.trim().length < 3) {
+            setApiSearchResults([]);
+            setIsSearchingApi(false);
+            setSearchSource('local');
+            return;
+        }
+
+        // Debounce API search by 500ms
+        searchTimeoutRef.current = setTimeout(async () => {
+            // Check if local results are insufficient (less than 5)
+            const filters = {
+                searchTerm,
+                documentType: documentTypeFilter?.length > 0 ? documentTypeFilter : 'all',
+                status: statusFilter?.length > 0 ? statusFilter : 'all',
+                dateRange: dateRangeFilter,
+                customStartDate: customDateRange?.[0]?.toDate?.() || customDateRange?.[0],
+                customEndDate: customDateRange?.[1]?.toDate?.() || customDateRange?.[1],
+                amountFrom: amountRange[0],
+                amountTo: amountRange[1],
+                overdueOnly: overdueFilter,
+            };
+            const localFiltered = applyAllFilters(documents, filters);
+
+            // Only call API if local results are fewer than 5
+            if (localFiltered.length < 5) {
+                setIsSearchingApi(true);
+                try {
+                    const apiResponse = await searchServiceDocuments(searchTerm.trim(), 0, 20);
+                    const apiDocs = apiResponse?.content || apiResponse || [];
+                    setApiSearchResults(Array.isArray(apiDocs) ? apiDocs : []);
+                } catch (error) {
+                    console.error('API search failed:', error);
+                    // Silently fail - local results are still shown
+                    setApiSearchResults([]);
+                } finally {
+                    setIsSearchingApi(false);
+                }
+            } else {
+                // Local results are sufficient, clear API results
+                setApiSearchResults([]);
+            }
+        }, 500);
+
+        // Cleanup timeout on unmount
+        return () => {
+            if (searchTimeoutRef.current) {
+                clearTimeout(searchTimeoutRef.current);
+            }
+        };
+    }, [searchTerm, documents, documentTypeFilter, statusFilter, dateRangeFilter, customDateRange, amountRange, overdueFilter]);
 
     // Calculate active filter count
     const activeFilterCount = useMemo(() => {
@@ -302,6 +378,8 @@ const OpenRoot = () => {
                     searchTerm={searchTerm}
                     setSearchTerm={setSearchTerm}
                     onOpenFilters={() => setSidebarOpen(true)}
+                    isSearchingApi={isSearchingApi}
+                    searchSource={searchSource}
                 />
 
                 {/* Main Content */}

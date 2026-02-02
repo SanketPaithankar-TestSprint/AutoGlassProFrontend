@@ -448,10 +448,10 @@ const CustomersRoot = () => {
         />
     );
     return (
-        <DashboardLayout 
-            sidebar={sidebarContent} 
-            isMobile={isMobile} 
-            sidebarOpen={sidebarOpen} 
+        <DashboardLayout
+            sidebar={sidebarContent}
+            isMobile={isMobile}
+            sidebarOpen={sidebarOpen}
             setSidebarOpen={setSidebarOpen}
         >
             <div className="min-h-screen bg-slate-50">
@@ -513,11 +513,11 @@ const CustomersRoot = () => {
                     <Form form={customerForm} layout="vertical" className="mt-4">
                         <div className="grid grid-cols-2 gap-4">
                             <Form.Item name="firstName" label="First Name" rules={[{ required: true }]}><Input /></Form.Item>
-                            <Form.Item name="lastName" label="Last Name" rules={[{ required: true }]}><Input /></Form.Item>
+                            <Form.Item name="lastName" label="Last Name"><Input /></Form.Item>
                         </div>
-                        <Form.Item name="email" label="Email" rules={[{ type: 'email' }]}><Input /></Form.Item>
+                        <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email' }]}><Input /></Form.Item>
                         <Form.Item name="phone" label="Phone" rules={[{ required: true, message: 'Phone is required' }]}>
-                            <Input 
+                            <Input
                                 placeholder="(XXX) XXX-XXXX"
                                 onChange={(e) => handlePhoneChange(e, customerForm)}
                                 maxLength={14}
@@ -545,9 +545,9 @@ const CustomersRoot = () => {
                             <Form.Item name="taxId" label="Tax ID"><Input /></Form.Item>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
-                            <Form.Item name="email" label="Email" rules={[{ type: 'email' }]}><Input /></Form.Item>
+                            <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email' }]}><Input /></Form.Item>
                             <Form.Item name="phone" label="Phone" rules={[{ required: true }]}>
-                                <Input 
+                                <Input
                                     placeholder="(XXX) XXX-XXXX"
                                     onChange={(e) => handlePhoneChange(e, orgForm)}
                                     maxLength={14}
@@ -556,14 +556,14 @@ const CustomersRoot = () => {
                         </div>
                         <div className="border-t pt-4 mt-2">
                             <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">Address</h4>
-                            <Form.Item name="addressLine1" label="Address Line 1" rules={[{ required: true }]}><Input /></Form.Item>
+                            <Form.Item name="addressLine1" label="Address Line 1"><Input /></Form.Item>
                             <Form.Item name="addressLine2" label="Address Line 2"><Input /></Form.Item>
                             <div className="grid grid-cols-3 gap-4">
-                                <Form.Item name="city" label="City" rules={[{ required: true }]}><Input /></Form.Item>
-                                <Form.Item name="state" label="State" rules={[{ required: true }]}><Input /></Form.Item>
-                                <Form.Item name="postalCode" label="Zip" rules={[{ required: true }]}><Input /></Form.Item>
+                                <Form.Item name="city" label="City"><Input /></Form.Item>
+                                <Form.Item name="state" label="State"><Input /></Form.Item>
+                                <Form.Item name="postalCode" label="Zip"><Input /></Form.Item>
                             </div>
-                            <Form.Item name="country" label="Country" rules={[{ required: true }]}><Input /></Form.Item>
+                            <Form.Item name="country" label="Country"><Input /></Form.Item>
                         </div>
                     </Form>
                 </Modal>
