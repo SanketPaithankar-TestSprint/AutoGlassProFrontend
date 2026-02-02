@@ -20,7 +20,7 @@ import frontVentGlassSvg from '../../assets/front-vent-glass.svg';
 import frontDoorGlassSvg from '../../assets/front-door-glass.svg';
 import rearDoorGlassSvg from '../../assets/rear-door-glass.svg';
 import rearVentGlassSvg from '../../assets/rear-vent-glass.svg';
-import rearWindshieldSvg from '../../assets/rear-windshield.svg';
+import rearWindshieldSvg from '../../assets/Rear-Windshield.svg';
 import rearQuarterGlassSvg from '../../assets/rear-quarter-glass.svg';
 // Memoized Map component to prevent re-renders
 const MapEmbed = React.memo(({ html }) => (
