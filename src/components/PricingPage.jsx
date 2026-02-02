@@ -79,7 +79,7 @@ const PricingPage = () => {
                 <h3 className="text-base font-bold text-white mb-1">Professional</h3>
                 <div className="flex items-baseline gap-2 mb-1">
                   <span className="text-3xl font-extrabold text-white">$99</span>
-                  <span className="text-xs font-medium text-blue-50">per month</span>
+                  <span className="text-xs font-medium text-blue-50">per month per user</span>
                 </div>
                 <p className="text-blue-50 text-xs font-medium opacity-90">
                   Everything you need to run your auto glass quoting workflow.

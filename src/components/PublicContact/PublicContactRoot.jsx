@@ -14,14 +14,7 @@ import './PublicContact.css';
 
 // Import Assets
 import carPreview from '../../assets/car_preview.png';
-import sunroofSvg from '../../assets/sunroof.svg';
-import frontWindshieldSvg from '../../assets/front-wind-shield.svg';
-import frontVentGlassSvg from '../../assets/front-vent-glass.svg';
-import frontDoorGlassSvg from '../../assets/front-door-glass.svg';
-import rearDoorGlassSvg from '../../assets/rear-door-glass.svg';
-import rearVentGlassSvg from '../../assets/rear-vent-glass.svg';
-import rearWindshieldSvg from '../../assets/Rear-Windshield.svg';
-import rearQuarterGlassSvg from '../../assets/rear-quarter-glass.svg';
+import { GLASS_OVERLAYS } from './const/imageConfig';
 // Memoized Map component to prevent re-renders
 const MapEmbed = React.memo(({ html }) => (
     <div
@@ -62,7 +55,11 @@ const PublicContactRoot = () => {
         ventGlassLocation: '',
         doorGlassLocation: '',
         quarterGlassLocation: '',
-        message: ''
+        quarterGlassLocation: '',
+        message: '',
+        street: '',
+        city: '',
+        zipcode: ''
     });
 
     // Options state
@@ -221,9 +218,24 @@ const PublicContactRoot = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+        let finalValue = value;
+
+        if (name === 'phone') {
+            const cleaned = value.replace(/\D/g, '');
+            if (cleaned.length === 0) {
+                finalValue = '';
+            } else if (cleaned.length <= 3) {
+                finalValue = `(${cleaned}`;
+            } else if (cleaned.length <= 6) {
+                finalValue = `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
+            } else {
+                finalValue = `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6, 10)}`;
+            }
+        }
+
         setFormData(prev => ({
             ...prev,
-            [name]: value
+            [name]: finalValue
         }));
     };
 
@@ -238,6 +250,8 @@ const PublicContactRoot = () => {
             }
         });
     };
+
+    const isMobile = formData.servicePreference === 'Mobile service';
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -265,11 +279,11 @@ const PublicContactRoot = () => {
                 lastName: lastName, // Fallback if no last name provided? API might require it.
                 email: formData.email,
                 phone: formData.phone,
-                addressLine1: formData.location, // Mapping Location dropdown to addressLine1
-                addressLine2: "",
-                city: "", // Not captured
+                addressLine1: isMobile ? formData.street : formData.location, // Send street for mobile, location for shop
+                addressLine2: isMobile ? formData.street : "", // Send street for mobile only, empty for shop
+                city: isMobile ? formData.city : "", // Not captured
                 state: "", // Not captured
-                postalCode: "", // Not captured
+                postalCode: isMobile ? formData.zipcode : "", // Not captured
                 country: "", // Not captured
                 vin: formData.vin,
                 vehicleYear: formData.year ? parseInt(formData.year, 10) : 0,
@@ -341,7 +355,11 @@ const PublicContactRoot = () => {
             ventGlassLocation: '',
             quarterGlassLocation: '',
             doorGlassLocation: '',
-            message: ''
+            doorGlassLocation: '',
+            message: '',
+            street: '',
+            city: '',
+            zipcode: ''
         });
     };
 
@@ -405,9 +423,9 @@ const PublicContactRoot = () => {
             <div className="flex flex-col lg:flex-row w-full h-full max-w-7xl mx-auto items-stretch px-4 md:px-8 lg:px-12 py-4 lg:py-6 gap-6 lg:gap-8">
 
                 {/* Left Column - Form Section */}
-                <div className="w-full lg:w-5/12 order-2 lg:order-1 flex flex-col min-h-0 lg:h-full pr-2">
-                    <div className="flex-1 flex items-center justify-center overflow-y-auto custom-scrollbar">
-                        <div className="premium-form-card rounded-2xl p-8 w-full">
+                <div className="w-full lg:w-5/12 order-2 lg:order-1 flex flex-col min-h-0 lg:h-full pr-2 py-2">
+                    <div className="flex-1 overflow-y-auto custom-scrollbar">
+                        <div className="premium-form-card rounded-2xl p-8 w-full min-h-full h-auto">
                             <div className="text-center mb-6">
                                 <h3 className="text-xl font-bold text-slate-800 mb-1">Get a Quote</h3>
                                 <p className="text-sm text-slate-500">Fill the form below and we will get back to you shortly</p>
@@ -433,8 +451,8 @@ const PublicContactRoot = () => {
                                         <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} placeholder="(408) 565-5523" required className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
                                     </div>
                                     <div>
-                                        <label className="premium-label">Location <span className="text-red-500">*</span></label>
-                                        <input type="text" name="location" value={formData.location} onChange={handleInputChange} placeholder="San Jose, CA" required className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
+                                        <label className="premium-label">Location {!isMobile && <span className="text-red-500">*</span>}</label>
+                                        <input type="text" name="location" value={formData.location} onChange={handleInputChange} placeholder="San Jose, CA" required={!isMobile} className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
                                     </div>
                                 </div>
 
@@ -565,6 +583,25 @@ const PublicContactRoot = () => {
                                     </div>
                                 </div>
 
+                                {isMobile && (
+                                    <div className="animate-fadeIn space-y-3 pt-2">
+                                        <div>
+                                            <label className="premium-label">Street Address <span className="text-red-500">*</span></label>
+                                            <input type="text" name="street" value={formData.street} onChange={handleInputChange} placeholder="123 Main St" required className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <label className="premium-label">City <span className="text-red-500">*</span></label>
+                                                <input type="text" name="city" value={formData.city} onChange={handleInputChange} placeholder="San Jose" required className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
+                                            </div>
+                                            <div>
+                                                <label className="premium-label">Zip Code <span className="text-red-500">*</span></label>
+                                                <input type="text" name="zipcode" value={formData.zipcode} onChange={handleInputChange} placeholder="95112" required className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Submit Button */}
                                 <button type="submit" disabled={formLoading} className="premium-btn w-full h-10 text-sm font-semibold text-white rounded-lg disabled:opacity-60 disabled:cursor-not-allowed mt-4" style={{ background: `linear-gradient(135deg, ${themeColor} 0%, ${themeColor}cc 100%)` }}>
                                     {formLoading ? (<span className="flex items-center justify-center gap-2"><span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>Sending...</span>) : 'Submit Request'}
@@ -659,63 +696,31 @@ const PublicContactRoot = () => {
 
                     {/* Card 2: Glass Reference - Takes ~50% height */}
                     <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm text-center flex-shrink-0 flex-1 min-h-0 flex flex-col items-center justify-center overflow-hidden relative group">
-                        <div className="relative w-full flex-1 flex items-center justify-center min-h-0">
+                        {/* Fixed size container on md and lg screens, responsive on smaller screens */}
+                        <div
+                            className="relative flex items-center justify-center flex-shrink-0 w-full md:w-80 lg:w-96"
+                            style={{
+                                aspectRatio: '3/4',
+                                position: 'relative',
+                            }}
+                        >
                             <img
                                 src={carPreview}
                                 alt="Car Glass Reference"
-                                className="w-auto h-full max-h-[90%] object-contain drop-shadow-lg"
+                                className="w-full h-full object-contain drop-shadow-lg"
+                                style={{ position: 'absolute', top: 0, left: 0 }}
                             />
-                            {/* Sunroof SVG Overlay */}
-                            <img
-                                src={sunroofSvg}
-                                alt="Sunroof pointer"
-                                className="w-45 h-22 absolute pointer-events-none opacity-0 group-hover:opacity-90 transition-opacity duration-300"
-                                style={{ top: '-4%', left: '40%', transform: 'translateX(-50%)' }}
-                            />
-                            {/* Front Windshield SVG Overlay */}
-                            <img
-                                src={frontWindshieldSvg}
-                                alt="Front windshield pointer"
-                                className="w-40 h-20 absolute pointer-events-none opacity-0 group-hover:opacity-90 transition-opacity duration-300"
-                                style={{ top: '15%', left: '30%', transform: 'translateX(-50%)' }}
-                            />                            {/* Rear Quarter Glass SVG Overlay */}
-                            <img
-                                src={rearQuarterGlassSvg}
-                                alt="Rear quarter glass pointer"
-                                className="w-40 h-20 absolute pointer-events-none opacity-0 group-hover:opacity-90 transition-opacity duration-300"
-                                style={{ top: '10%', left: '89%', transform: 'translateX(-50%)' }}
-                            />                            {/* Front Vent Glass SVG Overlay */}
-                            <img
-                                src={frontVentGlassSvg}
-                                alt="Front vent glass pointer"
-                                className="w-80 h-25 rotate-[-90deg] absolute pointer-events-none opacity-0 group-hover:opacity-90 transition-opacity duration-300"
-                                style={{ top: '9%', left: '33%', transform: 'translateX(-50%)' }}
-                            />                            {/* Rear Windshield SVG Overlay */}
-                            <img
-                                src={rearWindshieldSvg}
-                                alt="Rear windshield pointer"
-                                className="w-30 h-20 absolute pointer-events-none opacity-0 group-hover:opacity-90 transition-opacity duration-300"
-                                style={{ top: '-2%', left: '90%', transform: 'translateX(-50%)' }}
-                            />                            {/* Front Door Glass SVG Overlay */}
-                            <img
-                                src={frontDoorGlassSvg}
-                                alt="Front door glass pointer"
-                                className="w-80 h-25 rotate-[-90deg] absolute pointer-events-none opacity-0 group-hover:opacity-90 transition-opacity duration-300"
-                                style={{ top: '-6%', left: '40%', transform: 'translateX(-50%)' }}
-                            /></div>                            {/* Rear Door Glass SVG Overlay */}
-                        <img
-                            src={rearDoorGlassSvg}
-                            alt="Rear door glass pointer"
-                            className="w-80 h-25 rotate-[-90deg] absolute pointer-events-none opacity-0 group-hover:opacity-90 transition-opacity duration-300"
-                            style={{ top: '-9%', left: '47%', transform: 'translateX(-50%)' }}
-                        />
-                        {/* Rear Vent Glass SVG Overlay */}
-                        <img
-                            src={rearVentGlassSvg}
-                            alt="Rear vent glass pointer"
-                            className="w-40 h-15 absolute pointer-events-none opacity-0 group-hover:opacity-90 transition-opacity duration-300"
-                            style={{ top: '27%', left: '85%', transform: 'translateX(-50%)' }}
-                        />                    </div>
+                            {GLASS_OVERLAYS.map((overlay) => (
+                                <img
+                                    key={overlay.id}
+                                    src={overlay.src}
+                                    alt={overlay.alt}
+                                    className={overlay.className}
+                                    style={overlay.style}
+                                />
+                            ))}
+                        </div>
+                    </div>
                 </div>
 
             </div>

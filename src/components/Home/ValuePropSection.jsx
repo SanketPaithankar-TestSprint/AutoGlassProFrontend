@@ -87,7 +87,7 @@ const ValuePropSection = () => {
     ];
 
     return (
-        <div className="bg-white py-16 md:py-24 px-6 md:px-12 lg:px-20 overflow-hidden">
+        <div className="bg-transparent py-16 md:py-24 px-6 md:px-12 lg:px-20 overflow-hidden">
 
             {/* 1. Value Proposition Header */}
             <AnimatedSection>

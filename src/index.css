@@ -1,10 +1,10 @@
 /* Glassmorphism Navbar */
 .ant-layout-header.glass-navbar {
-  background: rgba(255, 255, 255, 0.95) !important;
+  background: transparent !important;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   color: #0f172a !important;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: none;
 }
 
 /* Clean light background for main page */

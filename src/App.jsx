@@ -165,7 +165,7 @@ function AppContent() {
         <Layout className="min-h-screen bg-white flex flex-col">
           <Header onLoginSuccess={handleLoginSuccess} />
 
-          <Content className="flex-1 flex flex-col pt-20"> {/* pt-20 for fixed header */}
+          <Content className={`flex-1 flex flex-col ${location.pathname === '/' ? '' : 'pt-20'}`}> {/* pt-20 for fixed header, removed for Home to allow immersive hero */}
             <div className={`flex flex-col ${location.pathname === '/auth' ? '' : 'min-h-[calc(100vh-80px)]'}`}>
               <Suspense fallback={
                 <div className="flex items-center justify-center h-full">

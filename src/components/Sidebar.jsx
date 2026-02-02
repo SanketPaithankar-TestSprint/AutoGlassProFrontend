@@ -13,7 +13,9 @@ import {
     CalendarOutlined,
     MenuOutlined,
     PieChartOutlined,
-    TeamOutlined
+    TeamOutlined,
+    FormOutlined,
+    MessageOutlined
 } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 import Logo from './logo';
@@ -99,7 +101,7 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
             label: <Link to="/customers">Customers</Link>,
         },
         {
-            icon: <FileTextOutlined />,
+            icon: <FormOutlined />,
             label: <Link to="/search-by-root">Quote</Link>,
         },
         {
@@ -119,7 +121,7 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
         },
         {
             key: '/service-contact-form',
-            icon: <FileTextOutlined />,
+            icon: <MessageOutlined />,
             label: <Link to="/service-contact-form">Service Inquiries</Link>,
         },
 

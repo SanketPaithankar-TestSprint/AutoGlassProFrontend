@@ -26,9 +26,9 @@ const Home = () => {
     }, [])
 
     return (
-        <div className="min-h-screen bg-white text-slate-900 pb-24">
+        <div className="min-h-screen bg-gradient-to-b from-white via-indigo-50/30 to-blue-50/30 text-slate-900 pb-16">
             {/* Spacer for sticky header if you have one */}
-            <div className="h-16" />
+            {/* <div className="h-16" />*/}
 
             {/* Hero */}
             <HeroSection />

@@ -131,6 +131,21 @@ const CustomersRoot = () => {
         setTaxExemptFilter(false);
     };
 
+    // Phone number formatting helper
+    const formatPhoneNumber = (value) => {
+        const cleaned = value.replace(/\D/g, '');
+        if (cleaned.length === 0) return '';
+        if (cleaned.length <= 3) return `(${cleaned}`;
+        if (cleaned.length <= 6) return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
+        return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6, 10)}`;
+    };
+
+    const handlePhoneChange = (e, form) => {
+        const { value } = e.target;
+        const formatted = formatPhoneNumber(value);
+        form.setFieldValue('phone', formatted);
+    };
+
     const filters = {
         searchTerm,
         dateRange: dateRangeFilter,
@@ -433,7 +448,12 @@ const CustomersRoot = () => {
         />
     );
     return (
-        <DashboardLayout sidebar={sidebarContent} isMobile={isMobile} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}>
+        <DashboardLayout 
+            sidebar={sidebarContent} 
+            isMobile={isMobile} 
+            sidebarOpen={sidebarOpen} 
+            setSidebarOpen={setSidebarOpen}
+        >
             <div className="min-h-screen bg-slate-50">
                 <CustomerHeaderBar
                     viewMode={viewMode}
@@ -496,7 +516,13 @@ const CustomersRoot = () => {
                             <Form.Item name="lastName" label="Last Name" rules={[{ required: true }]}><Input /></Form.Item>
                         </div>
                         <Form.Item name="email" label="Email" rules={[{ type: 'email' }]}><Input /></Form.Item>
-                        <Form.Item name="phone" label="Phone" rules={[{ required: true }]}><Input /></Form.Item>
+                        <Form.Item name="phone" label="Phone" rules={[{ required: true, message: 'Phone is required' }]}>
+                            <Input 
+                                placeholder="(XXX) XXX-XXXX"
+                                onChange={(e) => handlePhoneChange(e, customerForm)}
+                                maxLength={14}
+                            />
+                        </Form.Item>
                         <div className="border-t pt-4 mt-2">
                             <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">Address</h4>
                             <Form.Item name="addressLine1" label="Address Line 1"><Input /></Form.Item>
@@ -520,7 +546,13 @@ const CustomersRoot = () => {
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <Form.Item name="email" label="Email" rules={[{ type: 'email' }]}><Input /></Form.Item>
-                            <Form.Item name="phone" label="Phone" rules={[{ required: true }]}><Input /></Form.Item>
+                            <Form.Item name="phone" label="Phone" rules={[{ required: true }]}>
+                                <Input 
+                                    placeholder="(XXX) XXX-XXXX"
+                                    onChange={(e) => handlePhoneChange(e, orgForm)}
+                                    maxLength={14}
+                                />
+                            </Form.Item>
                         </div>
                         <div className="border-t pt-4 mt-2">
                             <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">Address</h4>

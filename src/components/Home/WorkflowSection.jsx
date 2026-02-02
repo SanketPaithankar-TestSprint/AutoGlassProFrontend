@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
-    FileTextOutlined,
+    FormOutlined,
     CheckSquareOutlined,
     ToolOutlined,
     CreditCardOutlined
@@ -8,7 +8,7 @@ import {
 
 const steps = [
     {
-        icon: <FileTextOutlined className="text-4xl" style={{ color: '#00A8E4' }} />,
+        icon: <FormOutlined className="text-4xl" style={{ color: '#00A8E4' }} />,
         title: "Create Quote",
         description: "Generate professional quotes with customer info, vehicle details, glass parts, labor costs, and automatic pricing calculations in minutes."
     },

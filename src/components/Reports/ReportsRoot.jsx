@@ -132,19 +132,20 @@ const ReportsRoot = () => {
             </div>
 
             {/* Controls Card */}
-            <div className="mb-6 bg-white shadow-md rounded-2xl overflow-hidden p-3 md:p-6">
-                <div className="flex flex-col md:flex-row md:items-end gap-4 max-w-full">
-                    <div className="w-full md:flex-1 md:min-w-[280px]">
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                            Select Date Range
+            <div className="mb-6 bg-white shadow-md rounded-2xl overflow-hidden p-4 md:p-5">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+                    {/* Date Range Picker - Takes 6 columns on medium+ screens */}
+                    <div className="md:col-span-6">
+                        <label className="block text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">
+                            Date Range
                         </label>
                         <RangePicker
                             value={dateRange}
                             onChange={handleDateChange}
                             format="YYYY-MM-DD"
                             className="w-full"
-                            size="large"
-                            style={{ borderRadius: '12px' }}
+                            size="middle"
+                            style={{ borderRadius: '10px' }}
                             allowClear={false}
                             presets={[
                                 { label: 'Last 7 Days', value: [dayjs().subtract(7, 'day'), dayjs()] },
@@ -156,26 +157,27 @@ const ReportsRoot = () => {
                         />
                     </div>
 
-                    <div className="flex gap-2 w-full md:w-auto">
+                    {/* Action Buttons - Takes 6 columns on medium+ screens */}
+                    <div className="md:col-span-6 flex gap-2 w-full">
                         <Button
                             type="primary"
-                            size="large"
+                            size="middle"
                             icon={<SearchOutlined />}
                             onClick={handleGenerateReport}
                             loading={loading}
-                            className="flex-1 md:flex-none h-10 px-6 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 border-0 shadow-lg hover:shadow-xl transition-all duration-300"
+                            className="flex-1 h-9 rounded-lg bg-gradient-to-r from-violet-600 to-purple-600 border-0 shadow-md hover:shadow-lg transition-all duration-300 text-sm"
                         >
-                            Generate Report
+                            Generate
                         </Button>
 
                         <Button
-                            size="large"
+                            size="middle"
                             icon={<DownloadOutlined />}
                             onClick={handleDownload}
                             disabled={!pdfBlob}
-                            className="flex-1 md:flex-none h-10 px-6 rounded-xl border-violet-300 text-violet-600 hover:bg-violet-50 hover:border-violet-400 transition-all duration-300"
+                            className="flex-1 h-9 rounded-lg border-violet-300 text-violet-600 hover:bg-violet-50 hover:border-violet-400 transition-all duration-300 text-sm"
                         >
-                            Download PDF
+                            Download
                         </Button>
                     </div>
                 </div>
