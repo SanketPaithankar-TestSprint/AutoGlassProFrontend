@@ -1,10 +1,12 @@
 import { useEffect } from 'react';
 import { EventSourcePolyfill } from 'event-source-polyfill';
-import { notification } from 'antd';
+import { App } from 'antd';
 import { getValidToken } from '../api/getValidToken';
 import urls from '../config';
 
 const useInquiryNotifications = () => {
+    const { notification } = App.useApp();
+
     useEffect(() => {
         const token = getValidToken();
         if (!token) return;
@@ -59,7 +61,7 @@ const useInquiryNotifications = () => {
             console.log('Closing SSE connection.');
             eventSource.close();
         };
-    }, []);
+    }, [notification]);
 };
 
 export default useInquiryNotifications;
