@@ -24,6 +24,25 @@ const MapEmbed = React.memo(({ html }) => (
     />
 ));
 
+const formatPhoneNumber = (phoneNumber) => {
+    if (!phoneNumber) return '';
+    const cleaned = ('' + phoneNumber).replace(/\D/g, '');
+
+    // Check for 11 digits (1 + 10 digits) - remove leading 1
+    const match11 = cleaned.match(/^1(\d{3})(\d{3})(\d{4})$/);
+    if (match11) {
+        return `(${match11[1]}) ${match11[2]}-${match11[3]}`;
+    }
+
+    // Check for 10 digits
+    const match10 = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+    if (match10) {
+        return `(${match10[1]}) ${match10[2]}-${match10[3]}`;
+    }
+
+    return phoneNumber;
+};
+
 
 
 const PublicContactRoot = () => {
@@ -42,6 +61,7 @@ const PublicContactRoot = () => {
     const [formLoading, setFormLoading] = useState(false);
     const [vinLoading, setVinLoading] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [showNote, setShowNote] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -419,7 +439,13 @@ const PublicContactRoot = () => {
     }
     // Main Contact Form
     return (
-        <div className="min-h-screen lg:h-screen flex flex-col gradient-to-br from-slate-50 via-white to-slate-50 relative lg:overflow-hidden" style={{ '--theme-color': themeColor }}>
+        <div
+            className="min-h-screen lg:h-screen flex flex-col relative lg:overflow-hidden"
+            style={{
+                '--theme-color': themeColor,
+                background: `linear-gradient(135deg, ${themeColor}26 0%, #ffffff 50%, ${themeColor}12 100%)`
+            }}
+        >
             {/* Full Width Container */}
             <div className="flex flex-col lg:flex-row w-full h-full max-w-7xl mx-auto items-stretch px-4 md:px-8 lg:px-12 py-4 lg:py-6 gap-6 lg:gap-8">
 
@@ -643,10 +669,35 @@ const PublicContactRoot = () => {
                                     </div>
                                 )}
 
-                                {/* Customer Notes */}
+                                {/* Customer Notes Toggle */}
                                 <div>
-                                    <label className="premium-label">Customer Notes</label>
-                                    <textarea name="message" value={formData.message} onChange={handleInputChange} placeholder="Any additional details..." className="w-full px-3 py-2 text-sm rounded-lg premium-input h-24 resize-none" />
+                                    <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer mb-2">
+                                        <input
+                                            type="checkbox"
+                                            checked={showNote}
+                                            onChange={(e) => {
+                                                setShowNote(e.target.checked);
+                                                if (!e.target.checked) {
+                                                    setFormData(prev => ({ ...prev, message: '' }));
+                                                }
+                                            }}
+                                            className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300"
+                                            style={{ accentColor: themeColor }}
+                                        />
+                                        <span>Add Details/Notes</span>
+                                    </label>
+
+                                    {showNote && (
+                                        <div className="animate-fadeIn">
+                                            <textarea
+                                                name="message"
+                                                value={formData.message}
+                                                onChange={handleInputChange}
+                                                placeholder="Any additional details..."
+                                                className="w-full px-3 py-2 text-sm rounded-lg premium-input h-24 resize-none"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Submit Button */}
@@ -662,79 +713,81 @@ const PublicContactRoot = () => {
                 <div className="w-full lg:w-7/12 order-1 lg:order-2 flex flex-col gap-4 lg:h-full lg:overflow-hidden pt-2 pb-2">
 
                     {/* Card 1: Shop Info & Map Combined */}
+                    {/* Card 1: Shop Info & Map Combined */}
                     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col overflow-hidden shrink-0 flex-1 min-h-0">
-                        {/* Main Content Area - Flex Row */}
-                        <div className="flex flex-1 min-h-0 overflow-hidden">
+                        {/* Main Content Area - Responsive Flex */}
+                        <div className="flex flex-col md:flex-row flex-1 min-h-0 overflow-hidden">
 
-                            {/* Left Column - Shop Info */}
-                            <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-                                {/* Header Section - Simplified */}
-                                <div className="px-5 py-3 border-b border-slate-100 bg-slate-50/50 flex-shrink-0">
-                                    <div className="flex items-center gap-2">
+                            {/* Info Column */}
+                            <div className="flex flex-col w-full md:w-3/5 min-h-0 overflow-hidden">
+                                {/* Header Section */}
+                                <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex-shrink-0">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm" style={{ backgroundColor: 'white', color: themeColor }}>
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                                        </div>
                                         <div className="flex-1 min-w-0">
-                                            <h2 className="text-lg font-bold text-slate-800 truncate leading-tight" style={{ color: themeColor }}>{businessInfo?.businessName || "Our Location"}</h2>
+                                            <h2 className="text-lg font-bold text-slate-800 truncate leading-tight">{businessInfo?.businessName || "Our Location"}</h2>
                                             {businessInfo?.tagline && (
-                                                <p className="text-xs text-slate-500 truncate">{businessInfo.tagline}</p>
+                                                <p className="text-xs text-slate-500 truncate mt-0.5">{businessInfo.tagline}</p>
                                             )}
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Contact Info - Scrollable */}
-                                <div className="px-5 py-2 grid grid-cols-1 gap-1 overflow-y-auto flex-1 custom-scrollbar">
-                                    {/* Owner Row - Removed as per request */}
-                                    {/* businessInfo?.name && (
-                                        <div className="flex items-center gap-3 py-1.5 px-0">
-                                            <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${themeColor}15`, color: themeColor }}>
-                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                                            </div>
-                                            <div className="text-sm font-semibold text-slate-700">
-                                                {businessInfo.name}
-                                            </div>
-                                        </div>
-                                    ) */ }
+                                <div className="p-6 flex flex-col gap-4 overflow-y-auto flex-1 custom-scrollbar">
 
                                     {/* Phone Row */}
                                     {businessInfo?.phone && (
-                                        <a href={`tel:${businessInfo.phone}`} className="flex items-center gap-3 py-1.5 px-0 rounded-lg hover:bg-slate-50 transition-colors group">
-                                            <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${themeColor}15`, color: themeColor }}>
-                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                        <div className="flex items-start gap-4 group">
+                                            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors" style={{ backgroundColor: `${themeColor}10`, color: themeColor }}>
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
                                             </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-base font-semibold text-slate-700 group-hover:underline">{businessInfo.phone}</p>
-                                            </div>
-                                        </a>
-                                    )}
-
-                                    {/* Address Chip */}
-                                    {businessInfo?.address && (
-                                        <div className="flex items-start gap-3 py-1.5 px-0">
-                                            <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: `${themeColor}15`, color: themeColor }}>
-                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                                            </div>
-                                            <div className="text-sm text-slate-600 leading-snug flex-1">
-                                                {businessInfo.address}
+                                            <div className="flex-1 min-w-0 pt-1">
+                                                <p className="text-xs font-medium text-slate-500 mb-0.5">Phone</p>
+                                                <a href={`tel:${businessInfo.phone}`} className="text-base font-semibold text-slate-800 hover:text-blue-600 transition-colors block">
+                                                    {formatPhoneNumber(businessInfo.phone)}
+                                                </a>
                                             </div>
                                         </div>
                                     )}
 
-                                    {/* Email Chip */}
+                                    {/* Address Row */}
+                                    {businessInfo?.address && (
+                                        <div className="flex items-start gap-4">
+                                            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${themeColor}10`, color: themeColor }}>
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                            </div>
+                                            <div className="flex-1 min-w-0 pt-1">
+                                                <p className="text-xs font-medium text-slate-500 mb-0.5">Address</p>
+                                                <p className="text-sm font-medium text-slate-800 leading-snug">
+                                                    {businessInfo.address}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Email Row */}
                                     {businessInfo?.email && (
-                                        <a href={`mailto:${businessInfo.email}`} className="flex items-center gap-3 py-1.5 px-0 rounded-lg hover:bg-slate-50 transition-colors group">
-                                            <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${themeColor}15`, color: themeColor }}>
-                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                                        <div className="flex items-start gap-4 group">
+                                            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors" style={{ backgroundColor: `${themeColor}10`, color: themeColor }}>
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
                                             </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-semibold text-slate-700 truncate group-hover:underline">{businessInfo.email}</p>
+                                            <div className="flex-1 min-w-0 pt-1">
+                                                <p className="text-xs font-medium text-slate-500 mb-0.5">Email</p>
+                                                <a href={`mailto:${businessInfo.email}`} className="text-sm font-medium text-slate-800 hover:text-blue-600 transition-colors block truncate">
+                                                    {businessInfo.email}
+                                                </a>
                                             </div>
-                                        </a>
+                                        </div>
                                     )}
                                 </div>
                             </div>
 
-                            {/* Right Column - Map (45% width) */}
+                            {/* Map Column */}
                             {businessInfo?.maps && (
-                                <div className="flex-shrink-0 relative bg-slate-100 border-l border-slate-100 overflow-hidden" style={{ width: '45%' }}>
+                                <div className="relative w-full h-48 md:w-2/5 md:h-auto border-t md:border-t-0 md:border-l border-slate-100 bg-slate-50">
                                     <MapEmbed html={businessInfo.maps} />
                                 </div>
                             )}
