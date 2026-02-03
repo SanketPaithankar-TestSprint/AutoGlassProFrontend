@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Spin, Alert } from 'antd';
+import { Spin, Alert, Select, DatePicker, Space } from 'antd';
+import dayjs from 'dayjs';
 import RevenueChart from './RevenueChart';
 import IncomeDistribution from './IncomeDistribution';
 import StatusDistribution from './StatusDistribution';
@@ -8,6 +9,9 @@ import OutstandingBalanceCard from './OutstandingBalanceCard';
 import RecentActivityTable from './RecentActivityTable';
 import { getAnalyticsDashboard } from '../../api/getAnalyticsDashboard';
 import { getValidToken } from '../../api/getValidToken';
+
+const { RangePicker } = DatePicker;
+const { Option } = Select;
 
 const AnalyticsRoot = () => {
     // We need the userId. Ideally, this should come from context or a user profile hook.
@@ -19,8 +23,40 @@ const AnalyticsRoot = () => {
     // We can try to get it from sessionStorage as seen in getProfile.js: sessionStorage.setItem('userId', profileData.userId);
     const userId = sessionStorage.getItem('userId');
 
+    const [filterType, setFilterType] = React.useState('all_time');
+    const [customRange, setCustomRange] = React.useState(null);
+
+    // Calculate start and end dates based on filter
+    const dateParams = React.useMemo(() => {
+        const today = dayjs().format('YYYY-MM-DD');
+        let startDate = null;
+        let endDate = null;
+
+        switch (filterType) {
+            case 'last_week':
+                startDate = dayjs().subtract(7, 'day').format('YYYY-MM-DD');
+                endDate = today;
+                break;
+            case 'last_month':
+                startDate = dayjs().subtract(30, 'day').format('YYYY-MM-DD');
+                endDate = today;
+                break;
+            case 'custom':
+                if (customRange && customRange[0] && customRange[1]) {
+                    startDate = customRange[0].format('YYYY-MM-DD');
+                    endDate = customRange[1].format('YYYY-MM-DD');
+                }
+                break;
+            case 'all_time':
+            default:
+                // No date params
+                break;
+        }
+        return { startDate, endDate };
+    }, [filterType, customRange]);
+
     const { data, isLoading, error } = useQuery({
-        queryKey: ['analyticsDashboard', userId],
+        queryKey: ['analyticsDashboard', userId, dateParams],
         queryFn: async () => {
             if (!userId) {
                 // If no userId in session, maybe we should fetch profile? 
@@ -30,7 +66,7 @@ const AnalyticsRoot = () => {
                 // Re-reading Step 1: "Parameters: user_id (get from your auth context/store)"
                 throw new Error("User ID not found. Please ensure you are logged in.");
             }
-            return getAnalyticsDashboard(userId);
+            return getAnalyticsDashboard(userId, dateParams.startDate, dateParams.endDate);
         },
         enabled: !!userId, // specific dependent query
     });
@@ -67,9 +103,32 @@ const AnalyticsRoot = () => {
 
     return (
         <div className="p-6 md:p-8 space-y-6 max-w-[1600px] mx-auto">
-            <header className="mb-6">
-                <h1 className="text-2xl font-bold text-slate-800">Dashboard</h1>
-                <p className="text-slate-500">Overview of your business performance</p>
+            <header className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-slate-800">Dashboard</h1>
+                    <p className="text-slate-500">Overview of your business performance</p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <Select
+                        defaultValue="all_time"
+                        style={{ width: 140 }}
+                        onChange={(value) => setFilterType(value)}
+                        className="rounded-lg"
+                    >
+                        <Option value="all_time">All Time</Option>
+                        <Option value="last_week">Last Week</Option>
+                        <Option value="last_month">Last Month</Option>
+                        <Option value="custom">Custom Date</Option>
+                    </Select>
+
+                    {filterType === 'custom' && (
+                        <RangePicker
+                            onChange={(dates) => setCustomRange(dates)}
+                            className="rounded-lg"
+                        />
+                    )}
+                </div>
             </header>
 
             {/* Top Stats Row - Expanded for future stats, currently focusing on Balance */}

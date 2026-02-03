@@ -23,17 +23,59 @@ ChartJS.register(
     Filler
 );
 
+import { Select } from 'antd';
+import dayjs from 'dayjs';
+
+const { Option } = Select;
+
 const RevenueChart = ({ data }) => {
+    const [viewType, setViewType] = React.useState('daily');
+
     if (!data || data.length === 0) {
         return <div className="h-64 flex items-center justify-center text-gray-400">No revenue data available</div>;
     }
 
+    // Process data based on viewType
+    const processedData = React.useMemo(() => {
+        if (viewType === 'daily') {
+            return {
+                labels: data.map(item => item.date),
+                values: data.map(item => item.total)
+            };
+        } else {
+            // Group by Month
+            const grouped = {};
+            data.forEach(item => {
+                const monthKey = dayjs(item.date).format('MMM YYYY');
+                // Use a sortable key ensures correct order if spanning years, but map iteration order implies sorting if input is sorted
+                // Better approach: use YYYY-MM for sorting, then format for label
+                const sortKey = dayjs(item.date).format('YYYY-MM');
+
+                if (!grouped[sortKey]) {
+                    grouped[sortKey] = {
+                        label: monthKey,
+                        total: 0
+                    };
+                }
+                grouped[sortKey].total += parseFloat(item.total) || 0;
+            });
+
+            // Sort by key (YYYY-MM)
+            const sortedKeys = Object.keys(grouped).sort();
+
+            return {
+                labels: sortedKeys.map(key => grouped[key].label),
+                values: sortedKeys.map(key => grouped[key].total)
+            };
+        }
+    }, [data, viewType]);
+
     const chartData = {
-        labels: data.map(item => item.date),
+        labels: processedData.labels,
         datasets: [
             {
                 label: 'Total Revenue',
-                data: data.map(item => item.total),
+                data: processedData.values,
                 fill: true,
                 backgroundColor: 'rgba(124, 58, 237, 0.2)', // Violet-600 with opacity
                 borderColor: 'rgb(124, 58, 237)', // Violet-600
@@ -75,7 +117,19 @@ const RevenueChart = ({ data }) => {
 
     return (
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 h-full flex flex-col">
-            <h3 className="text-lg font-semibold text-slate-800 mb-4">Revenue Trend</h3>
+            <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-slate-800">Revenue Trend</h3>
+                <Select
+                    value={viewType}
+                    onChange={setViewType}
+                    size="small"
+                    style={{ width: 100 }}
+                    className="rounded"
+                >
+                    <Option value="daily">Daily</Option>
+                    <Option value="monthly">Monthly</Option>
+                </Select>
+            </div>
             <div className="flex-1 min-h-[300px]">
                 <Line data={chartData} options={options} />
             </div>

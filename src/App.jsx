@@ -29,6 +29,7 @@ const AboutPage = React.lazy(() => import('./components/About/AboutPage.jsx'));
 const PublicContactRoot = React.lazy(() => import('./components/PublicContact/PublicContactRoot.jsx'));
 const ServiceContactFormRoot = React.lazy(() => import('./components/ServiceContactForm/ServiceContactFormRoot.jsx'));
 const ServiceInquiryView = React.lazy(() => import('./components/ServiceContactForm/ServiceInquiryView.jsx'));
+const ContactPage = React.lazy(() => import('./components/ContactPage.jsx'));
 import ErrorBoundary from './components/PublicContact/ErrorBoundary';
 
 
@@ -176,6 +177,7 @@ function AppContent() {
                   <Route path="/" element={<Home />} />
                   <Route path="/features" element={<FeaturesPage />} />
                   <Route path="/about" element={<AboutPage />} />
+                  <Route path="/contact" element={<ContactPage />} />
                   <Route path="/search-by-root" element={<SearchByRoot />} />
                   <Route path="/Profile" element={<Profile />} />
                   <Route path="/work" element={<Work />} />
