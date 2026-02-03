@@ -2,14 +2,24 @@ import React from "react";
 import { Layout, Button, Tooltip } from "antd";
 import { CheckOutlined } from "@ant-design/icons";
 import { freeTierFeatures, professionalTierFeatures, enterpriseTierFeatures } from "../const/pricingPage";
+import LeftDecoImage from "../assets/6.2.png";
+import RightDecoImage from "../assets/6.3.png";
 
 const { Content } = Layout;
 
 const PricingPage = () => {
   return (
-    <Layout className="flex-grow bg-white font-sans text-slate-900 flex flex-col justify-center">
+    <Layout className="flex-grow bg-white font-sans text-slate-900 flex flex-col justify-center relative overflow-hidden">
+      {/* Decorative Images - Visible on XL screens */}
+      <div className="hidden xl:block absolute left-12 2xl:left-32 top-1/2 -translate-y-1/2 w-85 z-0 opacity-80 pointer-events-none">
+        <img src={LeftDecoImage} alt="Decorative Left" className="w-full h-auto object-contain" />
+      </div>
+      <div className="hidden xl:block absolute right-12 2xl:right-32 top-1/2 -translate-y-1/2 w-85 z-0 opacity-80 pointer-events-none">
+        <img src={RightDecoImage} alt="Decorative Right" className="w-full h-auto object-contain" />
+      </div>
+
       {/* Reduced padding to ensure fit */}
-      <Content className="p-4 md:p-6 flex flex-col justify-center h-full">
+      <Content className="p-4 md:p-6 flex flex-col justify-center h-full relative z-10">
         <div className="max-w-5xl mx-auto w-full">
           {/* Compact Header */}
           <div className="text-center mb-6 opacity-0 animate-[fadeInUp_0.6s_ease-out_forwards]">
