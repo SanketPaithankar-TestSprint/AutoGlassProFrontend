@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Input } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
+import { SearchOutlined, ScanOutlined } from "@ant-design/icons";
 import config from "../../config";
+import VinScanner from "./VinScanner";
 
 const VIN_REGEX = /^[A-HJ-NPR-Z0-9]{17}$/;
 
@@ -17,6 +18,7 @@ export default function SearchByVin({
   const [vin, setVin] = useState(defaultVin.toUpperCase().slice(0, 17));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isScanning, setIsScanning] = useState(false);
   const timerRef = useRef(null);
 
   const isValid = useMemo(() => VIN_REGEX.test(vin), [vin]);
@@ -41,6 +43,29 @@ export default function SearchByVin({
   const handleChange = (e) => {
     setError("");
     setVin(sanitizeVin(e.target.value));
+  };
+
+  const handleScanResult = (decodedText) => {
+    if (!decodedText) return;
+
+    const sanitized = sanitizeVin(decodedText);
+
+    // Strict validation: Must be exactly 17 characters
+    if (sanitized.length === 17) {
+      setVin(sanitized);
+      setIsScanning(false); // Close the scanner only on valid scan
+    } else {
+      // Optional: Give feedback but keep scanning
+      // We use a small delay or check to avoid spamming usage of 'message' if scanning continuously
+      // But VinScanner now has a 2s cooldown for same-text, so this is safe.
+      // We only show error if it's clearly not a partial scan.
+      if (sanitized.length > 10) {
+        // console.log("Ignored invalid scan:", sanitized);
+        // You could show a toast here, but it might be annoying if scanning background noise.
+        // For now, we just silently ignore invalid lengths to let user keep trying 
+        // until they hit the barcode correctly.
+      }
+    }
   };
 
   const handleDecode = async () => {
@@ -104,6 +129,16 @@ export default function SearchByVin({
           onPressEnter={handleDecode}
         />
 
+
+        <button
+          type="button"
+          className="md:hidden h-9 px-3 rounded-md bg-transparent border border-[#E2E8F0] text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-800 flex items-center justify-center"
+          title="Scan VIN"
+          onClick={() => setIsScanning(true)}
+        >
+          <ScanOutlined />
+        </button>
+
         <button
           type="button"
           className="h-9 px-4 rounded-md bg-transparent border border-[#E2E8F0] text-slate-600 font-medium text-sm transition-colors hover:bg-slate-50 hover:text-slate-800 disabled:opacity-60 whitespace-nowrap"
@@ -126,6 +161,12 @@ export default function SearchByVin({
         )}
         {error && <span className="text-rose-400">{error}</span>}
       </div>
+
+      <VinScanner
+        visible={isScanning}
+        onScan={handleScanResult}
+        onClose={() => setIsScanning(false)}
+      />
     </div>
   );
 }

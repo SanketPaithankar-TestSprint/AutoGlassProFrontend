@@ -17,6 +17,8 @@ import AiContactForm from './components/AiContactForm/AiContactForm';
 import { getValidToken } from './api/getValidToken';
 import { useProfileDataPrefetch } from './hooks/useProfileDataPrefetch';
 import useInquiryNotifications from './hooks/useInquiryNotifications';
+import { useAuth } from './context/auth/useAuth';
+import { AuthProvider } from './context/auth/authProvide';
 
 // Lazy Load Main Components
 const Home = React.lazy(() => import('./components/Home/HomeRoot.jsx'));
@@ -54,6 +56,7 @@ function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
   const isMobile = useIsMobile();
+  const { isAuthenticated, setIsAuthenticated } = useAuth();
 
   // Prefetch data when authenticated
   useProfileDataPrefetch(isAuthed);
@@ -65,11 +68,13 @@ function AppContent() {
     const token = getValidToken();
     const authed = !!token;
     setIsAuthed(authed);
+    setIsAuthenticated(authed);
     setLoading(false);
-  }, [location.pathname]); // Re-check on nav change (optional, but good for safety)
+  }, [location.pathname, setIsAuthenticated]); // Re-check on nav change (optional, but good for safety)
 
   const handleLoginSuccess = () => {
     setIsAuthed(true);
+    setIsAuthenticated(true);
     navigate('/analytics');
   };
 
@@ -77,6 +82,7 @@ function AppContent() {
     localStorage.removeItem("ApiToken");
     sessionStorage.removeItem("ApiToken");
     setIsAuthed(false);
+    setIsAuthenticated(false);
     navigate('/');
   };
 
@@ -202,9 +208,11 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AntApp>
-        <Router>
-          <AppContent />
-        </Router>
+        <AuthProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </AuthProvider>
       </AntApp>
     </QueryClientProvider>
   );
