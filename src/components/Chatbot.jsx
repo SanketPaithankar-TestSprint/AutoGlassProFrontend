@@ -2,24 +2,19 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button, Input, Card, List, Typography, Spin, FloatButton } from 'antd';
 import { MessageOutlined, CloseOutlined, SendOutlined, RobotOutlined, UserOutlined } from '@ant-design/icons';
 import axios from 'axios';
-import { getValidToken } from '../api/getValidToken';
+import { useAuth } from '../context/auth/useAuth';
 
 const { Text } = Typography;
 
 const Chatbot = () => {
+    const { isAuthenticated } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [messages, setMessages] = useState([
         { id: 1, text: "Hi! How can I help you regarding AutoGlassPro today?", sender: 'bot' }
     ]);
     const [inputValue, setInputValue] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef(null);
-
-    useEffect(() => {
-        const token = getValidToken();
-        setIsAuthenticated(!!token);
-    }, []);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -84,6 +79,7 @@ const Chatbot = () => {
     return (
         <>
             <FloatButton
+            
                 icon={<MessageOutlined />}
                 type="primary"
                 style={{ right: 24, bottom: 24, width: 40, height: 40 }}
