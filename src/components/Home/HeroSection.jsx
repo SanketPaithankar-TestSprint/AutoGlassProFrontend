@@ -11,8 +11,7 @@ const HeroSection = () => {
 
   return (
     <section
-      id="hero"
-      className="relative bg-transparent text-slate-900 py-0 flex justify-center"
+      className="relative bg-transparent text-slate-900 py-0 flex justify-center min-h-screen items-center"
     >
 
 
@@ -110,7 +109,7 @@ const HeroSection = () => {
             animate={{ opacity: 0.4 }}
             transition={{ duration: 1.2, ease: "easeOut" }}
           />
-          
+
           {/* Image with slide animation */}
           <motion.div
             className="relative w-full max-w-5xl"

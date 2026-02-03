@@ -1050,12 +1050,29 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
 
 
     // Generate PDF using utility function
-    const generatePdfDoc = (overrideDocumentNumber = null) => {
-        // Collect payments (history + new tentative)
-        const pdfPayments = [...(existingPayments || [])];
-        if (paymentData && Number(paymentData.amount) > 0) {
-            pdfPayments.push(paymentData);
+    // Accepts options object to override specific values with backend-confirmed data
+    const generatePdfDoc = (options = {}) => {
+        const {
+            overrideDocumentNumber = null,
+            overridePayments = null,
+            overrideDocType = null
+        } = typeof options === 'string' ? { overrideDocumentNumber: options } : options;
+
+        // Use override payments (from backend) if provided, otherwise use local state
+        let pdfPayments;
+        if (overridePayments !== null) {
+            // Backend response is source of truth - use it directly
+            pdfPayments = overridePayments;
+        } else {
+            // Fallback to local state (history + new tentative)
+            pdfPayments = [...(existingPayments || [])];
+            if (paymentData && Number(paymentData.amount) > 0) {
+                pdfPayments.push(paymentData);
+            }
         }
+
+        // Use override docType if provided (from backend response)
+        const effectiveDocType = overrideDocType || currentDocType;
 
         return generateServiceDocumentPDF({
             items,
@@ -1067,13 +1084,13 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
             laborAmount: laborCostDisplay,
             total,
             balance,
-            docType: currentDocType,
+            docType: effectiveDocType,
             printableNote: printableNote, // Customer Notes
             specialInstructions: specialInstructions, // Global Special Instructions
             insuranceData,
             includeInsurance,
             documentNumber: overrideDocumentNumber || docMetadata?.documentNumber || "",
-            payments: pdfPayments // Pass combined payments
+            payments: pdfPayments // Pass payments (backend-confirmed or local)
         });
     };
 
@@ -1412,22 +1429,17 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
 
             let createdDocNumber;
 
+            let response;
             if (isSaved && docMetadata?.documentNumber) {
                 // UPDATE EXISTING DOCUMENT
-
-                // Existing update logic might expect different payload? 
-                // Assuming updateCompositeServiceDocument also needs refactoring or this payload works for it too?
-                // For now, let's use the same payload structure as it's cleaner.
-                // BUT updateCompositeServiceDocument (Step 62 import) might be different.
-                // The task description focused on CREATING.
-                // If update fails, we might need to adjust.
-                await updateCompositeServiceDocument(docMetadata.documentNumber, compositePayload);
-                createdDocNumber = docMetadata.documentNumber;
+                // Capture the response - this is the source of truth for PDF generation
+                response = await updateCompositeServiceDocument(docMetadata.documentNumber, compositePayload);
+                createdDocNumber = response?.documentNumber || response?.serviceDocument?.documentNumber || docMetadata.documentNumber;
                 message.success(`Service Document Updated Successfully!`);
             } else {
                 // CREATE NEW DOCUMENT
-                const response = await createCompositeServiceDocument(compositePayload, files);
-                createdDocNumber = response.documentNumber || response.serviceDocument?.documentNumber;
+                response = await createCompositeServiceDocument(compositePayload, files);
+                createdDocNumber = response?.documentNumber || response?.serviceDocument?.documentNumber;
 
                 if (createdDocNumber) {
                     message.success(`Service Document Created Successfully! Document #: ${createdDocNumber}`);
@@ -1436,7 +1448,7 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                 }
             }
 
-            // Immediately return success
+            // Immediately return success with full response data for PDF generation
             if (aiContactFormId) {
                 try {
                     await updateAiContactFormStatus(token, aiContactFormId, 'COMPLETED');
@@ -1444,7 +1456,8 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                     console.error("Failed to update AI Contact Form status to COMPLETED", e);
                 }
             }
-            return { success: true, documentNumber: createdDocNumber };
+            // Return full response so callers can use backend-confirmed data for PDF
+            return { success: true, documentNumber: createdDocNumber, responseData: response };
 
         } catch (err) {
             console.error(err);
@@ -1508,16 +1521,27 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
     // Updated: Save -> Preview -> Clear
     const handlePreview = async () => {
         // Enforce Save First
-        const { success, documentNumber } = await performSave();
+        const { success, documentNumber, responseData } = await performSave();
         if (!success) return;
 
         setPreviewLoading(true);
         try {
-            const doc = generatePdfDoc(documentNumber);
+            // Extract backend-confirmed data for PDF generation
+            const backendPayments = responseData?.payments || responseData?.serviceDocument?.payments || null;
+            const backendDocType = responseData?.documentType || responseData?.serviceDocument?.documentType || null;
+            // Convert backend doc type format (e.g., "WORK_ORDER" -> "Work Order")
+            const formattedDocType = backendDocType ? backendDocType.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) : null;
+
+            // Generate PDF using backend-confirmed data as source of truth
+            const doc = generatePdfDoc({
+                overrideDocumentNumber: documentNumber,
+                overridePayments: backendPayments,
+                overrideDocType: formattedDocType
+            });
             const blob = doc.output('blob');
 
-            // Generate proper filename
-            const filename = generatePDFFilename(currentDocType, customerData);
+            // Generate proper filename using backend-confirmed doc type
+            const filename = generatePDFFilename(formattedDocType || currentDocType, customerData);
 
             // Create a File object with proper name (helps with download filename)
             const file = new File([blob], filename, { type: 'application/pdf' });
@@ -1547,23 +1571,35 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
     // Updated: Remove disabled check, Save -> Modal -> Send -> Clear
     const handleEmail = async () => {
         // Enforce save first
-        const { success, documentNumber } = await performSave();
+        const { success, documentNumber, responseData } = await performSave();
         if (!success) return;
 
         if (!validateDocumentData()) return;
 
         try {
-            const doc = generatePdfDoc(documentNumber);
+            // Extract backend-confirmed data for PDF generation
+            const backendPayments = responseData?.payments || responseData?.serviceDocument?.payments || null;
+            const backendDocType = responseData?.documentType || responseData?.serviceDocument?.documentType || null;
+            // Convert backend doc type format (e.g., "WORK_ORDER" -> "Work Order")
+            const formattedDocType = backendDocType ? backendDocType.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) : null;
+            const effectiveDocType = formattedDocType || currentDocType;
+
+            // Generate PDF using backend-confirmed data as source of truth
+            const doc = generatePdfDoc({
+                overrideDocumentNumber: documentNumber,
+                overridePayments: backendPayments,
+                overrideDocType: formattedDocType
+            });
             const blob = doc.output('blob');
             const url = URL.createObjectURL(blob);
             setPdfBlob(blob);
             setPreviewUrl(url);
             setShowEmailModal(true);
 
-            const subject = `Your Auto Glass ${currentDocType} - ${customerData.vehicleYear || ''} ${customerData.vehicleMake || ''} ${customerData.vehicleModel || ''}`;
+            const subject = `Your Auto Glass ${effectiveDocType} - ${customerData.vehicleYear || ''} ${customerData.vehicleMake || ''} ${customerData.vehicleModel || ''}`;
             const body = `Dear ${customerData.firstName || 'Customer'} ${customerData.lastName || ''},
 
-Please find attached the ${currentDocType.toLowerCase()} for your ${customerData.vehicleYear || ''} ${customerData.vehicleMake || ''} ${customerData.vehicleModel || ''}.
+Please find attached the ${effectiveDocType.toLowerCase()} for your ${customerData.vehicleYear || ''} ${customerData.vehicleMake || ''} ${customerData.vehicleModel || ''}.
 
 If you have any questions, please don't hesitate to contact us.
 

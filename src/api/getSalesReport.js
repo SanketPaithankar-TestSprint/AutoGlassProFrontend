@@ -10,10 +10,21 @@ const BASE_URL = "https://api.autopaneai.com/agp/v1";
  * @param {number} userId - User ID to filter records
  * @param {string} fromDate - Start date in YYYY-MM-DD format
  * @param {string} toDate - End date in YYYY-MM-DD format
+ * @param {number[]} [doctypes=[0]] - Array of document types to filter (0: Invoice, 1: Work Order, 2: Quote)
  * @returns {Promise<Blob>} - PDF blob
  */
-export async function getSalesReport(userId, fromDate, toDate) {
-    const url = `${BASE_URL}/sales-report?user_id=${userId}&from_date=${fromDate}&to_date=${toDate}`;
+export async function getSalesReport(userId, fromDate, toDate, doctypes = [0]) {
+    const queryParams = new URLSearchParams({
+        user_id: userId,
+        from_date: fromDate,
+        to_date: toDate
+    });
+
+    if (Array.isArray(doctypes)) {
+        doctypes.forEach(type => queryParams.append('doctype', type));
+    }
+
+    const url = `${BASE_URL}/sales-report?${queryParams.toString()}`;
 
     console.log('[getSalesReport] Fetching report from:', url);
 

@@ -15,7 +15,7 @@ const RecentActivityTable = ({ data }) => {
     return (
         <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden h-full flex flex-col">
             <div className="p-6 border-b border-slate-100 shrink-0">
-                <h3 className="text-lg font-semibold text-slate-800">Recent Activity</h3>
+                <h3 className="text-lg font-semibold text-slate-800">Activity</h3>
             </div>
             <div className="overflow-auto flex-1 min-h-0">
                 <table className="w-full text-left text-sm text-slate-600 relative">

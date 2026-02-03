@@ -1,4 +1,52 @@
 const BASELINE_DAYS_FOR_OVERDUE = 0;
+
+// =====================================================
+// SEARCH UTILITIES
+// =====================================================
+
+/**
+ * Debounce function to delay execution until user stops typing
+ * @param {Function} fn - Function to debounce
+ * @param {number} delay - Delay in milliseconds
+ * @returns {Function} Debounced function
+ */
+const debounce = (fn, delay) => {
+    let timeoutId;
+    return (...args) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => fn(...args), delay);
+    };
+};
+
+/**
+ * Merge local and API search results, deduplicating by documentNumber
+ * @param {Array} localResults - Results from local filtering
+ * @param {Array} apiResults - Results from API search
+ * @returns {Array} Merged and deduplicated results
+ */
+const mergeSearchResults = (localResults, apiResults) => {
+    const seen = new Set();
+    const merged = [];
+
+    // Add local results first (they take priority)
+    for (const doc of localResults) {
+        if (doc.documentNumber && !seen.has(doc.documentNumber)) {
+            seen.add(doc.documentNumber);
+            merged.push({ ...doc, _source: 'local' });
+        }
+    }
+
+    // Add API results that aren't already included
+    for (const doc of apiResults) {
+        if (doc.documentNumber && !seen.has(doc.documentNumber)) {
+            seen.add(doc.documentNumber);
+            merged.push({ ...doc, _source: 'api' });
+        }
+    }
+
+    return merged;
+};
+
 // =====================================================
 // FILTER FUNCTIONS
 // =====================================================
@@ -13,14 +61,14 @@ const filterDocumentsByStatus = (documents, status) => {
     if (!status || status === 'all' || (Array.isArray(status) && status.length === 0)) {
         return documents;
     }
-    
+
     // Support for multi-select (array of statuses)
     if (Array.isArray(status)) {
-        return documents.filter(doc => 
+        return documents.filter(doc =>
             status.some(s => doc.status?.toLowerCase() === s.toLowerCase())
         );
     }
-    
+
     return documents.filter(doc => doc.status?.toLowerCase() === status.toLowerCase());
 };
 
@@ -34,14 +82,14 @@ const filterDocumentsByType = (documents, type) => {
     if (!type || type === 'all' || (Array.isArray(type) && type.length === 0)) {
         return documents;
     }
-    
+
     // Support for multi-select (array of types)
     if (Array.isArray(type)) {
-        return documents.filter(doc => 
+        return documents.filter(doc =>
             type.some(t => doc.documentType?.toLowerCase() === t.toLowerCase())
         );
     }
-    
+
     return documents.filter(doc => doc.documentType?.toLowerCase() === type.toLowerCase());
 };
 
@@ -71,12 +119,12 @@ const filterDocumentsByDateRange = (documents, rangeType, customStartDate = null
     if (!rangeType || rangeType === 'all') {
         return documents;
     }
-    
+
     const now = new Date();
     let startDate = null;
     let endDate = new Date(now);
     endDate.setHours(23, 59, 59, 999);
-    
+
     switch (rangeType) {
         case 'week':
             startDate = new Date(now);
@@ -101,7 +149,7 @@ const filterDocumentsByDateRange = (documents, rangeType, customStartDate = null
         default:
             return documents;
     }
-    
+
     return documents.filter(doc => {
         const docDate = new Date(doc.createdAt);
         if (startDate && docDate < startDate) return false;
@@ -120,7 +168,7 @@ const filterDocumentsBySearch = (documents, searchTerm) => {
     if (!searchTerm || !searchTerm.trim()) {
         return documents;
     }
-    
+
     const lowerTerm = searchTerm.toLowerCase();
     return documents.filter(doc =>
         doc.documentNumber?.toLowerCase().includes(lowerTerm) ||
@@ -137,46 +185,46 @@ const filterDocumentsBySearch = (documents, searchTerm) => {
  */
 const applyAllFilters = (documents, filters) => {
     let filtered = [...documents];
-    
+
     // Apply search filter
     if (filters.searchTerm) {
         filtered = filterDocumentsBySearch(filtered, filters.searchTerm);
     }
-    
+
     // Apply document type filter
     if (filters.documentType && filters.documentType !== 'all') {
         filtered = filterDocumentsByType(filtered, filters.documentType);
     }
-    
+
     // Apply status filter
     if (filters.status && filters.status !== 'all') {
         filtered = filterDocumentsByStatus(filtered, filters.status);
     }
-    
+
     // Apply amount range filter
     if (filters.amountFrom !== undefined || filters.amountTo !== undefined) {
         filtered = filterDocumentsByAmountRange(
-            filtered, 
-            filters.amountFrom || 0, 
+            filtered,
+            filters.amountFrom || 0,
             filters.amountTo || Infinity
         );
     }
-    
+
     // Apply date range filter
     if (filters.dateRange && filters.dateRange !== 'all') {
         filtered = filterDocumentsByDateRange(
-            filtered, 
-            filters.dateRange, 
-            filters.customStartDate, 
+            filtered,
+            filters.dateRange,
+            filters.customStartDate,
             filters.customEndDate
         );
     }
-    
+
     // Apply overdue filter
     if (filters.overdueOnly) {
         filtered = filtered.filter(doc => isOverdue(doc));
     }
-    
+
     return filtered;
 };
 
@@ -198,19 +246,19 @@ const isOverdue = (doc) => {
     // Only check overdue for unpaid documents with balance due
     if ((doc.balanceDue || 0) <= 0) return false;
     if (doc.status?.toLowerCase() === 'paid' || doc.status?.toLowerCase() === 'cancelled') return false;
-    
+
     // Parse dates and extract just the date parts (YYYY-MM-DD) to avoid timezone issues
     const createdDate = new Date(doc.createdAt);
     const currentDate = new Date();
-    
+
     // Use UTC dates to avoid timezone issues
     const createdUTC = Date.UTC(createdDate.getUTCFullYear(), createdDate.getUTCMonth(), createdDate.getUTCDate());
     const currentUTC = Date.UTC(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate());
-    
+
     // Calculate difference in days
     const msPerDay = 24 * 60 * 60 * 1000;
     const daysDifference = Math.floor((currentUTC - createdUTC) / msPerDay);
-    
+
     // Document is overdue if days since creation >= baseline days
     return daysDifference >= BASELINE_DAYS_FOR_OVERDUE;
 };
@@ -231,21 +279,21 @@ const getOverdueDocuments = (documents) => {
  */
 const getDaysOverdue = (doc) => {
     if (!doc.createdAt) return 0;
-    
+
     // Parse dates using UTC to match isOverdue logic
     const createdDate = new Date(doc.createdAt);
     const currentDate = new Date();
-    
+
     const createdUTC = Date.UTC(createdDate.getUTCFullYear(), createdDate.getUTCMonth(), createdDate.getUTCDate());
     const currentUTC = Date.UTC(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate());
-    
+
     const msPerDay = 24 * 60 * 60 * 1000;
     const daysDifference = Math.floor((currentUTC - createdUTC) / msPerDay);
-    
+
     // Return how many days past the baseline (if overdue)
     // e.g., created 2 days ago, baseline 1 => 2 - 1 = 1 day overdue
     const daysOverdue = daysDifference - BASELINE_DAYS_FOR_OVERDUE;
-    
+
     return daysOverdue > 0 ? daysOverdue : 0;
 };
 
@@ -292,9 +340,9 @@ const getTypeColor = (type) => {
  * @returns {string} Formatted currency string
  */
 const formatCurrency = (amount, currency = 'USD') => {
-    return new Intl.NumberFormat('en-US', { 
-        style: 'currency', 
-        currency 
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency
     }).format(amount || 0);
 };
 
@@ -347,21 +395,25 @@ const getDateRangeOptions = () => [
 // EXPORTS
 // =====================================================
 
-export { 
+export {
     // Filter functions
-    filterDocumentsByStatus, 
-    filterDocumentsByType, 
+    filterDocumentsByStatus,
+    filterDocumentsByType,
     filterDocumentsByAmountRange,
     filterDocumentsByDateRange,
     filterDocumentsBySearch,
     applyAllFilters,
-    
+
+    // Search utilities
+    debounce,
+    mergeSearchResults,
+
     // Overdue functions
     isOverdue,
     getOverdueDocuments,
     getDaysOverdue,
     BASELINE_DAYS_FOR_OVERDUE,
-    
+
     // UI helpers
     getStatusColor,
     getTypeColor,

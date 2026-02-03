@@ -371,6 +371,24 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
     const handleSaveCustomer = async () => {
         if (!formData.customerId) return;
 
+        if (!formData.email || formData.email.trim() === "") {
+            notification.error({
+                message: "Validation Error",
+                description: "Email is required.",
+                placement: "topRight"
+            });
+            return;
+        }
+
+        if (!formData.phone || formData.phone.trim() === "") {
+            notification.error({
+                message: "Validation Error",
+                description: "Phone is required.",
+                placement: "topRight"
+            });
+            return;
+        }
+
         try {
             setSavingCustomer(true);
             const token = getValidToken();
@@ -448,6 +466,15 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
             notification.error({
                 message: "Validation Error",
                 description: "Company name is required.",
+                placement: "topRight"
+            });
+            return;
+        }
+
+        if (!orgFormData.email || orgFormData.email.trim() === "") {
+            notification.error({
+                message: "Validation Error",
+                description: "Email is required.",
                 placement: "topRight"
             });
             return;
@@ -741,11 +768,11 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                             <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                                 <FormInput label="Company Name *" name="companyName" value={orgFormData.companyName} onChange={handleOrgFormChange} required disabled={orgMode === "EXISTING" && !isEditingOrg} />
                                 <FormInput label="Tax ID" name="taxId" value={orgFormData.taxId} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING" && !isEditingOrg} />
-                                <FormInput label="Email" name="email" value={orgFormData.email} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING" && !isEditingOrg} />
-                                <FormInput label="Phone" name="phone" value={orgFormData.phone} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING" && !isEditingOrg} />
+                                <FormInput label="Email" name="email" value={orgFormData.email} onChange={handleOrgFormChange} required disabled={orgMode === "EXISTING" && !isEditingOrg} />
+                                <FormInput label="Phone" name="phone" value={orgFormData.phone} onChange={handleOrgFormChange} required disabled={orgMode === "EXISTING" && !isEditingOrg} />
                                 <FormInput label="Contact Person" name="individualName" value={orgFormData.individualName} onChange={handleOrgFormChange} className="sm:col-span-2" placeholder="Individual's Name (Optional)" disabled={orgMode === "EXISTING" && !isEditingOrg} />
 
-                                <FormInput label="Address Line 1" name="addressLine1" value={orgFormData.addressLine1} onChange={handleOrgFormChange} required className="sm:col-span-2" disabled={orgMode === "EXISTING" && !isEditingOrg} />
+                                <FormInput label="Address Line 1" name="addressLine1" value={orgFormData.addressLine1} onChange={handleOrgFormChange} className="sm:col-span-2" disabled={orgMode === "EXISTING" && !isEditingOrg} />
                                 <FormInput label="City" name="city" value={orgFormData.city} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING" && !isEditingOrg} />
                                 <FormSelect label="State" name="state" value={orgFormData.state} onChange={handleOrgFormChange} options={US_STATES} disabled={orgMode === "EXISTING" && !isEditingOrg} />
                                 <FormInput label="Zip" name="postalCode" value={orgFormData.postalCode} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING" && !isEditingOrg} />
@@ -787,7 +814,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
                                     <FormInput label="First Name" name="firstName" value={formData.firstName} onChange={handleChange} required disabled={customerMode === "EXISTING" && !isEditingCustomer} />
                                     <FormInput label="Last Name" name="lastName" value={formData.lastName} onChange={handleChange} disabled={customerMode === "EXISTING" && !isEditingCustomer} />
-                                    <FormInput label="Email" name="email" value={formData.email} onChange={handleChange} type="email" disabled={customerMode === "EXISTING" && !isEditingCustomer} />
+                                    <FormInput label="Email" name="email" value={formData.email} onChange={handleChange} type="email" required disabled={customerMode === "EXISTING" && !isEditingCustomer} />
                                     <FormInput label="Phone" name="phone" value={formData.phone} onChange={handleChange} required disabled={customerMode === "EXISTING" && !isEditingCustomer} />
                                 </div>
                                 <div className="border-t pt-3 mt-2">

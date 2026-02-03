@@ -1,5 +1,6 @@
 // src/components/PublicContact/PublicContactRoot.jsx
 import React, { useState, useEffect, useRef } from 'react';
+import { Select } from 'antd';
 import { useParams } from 'react-router-dom';
 import { validateSlug, submitContactForm, createServiceInquiry, decodeVin, fetchVehicleMakes, fetchVehicleModels } from '../../api/publicContactForm';
 import { clearSessionId, generateSessionId } from '../../utils/sessionUtils';
@@ -54,7 +55,6 @@ const PublicContactRoot = () => {
         windowRollingLocation: '',
         ventGlassLocation: '',
         doorGlassLocation: '',
-        quarterGlassLocation: '',
         quarterGlassLocation: '',
         message: '',
         street: '',
@@ -279,7 +279,7 @@ const PublicContactRoot = () => {
                 lastName: lastName, // Fallback if no last name provided? API might require it.
                 email: formData.email,
                 phone: formData.phone,
-                addressLine1: isMobile ? formData.street : formData.location, // Send street for mobile, location for shop
+                addressLine1: formData.location, // Send location input in addressLine1
                 addressLine2: isMobile ? formData.street : "", // Send street for mobile only, empty for shop
                 city: isMobile ? formData.city : "", // Not captured
                 state: "", // Not captured
@@ -354,7 +354,6 @@ const PublicContactRoot = () => {
             windowRollingLocation: '',
             ventGlassLocation: '',
             quarterGlassLocation: '',
-            doorGlassLocation: '',
             doorGlassLocation: '',
             message: '',
             street: '',
@@ -436,11 +435,11 @@ const PublicContactRoot = () => {
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
                                         <label className="premium-label">Full Name <span className="text-red-500">*</span></label>
-                                        <input type="text" name="name" value={formData.name} onChange={handleInputChange} placeholder="John Smith" required className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
+                                        <input type="text" name="name" value={formData.name} onChange={handleInputChange} placeholder="Full Name" required className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
                                     </div>
                                     <div>
                                         <label className="premium-label">Email <span className="text-red-500">*</span></label>
-                                        <input type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="john@example.com" required className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
+                                        <input type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="email@address.com" required className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
                                     </div>
                                 </div>
 
@@ -448,11 +447,11 @@ const PublicContactRoot = () => {
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
                                         <label className="premium-label">Phone <span className="text-red-500">*</span></label>
-                                        <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} placeholder="(408) 565-5523" required className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
+                                        <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} placeholder="(555) 555-5555" required className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
                                     </div>
                                     <div>
                                         <label className="premium-label">Location {!isMobile && <span className="text-red-500">*</span>}</label>
-                                        <input type="text" name="location" value={formData.location} onChange={handleInputChange} placeholder="San Jose, CA" required={!isMobile} className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
+                                        <input type="text" name="location" value={formData.location} onChange={handleInputChange} placeholder="City, State" required={!isMobile} className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
                                     </div>
                                 </div>
 
@@ -460,7 +459,7 @@ const PublicContactRoot = () => {
                                 <div className="flex gap-2 items-end">
                                     <div className="flex-1">
                                         <label className="premium-label">VIN</label>
-                                        <input type="text" name="vin" value={formData.vin} onChange={handleInputChange} placeholder="1HGBH41JXMN109186" className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
+                                        <input type="text" name="vin" value={formData.vin} onChange={handleInputChange} placeholder="Enter 17-character VIN" className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
                                     </div>
                                     <button type="button" onClick={handleVinLookup} disabled={vinLoading || !formData.vin} className="h-9 px-5 text-xs font-medium border rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-sm" style={{ borderColor: themeColor, color: themeColor, backgroundColor: 'white' }}>
                                         {vinLoading ? '...' : 'Lookup'}
@@ -471,24 +470,64 @@ const PublicContactRoot = () => {
                                 <div className="grid grid-cols-3 gap-2">
                                     <div>
                                         <label className="premium-label">Year</label>
-                                        <select name="year" value={formData.year} onChange={handleInputChange} className="w-full h-9 px-3 text-sm rounded-lg premium-select">
-                                            <option value="">Select</option>
-                                            {yearOptions.map(year => (<option key={year} value={year}>{year}</option>))}
-                                        </select>
+                                        <Select
+                                            showSearch
+                                            placeholder="Select"
+                                            optionFilterProp="children"
+                                            value={formData.year || undefined}
+                                            onChange={(value) => setFormData(prev => ({ ...prev, year: value }))}
+                                            filterOption={(input, option) =>
+                                                (option?.children ?? '').toString().toLowerCase().includes(input.toLowerCase())
+                                            }
+                                            className="w-full"
+                                            style={{ height: '36px' }}
+                                            dropdownStyle={{ zIndex: 9999 }}
+                                        >
+                                            {yearOptions.map(year => (
+                                                <Select.Option key={year} value={year}>{year}</Select.Option>
+                                            ))}
+                                        </Select>
                                     </div>
                                     <div>
                                         <label className="premium-label">Make</label>
-                                        <select name="make" value={formData.make} onChange={handleInputChange} className="w-full h-9 px-3 text-sm rounded-lg premium-select">
-                                            <option value="">Select</option>
-                                            {makeOptions.map((make) => (<option key={make.Make_ID} value={make.Make_Name}>{make.Make_Name}</option>))}
-                                        </select>
+                                        <Select
+                                            showSearch
+                                            placeholder="Select"
+                                            optionFilterProp="children"
+                                            value={formData.make || undefined}
+                                            onChange={(value) => setFormData(prev => ({ ...prev, make: value, model: '' }))}
+                                            filterOption={(input, option) =>
+                                                (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+                                            }
+                                            className="w-full"
+                                            style={{ height: '36px' }}
+                                            dropdownStyle={{ zIndex: 9999 }}
+                                        >
+                                            {makeOptions.map((make) => (
+                                                <Select.Option key={make.Make_ID} value={make.Make_Name}>{make.Make_Name}</Select.Option>
+                                            ))}
+                                        </Select>
                                     </div>
                                     <div>
                                         <label className="premium-label">Model</label>
-                                        <select name="model" value={formData.model} onChange={handleInputChange} disabled={!formData.make} className="w-full h-9 px-3 text-sm rounded-lg premium-select disabled:opacity-50">
-                                            <option value="">Select</option>
-                                            {modelOptions.map((model) => (<option key={model.Model_ID} value={model.Model_Name}>{model.Model_Name}</option>))}
-                                        </select>
+                                        <Select
+                                            showSearch
+                                            placeholder="Select"
+                                            optionFilterProp="children"
+                                            value={formData.model || undefined}
+                                            onChange={(value) => setFormData(prev => ({ ...prev, model: value }))}
+                                            disabled={!formData.make}
+                                            filterOption={(input, option) =>
+                                                (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+                                            }
+                                            className="w-full"
+                                            style={{ height: '36px' }}
+                                            dropdownStyle={{ zIndex: 9999 }}
+                                        >
+                                            {modelOptions.map((model) => (
+                                                <Select.Option key={model.Model_ID} value={model.Model_Name}>{model.Model_Name}</Select.Option>
+                                            ))}
+                                        </Select>
                                     </div>
                                 </div>
 
@@ -601,6 +640,12 @@ const PublicContactRoot = () => {
                                         </div>
                                     </div>
                                 )}
+
+                                {/* Customer Notes */}
+                                <div>
+                                    <label className="premium-label">Customer Notes</label>
+                                    <textarea name="message" value={formData.message} onChange={handleInputChange} placeholder="Any additional details..." className="w-full px-3 py-2 text-sm rounded-lg premium-input h-24 resize-none" />
+                                </div>
 
                                 {/* Submit Button */}
                                 <button type="submit" disabled={formLoading} className="premium-btn w-full h-10 text-sm font-semibold text-white rounded-lg disabled:opacity-60 disabled:cursor-not-allowed mt-4" style={{ background: `linear-gradient(135deg, ${themeColor} 0%, ${themeColor}cc 100%)` }}>

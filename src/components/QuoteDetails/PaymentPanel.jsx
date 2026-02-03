@@ -16,7 +16,16 @@ const PAYMENT_METHODS = [
     { label: "Other", value: "OTHER" }
 ];
 
-export default function PaymentPanel({ paymentData, setPaymentData, existingPayments = [], totalAmount = 0, onPaymentDeleted = null }) {
+const PAYMENT_TERMS = [
+    { label: "Due upon receipt", value: "Due upon receipt" },
+    { label: "Net 15", value: "Net 15" },
+    { label: "Net 30", value: "Net 30" },
+    { label: "Net 45", value: "Net 45" },
+    { label: "Net 60", value: "Net 60" },
+    { label: "Custom", value: "Custom" }
+];
+
+export default function PaymentPanel({ paymentData, setPaymentData, existingPayments = [], totalAmount = 0, onPaymentDeleted = null, paymentTerms = '', onPaymentTermsChange = null, customPaymentTerms = '', onCustomPaymentTermsChange = null }) {
     // Modal state for delete confirmation
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [paymentToDelete, setPaymentToDelete] = useState(null);
@@ -24,21 +33,21 @@ export default function PaymentPanel({ paymentData, setPaymentData, existingPaym
     const handlePaymentDelete = async (paymentId) => {
         try {
             console.log('Starting payment deletion for ID:', paymentId);
-            
+
             if (!paymentId) {
                 message.error('Payment ID not found');
                 return;
             }
-            
+
             // Call the API to delete the payment
             const result = await paymentService.delete(paymentId);
             console.log('Delete response:', result);
-            
+
             // Notify parent to refresh the payment list
             if (onPaymentDeleted) {
                 onPaymentDeleted(paymentId);
             }
-            
+
             message.success('Payment deleted successfully');
             setIsDeleteModalOpen(false);
             setPaymentToDelete(null);
@@ -109,6 +118,34 @@ export default function PaymentPanel({ paymentData, setPaymentData, existingPaym
 
     return (
         <div className="h-full flex flex-col gap-4">
+            {/* Payment Terms */}
+            <div className="bg-white rounded-md border border-gray-200 shadow-sm p-4">
+                <h3 className="text-sm font-bold text-gray-800 mb-3">Payment Terms</h3>
+                <div className="flex flex-col gap-2">
+                    <select
+                        value={paymentTerms}
+                        onChange={(e) => onPaymentTermsChange && onPaymentTermsChange(e.target.value)}
+                        className="w-full max-w-xs border border-gray-200 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-violet-500 focus:border-violet-500 outline-none transition-all bg-white"
+                    >
+                        <option value="">Select Terms</option>
+                        {PAYMENT_TERMS.map((term) => (
+                            <option key={term.value} value={term.value}>
+                                {term.label}
+                            </option>
+                        ))}
+                    </select>
+                    {paymentTerms === 'Custom' && (
+                        <input
+                            type="text"
+                            value={customPaymentTerms}
+                            onChange={(e) => onCustomPaymentTermsChange && onCustomPaymentTermsChange(e.target.value)}
+                            placeholder="Enter custom terms"
+                            className="w-full max-w-xs border border-gray-200 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-violet-500 focus:border-violet-500 outline-none transition-all"
+                        />
+                    )}
+                </div>
+            </div>
+
             {/* Payment Summary */}
             <div className="bg-slate-50 border border-slate-200 rounded-md p-4 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div className="flex flex-col items-center md:items-start">
@@ -162,12 +199,12 @@ export default function PaymentPanel({ paymentData, setPaymentData, existingPaym
                                                 className="inline-flex items-center justify-center p-1.5 rounded hover:bg-red-50 transition-colors group"
                                                 title="Delete Payment"
                                             >
-                                                <svg 
-                                                    xmlns="http://www.w3.org/2000/svg" 
-                                                    className="h-4 w-4 text-gray-400 group-hover:text-red-600 transition-colors" 
-                                                    fill="none" 
-                                                    viewBox="0 0 24 24" 
-                                                    stroke="currentColor" 
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    className="h-4 w-4 text-gray-400 group-hover:text-red-600 transition-colors"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
                                                     strokeWidth={2}
                                                 >
                                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -189,12 +226,12 @@ export default function PaymentPanel({ paymentData, setPaymentData, existingPaym
                         <div className="p-6">
                             <div className="flex items-center gap-3 mb-4">
                                 <div className="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                                    <svg 
-                                        xmlns="http://www.w3.org/2000/svg" 
-                                        className="h-6 w-6 text-red-600" 
-                                        fill="none" 
-                                        viewBox="0 0 24 24" 
-                                        stroke="currentColor" 
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-6 w-6 text-red-600"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
                                         strokeWidth={2}
                                     >
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -204,11 +241,11 @@ export default function PaymentPanel({ paymentData, setPaymentData, existingPaym
                                     <h3 className="text-lg font-semibold text-gray-900">Confirm Payment Deletion</h3>
                                 </div>
                             </div>
-                            
+
                             <p className="text-gray-600 mb-4">
                                 Are you sure you want to delete this payment? This action cannot be undone.
                             </p>
-                            
+
                             {paymentToDelete && (
                                 <div className="bg-gray-50 rounded-md p-3 mb-4 border border-gray-200">
                                     <div className="grid grid-cols-2 gap-2 text-sm">
@@ -235,7 +272,7 @@ export default function PaymentPanel({ paymentData, setPaymentData, existingPaym
                                     </div>
                                 </div>
                             )}
-                            
+
                             <div className="flex gap-3 justify-end">
                                 <button
                                     onClick={() => {
