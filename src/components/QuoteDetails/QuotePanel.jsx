@@ -1406,7 +1406,16 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                         notes: paymentData.notes || "",
                         paymentId: null // Explicitly null for new
                     }] : [])
-                ]
+                ],
+                tasks: (schedulingData?.tasks || []).map(t => ({
+                    // Send ID only if it's a real backend ID (number), omit for temp frontend IDs (string)
+                    assignmentId: typeof t.id === 'number' ? t.id : null,
+                    taskDescription: t.taskDescription,
+                    priority: t.priority,
+                    employeeId: t.employeeId,
+                    dueDate: t.dueDate,
+                    status: t.status || 'PENDING'
+                }))
             };
 
             // Guard: Ensure every payment has an explicit paymentId key (null or ID) to prevent backend duplication
@@ -1421,6 +1430,8 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                     }
                 });
             }
+
+            console.log("Composite Payload:", compositePayload);
 
 
 
