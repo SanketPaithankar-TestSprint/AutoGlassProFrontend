@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import TaskStats from './TaskStats';
 import KanbanView from './KanbanView';
 import TaskTableView from './TaskTableView';
+import CalendarView from './CalendarView';
 
 // API Imports (Assuming these exist or I'm using the ones I saw)
 import CreateTaskModal from './CreateTaskModal';
@@ -15,7 +16,7 @@ import { updateTaskStatus } from '../../api/updateTaskStatus';
 const { Search } = Input;
 
 const ScheduleRoot = () => {
-    const [viewMode, setViewMode] = useState('kanban'); // 'kanban' or 'table'
+    const [viewMode, setViewMode] = useState('calendar'); // 'kanban', 'table', or 'calendar'
     const [taskScope, setTaskScope] = useState('mine'); // 'mine' or 'shop'
     const [filterStatus, setFilterStatus] = useState('ALL');
     const [searchText, setSearchText] = useState('');
@@ -115,6 +116,14 @@ const ScheduleRoot = () => {
                     {/* View Switcher */}
                     <div className="bg-white border p-1 rounded-lg flex">
                         <Button
+                            type={viewMode === 'calendar' ? 'primary' : 'text'}
+                            icon={<span className="material-icons-outlined text-sm">calendar_month</span>}
+                            onClick={() => setViewMode('calendar')}
+                            size="small"
+                        >
+                            Calendar
+                        </Button>
+                        <Button
                             type={viewMode === 'kanban' ? 'primary' : 'text'}
                             icon={<AppstoreOutlined />}
                             onClick={() => setViewMode('kanban')}
@@ -179,6 +188,11 @@ const ScheduleRoot = () => {
                             <KanbanView
                                 tasks={filteredTasks}
                                 onStatusChange={handleStatusChange}
+                                onEdit={handleEditTask}
+                            />
+                        ) : viewMode === 'calendar' ? (
+                            <CalendarView
+                                tasks={filteredTasks}
                                 onEdit={handleEditTask}
                             />
                         ) : (

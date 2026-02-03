@@ -73,7 +73,8 @@ const SearchByRoot = () => {
     dueDate: new Date().toISOString().split('T')[0], // Default to today logic
     paymentTerms: "Due upon receipt",
     assignedEmployeeId: null,
-    customPaymentTerms: ""
+    customPaymentTerms: "",
+    tasks: []
   });
 
   // Employees State
@@ -144,7 +145,7 @@ const SearchByRoot = () => {
   // Handle Incoming Composite Data (Edit Mode) OR Prefill Data (New Quote)
   useEffect(() => {
     if (location.state?.compositeData) {
-      const { serviceDocument, customer, vehicle, insurance, attachments: atts, organization } = location.state.compositeData;
+      const { serviceDocument, customer, vehicle, insurance, attachments: atts, organization, tasks } = location.state.compositeData;
 
       // 0. Set Metadata & Saved State
       setIsSaved(true);
@@ -189,7 +190,13 @@ const SearchByRoot = () => {
           dueDate: serviceDocument.dueDate ? serviceDocument.dueDate.split('T')[0] : new Date().toISOString().split('T')[0],
           paymentTerms: serviceDocument.paymentTerms || "Due upon receipt",
           assignedEmployeeId: serviceDocument.technicianId || serviceDocument.employeeId || null,
-          customPaymentTerms: "" // Reset or map if we stored it custom
+          customPaymentTerms: "", // Reset or map if we stored it custom
+          tasks: (tasks || serviceDocument.tasks || []).map(t => ({
+            ...t,
+            // Ensure every task has a unique frontend 'id' for React keys/updates
+            // specific to frontend logic. backend uses assignmentId.
+            id: t.assignmentId || t.id || Math.random().toString(36).substr(2, 9)
+          }))
         });
       }
 

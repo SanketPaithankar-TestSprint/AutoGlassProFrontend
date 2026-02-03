@@ -5,7 +5,7 @@ import { getValidToken } from "./getValidToken";
  * Creates a Full Service Document (Atomic Operation).
  * This creates Customer, Vehicle, Service Document, Quotes, and Attachments in one go.
  * 
- * @param {Object} data - The JSON payload containing { customerWithVehicle, serviceDocument, insurance, attachmentDescription }.
+ * @param {Object} data - The JSON payload containing { customer, vehicle, items, tasks, ... }.
  * @param {File} [file] - Optional file attachment.
  * @returns {Promise<Object>} - The created ServiceDocumentResponse.
  */
