@@ -157,26 +157,47 @@ const ReportsRoot = () => {
                             </Select>
                         </div>
 
-                        {/* Date Range Picker */}
+                        {/* Date Range Pickers - Separate for independent navigation */}
                         <div>
                             <label className="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">
-                                Date Range
+                                From Date
                             </label>
-                            <RangePicker
-                                value={dateRange}
-                                onChange={handleDateChange}
-                                format="YYYY-MM-DD"
-                                className="w-[300px]"
+                            <DatePicker
+                                value={dateRange ? dateRange[0] : null}
+                                onChange={(date) => {
+                                    if (date) {
+                                        setDateRange([date, dateRange ? dateRange[1] : dayjs()]);
+                                    }
+                                }}
+                                format="MM/DD/YYYY"
                                 size="middle"
-                                style={{ borderRadius: '10px' }}
+                                style={{ borderRadius: '10px', width: '140px' }}
                                 allowClear={false}
-                                presets={[
-                                    { label: 'Last 7 Days', value: [dayjs().subtract(7, 'day'), dayjs()] },
-                                    { label: 'Last 30 Days', value: [dayjs().subtract(30, 'day'), dayjs()] },
-                                    { label: 'Last 3 Months', value: [dayjs().subtract(3, 'month'), dayjs()] },
-                                    { label: 'Last 6 Months', value: [dayjs().subtract(6, 'month'), dayjs()] },
-                                    { label: 'This Year', value: [dayjs().startOf('year'), dayjs()] },
-                                ]}
+                                disabledDate={(current) => {
+                                    // Disable dates after the "To" date
+                                    return dateRange && dateRange[1] && current && current.isAfter(dateRange[1], 'day');
+                                }}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">
+                                To Date
+                            </label>
+                            <DatePicker
+                                value={dateRange ? dateRange[1] : null}
+                                onChange={(date) => {
+                                    if (date) {
+                                        setDateRange([dateRange ? dateRange[0] : dayjs().subtract(1, 'month'), date]);
+                                    }
+                                }}
+                                format="MM/DD/YYYY"
+                                size="middle"
+                                style={{ borderRadius: '10px', width: '140px' }}
+                                allowClear={false}
+                                disabledDate={(current) => {
+                                    // Disable dates before the "From" date
+                                    return dateRange && dateRange[0] && current && current.isBefore(dateRange[0], 'day');
+                                }}
                             />
                         </div>
 

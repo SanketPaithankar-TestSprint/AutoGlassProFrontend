@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import dayjs from 'dayjs';
 
 const RecentActivityTable = ({ data }) => {
     const navigate = useNavigate();
@@ -35,7 +36,7 @@ const RecentActivityTable = ({ data }) => {
                                 onClick={() => navigate(`/quote-details/${item.document_number}`)} // Assuming route
                             >
                                 <td className="px-6 py-4 font-medium text-slate-800">#{item.document_number}</td>
-                                <td className="px-6 py-4">{new Date(item.created_at).toLocaleDateString()}</td>
+                                <td className="px-6 py-4">{dayjs(item.created_at).format('MM/DD/YYYY')}</td>
                                 <td className="px-6 py-4 font-medium">
                                     {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(item.total_amount)}
                                 </td>

@@ -5,18 +5,20 @@ import {
     LinearScale,
     PointElement,
     LineElement,
+    BarElement,
     Title,
     Tooltip,
     Legend,
     Filler,
 } from 'chart.js';
-import { Line } from 'react-chartjs-2';
+import { Line, Bar } from 'react-chartjs-2';
 
 ChartJS.register(
     CategoryScale,
     LinearScale,
     PointElement,
     LineElement,
+    BarElement,
     Title,
     Tooltip,
     Legend,
@@ -39,7 +41,7 @@ const RevenueChart = ({ data }) => {
     const processedData = React.useMemo(() => {
         if (viewType === 'daily') {
             return {
-                labels: data.map(item => item.date),
+                labels: data.map(item => dayjs(item.date).format('MM/DD/YYYY')),
                 values: data.map(item => item.total)
             };
         } else {
@@ -76,14 +78,15 @@ const RevenueChart = ({ data }) => {
             {
                 label: 'Total Revenue',
                 data: processedData.values,
-                fill: true,
-                backgroundColor: 'rgba(124, 58, 237, 0.2)', // Violet-600 with opacity
+                fill: false,
+                backgroundColor: viewType === 'monthly' ? 'rgb(124, 58, 237)' : 'rgba(124, 58, 237, 0.2)',
                 borderColor: 'rgb(124, 58, 237)', // Violet-600
-                tension: 0.4, // Smooth curve
+                tension: 0, // Straight lines
                 pointBackgroundColor: 'rgb(124, 58, 237)',
                 pointBorderColor: '#fff',
                 pointHoverBackgroundColor: '#fff',
                 pointHoverBorderColor: 'rgb(124, 58, 237)',
+                borderRadius: viewType === 'monthly' ? 4 : 0,
             },
         ],
     };
@@ -106,11 +109,20 @@ const RevenueChart = ({ data }) => {
                 grid: {
                     color: 'rgba(0, 0, 0, 0.05)',
                 },
+                ticks: {
+                    callback: function (value) {
+                        return '$' + value.toLocaleString();
+                    }
+                }
             },
             x: {
                 grid: {
                     display: false,
                 },
+                ticks: {
+                    maxRotation: 90,
+                    minRotation: 90,
+                }
             },
         },
     };
@@ -131,7 +143,11 @@ const RevenueChart = ({ data }) => {
                 </Select>
             </div>
             <div className="flex-1 min-h-[300px]">
-                <Line data={chartData} options={options} />
+                {viewType === 'daily' ? (
+                    <Line data={chartData} options={options} />
+                ) : (
+                    <Bar data={chartData} options={options} />
+                )}
             </div>
         </div>
     );
