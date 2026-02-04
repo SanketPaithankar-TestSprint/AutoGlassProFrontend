@@ -32,6 +32,7 @@ const PublicContactRoot = React.lazy(() => import('./components/PublicContact/Pu
 const ServiceContactFormRoot = React.lazy(() => import('./components/ServiceContactForm/ServiceContactFormRoot.jsx'));
 const ServiceInquiryView = React.lazy(() => import('./components/ServiceContactForm/ServiceInquiryView.jsx'));
 const ContactPage = React.lazy(() => import('./components/ContactPage.jsx'));
+const PrivacyPolicy = React.lazy(() => import('./components/PrivacyPolicy.jsx'));
 import ErrorBoundary from './components/PublicContact/ErrorBoundary';
 
 
@@ -115,13 +116,17 @@ function AppContent() {
     );
   }
 
+  // Determine if we should show the Dashboard layout (Sidebar + Content) or Public Layout (Header + Content)
+  // We force Public Layout for specific pages like Privacy Policy even if logged in
+  const shouldUseDashboardLayout = isAuthed && !location.pathname.startsWith('/privacy-policy');
+
   return (
-    <Layout className={isAuthed ? "h-screen overflow-hidden" : "min-h-screen overflow-x-hidden"}>
-      {isAuthed && isMobile && (
+    <Layout className={shouldUseDashboardLayout ? "h-screen overflow-hidden" : "min-h-screen overflow-x-hidden"}>
+      {shouldUseDashboardLayout && isMobile && (
         <Header onLoginSuccess={handleLoginSuccess} />
       )}
 
-      {isAuthed ? (
+      {shouldUseDashboardLayout ? (
         // Authenticated Layout
         <Layout className="h-full" hasSider={!isMobile}>
           {/* Show Sidebar on DESKTOP only */}
@@ -152,7 +157,7 @@ function AppContent() {
                       <Route path="/Profile" element={<Profile />} />
 
                       <Route path="/Order" element={<OrderPage />} />
-                      <Route path="/Pricing" element={<PricingPage />} />
+                      <Route path="/pricing" element={<PricingPage />} />
                       <Route path="/open" element={<OpenRoot />} />
                       <Route path="/reports" element={<ReportsRoot />} />
                       <Route path="/auth" element={<AuthPage />} />
@@ -172,8 +177,8 @@ function AppContent() {
         <Layout className="min-h-screen bg-white flex flex-col">
           <Header onLoginSuccess={handleLoginSuccess} />
 
-          <Content className={`flex-1 flex flex-col ${location.pathname === '/' ? '' : 'pt-20'}`}> {/* pt-20 for fixed header, removed for Home to allow immersive hero */}
-            <div className={`flex flex-col ${location.pathname === '/auth' ? '' : 'min-h-[calc(100vh-80px)]'}`}>
+          <Content className="flex-1 flex flex-col"> {/* Header is fixed provided we handle spacing in pages */}
+            <div className={`flex flex-col ${location.pathname === '/auth' ? '' : 'min-h-screen'} ${(location.pathname === '/' || location.pathname === '/auth') ? '' : 'pt-20 lg:pt-24'}`}>
               <Suspense fallback={
                 <div className="flex items-center justify-center h-full">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
@@ -188,8 +193,9 @@ function AppContent() {
                   <Route path="/Profile" element={<Profile />} />
 
                   <Route path="/Order" element={<OrderPage />} />
-                  <Route path="/Pricing" element={<PricingPage />} />
+                  <Route path="/pricing" element={<PricingPage />} />
                   <Route path="/auth" element={<AuthPage />} />
+                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 </Routes>
               </Suspense>
             </div>

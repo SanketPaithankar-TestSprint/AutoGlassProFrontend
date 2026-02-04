@@ -10,6 +10,7 @@ import ProcessSection from "./ProcessSection";
 import BusinessModelsSection from "./BusinessModelsSection";
 import WhyChooseSection from "./WhyChooseSection";
 import { SearchOutlined, CarOutlined } from "@ant-design/icons";
+import { motion } from "framer-motion";
 
 const Home = () => {
     const navigate = useNavigate();
@@ -26,21 +27,54 @@ const Home = () => {
     }, [])
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-white via-indigo-50/30 to-blue-50/30 text-slate-900 pb-16">
-            {/* Spacer for sticky header if you have one */}
-            {/* <div className="h-16" />*/}
+        <div className="min-h-screen relative text-slate-900 overflow-hidden bg-slate-50/50">
+            {/* Global Gradient Background */}
+            <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+                <motion.div
+                    className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] min-w-[500px] min-h-[500px] rounded-full blur-[120px] opacity-20"
+                    style={{ background: 'linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)' }}
+                    animate={{
+                        scale: [1, 1.1, 1],
+                        opacity: [0.15, 0.25, 0.15],
+                    }}
+                    transition={{
+                        duration: 8,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                    }}
+                />
+                <motion.div
+                    className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] min-w-[500px] min-h-[500px] rounded-full blur-[120px] opacity-20"
+                    style={{ background: 'linear-gradient(135deg, #00A8E4 0%, #7E5CFE 100%)' }}
+                    animate={{
+                        scale: [1, 1.2, 1],
+                        opacity: [0.15, 0.25, 0.15],
+                    }}
+                    transition={{
+                        duration: 10,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 1
+                    }}
+                />
+            </div>
 
-            {/* Hero */}
-            <HeroSection />
+            <div className="relative z-10">
+                {/* Spacer for sticky header if you have one */}
+                {/* <div className="h-16" />*/}
 
-            {/* Main content - Value Proposition & Features */}
-            <div
-                className={`transition-all duration-700 ${mounted
-                    ? "opacity-100 translate-y-0"
-                    : "opacity-0 translate-y-4"
-                    }`}
-            >
-                <ValuePropSection />
+                {/* Hero */}
+                <HeroSection className="" />
+
+                {/* Main content - Value Proposition & Features */}
+                <div
+                    className={`transition-all duration-700 ${mounted
+                        ? "opacity-100 translate-y-0"
+                        : "opacity-0 translate-y-4"
+                        }`}
+                >
+                    <ValuePropSection />
+                </div>
             </div>
         </div>
     )

@@ -5,7 +5,6 @@ import {
     RocketOutlined,
     SafetyCertificateOutlined,
     GlobalOutlined,
-    CloudServerOutlined,
     CheckCircleFilled
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -57,7 +56,7 @@ const AnimatedSection = ({ children, delay = "0s", className = "" }) => {
 
 const FounderCard = ({ name, role, description, delay }) => (
     <AnimatedSection delay={delay} className="h-full">
-        <div className="bg-slate-50 p-6 md:p-8 rounded-3xl border border-slate-100 h-full hover:shadow-lg transition-shadow duration-300">
+        <div className="bg-white/60 backdrop-blur-md p-6 md:p-8 rounded-3xl border border-white/50 h-full hover:shadow-xl hover:shadow-violet-100/50 hover:border-violet-200 transition-all duration-300">
             <div className="flex items-center gap-4 mb-6">
                 <div className="h-14 w-14 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 text-2xl font-bold">
                     {name.charAt(0)}
@@ -137,132 +136,140 @@ const AboutPage = () => {
     ];
 
     return (
-        <div className="bg-white min-h-screen pt-10 pb-20">
-            {/* 1. Header & Mission */}
-            <div className="px-6 md:px-12 lg:px-20 py-12 md:py-16 max-w-7xl mx-auto text-center border-b border-slate-50">
-                <AnimatedSection>
-                    <span className="inline-block py-1 px-3 rounded-full bg-violet-100 text-violet-700 text-xs font-bold tracking-wide uppercase mb-4">
-                        Our Story
-                    </span>
-                    <h1 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6 font-outfit">
-                        Built by Auto Glass Experts, <br /> Powered by <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-fuchsia-600">Artificial Intelligence</span>.
-                    </h1>
-                </AnimatedSection>
-
-                <AnimatedSection delay="0.2s">
-                    <div className="max-w-4xl mx-auto bg-slate-50 p-6 md:p-10 rounded-3xl mt-6">
-                        <h2 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-3">Our Mission</h2>
-                        <p className="text-lg md:text-xl text-slate-800 leading-relaxed font-medium">
-                            AutoPaneAI was founded to solve the core inefficiencies that plague the auto glass industry: inaccurate quotes, paper-based work orders, and slow payment cycles. We provide a single, cloud-based platform that handles the entire service flow, allowing shop owners and remote installers to focus on service delivery, not paperwork.
-                        </p>
-                    </div>
-                </AnimatedSection>
-            </div>
-
-            {/* 2. Meet the Founders */}
-            <div className="px-6 md:px-12 lg:px-20 py-16 bg-white">
-                <div className="max-w-7xl mx-auto">
+        <div className="bg-white min-h-screen pt-10 pb-20 relative overflow-hidden">
+            {/* Simple static gradient background */}
+            <div
+                className="fixed inset-0 z-0 pointer-events-none opacity-20"
+                style={{ background: 'linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)' }}
+            />
+            {/* Main Content Wrapper */}
+            <div className="relative z-10">
+                {/* 1. Header & Mission */}
+                <div className="px-6 md:px-12 lg:px-20 py-12 md:py-16 max-w-7xl mx-auto text-center border-b border-slate-50">
                     <AnimatedSection>
-                        <div className="text-center mb-12">
-                            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3 font-outfit">Meet the Founders</h2>
-                            <p className="text-slate-600 max-w-2xl mx-auto">The visionary team combining industry experience with cutting-edge technology.</p>
+                        <span className="inline-block py-1 px-3 mt-3 rounded-full bg-violet-100 text-violet-700 text-xs font-bold tracking-wide uppercase mb-4">
+                            Our Story
+                        </span>
+                        <h1 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6 font-outfit">
+                            Built by Auto Glass Experts, <br /> Powered by <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-fuchsia-600">Artificial Intelligence</span>.
+                        </h1>
+                    </AnimatedSection>
+
+                    <AnimatedSection delay="0.2s">
+                        <div className="max-w-4xl mx-auto bg-white/60 backdrop-blur-md border border-white/50 p-6 md:p-10 rounded-3xl mt-6 shadow-sm">
+                            <h2 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-3">Our Mission</h2>
+                            <p className="text-lg md:text-xl text-slate-800 leading-relaxed font-medium">
+                                AutoPaneAI was founded to solve the core inefficiencies that plague the auto glass industry: inaccurate quotes, paper-based work orders, and slow payment cycles. We provide a single, cloud-based platform that handles the entire service flow, allowing shop owners and remote installers to focus on service delivery, not paperwork.
+                            </p>
+                        </div>
+                    </AnimatedSection>
+                </div>
+
+                {/* 2. Meet the Founders */}
+                <div className="px-6 md:px-12 lg:px-20 py-16 bg-transparent">
+                    <div className="max-w-7xl mx-auto">
+                        <AnimatedSection>
+                            <div className="text-center mb-12">
+                                <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3 font-outfit">Meet the Founders</h2>
+                                <p className="text-slate-600 max-w-2xl mx-auto">The visionary team combining industry experience with cutting-edge technology.</p>
+                            </div>
+                        </AnimatedSection>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {founders.map((founder, idx) => (
+                                <FounderCard
+                                    key={idx}
+                                    {...founder}
+                                    delay={`${idx * 0.1}s`}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* 3. Our Users */}
+                <div className="max-w-7xl mx-auto px-4 md:px-8 mt-24 mb-20">
+                    <AnimatedSection>
+                        <div className="px-6 md:px-12 lg:px-20 py-20 bg-violet-50 rounded-[2.5rem] relative overflow-hidden border border-violet-100">
+                            <div className="absolute top-0 left-0 w-full h-full opacity-5 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                            <div className="relative z-10 max-w-7xl mx-auto">
+                                <div className="text-center mb-16">
+                                    <h2 className="text-3xl md:text-4xl font-bold mb-4 font-outfit text-slate-900">Who We Serve</h2>
+                                    <p className="text-slate-600 max-w-2xl mx-auto text-lg">Empowering professionals across the entire automotive glass sector.</p>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                    {targetUsers.map((user, idx) => (
+                                        <AnimatedSection key={idx} delay={`${idx * 0.1}s`}>
+                                            <div className="text-center group bg-white p-6 rounded-3xl border border-violet-100 shadow-sm hover:shadow-xl hover:shadow-violet-100 transition-all duration-300">
+                                                <div className="h-16 w-16 mx-auto bg-violet-100 rounded-full flex items-center justify-center text-2xl text-violet-600 mb-5 group-hover:scale-110 transition-transform duration-300">
+                                                    {user.icon}
+                                                </div>
+                                                <h3 className="text-lg font-bold mb-2 font-outfit text-slate-900">{user.title}</h3>
+                                                <p className="text-slate-600 leading-relaxed text-sm">{user.desc}</p>
+                                            </div>
+                                        </AnimatedSection>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </AnimatedSection>
+                </div>
+
+                {/* 4. Why Choose APAI */}
+                <div className="px-6 md:px-12 lg:px-20 py-10 max-w-7xl mx-auto">
+                    <AnimatedSection>
+                        <div className="text-center mb-10">
+                            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4 font-outfit">Why Choose APAI?</h2>
+                            <p className="text-lg text-slate-600 max-w-3xl mx-auto">
+                                Most software companies build for "the industry." We build for <span className="font-bold text-violet-600">you</span>, because we come from your world.
+                            </p>
                         </div>
                     </AnimatedSection>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {founders.map((founder, idx) => (
-                            <FounderCard
-                                key={idx}
-                                {...founder}
-                                delay={`${idx * 0.1}s`}
-                            />
+                    <div className="space-y-4">
+                        {whyChoose.map((item, idx) => (
+                            <AnimatedSection key={idx} delay={`${idx * 0.1}s`}>
+                                <div className="flex items-start gap-5 p-5 md:p-6 rounded-2xl bg-white border border-slate-100 hover:shadow-lg transition-all duration-300 hover:border-violet-100">
+                                    <div className={`flex-shrink-0 h-10 w-10 mt-1 rounded-full flex items-center justify-center ${item.color} font-bold`}>
+                                        <CheckCircleFilled />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-slate-900 mb-1 font-outfit">{item.title}</h3>
+                                        <p className="text-slate-600 text-base">{item.desc}</p>
+                                    </div>
+                                </div>
+                            </AnimatedSection>
                         ))}
                     </div>
                 </div>
-            </div>
 
-            {/* 3. Our Users */}
-            <div className="max-w-7xl mx-auto px-4 md:px-8 mb-20">
-                <AnimatedSection>
-                    <div className="px-6 md:px-12 lg:px-20 py-20 bg-violet-50 rounded-[2.5rem] relative overflow-hidden border border-violet-100">
-                        <div className="absolute top-0 left-0 w-full h-full opacity-5 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-                        <div className="relative z-10 max-w-7xl mx-auto">
-                            <div className="text-center mb-16">
-                                <h2 className="text-3xl md:text-4xl font-bold mb-4 font-outfit text-slate-900">Who We Serve</h2>
-                                <p className="text-slate-600 max-w-2xl mx-auto text-lg">Empowering professionals across the entire automotive glass sector.</p>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                {targetUsers.map((user, idx) => (
-                                    <AnimatedSection key={idx} delay={`${idx * 0.1}s`}>
-                                        <div className="text-center group bg-white p-6 rounded-3xl border border-violet-100 shadow-sm hover:shadow-xl hover:shadow-violet-100 transition-all duration-300">
-                                            <div className="h-16 w-16 mx-auto bg-violet-100 rounded-full flex items-center justify-center text-2xl text-violet-600 mb-5 group-hover:scale-110 transition-transform duration-300">
-                                                {user.icon}
-                                            </div>
-                                            <h3 className="text-lg font-bold mb-2 font-outfit text-slate-900">{user.title}</h3>
-                                            <p className="text-slate-600 leading-relaxed text-sm">{user.desc}</p>
-                                        </div>
-                                    </AnimatedSection>
-                                ))}
+                {/* 5. Final CTA */}
+                <div className="max-w-5xl mx-auto px-6 mt-24 mb-10">
+                    <AnimatedSection>
+                        <div className="bg-violet-50 rounded-3xl p-10 md:p-14 text-center border border-violet-100 relative overflow-hidden">
+                            <div className="relative z-10">
+                                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full text-violet-700 font-bold text-sm mb-6 shadow-sm">
+                                    <SafetyCertificateOutlined /> Security & Reliability
+                                </div>
+                                <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4 font-outfit">
+                                    Your Business Data is Our Top Priority
+                                </h2>
+                                <p className="text-slate-600 mb-8 max-w-2xl mx-auto">
+                                    All data is encrypted, securely stored in the cloud, and automatically backed up. Our role-based access control protects sensitive information, giving you peace of mind.
+                                </p>
+                                <Button
+                                    type="primary"
+                                    size="large"
+                                    onClick={() => navigate('/auth', { state: { mode: 'signup' } })}
+                                    className="!bg-violet-600 !border-violet-600 hover:!bg-violet-500 !h-12 !px-8 !text-base !rounded-full shadow-lg shadow-violet-200"
+                                >
+                                    Get Started Today
+                                </Button>
                             </div>
                         </div>
-                    </div>
-                </AnimatedSection>
-            </div>
-
-            {/* 4. Why Choose APAI */}
-            <div className="px-6 md:px-12 lg:px-20 py-10 max-w-7xl mx-auto">
-                <AnimatedSection>
-                    <div className="text-center mb-10">
-                        <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4 font-outfit">Why Choose APAI?</h2>
-                        <p className="text-lg text-slate-600 max-w-3xl mx-auto">
-                            Most software companies build for "the industry." We build for <span className="font-bold text-violet-600">you</span>, because we come from your world.
-                        </p>
-                    </div>
-                </AnimatedSection>
-
-                <div className="space-y-4">
-                    {whyChoose.map((item, idx) => (
-                        <AnimatedSection key={idx} delay={`${idx * 0.1}s`}>
-                            <div className="flex items-start gap-5 p-5 md:p-6 rounded-2xl bg-white border border-slate-100 hover:shadow-lg transition-all duration-300 hover:border-violet-100">
-                                <div className={`flex-shrink-0 h-10 w-10 mt-1 rounded-full flex items-center justify-center ${item.color} font-bold`}>
-                                    <CheckCircleFilled />
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-bold text-slate-900 mb-1 font-outfit">{item.title}</h3>
-                                    <p className="text-slate-600 text-base">{item.desc}</p>
-                                </div>
-                            </div>
-                        </AnimatedSection>
-                    ))}
+                    </AnimatedSection>
                 </div>
-            </div>
-
-            {/* 5. Final CTA */}
-            <div className="max-w-5xl mx-auto px-6 mt-24 mb-10">
-                <AnimatedSection>
-                    <div className="bg-violet-50 rounded-3xl p-10 md:p-14 text-center border border-violet-100 relative overflow-hidden">
-                        <div className="relative z-10">
-                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full text-violet-700 font-bold text-sm mb-6 shadow-sm">
-                                <SafetyCertificateOutlined /> Security & Reliability
-                            </div>
-                            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4 font-outfit">
-                                Your Business Data is Our Top Priority
-                            </h2>
-                            <p className="text-slate-600 mb-8 max-w-2xl mx-auto">
-                                All data is encrypted, securely stored in the cloud, and automatically backed up. Our role-based access control protects sensitive information, giving you peace of mind.
-                            </p>
-                            <Button
-                                type="primary"
-                                size="large"
-                                onClick={() => navigate('/auth', { state: { mode: 'signup' } })}
-                                className="!bg-violet-600 !border-violet-600 hover:!bg-violet-500 !h-12 !px-8 !text-base !rounded-full shadow-lg shadow-violet-200"
-                            >
-                                Get Started Today
-                            </Button>
-                        </div>
-                    </div>
-                </AnimatedSection>
             </div>
         </div>
     );

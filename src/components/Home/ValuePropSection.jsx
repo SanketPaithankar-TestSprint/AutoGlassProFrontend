@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "antd";
 import { useNavigate } from "react-router-dom";
-import { CheckCircleFilled, MessageOutlined, FormOutlined, ArrowRightOutlined } from "@ant-design/icons";
+import { CheckCircleFilled, MessageOutlined, FormOutlined, ArrowRightOutlined, LockOutlined } from "@ant-design/icons";
 
 import PrecisionImage from "../../assets/2.1.png";
 import ExecuteImage from "../../assets/2.2.png";
@@ -113,7 +113,14 @@ const ValuePropSection = () => {
     ];
 
     return (
-        <div className="bg-white py-16 md:py-24 px-6 md:px-12 lg:px-20 overflow-hidden">
+        <div className="relative py-16 md:py-24 px-6 md:px-12 lg:px-20 overflow-hidden">
+            {/* Background with Fade-in Gradient to eliminate hard edge */}
+            <div
+                className="absolute inset-0 -z-10 backdrop-blur-3xl"
+                style={{
+                    background: 'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.9) 150px, rgba(255,255,255,1) 100%)'
+                }}
+            />
 
             {/* 1. Value Proposition Header */}
             <AnimatedSection>
@@ -340,6 +347,21 @@ const ValuePropSection = () => {
                         </div>
                     </AnimatedSection>
                 </div>
+
+                {/* Security & Reliability Section */}
+                <AnimatedSection delay="0.3s">
+                    <div className="mt-20 text-center max-w-4xl mx-auto bg-white border border-slate-200 rounded-3xl p-8 md:p-12 shadow-lg relative overflow-hidden group hover:border-violet-300 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-violet-200/50">
+                        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
+                            <LockOutlined style={{ fontSize: '150px', color: '#7c3aed' }} />
+                        </div>
+                        <h3 className="text-2xl md:text-3xl font-bold mb-4 font-outfit text-slate-900 relative z-10">
+                            Security & Reliability: Your Business Data is Our Top Priority
+                        </h3>
+                        <p className="text-lg text-slate-600 leading-relaxed relative z-10">
+                            All data is encrypted, securely stored in the cloud, and automatically backed up. Our role-based access control protects sensitive information, giving you peace of mind.
+                        </p>
+                    </div>
+                </AnimatedSection>
             </div>
 
         </div>

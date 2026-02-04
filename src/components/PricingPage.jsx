@@ -1,6 +1,7 @@
 import React from "react";
 import { Layout, Button, Tooltip } from "antd";
 import { CheckOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 import { freeTierFeatures, professionalTierFeatures, enterpriseTierFeatures } from "../const/pricingPage";
 import LeftDecoImage from "../assets/6.2.png";
 import RightDecoImage from "../assets/6.3.png";
@@ -8,6 +9,8 @@ import RightDecoImage from "../assets/6.3.png";
 const { Content } = Layout;
 
 const PricingPage = () => {
+  const navigate = useNavigate();
+
   return (
     <Layout className="flex-grow bg-white font-sans text-slate-900 flex flex-col justify-center relative overflow-hidden">
       {/* Decorative Images - Visible on XL screens */}
@@ -66,6 +69,7 @@ const PricingPage = () => {
                 block
                 className="!h-10 !rounded-lg !text-white !font-bold !border-none !text-xs shadow-md"
                 style={{ backgroundColor: '#00A8E4', boxShadow: '0 4px 14px 0 rgba(0, 168, 228, 0.39)' }}
+                onClick={() => navigate('/auth', { state: { mode: 'signup' } })}
               >
                 Start Free Trial
               </Button>
@@ -112,6 +116,7 @@ const PricingPage = () => {
                 block
                 className="!h-10 !rounded-lg !bg-white hover:!bg-blue-50 !font-bold !border-none !text-xs shadow-lg"
                 style={{ color: '#00A8E4' }}
+                onClick={() => navigate('/auth', { state: { mode: 'signup' } })}
               >
                 Get Started
               </Button>
@@ -150,6 +155,7 @@ const PricingPage = () => {
                 block
                 className="!h-10 !rounded-lg !text-white !font-bold !border-none !text-xs shadow-md"
                 style={{ backgroundColor: '#00A8E4', boxShadow: '0 4px 14px 0 rgba(0, 168, 228, 0.39)' }}
+                onClick={() => navigate('/contact')}
               >
                 Contact Sales
               </Button>
@@ -159,7 +165,7 @@ const PricingPage = () => {
           {/* Reduce margin top for footer link */}
           <div className="mt-10 text-center">
             <p className="text-slate-400 text-xs">
-              Need help choosing? <a href="#" className="text-blue-600 hover:text-blue-700 font-medium">Contact Sales</a>
+              Need help choosing? <a href="/contact" className="text-blue-600 hover:text-blue-700 font-medium">Contact Sales</a>
             </p>
           </div>
 

@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Layout, Row, Col, Typography, Space, Divider, Button } from "antd";
-import {
-  CarOutlined,
-  LinkedinFilled,
-  FacebookFilled,
-  TwitterSquareFilled,
-} from "@ant-design/icons";
+import { CarOutlined } from "@ant-design/icons";
+import { FaInstagram, FaYoutube, FaLinkedin, FaXTwitter } from "react-icons/fa6";
+import { SOCIAL_LINKS, SITEMAP_LINK } from "../const/socialLinks";
 import { getValidToken } from "../api/getValidToken";
 
 const { Footer: AntFooter } = Layout;
@@ -33,11 +31,30 @@ const Footer = () => {
             <span>© {new Date().getFullYear()} APAI</span>
           </div>
 
-          {/* Right: Links */}
+          {/* Quick Links Section */}
           <div className="flex items-center gap-6">
-            <a href="#" className="text-slate-500 hover:text-slate-800 transition-colors">Contact</a>
-            <a href="#" className="text-slate-500 hover:text-slate-800 transition-colors">Privacy Policy</a>
-            <a href="#" className="text-slate-500 hover:text-slate-800 transition-colors">Terms</a>
+            <Link to="/" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">Home</Link>
+            <Link to="/pricing" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">Pricing</Link>
+            <Link to="/features" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">Features</Link>
+            <Link to="/about" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">About</Link>
+            <Link to="/contact" className="text-slate-500 hover:text-slate-800 transition-colors">Contact</Link>
+            <a href={SITEMAP_LINK} className="text-slate-500 hover:text-slate-800 transition-colors" target="_blank" rel="noopener noreferrer">Sitemap</a>
+            <Link to="/privacy-policy" className="text-slate-500 hover:text-slate-800 transition-colors">Privacy Policy</Link>
+          </div>
+          {/* Social Media Section */}
+          <div className="flex items-center gap-3">
+            <a href={SOCIAL_LINKS.instagram} className="text-slate-500 hover:text-pink-500 transition-colors" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+              <FaInstagram size={20} />
+            </a>
+            <a href={SOCIAL_LINKS.youtube} className="text-slate-500 hover:text-red-500 transition-colors" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+              <FaYoutube size={20} />
+            </a>
+            <a href={SOCIAL_LINKS.linkedin} className="text-slate-500 hover:text-blue-700 transition-colors" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+              <FaLinkedin size={20} />
+            </a>
+            <a href={SOCIAL_LINKS.x} className="text-slate-500 hover:text-black transition-colors" target="_blank" rel="noopener noreferrer" aria-label="X">
+              <FaXTwitter size={20} />
+            </a>
           </div>
         </div>
       </AntFooter>
@@ -46,7 +63,7 @@ const Footer = () => {
 
   return (
     <AntFooter
-      className="bg-white px-4 sm:px-6 !pt-4 !pb-2 border-t border-slate-200"
+      className="bg-white px-4 sm:px-6 !pt-4 !pb-2"
     >
       <div className="mx-auto w-full max-w-6xl">
 
@@ -69,19 +86,18 @@ const Footer = () => {
 
           </Col>
 
-          {/* Quick Links - Conditional */}
-          {!isAuthed && (
-            <Col xs={24} md={7} lg={7}>
-              <Title level={5} className="!text-slate-800 text-sm">
-                Quick Links
-              </Title>
-              <ul className="mt-3 space-y-2 text-sm">
-                <li><a href="#" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">Home</a></li>
-                <li><a href="#" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">Pricing</a></li>
-                <li><a href="#" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">About</a></li>
-              </ul>
-            </Col>
-          )}
+          {/* Quick Links - Always show */}
+          <Col xs={24} md={7} lg={7}>
+            <Title level={5} className="!text-slate-800 text-sm">
+              Quick Links
+            </Title>
+            <ul className="mt-3 space-y-2 text-sm">
+              <li><Link to="/" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">Home</Link></li>
+              <li><Link to="/pricing" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">Pricing</Link></li>
+              <li><Link to="/features" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">Features</Link></li>
+              <li><Link to="/about" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">About</Link></li>
+            </ul>
+          </Col>
 
           {/* Support */}
           <Col xs={24} md={isAuthed ? 12 : 7} lg={isAuthed ? 12 : 7}>
@@ -89,10 +105,25 @@ const Footer = () => {
               Support
             </Title>
             <ul className="mt-3 space-y-2 text-sm">
-              <li><a href="#" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">Contact</a></li>
-              <li><a href="#" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">Terms of Service</a></li>
+              <li><Link to="/contact" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">Contact</Link></li>
+              <li><a href={SITEMAP_LINK} className="text-slate-500 hover:text-[#7E5CFE] transition-colors" target="_blank" rel="noopener noreferrer">Sitemap</a></li>
+              <li><Link to="/privacy-policy" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">Privacy Policy</Link></li>
             </ul>
+            {/* Social Media Section */}
+            <div className="flex items-center gap-3 mt-3">
+              <a href={SOCIAL_LINKS.instagram} className="text-slate-500 hover:text-pink-500 transition-colors" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                <FaInstagram size={20} />
+              </a>
+              <a href={SOCIAL_LINKS.youtube} className="text-slate-500 hover:text-red-500 transition-colors" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+                <FaYoutube size={20} />
+              </a>
+              <a href={SOCIAL_LINKS.linkedin} className="text-slate-500 hover:text-blue-700 transition-colors" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                <FaLinkedin size={20} />
+              </a>
+              <a href={SOCIAL_LINKS.x} className="text-slate-500 hover:text-black transition-colors" target="_blank" rel="noopener noreferrer" aria-label="X">
+                <FaXTwitter size={20} />
+              </a>
+            </div>
           </Col>
         </Row>
 

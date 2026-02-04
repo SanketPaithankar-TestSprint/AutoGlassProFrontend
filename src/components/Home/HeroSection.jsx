@@ -70,10 +70,7 @@ const HeroSection = () => {
                 e.currentTarget.style.borderColor = '#7E5CFE';
               }}
               onClick={() => {
-                const el = document.getElementById("signup");
-                if (el) {
-                  el.scrollIntoView({ behavior: "smooth" });
-                }
+                window.location.href = 'http://localhost:5173/auth';
               }}
             >
               Start Your Free Trial

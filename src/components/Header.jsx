@@ -101,7 +101,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
     { key: "home", label: "Home", href: "/" },
     ...(!isAuthed ? [
       { key: "features", label: "Features", href: "/features" },
-      { key: "pricing", label: "Pricing", href: "/Pricing" },
+      { key: "pricing", label: "Pricing", href: "/pricing" },
       { key: "about", label: "About", href: "/about" },
       { key: "contact", label: "Contact", href: "/contact" },
     ] : []),
@@ -138,14 +138,14 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
     <>
       <AntHeader
         className={`
-          glass-navbar
+         !bg-white/95 backdrop-blur-md border-b border-slate-200
           fixed top-0 left-0 right-0 z-40
           flex items-center
           px-4 sm:px-6 md:px-8
           transition-all duration-300
           ${(isMobile || scrolled) ? "h-16" : "h-20"}
         `}
-        style={{ paddingInline: 0, boxShadow: scrolled ? '0 2px 8px rgba(0,0,0,0.12)' : 'none', minWidth: 0 }}
+        style={{ paddingInline: 0, boxShadow: scrolled ? '0 2px 8px rgba(0,0,0,0.1)' : 'none', minWidth: 0 }}
       >
         {/* Left: Logo + small tag */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 ml-4">

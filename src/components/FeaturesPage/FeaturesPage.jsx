@@ -15,6 +15,7 @@ import {
     BarChartOutlined,
     CheckCircleFilled
 } from '@ant-design/icons';
+import { motion } from 'framer-motion';
 import VideoModal from '../VideoModal/VideoModal';
 
 // Intersection Observer Hook for scroll animations
@@ -169,10 +170,44 @@ const FeaturesPage = () => {
         }
     ];
 
+    const handleStartTrial = () => {
+        window.location.href = '/auth';
+    };
+
     return (
-        <div className="bg-white min-h-screen pb-20 pt-10">
+        <div className="bg-transparent min-h-screen pb-20 relative overflow-hidden">
+            {/* Global Gradient Background */}
+            <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+                <motion.div
+                    className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] min-w-[500px] min-h-[500px] rounded-full blur-[120px] opacity-20"
+                    style={{ background: 'linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)' }}
+                    animate={{
+                        scale: [1, 1.1, 1],
+                        opacity: [0.15, 0.25, 0.15],
+                    }}
+                    transition={{
+                        duration: 8,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                    }}
+                />
+                <motion.div
+                    className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] min-w-[500px] min-h-[500px] rounded-full blur-[120px] opacity-20"
+                    style={{ background: 'linear-gradient(135deg, #00A8E4 0%, #7E5CFE 100%)' }}
+                    animate={{
+                        scale: [1, 1.2, 1],
+                        opacity: [0.15, 0.25, 0.15],
+                    }}
+                    transition={{
+                        duration: 10,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 1
+                    }}
+                />
+            </div>
             {/* Page Header */}
-            <div className="bg-white pt-10 pb-16 px-6 md:px-12 lg:px-20 border-b border-slate-100">
+            <div className="relative pt-10 pb-16 px-6 md:px-12 lg:px-20 border-b border-transparent">
                 <AnimatedSection>
                     <div className="max-w-4xl mx-auto text-center">
                         <span className="inline-block py-1 px-3 rounded-full bg-violet-100 text-violet-700 text-xs font-bold tracking-wide uppercase mb-3">
@@ -237,6 +272,7 @@ const FeaturesPage = () => {
                                     type="primary"
                                     size="large"
                                     className="!bg-violet-600 !border-violet-600 hover:!bg-violet-500 !h-11 !px-8 !text-base !rounded-full shadow-md shadow-violet-200"
+                                    onClick={handleStartTrial}
                                 >
                                     Start Your Free Trial
                                 </Button>
