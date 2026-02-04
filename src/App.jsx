@@ -6,7 +6,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import OrderPage from './components/OrderPage.jsx';
 import Profile from './components/profile/Profile.jsx';
-import Work from './components/work/Work.jsx';
+
 import PricingPage from './components/PricingPage.jsx';
 import Chatbot from './components/Chatbot';
 import Sidebar from './components/Sidebar';
@@ -150,7 +150,7 @@ function AppContent() {
                       <Route path="/search-by-root" element={<SearchByRoot />} />
                       <Route path="/schedule" element={<Schedule />} />
                       <Route path="/Profile" element={<Profile />} />
-                      <Route path="/work" element={<Work />} />
+
                       <Route path="/Order" element={<OrderPage />} />
                       <Route path="/Pricing" element={<PricingPage />} />
                       <Route path="/open" element={<OpenRoot />} />
@@ -186,7 +186,7 @@ function AppContent() {
                   <Route path="/contact" element={<ContactPage />} />
                   <Route path="/search-by-root" element={<SearchByRoot />} />
                   <Route path="/Profile" element={<Profile />} />
-                  <Route path="/work" element={<Work />} />
+
                   <Route path="/Order" element={<OrderPage />} />
                   <Route path="/Pricing" element={<PricingPage />} />
                   <Route path="/auth" element={<AuthPage />} />
