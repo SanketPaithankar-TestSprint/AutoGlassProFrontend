@@ -1366,6 +1366,11 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
             }));
 
             // Construct Flat Root Object
+            // Determine service address: use schedulingData if MOBILE/CUSTOMER_LOCATION, else fallback to customer address
+            const effectiveServiceAddress = (schedulingData?.serviceLocation === 'MOBILE' || schedulingData?.serviceLocation === 'CUSTOMER_LOCATION')
+                ? (schedulingData?.serviceAddress || '')
+                : `${customerData.addressLine1 || ''}, ${customerData.city || ''}, ${customerData.state || ''} ${customerData.postalCode || ''}`;
+
             const compositePayload = {
                 documentType: currentDocType.replace(" ", "_").toUpperCase(),
                 documentDate: new Date().toISOString(),
@@ -1373,12 +1378,12 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                 estimatedCompletion: schedulingData?.estimatedCompletion || new Date().toISOString(),
                 dueDate: schedulingData?.dueDate || new Date().toISOString().split('T')[0],
                 paymentTerms: schedulingData?.paymentTerms || "Due upon receipt",
-                technicianId: schedulingData?.assignedEmployeeId || null,
-                employeeId: schedulingData?.assignedEmployeeId || null, // Redundant but safe based on API variance
+                technicianId: schedulingData?.assignedEmployeeId || schedulingData?.employeeId || null,
+                employeeId: schedulingData?.assignedEmployeeId || schedulingData?.employeeId || null,
                 notes: printableNote,
                 internalNotes: internalNote,
-                serviceLocation: "SHOP",
-                serviceAddress: `${customerData.addressLine1 || ''}, ${customerData.city || ''}, ${customerData.state || ''} ${customerData.postalCode || ''}`,
+                serviceLocation: schedulingData?.serviceLocation || "SHOP",
+                serviceAddress: effectiveServiceAddress,
                 taxRate: customerData.isTaxExempt ? 0 : (Number(globalTaxRate) || 0),
                 discountAmount: 0.00,
 
@@ -1406,16 +1411,8 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                         notes: paymentData.notes || "",
                         paymentId: null // Explicitly null for new
                     }] : [])
-                ],
-                tasks: (schedulingData?.tasks || []).map(t => ({
-                    // Send ID only if it's a real backend ID (number), omit for temp frontend IDs (string)
-                    assignmentId: typeof t.id === 'number' ? t.id : null,
-                    taskDescription: t.taskDescription,
-                    priority: t.priority,
-                    employeeId: t.employeeId,
-                    dueDate: t.dueDate,
-                    status: t.status || 'PENDING'
-                }))
+                ]
+                // Note: Tasks removed from composite payload per scheduling redesign
             };
 
             // Guard: Ensure every payment has an explicit paymentId key (null or ID) to prevent backend duplication

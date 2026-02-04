@@ -89,7 +89,10 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
         dueDate: new Date().toISOString().split('T')[0], // Default to today
         paymentTerms: "Due upon receipt",
         assignedEmployeeId: null,
-        customPaymentTerms: ""
+        employeeId: null,
+        customPaymentTerms: "",
+        serviceLocation: "SHOP", // SHOP | MOBILE | CUSTOMER_LOCATION
+        serviceAddress: "" // Required when serviceLocation is MOBILE or CUSTOMER_LOCATION
     });
 
     // Employees State
