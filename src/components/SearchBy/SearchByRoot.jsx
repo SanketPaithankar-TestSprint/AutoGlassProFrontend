@@ -73,7 +73,10 @@ const SearchByRoot = () => {
     dueDate: new Date().toISOString().split('T')[0], // Default to today logic
     paymentTerms: "Due upon receipt",
     assignedEmployeeId: null,
+    employeeId: null,
     customPaymentTerms: "",
+    serviceLocation: "SHOP", // SHOP | MOBILE | CUSTOMER_LOCATION
+    serviceAddress: "", // Required when serviceLocation is MOBILE or CUSTOMER_LOCATION
     tasks: []
   });
 
@@ -187,10 +190,13 @@ const SearchByRoot = () => {
         setSchedulingData({
           scheduledDate: serviceDocument.scheduledDate || null,
           estimatedCompletion: serviceDocument.estimatedCompletion || null,
-          dueDate: serviceDocument.dueDate ? serviceDocument.dueDate.split('T')[0] : new Date().toISOString().split('T')[0],
-          paymentTerms: serviceDocument.paymentTerms || "Due upon receipt",
+          dueDate: serviceDocument.dueDate ? serviceDocument.dueDate.split('T')[0] : null,
+          paymentTerms: serviceDocument.paymentTerms || null,
           assignedEmployeeId: serviceDocument.technicianId || serviceDocument.employeeId || null,
-          customPaymentTerms: "", // Reset or map if we stored it custom
+          employeeId: serviceDocument.employeeId || null,
+          customPaymentTerms: "",
+          serviceLocation: serviceDocument.serviceLocation || null,
+          serviceAddress: serviceDocument.serviceAddress || null,
           tasks: (tasks || serviceDocument.tasks || []).map(t => ({
             ...t,
             // Ensure every task has a unique frontend 'id' for React keys/updates
