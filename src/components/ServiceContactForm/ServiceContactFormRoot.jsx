@@ -40,6 +40,17 @@ const ServiceContactFormRoot = () => {
 
     useEffect(() => {
         fetchInquiries();
+
+        const handleNewInquiry = () => {
+            message.info('New inquiry received. Refreshing list...');
+            fetchInquiries();
+        };
+
+        window.addEventListener('INQUIRY_RECEIVED', handleNewInquiry);
+
+        return () => {
+            window.removeEventListener('INQUIRY_RECEIVED', handleNewInquiry);
+        };
     }, []);
 
     const handleDelete = async (id) => {
