@@ -261,7 +261,7 @@ const AboutPage = () => {
                                 <Button
                                     type="primary"
                                     size="large"
-                                    onClick={() => navigate('/auth', { state: { mode: 'signup' } })}
+                                    onClick={() => { window.scrollTo(0, 0); window.scroll({ top: 0, left: 0, behavior: 'smooth' }); navigate('/auth', { state: { mode: 'signup' } }); }}
                                     className="!bg-violet-600 !border-violet-600 hover:!bg-violet-500 !h-12 !px-8 !text-base !rounded-full shadow-lg shadow-violet-200"
                                 >
                                     Get Started Today

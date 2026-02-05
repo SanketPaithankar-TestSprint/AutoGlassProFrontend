@@ -69,7 +69,7 @@ const PricingPage = () => {
                 block
                 className="!h-10 !rounded-lg !text-white !font-bold !border-none !text-xs shadow-md"
                 style={{ backgroundColor: '#00A8E4', boxShadow: '0 4px 14px 0 rgba(0, 168, 228, 0.39)' }}
-                onClick={() => navigate('/auth', { state: { mode: 'signup' } })}
+                onClick={() => { window.scrollTo(0, 0); window.scroll({ top: 0, left: 0, behavior: 'smooth' }); navigate('/auth', { state: { mode: 'signup' } }); }}
               >
                 Start Free Trial
               </Button>
@@ -116,7 +116,7 @@ const PricingPage = () => {
                 block
                 className="!h-10 !rounded-lg !bg-white hover:!bg-blue-50 !font-bold !border-none !text-xs shadow-lg"
                 style={{ color: '#00A8E4' }}
-                onClick={() => navigate('/auth', { state: { mode: 'signup' } })}
+                onClick={() => { window.scrollTo(0, 0); window.scroll({ top: 0, left: 0, behavior: 'smooth' }); navigate('/auth', { state: { mode: 'signup' } }); }}
               >
                 Get Started
               </Button>
@@ -155,7 +155,7 @@ const PricingPage = () => {
                 block
                 className="!h-10 !rounded-lg !text-white !font-bold !border-none !text-xs shadow-md"
                 style={{ backgroundColor: '#00A8E4', boxShadow: '0 4px 14px 0 rgba(0, 168, 228, 0.39)' }}
-                onClick={() => navigate('/contact')}
+                onClick={() => { window.scrollTo(0, 0); window.scroll({ top: 0, left: 0, behavior: 'smooth' }); navigate('/contact'); }}
               >
                 Contact Sales
               </Button>
