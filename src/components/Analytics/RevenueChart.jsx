@@ -120,8 +120,40 @@ const RevenueChart = ({ data }) => {
                     display: false,
                 },
                 ticks: {
-                    maxRotation: 90,
-                    minRotation: 90,
+                    maxRotation: 0,
+                    minRotation: 0,
+                    autoSkip: false, // Ensure all ticks are processed by our logic (though Chart.js might still skip if overcrowded, we want to control the label content)
+                    callback: function (val, index) {
+                        // Access the label based on value index
+                        const label = this.getLabelForValue(val);
+                        if (!label) return '';
+
+                        if (viewType === 'monthly') {
+                            return label;
+                        }
+
+                        const current = dayjs(label, 'MM/DD/YYYY');
+
+                        // Always show full format for the first item
+                        if (index === 0) {
+                            return current.format('MMM DD');
+                        }
+
+                        // Get previous label to compare months
+                        // this.getLabelForValue(index-1) might work if val is index, but safer to use this.getLabelForValue
+                        // internal chart.js 'values' array might be needed if ticks are skipped, but here we process raw.
+                        // Actually, 'val' IS the index for Category scale. 
+                        const prevLabel = this.getLabelForValue(index - 1);
+                        const prev = dayjs(prevLabel, 'MM/DD/YYYY');
+
+                        // If month changed, show Month Date
+                        if (current.month() !== prev.month()) {
+                            return current.format('MMM DD');
+                        }
+
+                        // Otherwise just show Day
+                        return current.format('DD');
+                    }
                 }
             },
         },

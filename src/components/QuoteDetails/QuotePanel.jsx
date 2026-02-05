@@ -1605,14 +1605,17 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
             setShowEmailModal(true);
 
             const subject = `Your Auto Glass ${effectiveDocType} - ${customerData.vehicleYear || ''} ${customerData.vehicleMake || ''} ${customerData.vehicleModel || ''}`;
+            const shopName = userProfile?.businessName || "Auto Glass Pro Team";
+            const shopPhone = userProfile?.phone ? ` at ${userProfile.phone}` : "";
+
             const body = `Dear ${customerData.firstName || 'Customer'} ${customerData.lastName || ''},
 
 Please find attached the ${effectiveDocType.toLowerCase()} for your ${customerData.vehicleYear || ''} ${customerData.vehicleMake || ''} ${customerData.vehicleModel || ''}.
 
-If you have any questions, please don't hesitate to contact us.
+If you have any questions, please don't hesitate to contact us${shopPhone}.
 
 Best regards,
-Auto Glass Pro Team`;
+${shopName}`;
 
             setEmailForm({
                 to: customerData?.email || "",

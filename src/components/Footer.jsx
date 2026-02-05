@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import logo from "../assets/APAI.png";
 import { Link } from "react-router-dom";
 import { Layout, Row, Col, Typography, Space, Divider, Button } from "antd";
 import { CarOutlined } from "@ant-design/icons";
@@ -72,10 +73,7 @@ const Footer = () => {
           {/* Brand */}
           <Col xs={24} md={isAuthed ? 12 : 10} lg={isAuthed ? 12 : 10}>
             <div className="flex items-center gap-2">
-              <CarOutlined className="text-xl" style={{ color: "#7E5CFE" }} />
-              <span className="text-lg font-semibold tracking-tight text-slate-800">
-                AutoPaneAi
-              </span>
+              <img src={logo} alt="AutoPaneAi" className="h-8 object-contain" />
             </div>
 
             <Paragraph className="!text-slate-600 !mt-3 !mb-3 text-sm">

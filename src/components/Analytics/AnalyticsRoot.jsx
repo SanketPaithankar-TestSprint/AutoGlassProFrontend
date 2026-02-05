@@ -111,7 +111,7 @@ const AnalyticsRoot = () => {
 
                 <div className="flex items-center gap-2">
                     <Select
-                        defaultValue="all_time"
+                        value={filterType}
                         style={{ width: 140 }}
                         onChange={(value) => setFilterType(value)}
                         className="rounded-lg"
@@ -124,6 +124,7 @@ const AnalyticsRoot = () => {
 
                     {filterType === 'custom' && (
                         <RangePicker
+                            value={customRange}
                             onChange={(dates) => setCustomRange(dates)}
                             className="rounded-lg"
                         />
