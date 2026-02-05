@@ -22,6 +22,52 @@ import {
 import axios from 'axios';
 import { COUNTRIES, getStatesOrProvinces } from '../const/locations';
 
+// Reusable style for form items
+const formItemStyle = {
+    marginBottom: '16px'
+};
+
+// Custom Input Styles injected via style tag
+const customInputStyle = `
+  .custom-api-input .ant-input, 
+  .custom-api-input .ant-input-password .ant-input,
+  .custom-api-input.ant-select .ant-select-selector {
+      border-color: #e2e8f0 !important;
+      border-width: 1.5px !important;
+      border-radius: 8px !important;
+      padding: 6px 11px !important;
+  }
+  .custom-api-input.ant-select .ant-select-selector {
+      height: 42px !important;
+      display: flex;
+      align-items: center;
+  }
+  .custom-api-input .ant-input:hover, 
+  .custom-api-input .ant-input-password:hover .ant-input,
+  .custom-api-input.ant-select:hover .ant-select-selector {
+      border-color: #7E5CFE !important;
+  }
+  .custom-api-input .ant-input:focus, 
+  .custom-api-input.ant-input-affix-wrapper-focused,
+  .custom-api-input.ant-select-focused .ant-select-selector {
+      border-color: #7E5CFE !important;
+      box-shadow: 0 0 0 3px rgba(126, 92, 254, 0.2) !important;
+  }
+  .custom-api-input.ant-input-affix-wrapper {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border-color: #e2e8f0;
+      border-width: 1.5px;
+  }
+  .custom-api-input.ant-input-affix-wrapper:hover {
+      border-color: #7E5CFE;
+  }
+  .custom-api-input.ant-input-affix-wrapper-focused {
+       border-color: #7E5CFE;
+       box-shadow: 0 0 0 3px rgba(126, 92, 254, 0.2);
+  }
+`;
+
 const SignUpForm = ({ onSuccess, onCancel }) => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
@@ -134,9 +180,10 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                     showIcon
                     closable
                     onClose={() => setError(null)}
-                    style={{ marginBottom: '20px' }}
+                    style={{ marginBottom: '20px', borderRadius: '8px' }}
                 />
             )}
+            <style>{customInputStyle}</style>
 
             <Form
                 form={form}
@@ -153,8 +200,9 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             name="businessName"
                             label="Business Name"
                             rules={[{ required: true, message: 'Please input business name!' }]}
+                            style={formItemStyle}
                         >
-                            <Input placeholder="APAI" />
+                            <Input placeholder="APAI" className="custom-api-input" />
                         </Form.Item>
                     </Col>
                     <Col xs={24} sm={12}>
@@ -162,8 +210,9 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             name="ownerName"
                             label="Contact Name"
                             rules={[{ required: true, message: 'Please input contact name!' }]}
+                            style={formItemStyle}
                         >
-                            <Input prefix={<UserOutlined />} placeholder="John Doe" />
+                            <Input prefix={<UserOutlined style={{ color: '#a0aec0' }} />} placeholder="John Doe" className="custom-api-input" />
                         </Form.Item>
                     </Col>
                 </Row>
@@ -177,8 +226,9 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                                 { required: true, message: 'Please input email!' },
                                 { type: 'email', message: 'Invalid email!' }
                             ]}
+                            style={formItemStyle}
                         >
-                            <Input prefix={<MailOutlined />} placeholder="john@example.com" />
+                            <Input prefix={<MailOutlined style={{ color: '#a0aec0' }} />} placeholder="john@example.com" className="custom-api-input" />
                         </Form.Item>
                     </Col>
                     <Col xs={24} sm={12}>
@@ -186,8 +236,9 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             name="businessLicenseNumber"
                             label="Business License Number"
                             rules={[{ required: true, message: 'Please input business license number!' }]}
+                            style={formItemStyle}
                         >
-                            <Input placeholder="BLN-123456" />
+                            <Input placeholder="BLN-123456" className="custom-api-input" />
                         </Form.Item>
                     </Col>
                 </Row>
@@ -198,8 +249,9 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             name="phone"
                             label="Phone"
                             rules={[{ required: true, message: 'Please input phone number!' }]}
+                            style={formItemStyle}
                         >
-                            <Input prefix={<PhoneOutlined />} placeholder="123-456-7890" />
+                            <Input prefix={<PhoneOutlined style={{ color: '#a0aec0' }} />} placeholder="123-456-7890" className="custom-api-input" />
                         </Form.Item>
                     </Col>
                     <Col xs={24} sm={12}>
@@ -216,8 +268,9 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                     name="addressLine1"
                     label="Address Line 1"
                     rules={[{ required: true, message: 'Please input address!' }]}
+                    style={formItemStyle}
                 >
-                    <Input placeholder="123 Main St" />
+                    <Input placeholder="123 Main St" className="custom-api-input" />
                 </Form.Item>
 
                 <Form.Item
@@ -248,6 +301,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                                 onChange={handleStateChange}
                                 showSearch
                                 optionFilterProp="label"
+                                className="custom-api-input"
                             >
                                 {availableStates.map(state => (
                                     <Select.Option key={state.value} value={state.value}>
@@ -272,6 +326,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                                 onChange={handleCountryChange}
                                 showSearch
                                 optionFilterProp="label"
+                                className="custom-api-input"
                             >
                                 {COUNTRIES.map(country => (
                                     <Select.Option key={country.value} value={country.value}>
@@ -297,7 +352,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                     label="User Type"
                     rules={[{ required: true, message: 'Please select user type!' }]}
                 >
-                    <Select placeholder="Select user type">
+                    <Select placeholder="Select user type" className="custom-api-input">
                         <Select.Option value="SHOP_OWNER">Shop Owner</Select.Option>
                         <Select.Option value="REMOTE_WORKER">Remote Worker</Select.Option>
                     </Select>
@@ -321,11 +376,13 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             name="password"
                             label="Password"
                             rules={[{ validator: validatePassword }]}
+                            style={formItemStyle}
                         >
                             <Input.Password
-                                prefix={<LockOutlined />}
+                                prefix={<LockOutlined style={{ color: '#a0aec0' }} />}
                                 placeholder="Password"
                                 iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
+                                className="custom-api-input"
                             />
                         </Form.Item>
                     </Col>
@@ -338,11 +395,13 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                                 { required: true, message: 'Please confirm password!' },
                                 validateConfirmPassword
                             ]}
+                            style={formItemStyle}
                         >
                             <Input.Password
-                                prefix={<LockOutlined />}
+                                prefix={<LockOutlined style={{ color: '#a0aec0' }} />}
                                 placeholder="Confirm Password"
                                 iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
+                                className="custom-api-input"
                             />
                         </Form.Item>
                     </Col>
@@ -359,7 +418,12 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             loading={loading}
                             style={{
                                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                border: 'none'
+                                border: 'none',
+                                height: '50px',
+                                fontSize: '16px',
+                                fontWeight: 'bold',
+                                borderRadius: '12px',
+                                boxShadow: '0 4px 14px 0 rgba(118, 75, 162, 0.39)'
                             }}
                         >
                             {loading ? 'Creating Account...' : 'Create Account'}

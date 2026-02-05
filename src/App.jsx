@@ -10,10 +10,9 @@ import Profile from './components/profile/Profile.jsx';
 import PricingPage from './components/PricingPage.jsx';
 import Chatbot from './components/Chatbot';
 import Sidebar from './components/Sidebar';
-import AuthPage from './components/AuthPage';
+import AuthRoot from './components/AuthRoot';
 import OpenRoot from './components/Open/OpenRoot';
 import ReportsRoot from './components/Reports/ReportsRoot';
-import AiContactForm from './components/AiContactForm/AiContactForm';
 import { getValidToken } from './api/getValidToken';
 import { useProfileDataPrefetch } from './hooks/useProfileDataPrefetch';
 import useInquiryNotifications from './hooks/useInquiryNotifications';
@@ -160,9 +159,8 @@ function AppContent() {
                       <Route path="/pricing" element={<PricingPage />} />
                       <Route path="/open" element={<OpenRoot />} />
                       <Route path="/reports" element={<ReportsRoot />} />
-                      <Route path="/auth" element={<AuthPage />} />
+                      <Route path="/auth" element={<AuthRoot />} />
 
-                      <Route path="/ai-contact-form" element={<AiContactForm />} />
                       <Route path="/service-contact-form" element={<ServiceContactFormRoot />} />
                     </Routes>
                   </Suspense>
@@ -194,7 +192,7 @@ function AppContent() {
 
                   <Route path="/Order" element={<OrderPage />} />
                   <Route path="/pricing" element={<PricingPage />} />
-                  <Route path="/auth" element={<AuthPage />} />
+                  <Route path="/auth" element={<AuthRoot />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 </Routes>
               </Suspense>

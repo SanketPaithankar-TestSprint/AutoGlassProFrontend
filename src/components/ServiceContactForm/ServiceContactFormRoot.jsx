@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Card, Tag, Button, Statistic, Row, Col, Typography } from 'antd';
-import { ReloadOutlined, EyeOutlined } from '@ant-design/icons';
+import { Table, Card, Tag, Button, Statistic, Row, Col, Typography, message, Popconfirm, Tooltip } from 'antd';
+import { ReloadOutlined, EyeOutlined, DeleteOutlined } from '@ant-design/icons';
 import { getValidToken } from '../../api/getValidToken';
 import urls from '../../config';
 
@@ -42,13 +42,31 @@ const ServiceContactFormRoot = () => {
         fetchInquiries();
     }, []);
 
+    const handleDelete = async (id) => {
+        try {
+            const token = getValidToken();
+            const response = await fetch(`${urls.javaApiUrl}/v1/service-inquiries/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': '*/*'
+                }
+            });
+
+            if (response.ok) {
+                message.success('Inquiry deleted successfully');
+                fetchInquiries(); // Refetch the list to update the UI
+            } else {
+                message.error('Failed to delete inquiry');
+            }
+        } catch (error) {
+            console.error("Error deleting inquiry:", error);
+            message.error('An error occurred while deleting');
+        }
+    };
+
+
     const columns = [
-        {
-            title: 'ID',
-            dataIndex: 'id',
-            key: 'id',
-            width: 80,
-        },
         {
             title: 'Name',
             dataIndex: 'name',
@@ -93,11 +111,30 @@ const ServiceContactFormRoot = () => {
             title: 'Actions',
             key: 'actions',
             render: (text, record) => (
-                <Button
-                    icon={<EyeOutlined />}
-                    onClick={() => handleViewDetails(record)}
-                    shape="circle"
-                />
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    <Tooltip title="View Details">
+                        <Button
+                            icon={<EyeOutlined />}
+                            onClick={() => handleViewDetails(record)}
+                            shape="circle"
+                        />
+                    </Tooltip>
+                    <Popconfirm
+                        title="Delete Inquiry"
+                        description="Are you sure you want to delete this inquiry?"
+                        onConfirm={() => handleDelete(record.id)}
+                        okText="Yes"
+                        cancelText="No"
+                    >
+                        <Tooltip title="Delete">
+                            <Button
+                                icon={<DeleteOutlined />}
+                                danger
+                                shape="circle"
+                            />
+                        </Tooltip>
+                    </Popconfirm>
+                </div>
             ),
         }
     ];
