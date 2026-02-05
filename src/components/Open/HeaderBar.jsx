@@ -8,6 +8,7 @@ const HeaderBar = ({
     searchTerm,
     setSearchTerm,
     onOpenFilters,
+    sidebarOpen = true,
     isSearchingApi = false,
     searchSource = 'local',
 }) => {
@@ -76,13 +77,12 @@ const HeaderBar = ({
                         className="flex-shrink-0"
                     />
 
-                    {/* Mobile Filter Button */}
+                    {/* Filter Toggle Button */}
                     <Button
                         icon={<FilterOutlined />}
                         onClick={onOpenFilters}
-                        className="lg:hidden"
                     >
-                        Filter
+                        {sidebarOpen ? 'Hide Filters' : 'Show Filters'}
                     </Button>
                 </div>
 

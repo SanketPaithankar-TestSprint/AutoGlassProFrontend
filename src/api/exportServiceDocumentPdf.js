@@ -20,7 +20,6 @@ export const exportServiceDocumentPdf = async (documentNumber) => {
         if (!response.ok) {
             throw new Error(`Failed to export PDF: ${response.status}`);
         }
-
         return await response.json();
     } catch (error) {
         console.error("Error exporting PDF:", error);

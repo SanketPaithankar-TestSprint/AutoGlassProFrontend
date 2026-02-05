@@ -29,8 +29,6 @@ const SlugConfig = () => {
                     address: data.address,
                     phone: data.phone,
                     alternatePhone: data.alternatePhone,
-                    latitude: data.latitude,
-                    longitude: data.longitude,
                     maps: data.maps
                 });
                 // Update localStorage if changed
@@ -74,8 +72,6 @@ const SlugConfig = () => {
                 address: values.address,
                 phone: values.phone,
                 alternatePhone: values.alternatePhone,
-                latitude: values.latitude,
-                longitude: values.longitude,
                 maps: values.maps
             };
 
@@ -207,20 +203,6 @@ const SlugConfig = () => {
                             tooltip="Link to your Google Maps location."
                         >
                             <Input placeholder="https://maps.google.com/..." />
-                        </Form.Item>
-
-                        <Form.Item
-                            label="Latitude"
-                            name="latitude"
-                        >
-                            <Input placeholder="e.g. 37.7749" />
-                        </Form.Item>
-
-                        <Form.Item
-                            label="Longitude"
-                            name="longitude"
-                        >
-                            <Input placeholder="e.g. -122.4194" />
                         </Form.Item>
                     </div>
 

@@ -16,6 +16,13 @@ const Chatbot = () => {
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef(null);
 
+    // Draggable states - Only for icon
+    const [iconPosition, setIconPosition] = useState({ x: window.innerWidth - 80, y: window.innerHeight - 100 });
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+    const [wasDragged, setWasDragged] = useState(false);
+    const floatButtonRef = useRef(null);
+
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
@@ -23,6 +30,57 @@ const Chatbot = () => {
     useEffect(() => {
         scrollToBottom();
     }, [messages, isOpen]);
+
+    // Handle drag start from float button
+    const handleButtonMouseDown = (e) => {
+        setIsDragging(true);
+        setWasDragged(false);
+        setDragOffset({
+            x: e.clientX - iconPosition.x,
+            y: e.clientY - iconPosition.y
+        });
+    };
+
+    // Handle button click - only trigger if not dragged
+    const handleButtonClick = (e) => {
+        if (wasDragged) {
+            setWasDragged(false);
+            return;
+        }
+        setIsOpen(!isOpen);
+    };
+
+    // Handle dragging
+    useEffect(() => {
+        if (!isDragging) return;
+
+        const handleMouseMove = (e) => {
+            const newX = e.clientX - dragOffset.x;
+            const newY = e.clientY - dragOffset.y;
+            
+            // Check if position actually changed (more than 5px threshold)
+            if (Math.abs(newX - iconPosition.x) > 5 || Math.abs(newY - iconPosition.y) > 5) {
+                setWasDragged(true);
+            }
+            
+            setIconPosition({
+                x: newX,
+                y: newY
+            });
+        };
+
+        const handleMouseUp = () => {
+            setIsDragging(false);
+        };
+
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+
+        return () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isDragging, dragOffset, iconPosition]);
 
     const handleSend = async () => {
         if (!inputValue.trim()) return;
@@ -79,18 +137,34 @@ const Chatbot = () => {
     return (
         <>
             <FloatButton
-            
+                ref={floatButtonRef}
                 icon={<MessageOutlined />}
                 type="primary"
-                style={{ right: 24, bottom: 24, width: 40, height: 40 }}
-                onClick={() => setIsOpen(!isOpen)}
-                tooltip="Chat with AI"
+                style={{ 
+                    right: 'auto', 
+                    bottom: 'auto',
+                    left: `${iconPosition.x}px`,
+                    top: `${iconPosition.y}px`,
+                    width: 40, 
+                    height: 40,
+                    cursor: isDragging ? 'grabbing' : 'grab'
+                }}
+                onClick={handleButtonClick}
+                onMouseDown={handleButtonMouseDown}
+                tooltip="Chat with AI (Draggable)"
             />
 
             {isOpen && (
                 <Card
                     title={
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div 
+                            style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: '8px',
+                                userSelect: 'none'
+                            }}
+                        >
                             <RobotOutlined style={{ color: '#1890ff' }} />
                             <span>APAi Assistant</span>
                         </div>

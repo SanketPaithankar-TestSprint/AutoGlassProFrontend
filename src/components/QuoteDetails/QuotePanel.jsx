@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import { useQuoteStore } from "../../store";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { Modal, Input, Button, message, notification, Dropdown, Select, InputNumber } from "antd";
-import { DownOutlined, UnorderedListOutlined, DeleteOutlined } from "@ant-design/icons";
+import { DownOutlined, UnorderedListOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { createCompositeServiceDocument } from "../../api/createCompositeServiceDocument";
 import { updateCompositeServiceDocument } from "../../api/updateCompositeServiceDocument";
@@ -246,6 +246,16 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
 
     // Debounce timer for part number changes
     const [debounceTimers, setDebounceTimers] = useState({});
+
+    // Change detection state
+    const [hasChanges, setHasChanges] = useState(false);
+    const [savedItems, setSavedItems] = useState(items);
+
+    // Track changes when items update
+    useEffect(() => {
+        const itemsChanged = JSON.stringify(items) !== JSON.stringify(savedItems);
+        setHasChanges(itemsChanged);
+    }, [items, savedItems]);
 
     // Cleanup timers on unmount
     useEffect(() => {
@@ -1200,6 +1210,8 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
         if (!validateDocumentData()) return { success: false };
 
         setSaveLoading(true);
+        // Track current items before saving
+        const itemsBeforeSave = items;
         try {
             // Build payload (new logic with Kit merged)
             const totalLaborAmount = items
@@ -1508,6 +1520,8 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                 onOk: async () => {
                     const { success } = await performSave();
                     if (success) {
+                        setSavedItems(items);
+                        setHasChanges(false);
                         if (onClear) {
                             onClear(true); // Clear without confirmation
                         }
@@ -1519,6 +1533,8 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
 
         const { success } = await performSave();
         if (success) {
+            setSavedItems(items);
+            setHasChanges(false);
             if (onClear) {
                 onClear(true); // Clear without confirmation
             }
@@ -1849,23 +1865,42 @@ ${shopName}`;
 
             {/* Header / Metadata */}
             <div className="bg-white p-2 sm:p-3 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg mb-3 sm:mb-4">
-                {/* Header with Dropdown */}
-                <div className="flex items-center gap-2 mb-3 sm:mb-4">
-                    <Dropdown
-                        menu={{
-                            items: [
-                                { key: 'Quote', label: <span className="font-semibold text-slate-700">Quote</span>, onClick: () => setManualDocType('Quote') },
-                                { key: 'Work Order', label: <span className="font-semibold text-slate-700">Work Order</span>, onClick: () => setManualDocType('Work Order') },
-                                { key: 'Invoice', label: <span className="font-semibold text-slate-700">Invoice</span>, onClick: () => setManualDocType('Invoice') },
-                            ]
-                        }}
-                        trigger={['click']}
-                        disabled={isSaved && docMetadata?.documentType === 'INVOICE'}
-                    >
-                        <h3 className={`text-sm sm:text-base font-bold text-[#7E5CFE] flex items-center gap-1 cursor-pointer hover:bg-violet-50 px-1 py-0.5 rounded transition-colors select-none ${isSaved && docMetadata?.documentType === 'INVOICE' ? 'cursor-not-allowed opacity-75' : ''}`}>
-                            {manualDocType} Details <DownOutlined style={{ fontSize: '10px', marginTop: '2px' }} />
-                        </h3>
-                    </Dropdown>
+                {/* Header with Dropdown and Save Changes Button */}
+                <div className="flex items-center justify-between gap-2 mb-3 sm:mb-4">
+                    <div className="flex items-center gap-2">
+                        <Dropdown
+                            menu={{
+                                items: [
+                                    { key: 'Quote', label: <span className="font-semibold text-slate-700">Quote</span>, onClick: () => setManualDocType('Quote') },
+                                    { key: 'Work Order', label: <span className="font-semibold text-slate-700">Work Order</span>, onClick: () => setManualDocType('Work Order') },
+                                    { key: 'Invoice', label: <span className="font-semibold text-slate-700">Invoice</span>, onClick: () => setManualDocType('Invoice') },
+                                ]
+                            }}
+                            trigger={['click']}
+                            disabled={isSaved && docMetadata?.documentType === 'INVOICE'}
+                        >
+                            <h3 className={`text-sm sm:text-base font-bold text-[#7E5CFE] flex items-center gap-1 cursor-pointer hover:bg-violet-50 px-1 py-0.5 rounded transition-colors select-none ${isSaved && docMetadata?.documentType === 'INVOICE' ? 'cursor-not-allowed opacity-75' : ''}`}>
+                                {manualDocType} Details <DownOutlined style={{ fontSize: '10px', marginTop: '2px' }} />
+                            </h3>
+                        </Dropdown>
+
+                        {/* Add Button Dropdown - In Header */}
+                        <Dropdown
+                            menu={{
+                                items: [
+                                    { key: 'Part', label: <span className="text-xs">Part</span>, onClick: () => handleAddRow("Part") },
+                                    { key: 'Labor', label: <span className="text-xs">Labor</span>, onClick: () => handleAddRow("Labor") },
+                                    { key: 'Service', label: <span className="text-xs">Service</span>, onClick: () => handleAddRow("Service") },
+                                    { key: 'ADAS', label: <span className="text-xs">ADAS Recalibration</span>, onClick: () => handleAddRow("ADAS") },
+                                ],
+                                className: "min-w-auto [&_.ant-dropdown-menu-item]:!py-1.5 [&_.ant-dropdown-menu-item]:font-semibold"
+                            }}
+                        >
+                            <button className="flex items-center justify-center w-6 h-6 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded transition-colors">
+                                <PlusOutlined className="text-sm" />
+                            </button>
+                        </Dropdown>
+                    </div>
                 </div>
 
                 {/* Line Items Table - Height for 6 rows + header */}
@@ -2136,30 +2171,35 @@ ${shopName}`;
                             </div>
                         )
                     }
+
                 </div>
 
-                {/* Right side - Add Button + Totals Table */}
-                <div className="flex flex-col sm:flex-row items-start gap-2 w-full sm:w-auto lg:order-2 lg:flex-col lg:items-stretch">
-                    {/* Add Button */}
-                    <Dropdown
-                        menu={{
-                            items: [
-                                { key: 'Part', label: <span className="text-xs">Part</span>, onClick: () => handleAddRow("Part") },
-                                { key: 'Labor', label: <span className="text-xs">Labor</span>, onClick: () => handleAddRow("Labor") },
-                                { key: 'Service', label: <span className="text-xs">Service</span>, onClick: () => handleAddRow("Service") },
-                                { key: 'ADAS', label: <span className="text-xs">ADAS Recalibration</span>, onClick: () => handleAddRow("ADAS") },
-                            ],
-                            // You can add styles to the dropdown menu here
-                            className: "min-w-auto [&_.ant-dropdown-menu-item]:!py-1.5 [&_.ant-dropdown-menu-item]:font-semibold"
-                        }}
-                    >
-                        <button className="flex items-center gap-0.5 px-1.5 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded text-xs font-medium transition-colors">
-                            Add <DownOutlined className="text-[10px]" />
-                        </button>
-                    </Dropdown >
+                {/* Right side - Add & Totals Table */}
+                <div className="flex flex-col sm:flex-row items-start gap-3 w-full sm:w-auto lg:order-2 lg:flex-col lg:items-stretch">
+                    {/* Flex row for Add button and Table */}
+                    <div className="flex items-start gap-2 w-full">
+                        {/* Add Section on Left */}
+                        <div className="flex items-center gap-2 pt-1">
+                            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Add</span>
+                            <Dropdown
+                                menu={{
+                                    items: [
+                                        { key: 'Part', label: <span className="text-xs">Part</span>, onClick: () => handleAddRow("Part") },
+                                        { key: 'Labor', label: <span className="text-xs">Labor</span>, onClick: () => handleAddRow("Labor") },
+                                        { key: 'Service', label: <span className="text-xs">Service</span>, onClick: () => handleAddRow("Service") },
+                                        { key: 'ADAS', label: <span className="text-xs">ADAS Recalibration</span>, onClick: () => handleAddRow("ADAS") },
+                                    ],
+                                    className: "min-w-auto [&_.ant-dropdown-menu-item]:!py-1.5 [&_.ant-dropdown-menu-item]:font-semibold"
+                                }}
+                            >
+                                <button className="flex items-center justify-center w-6 h-6 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded transition-colors">
+                                    <DownOutlined style={{ fontSize: '10px' }} />
+                                </button>
+                            </Dropdown>
+                        </div>
 
-                    {/* Totals Table */}
-                    <table className="w-full text-xs sm:text-sm rounded-xl overflow-hidden bg-slate-50/50">
+                        {/* Totals Table */}
+                        <table className="flex-1 text-xs sm:text-sm rounded-xl overflow-hidden bg-slate-50/50">
                         <tbody>
                             {/* Labor Row */}
                             <tr className="">
@@ -2262,6 +2302,7 @@ ${shopName}`;
                             </tr>
                         </tbody>
                     </table >
+                    </div>
                 </div >
             </div >
 

@@ -49,7 +49,7 @@ const PremiumDocumentCard = ({
                 style={{ borderLeftWidth: '4px', borderLeftColor: borderColor }}
             >
                 {/* Mobile Layout */}
-                <div className="flex flex-col gap-2 md:hidden">
+                <div className="flex flex-col gap-2 lg:hidden">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <FileTextOutlined className="text-slate-600 text-sm" />
@@ -89,10 +89,46 @@ const PremiumDocumentCard = ({
                     </div>
                 </div>
 
-                {/* Desktop Layout - Aligned with column headers */}
-                <div className="hidden md:flex items-center justify-between gap-4">
+                {/* Tablet Layout - showing customer name */}
+                <div className="hidden lg:hidden md:flex items-center gap-2 py-1">
+                    <FileTextOutlined className="text-slate-600 text-sm w-[16px] flex-shrink-0" />
+                    <span className="font-bold text-slate-900 text-sm w-[90px] truncate">{documentNumber}</span>
+                    <div className="w-[70px] flex justify-center flex-shrink-0">
+                        <Tag color={getTypeColor(documentType)} className="uppercase font-bold text-[9px] m-0">
+                            {documentType?.replace('_', ' ')}
+                        </Tag>
+                    </div>
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <UserOutlined className="text-slate-400 flex-shrink-0 text-xs" />
+                        <span className="text-slate-700 text-sm truncate">{customerName}</span>
+                    </div>
+                    <div className="flex items-center gap-2 w-[100px] flex-shrink-0">
+                        <CarOutlined className="text-slate-400 flex-shrink-0 text-xs" />
+                        <span className="text-slate-600 text-sm truncate">{vehicleInfo}</span>
+                    </div>
+                    <span className="font-bold text-slate-900 text-sm w-[80px] text-right flex-shrink-0">
+                        {formatCurrency(totalAmount)}
+                    </span>
+                    <div className="w-[32px] flex justify-center flex-shrink-0">
+                        <Tooltip title="Delete Document">
+                            <Button
+                                type="text"
+                                danger
+                                size="small"
+                                icon={<DeleteOutlined />}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onDelete(doc);
+                                }}
+                            />
+                        </Tooltip>
+                    </div>
+                </div>
+
+                {/* Desktop Layout - Full width display with all columns */}
+                <div className="hidden lg:flex items-center gap-2">
                     {/* Left side - matches header: icon(16px) | Doc#(110px) | Type(80px) | Name(160px) */}
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="flex items-center gap-3 flex-shrink-0">
                         <FileTextOutlined className="text-slate-600 w-[16px] flex-shrink-0" />
                         <span className="font-bold text-slate-900 text-sm w-[110px] truncate">{documentNumber}</span>
                         <div className="w-[80px] flex justify-center flex-shrink-0">
@@ -100,9 +136,9 @@ const PremiumDocumentCard = ({
                                 {documentType?.replace('_', ' ')}
                             </Tag>
                         </div>
-                        <div className="flex items-center gap-2 w-[160px] min-w-0">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
                             <UserOutlined className="text-slate-400 flex-shrink-0" />
-                            <span className="text-slate-700 text-sm truncate">{customerName}</span>
+                            <span className="text-slate-700 text-sm">{customerName}</span>
                         </div>
                         {docIsOverdue && (
                             <Tag color="orange" className="text-[10px] m-0 flex-shrink-0">
@@ -112,7 +148,7 @@ const PremiumDocumentCard = ({
                     </div>
 
                     {/* Right side - matches header: Vehicle(130px) | Date(100px) | Total(90px) | Balance(90px) | Delete(32px) */}
-                    <div className="flex items-center gap-4 flex-shrink-0">
+                    <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
                         <div className="flex items-center gap-2 w-[130px] min-w-0">
                             <CarOutlined className="text-slate-400 flex-shrink-0" />
                             <span className="text-slate-600 text-sm truncate">{vehicleInfo}</span>

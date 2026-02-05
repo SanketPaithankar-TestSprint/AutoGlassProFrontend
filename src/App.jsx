@@ -168,7 +168,7 @@ function AppContent() {
                   </Suspense>
                 </ErrorBoundary>
               </div>
-              <Footer />
+              {!isAuthenticated && <Footer />}
             </Content>
           </Layout>
         </Layout>

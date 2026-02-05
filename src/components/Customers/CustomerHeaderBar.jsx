@@ -8,6 +8,7 @@ const CustomerHeaderBar = ({
     searchTerm,
     setSearchTerm,
     onOpenFilters,
+    sidebarOpen = true,
 }) => {
 
     return (
@@ -44,13 +45,13 @@ const CustomerHeaderBar = ({
                 /> 
                 */}
 
-                {/* Mobile Filter Button */}
-                <div className="flex items-center w-full sm:w-auto lg:hidden">
+                {/* Filter Toggle Button */}
+                <div className="flex items-center w-full sm:w-auto">
                     <Button
                         icon={<FilterOutlined />}
                         onClick={onOpenFilters}
                     >
-                        Filters
+                        {sidebarOpen ? 'Hide Filters' : 'Show Filters'}
                     </Button>
                 </div>
 

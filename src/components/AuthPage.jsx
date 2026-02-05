@@ -71,7 +71,12 @@ const AuthPage = () => {
                                     <Logo />
                                 </div> */
                                 }
-                                <h1 className="text-2xl md:text-3xl font-bold mb-6 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">Login</h1>
+                                <h1
+                                    className="text-2xl md:text-3xl font-bold mb-6 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent"
+                                    style={{ lineHeight: 1.2, paddingBottom: '0.4em', overflow: 'visible' }}
+                                >
+                                    Login
+                                </h1>
                                 <div className="w-full max-w-sm">
                                     <Login
                                         onLoginSuccess={handleLoginSuccess}

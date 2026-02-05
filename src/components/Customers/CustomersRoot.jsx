@@ -253,37 +253,30 @@ const CustomersRoot = () => {
 
     // ------------------- UI COMPONENTS ------------------- //
     const renderCustomersTable = () => {
+        // Show card layout for medium and small devices
         if (isMobile) {
             return (
-                <div className="space-y-4">
+                <div className="space-y-3">
                     {filteredCustomers.length === 0 ? (
                         <Empty description="No customers found" className="py-12" />
                     ) : (
                         filteredCustomers.map((c) => (
-                            <div key={c.customerId || Math.random()} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex flex-col gap-3">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <div className="font-semibold text-gray-900 text-base">{c.firstName} {c.lastName}</div>
-                                        <div className="text-sm text-gray-500">{c.email || "-"}</div>
+                            <div key={c.customerId || Math.random()} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                                <div className="flex justify-between items-start mb-3">
+                                    <div className="flex-1 min-w-0">
+                                        <div className="font-semibold text-gray-900 text-base truncate">{c.firstName} {c.lastName}</div>
+                                        <div className="text-sm text-gray-500 truncate">{c.email || "-"}</div>
                                     </div>
-                                    <div className="flex gap-2">
-                                        <Button type="text" size="small" className="text-violet-600 bg-violet-50" icon={<EditOutlined />} onClick={() => handleEditCustomer(c)} />
+                                    <div className="flex gap-2 ml-2">
+                                        <Button type="text" size="small" className="text-violet-600 bg-violet-50 hover:bg-violet-100" icon={<EditOutlined />} onClick={() => handleEditCustomer(c)} />
                                         <Popconfirm title="Delete?" onConfirm={() => handleDeleteCustomer(c.customerId)} okText="Yes" cancelText="No">
-                                            <Button type="text" size="small" danger className="bg-red-50" icon={<DeleteOutlined />} />
+                                            <Button type="text" size="small" danger className="bg-red-50 hover:bg-red-100" icon={<DeleteOutlined />} />
                                         </Popconfirm>
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
-                                    <div className="flex items-center gap-2">
-                                        <ShopOutlined className="text-gray-400" />
-                                        <span>{c.phone || "-"}</span>
-                                    </div>
-                                    {c.vehicle && (
-                                        <div className="flex items-center gap-2">
-                                            <CarOutlined className="text-gray-400" />
-                                            <span>{c.vehicle.year} {c.vehicle.make}</span>
-                                        </div>
-                                    )}
+                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                    <ShopOutlined className="text-gray-400" />
+                                    <span className="truncate">{c.phone || "-"}</span>
                                 </div>
                             </div>
                         ))
@@ -292,13 +285,14 @@ const CustomersRoot = () => {
             );
         }
 
+        // Desktop table layout
         return (
             <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
                 {filteredCustomers.length === 0 ? (
                     <Empty description="No customers found" className="py-12" />
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full min-w-[900px] text-left border-collapse">
+                        <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-gray-50/80 border-b border-gray-100">
                                     <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider pl-6">Name</th>
@@ -334,40 +328,40 @@ const CustomersRoot = () => {
     const renderOrganizationsTable = () => {
         if (isMobile) {
             return (
-                <div className="space-y-4">
+                <div className="space-y-3">
                     {filteredOrgs.length === 0 ? (
                         <Empty description="No organizations found" className="py-12" />
                     ) : (
                         filteredOrgs.map((org) => (
-                            <div key={org.organizationId} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex flex-col gap-3">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <div className="font-semibold text-gray-900 text-base">
+                            <div key={org.organizationId} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                                <div className="flex justify-between items-start mb-3">
+                                    <div className="flex-1 min-w-0">
+                                        <div className="font-semibold text-gray-900 text-base truncate">
                                             {org.companyName}
                                             {org.taxExempt && <Tag color="green" className="ml-2 text-[10px]">Tax Exempt</Tag>}
                                         </div>
-                                        <div className="text-sm text-gray-500">{org.email || "-"}</div>
+                                        <div className="text-sm text-gray-500 truncate">{org.email || "-"}</div>
                                     </div>
-                                    <div className="flex gap-2">
-                                        <Button type="text" size="small" className="text-violet-600 bg-violet-50" icon={<EditOutlined />} onClick={() => handleEditOrg(org)} />
+                                    <div className="flex gap-2 ml-2">
+                                        <Button type="text" size="small" className="text-violet-600 bg-violet-50 hover:bg-violet-100" icon={<EditOutlined />} onClick={() => handleEditOrg(org)} />
                                         <Popconfirm title="Delete?" onConfirm={() => handleDeleteOrg(org.organizationId)} okText="Yes" cancelText="No">
-                                            <Button type="text" size="small" danger className="bg-red-50" icon={<DeleteOutlined />} />
+                                            <Button type="text" size="small" danger className="bg-red-50 hover:bg-red-100" icon={<DeleteOutlined />} />
                                         </Popconfirm>
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-1 gap-1 text-sm text-gray-600">
+                                <div className="space-y-1 text-sm text-gray-600">
                                     <div className="flex items-center gap-2">
-                                        <ShopOutlined className="text-gray-400" />
-                                        <span>{[org.city, org.state].filter(Boolean).join(", ")}</span>
+                                        <ShopOutlined className="text-gray-400 flex-shrink-0" />
+                                        <span className="truncate">{[org.city, org.state].filter(Boolean).join(", ") || "-"}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-gray-400 text-xs">Ph:</span>
-                                        <span>{org.phone || "-"}</span>
+                                        <span className="text-gray-400 text-xs flex-shrink-0">Ph:</span>
+                                        <span className="truncate">{org.phone || "-"}</span>
                                     </div>
                                     {org.taxId && (
                                         <div className="flex items-center gap-2">
-                                            <span className="text-gray-400 text-xs">Tax ID:</span>
-                                            <span className="font-mono">{org.taxId}</span>
+                                            <span className="text-gray-400 text-xs flex-shrink-0">Tax ID:</span>
+                                            <span className="font-mono truncate">{org.taxId}</span>
                                         </div>
                                     )}
                                 </div>
@@ -384,7 +378,7 @@ const CustomersRoot = () => {
                     <Empty description="No organizations found" className="py-12" />
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full min-w-[900px] text-left border-collapse">
+                        <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-gray-50/80 border-b border-gray-100">
                                     <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider pl-6">Company Name</th>
@@ -409,7 +403,7 @@ const CustomersRoot = () => {
                                             {org.phone || org.companyPhone || org.contactPhone || org.phoneNumber || "-"}
                                         </td>
                                         <td className="p-4 text-sm text-gray-600">
-                                            {[org.city, org.state].filter(Boolean).join(", ")}
+                                            {[org.city, org.state].filter(Boolean).join(", ") || "-"}
                                         </td>
                                         <td className="p-4 text-sm text-gray-600 font-mono">{org.taxId || "-"}</td>
                                         <td className="p-4 text-right pr-6">
@@ -460,7 +454,8 @@ const CustomersRoot = () => {
                     setViewMode={setViewMode}
                     searchTerm={searchTerm}
                     setSearchTerm={setSearchTerm}
-                    onOpenFilters={() => setSidebarOpen(true)}
+                    onOpenFilters={() => setSidebarOpen(!sidebarOpen)}
+                    sidebarOpen={sidebarOpen}
                 />
 
                 <div className="p-6">
@@ -542,6 +537,9 @@ const CustomersRoot = () => {
                     <Form form={orgForm} layout="vertical" className="mt-4">
                         <div className="grid grid-cols-2 gap-4">
                             <Form.Item name="companyName" label="Company Name" rules={[{ required: true }]}><Input /></Form.Item>
+                            <Form.Item name="contactName" label="Contact Name"><Input /></Form.Item>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
                             <Form.Item name="taxId" label="Tax ID"><Input /></Form.Item>
                         </div>
                         <div className="grid grid-cols-2 gap-4">

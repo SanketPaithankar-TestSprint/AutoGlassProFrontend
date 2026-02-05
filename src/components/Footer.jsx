@@ -3,7 +3,7 @@ import logo from "../assets/APAI.png";
 import { Link } from "react-router-dom";
 import { Layout, Row, Col, Typography, Space, Divider, Button } from "antd";
 import { CarOutlined } from "@ant-design/icons";
-import { FaInstagram, FaYoutube, FaLinkedin, FaXTwitter } from "react-icons/fa6";
+import { SiYoutube, SiX, SiInstagram, SiLinkedin, SiTiktok } from "react-icons/si";
 import { SOCIAL_LINKS, SITEMAP_LINK } from "../const/socialLinks";
 import { getValidToken } from "../api/getValidToken";
 
@@ -26,7 +26,7 @@ const Footer = () => {
           <div className="flex items-center gap-3 text-slate-400">
             <div className="flex items-center gap-2">
               <CarOutlined className="text-lg" style={{ color: "#7E5CFE" }} />
-              <span className="font-semibold text-slate-800">AutoPaneAi</span>
+              <span className="font-semibold text-slate-800">APAI</span>
             </div>
             <span className="hidden sm:inline">|</span>
             <span>© {new Date().getFullYear()} APAI</span>
@@ -44,17 +44,20 @@ const Footer = () => {
           </div>
           {/* Social Media Section */}
           <div className="flex items-center gap-3">
-            <a href={SOCIAL_LINKS.instagram} className="text-slate-500 hover:text-pink-500 transition-colors" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-              <FaInstagram size={20} />
+            <a href={SOCIAL_LINKS.youtube} className="hover:scale-110 transition-transform" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+              <SiYoutube size={20} color="#FF0701" />
             </a>
-            <a href={SOCIAL_LINKS.youtube} className="text-slate-500 hover:text-red-500 transition-colors" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
-              <FaYoutube size={20} />
+            <a href={SOCIAL_LINKS.x} className="hover:scale-110 transition-transform" target="_blank" rel="noopener noreferrer" aria-label="X">
+              <SiX size={20} color="#000000" />
             </a>
-            <a href={SOCIAL_LINKS.linkedin} className="text-slate-500 hover:text-blue-700 transition-colors" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-              <FaLinkedin size={20} />
+            <a href={SOCIAL_LINKS.instagram} className="hover:scale-110 transition-transform" target="_blank" rel="noopener noreferrer" aria-label="Instagram" style={{background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)', backgroundClip: 'border-box', padding: '2px', borderRadius: '4px'}}>
+              <SiInstagram size={20} color="white" />
             </a>
-            <a href={SOCIAL_LINKS.x} className="text-slate-500 hover:text-black transition-colors" target="_blank" rel="noopener noreferrer" aria-label="X">
-              <FaXTwitter size={20} />
+            <a href={SOCIAL_LINKS.linkedin} className="hover:scale-110 transition-transform" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+              <SiLinkedin size={20} color="#0A66C2" />
+            </a>
+            <a href="https://tiktok.com" className="hover:scale-110 transition-transform" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+              <SiTiktok size={20} color="#000000" />
             </a>
           </div>
         </div>
@@ -67,29 +70,24 @@ const Footer = () => {
       className="bg-white px-4 sm:px-6 !pt-4 !pb-2"
     >
       <div className="mx-auto w-full max-w-6xl">
-
-
-        <Row gutter={[24, 20]}>
-          {/* Brand */}
-          <Col xs={24} md={isAuthed ? 12 : 10} lg={isAuthed ? 12 : 10}>
-            <div className="flex items-center gap-2">
-              <img src={logo} alt="AutoPaneAi" className="h-8 object-contain" />
+        <Row gutter={[32, 24]}>
+          {/* Brand Section */}
+          <Col xs={24} md={6} lg={6} className="ps-4 md:ps-0">
+            <div className="flex items-center gap-2 mb-3">
+              <CarOutlined className="text-lg" style={{ color: "#7E5CFE" }} />
+              <span className="font-semibold text-slate-800">APAI</span>
             </div>
-
-            <Paragraph className="!text-slate-600 !mt-3 !mb-3 text-sm">
-              Professional auto glass pricing &amp; quoting platform
-              <br /> built for modern repair shops.
+            <Paragraph className="!text-slate-600 !mt-2 !mb-0 text-sm">
+              Professional auto glass pricing &amp; quoting platform built for modern repair shops.
             </Paragraph>
-
-
           </Col>
 
-          {/* Quick Links - Always show */}
-          <Col xs={24} md={7} lg={7}>
-            <Title level={5} className="!text-slate-800 text-sm">
+          {/* Quick Links */}
+          <Col xs={24} md={6} lg={6} className="ps-4 md:ps-0">
+            <Title level={5} className="!text-slate-800 !mb-3 text-sm font-semibold">
               Quick Links
             </Title>
-            <ul className="mt-3 space-y-2 text-sm">
+            <ul className="space-y-2 text-sm">
               <li><Link to="/" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">Home</Link></li>
               <li><Link to="/pricing" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">Pricing</Link></li>
               <li><Link to="/features" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">Features</Link></li>
@@ -97,37 +95,47 @@ const Footer = () => {
             </ul>
           </Col>
 
-          {/* Support */}
-          <Col xs={24} md={isAuthed ? 12 : 7} lg={isAuthed ? 12 : 7}>
-            <Title level={5} className="!text-slate-800 text-sm">
-              Support
+          {/* Resources */}
+          <Col xs={24} md={6} lg={6} className="ps-4 md:ps-0">
+            <Title level={5} className="!text-slate-800 !mb-3 text-sm font-semibold">
+              Resources
             </Title>
-            <ul className="mt-3 space-y-2 text-sm">
+            <ul className="space-y-2 text-sm">
               <li><Link to="/contact" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">Contact</Link></li>
+              <li><a href="/" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">Blogs</a></li>
               <li><a href={SITEMAP_LINK} className="text-slate-500 hover:text-[#7E5CFE] transition-colors" target="_blank" rel="noopener noreferrer">Sitemap</a></li>
               <li><Link to="/privacy-policy" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">Privacy Policy</Link></li>
             </ul>
-            {/* Social Media Section */}
-            <div className="flex items-center gap-3 mt-3">
-              <a href={SOCIAL_LINKS.instagram} className="text-slate-500 hover:text-pink-500 transition-colors" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-                <FaInstagram size={20} />
+          </Col>
+
+          {/* Follow Us */}
+          <Col xs={24} md={6} lg={6} className="ps-4 md:ps-0">
+            <Title level={5} className="!text-slate-800 !mb-3 text-sm font-semibold">
+              Follow Us
+            </Title>
+            <div className="flex items-center gap-4 flex-wrap">
+              <a href={SOCIAL_LINKS.youtube} className="hover:scale-110 transition-transform" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+                <SiYoutube size={24} color="#FF0000" />
               </a>
-              <a href={SOCIAL_LINKS.youtube} className="text-slate-500 hover:text-red-500 transition-colors" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
-                <FaYoutube size={20} />
+              <a href={SOCIAL_LINKS.x} className="hover:scale-110 transition-transform" target="_blank" rel="noopener noreferrer" aria-label="X">
+                <SiX size={24} color="#000000" />
               </a>
-              <a href={SOCIAL_LINKS.linkedin} className="text-slate-500 hover:text-blue-700 transition-colors" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-                <FaLinkedin size={20} />
+              <a href={SOCIAL_LINKS.instagram} className="hover:scale-110 transition-transform" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                <SiInstagram size={24} style={{background: 'linear-gradient(135deg, #833AB4 0%, #FD1D1D 45%, #FCAF45 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text'}} />
               </a>
-              <a href={SOCIAL_LINKS.x} className="text-slate-500 hover:text-black transition-colors" target="_blank" rel="noopener noreferrer" aria-label="X">
-                <FaXTwitter size={20} />
+              <a href={SOCIAL_LINKS.linkedin} className="hover:scale-110 transition-transform" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                <SiLinkedin size={24} color="#0A66C2" />
+              </a>
+              <a href="https://tiktok.com" className="hover:scale-110 transition-transform" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+                <SiTiktok size={24} color="#000000" />
               </a>
             </div>
           </Col>
         </Row>
 
-        <Divider className="!border-slate-200 !mt-5 !mb-2" />
+        <Divider className="!border-slate-200 !mt-6 !mb-3" />
 
-        <div className="py-1 text-center text-[11px] text-slate-400">
+        <div className="py-2 text-center text-[11px] text-slate-400">
           © {new Date().getFullYear()} APAI. All rights reserved.
         </div>
       </div>

@@ -761,9 +761,14 @@ const PublicContactRoot = () => {
                                             </div>
                                             <div className="flex-1 min-w-0 pt-1">
                                                 <p className="text-xs font-medium text-slate-500 mb-0.5">Address</p>
-                                                <p className="text-sm font-medium text-slate-800 leading-snug">
+                                                <a
+                                                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(businessInfo.address)}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-sm font-medium text-slate-800 leading-snug hover:text-blue-600 transition-colors block"
+                                                >
                                                     {businessInfo.address}
-                                                </p>
+                                                </a>
                                             </div>
                                         </div>
                                     )}

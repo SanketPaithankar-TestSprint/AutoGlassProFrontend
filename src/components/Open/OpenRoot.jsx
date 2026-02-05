@@ -377,7 +377,8 @@ const OpenRoot = () => {
                     setViewMode={setViewMode}
                     searchTerm={searchTerm}
                     setSearchTerm={setSearchTerm}
-                    onOpenFilters={() => setSidebarOpen(true)}
+                    onOpenFilters={() => setSidebarOpen(!sidebarOpen)}
+                    sidebarOpen={sidebarOpen}
                     isSearchingApi={isSearchingApi}
                     searchSource={searchSource}
                 />
