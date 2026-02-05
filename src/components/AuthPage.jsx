@@ -49,10 +49,10 @@ const AuthPage = () => {
                         className={`absolute top-0 left-0 h-full w-[60%] transition-all duration-700 ease-in-out
                     ${isSignUpMode ? 'opacity-100 z-10 translate-x-0' : 'opacity-0 z-0 translate-x-[20%]'}`}
                     >
-                        <div className="h-full flex flex-col items-center justify-center p-8 bg-white">
+                        <div className="h-full flex flex-col items-center justify-center p-8 bg-transparent">
                             <div className="w-full h-full overflow-y-auto custom-scrollbar flex flex-col items-center">
-                                <div className="w-full max-w-xl bg-white pb-8">
-                                    <h1 className="text-2xl md:text-3xl font-bold mb-4 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent text-center mt-8">Join Us</h1>
+                                <div className="w-full max-w-xl pb-8">
+                                    <h1 className="text-3xl md:text-4xl font-extrabold mb-4 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent text-center mt-8 tracking-tight">Join Us</h1>
                                     <SignUpForm onSuccess={handleSignUpSuccess} onCancel={() => setIsSignUpMode(false)} />
                                 </div>
                             </div>
@@ -64,14 +64,9 @@ const AuthPage = () => {
                         className={`absolute top-0 right-0 h-full w-[60%] transition-all duration-700 ease-in-out
                     ${!isSignUpMode ? 'opacity-100 z-10 translate-x-0' : 'opacity-0 z-0 translate-x-[-20%]'}`}
                     >
-                        <div className="h-full flex flex-col items-center justify-center p-8 bg-white">
+                        <div className="h-full flex flex-col items-center justify-center p-8 bg-transparent">
                             <div className="w-full h-full overflow-y-auto custom-scrollbar flex flex-col items-center justify-center">
-                                {
-                                    /* <div className="mb-6 scale-125">
-                                    <Logo />
-                                </div> */
-                                }
-                                <h1 className="text-2xl md:text-3xl font-bold mb-6 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">Login</h1>
+                                <h1 className="text-3xl md:text-4xl font-extrabold mb-6 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent tracking-tight">Sign In</h1>
                                 <div className="w-full max-w-sm">
                                     <Login
                                         onLoginSuccess={handleLoginSuccess}
@@ -140,7 +135,7 @@ const AuthPage = () => {
                             className={`flex-1 py-2 rounded-md font-semibold transition-all ${!isSignUpMode ? 'bg-violet-600 shadow-md text-white' : 'text-slate-500 hover:bg-slate-200'}`}
                             onClick={() => setIsSignUpMode(false)}
                         >
-                            Login
+                            Sign In
                         </button>
                         <button
                             className={`flex-1 py-2 rounded-md font-semibold transition-all ${isSignUpMode ? 'bg-violet-600 shadow-md text-white' : 'text-slate-500 hover:bg-slate-200'}`}

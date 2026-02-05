@@ -119,7 +119,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
   const NavLink = ({ label, href }) => (
     <Link
       to={href}
-      className="nav-link"
+      className="nav-link tracking-wide"
       style={{ WebkitTapHighlightColor: "transparent" }}
     >
       {label}
@@ -153,7 +153,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
             to="/"
             className="flex items-center gap-2 hover:scale-[1.02] transition-transform duration-150 min-w-0"
           >
-            <Logo className="w-20 sm:w-24 h-auto min-w-0" />
+            <Logo className="w-24 sm:w-28 h-auto min-w-0" />
           </Link>
         </div>
 

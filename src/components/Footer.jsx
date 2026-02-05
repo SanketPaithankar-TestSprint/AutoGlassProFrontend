@@ -34,13 +34,13 @@ const Footer = () => {
 
           {/* Quick Links Section */}
           <div className="flex items-center gap-6">
-            <Link to="/" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">Home</Link>
-            <Link to="/pricing" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">Pricing</Link>
-            <Link to="/features" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">Features</Link>
-            <Link to="/about" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">About</Link>
-            <Link to="/contact" className="text-slate-500 hover:text-slate-800 transition-colors">Contact</Link>
-            <a href={SITEMAP_LINK} className="text-slate-500 hover:text-slate-800 transition-colors" target="_blank" rel="noopener noreferrer">Sitemap</a>
-            <Link to="/privacy-policy" className="text-slate-500 hover:text-slate-800 transition-colors">Privacy Policy</Link>
+            <Link to="/" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Home</Link>
+            <Link to="/pricing" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Pricing</Link>
+            <Link to="/features" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Features</Link>
+            <Link to="/about" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">About</Link>
+            <Link to="/contact" className="text-slate-500 hover:text-slate-800 transition-colors tracking-wide">Contact</Link>
+            <a href={SITEMAP_LINK} className="text-slate-500 hover:text-slate-800 transition-colors tracking-wide" target="_blank" rel="noopener noreferrer">Sitemap</a>
+            <Link to="/privacy-policy" className="text-slate-500 hover:text-slate-800 transition-colors tracking-wide">Privacy Policy</Link>
           </div>
           {/* Social Media Section */}
           <div className="flex items-center gap-3">
@@ -76,7 +76,7 @@ const Footer = () => {
               <img src={logo} alt="AutoPaneAi" className="h-8 object-contain" />
             </div>
 
-            <Paragraph className="!text-slate-600 !mt-3 !mb-3 text-sm">
+            <Paragraph className="!text-slate-600 !mt-4 !mb-4 text-sm leading-relaxed max-w-sm">
               Professional auto glass pricing &amp; quoting platform
               <br /> built for modern repair shops.
             </Paragraph>
@@ -90,10 +90,10 @@ const Footer = () => {
               Quick Links
             </Title>
             <ul className="mt-3 space-y-2 text-sm">
-              <li><Link to="/" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">Home</Link></li>
-              <li><Link to="/pricing" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">Pricing</Link></li>
-              <li><Link to="/features" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">Features</Link></li>
-              <li><Link to="/about" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">About</Link></li>
+              <li><Link to="/" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Home</Link></li>
+              <li><Link to="/pricing" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Pricing</Link></li>
+              <li><Link to="/features" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Features</Link></li>
+              <li><Link to="/about" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">About</Link></li>
             </ul>
           </Col>
 
@@ -103,9 +103,9 @@ const Footer = () => {
               Support
             </Title>
             <ul className="mt-3 space-y-2 text-sm">
-              <li><Link to="/contact" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">Contact</Link></li>
-              <li><a href={SITEMAP_LINK} className="text-slate-500 hover:text-[#7E5CFE] transition-colors" target="_blank" rel="noopener noreferrer">Sitemap</a></li>
-              <li><Link to="/privacy-policy" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/contact" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Contact</Link></li>
+              <li><a href={SITEMAP_LINK} className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide" target="_blank" rel="noopener noreferrer">Sitemap</a></li>
+              <li><Link to="/privacy-policy" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Privacy Policy</Link></li>
             </ul>
             {/* Social Media Section */}
             <div className="flex items-center gap-3 mt-3">

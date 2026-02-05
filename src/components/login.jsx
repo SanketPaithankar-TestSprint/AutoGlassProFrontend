@@ -4,7 +4,44 @@ import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { loginUser, handleLoginSuccess } from "../api/login";
 import { getTaxSettings } from "../api/taxSettings";
 
-export default function Login({ onLoginSuccess, onSignUpClick }) {
+// Reusable style for form items to ensure consistent bordering and focus states
+const formItemStyle = {
+    marginBottom: '20px'
+};
+
+// Custom Input Styles injected via style tag or css-in-js approach for specific focus states
+// For simplicity in this file, we'll use inline styles and Ant Design's `classNames` if needed, 
+// or rely on a global CSS class. Let's add a small internal style block for the glow effect.
+const customInputStyle = `
+  .custom-api-input .ant-input, .custom-api-input .ant-input-password .ant-input {
+      border-color: #e2e8f0; /* Light grey border */
+      border-width: 1.5px;
+      padding: 10px 14px;
+      border-radius: 8px;
+  }
+  .custom-api-input .ant-input:hover, .custom-api-input .ant-input-password:hover .ant-input {
+      border-color: #7E5CFE;
+  }
+  .custom-api-input .ant-input:focus, .custom-api-input.ant-input-affix-wrapper-focused {
+      border-color: #7E5CFE;
+      box-shadow: 0 0 0 3px rgba(126, 92, 254, 0.2);
+  }
+  .custom-api-input.ant-input-affix-wrapper {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border-color: #e2e8f0;
+      border-width: 1.5px;
+  }
+  .custom-api-input.ant-input-affix-wrapper:hover {
+      border-color: #7E5CFE;
+  }
+  .custom-api-input.ant-input-affix-wrapper-focused {
+       border-color: #7E5CFE;
+       box-shadow: 0 0 0 3px rgba(126, 92, 254, 0.2);
+  }
+`;
+
+export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordClick }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -46,7 +83,7 @@ export default function Login({ onLoginSuccess, onSignUpClick }) {
                     window.location.href = "/";
                 }
             } else {
-                setError(res?.message || "Login failed. Please check your credentials.");
+                setError(res?.message || "Sign in failed. Please check your credentials.");
             }
         } catch (err) {
             setError("Network error. Please try again.");
@@ -56,16 +93,17 @@ export default function Login({ onLoginSuccess, onSignUpClick }) {
     };
 
     return (
-        <div style={{ padding: '20px 0' }}>
+        <div style={{ padding: '0px 0' }}>
+            <style>{customInputStyle}</style>
             {error && (
                 <Alert
-                    message="Login Failed"
+                    message="Sign In Failed"
                     description={error}
                     type="error"
                     showIcon
                     closable
                     onClose={() => setError(null)}
-                    style={{ marginBottom: '20px' }}
+                    style={{ marginBottom: '20px', borderRadius: '8px' }}
                 />
             )}
 
@@ -81,10 +119,12 @@ export default function Login({ onLoginSuccess, onSignUpClick }) {
                     name="email"
                     label="Email or Username"
                     rules={[{ required: true, message: 'Please input your email or username!' }]}
+                    style={formItemStyle}
                 >
                     <Input
-                        prefix={<UserOutlined />}
+                        prefix={<UserOutlined style={{ color: '#a0aec0' }} />}
                         placeholder="Email or Username"
+                        className="custom-api-input"
                     />
                 </Form.Item>
 
@@ -92,10 +132,12 @@ export default function Login({ onLoginSuccess, onSignUpClick }) {
                     name="password"
                     label="Password"
                     rules={[{ required: true, message: 'Please input your password!' }]}
+                    style={formItemStyle}
                 >
                     <Input.Password
-                        prefix={<LockOutlined />}
+                        prefix={<LockOutlined style={{ color: '#a0aec0' }} />}
                         placeholder="Password"
+                        className="custom-api-input"
                     />
                 </Form.Item>
 
@@ -103,7 +145,14 @@ export default function Login({ onLoginSuccess, onSignUpClick }) {
                     <Form.Item name="remember" valuePropName="checked" noStyle>
                         <Checkbox>Remember me</Checkbox>
                     </Form.Item>
-                    <a className="login-form-forgot" href="" onClick={(e) => e.preventDefault()}>
+                    <a
+                        className="login-form-forgot"
+                        href=""
+                        onClick={(e) => {
+                            e.preventDefault();
+                            if (onForgotPasswordClick) onForgotPasswordClick();
+                        }}
+                    >
                         Forgot password?
                     </a>
                 </div>
@@ -117,15 +166,16 @@ export default function Login({ onLoginSuccess, onSignUpClick }) {
                         style={{
                             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                             border: 'none',
-                            height: '45px',
+                            height: '50px',
                             fontSize: '16px',
-                            fontWeight: '600'
+                            fontWeight: 'bold',
+                            borderRadius: '12px',
+                            boxShadow: '0 4px 14px 0 rgba(118, 75, 162, 0.39)'
                         }}
                     >
                         {loading ? 'Signing in...' : 'Sign In'}
                     </Button>
                 </Form.Item>
-
             </Form>
         </div>
     );
