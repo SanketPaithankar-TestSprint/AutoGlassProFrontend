@@ -1,7 +1,8 @@
 import React from 'react';
-import { DatePicker, Input, Select, Card } from 'antd';
+import { Input, Select, Card } from 'antd';
 import { EnvironmentOutlined, UserOutlined, CalendarOutlined, HomeOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import DatePickerHelper from './DatePickerHelper';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -54,17 +55,16 @@ const JobSchedulingPanel = ({
                 }
                 className="shadow-sm"
             >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
                     {/* Service Location */}
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                        <label className="block text-sm font-medium text-slate-700 mb-1">
                             Service Location <span className="text-red-500">*</span>
                         </label>
                         <Select
                             value={schedulingData.serviceLocation || 'SHOP'}
                             style={{ width: '100%' }}
                             onChange={(val) => handleChange('serviceLocation', val)}
-                            size="large"
                         >
                             {SERVICE_LOCATION_OPTIONS.map(option => (
                                 <Option key={option.value} value={option.value}>
@@ -76,34 +76,27 @@ const JobSchedulingPanel = ({
                             ))}
                         </Select>
                         <p className="text-xs text-slate-500 mt-1">
-                            {schedulingData.serviceLocation === 'SHOP' && 'Service will be performed at your shop location.'}
-                            {schedulingData.serviceLocation === 'MOBILE' && 'Service will be performed at a mobile location.'}
-                            {schedulingData.serviceLocation === 'CUSTOMER_LOCATION' && 'Service will be performed at the customer\'s address.'}
+                            Location type
                         </p>
                     </div>
 
                     {/* Scheduled Date */}
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                        <label className="block text-sm font-medium text-slate-700 mb-1">
                             Scheduled Date & Time <span className="text-red-500">*</span>
                         </label>
-                        <DatePicker
+                        <DatePickerHelper
                             value={getDayjsValue(schedulingData.scheduledDate)}
                             onChange={(date) => handleDateChange('scheduledDate', date)}
-                            showTime={{ format: 'HH:mm' }}
-                            format="YYYY-MM-DD HH:mm"
-                            style={{ width: '100%' }}
-                            size="large"
-                            placeholder="Select date and time"
                         />
                         <p className="text-xs text-slate-500 mt-1">
-                            When is the job scheduled to start?
+                            Job start time
                         </p>
                     </div>
 
                     {/* Employee Assignment */}
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                        <label className="block text-sm font-medium text-slate-700 mb-1">
                             <span className="flex items-center gap-1">
                                 <UserOutlined />
                                 Assigned Technician
@@ -112,14 +105,13 @@ const JobSchedulingPanel = ({
                         <Select
                             value={schedulingData.assignedEmployeeId || schedulingData.employeeId}
                             style={{ width: '100%' }}
-                            placeholder="Select technician (optional)"
+                            placeholder="Select technician"
                             allowClear
                             onChange={(val) => {
                                 handleChange('assignedEmployeeId', val);
                                 handleChange('employeeId', val);
                             }}
                             loading={loadingEmployees}
-                            size="large"
                         >
                             {employees.map(emp => (
                                 <Option key={emp.employeeId} value={emp.employeeId}>
@@ -128,33 +120,33 @@ const JobSchedulingPanel = ({
                             ))}
                         </Select>
                         <p className="text-xs text-slate-500 mt-1">
-                            Assign a technician to this job (optional).
+                            Optional assignment
                         </p>
                     </div>
 
-                    {/* Service Address - Only shown when required */}
-                    {isServiceAddressRequired && (
-                        <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-slate-700 mb-2">
-                                <span className="flex items-center gap-1">
-                                    <EnvironmentOutlined />
-                                    Service Address <span className="text-red-500">*</span>
-                                </span>
-                            </label>
-                            <TextArea
-                                value={schedulingData.serviceAddress || ''}
-                                onChange={(e) => handleChange('serviceAddress', e.target.value)}
-                                placeholder="Enter the full address where service will be performed (e.g., 123 Main St, Springfield, IL 62701)"
-                                rows={3}
-                                style={{ width: '100%' }}
-                            />
-                            <p className="text-xs text-slate-500 mt-1">
-                                {schedulingData.serviceLocation === 'MOBILE'
-                                    ? 'Required for mobile service - enter the location where the technician will go.'
-                                    : 'Required for customer location service - enter the customer\'s address.'}
-                            </p>
-                        </div>
-                    )}
+                    {/* Service Address - Always shown, disabled if not required */}
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">
+                            <span className="flex items-center gap-1">
+                                <EnvironmentOutlined />
+                                Service Address {isServiceAddressRequired && <span className="text-red-500">*</span>}
+                            </span>
+                        </label>
+                        <TextArea
+                            value={schedulingData.serviceAddress || ''}
+                            onChange={(e) => handleChange('serviceAddress', e.target.value)}
+                            placeholder={isServiceAddressRequired ? "Enter address..." : "Not required for Shop"}
+                            rows={1}
+                            style={{ width: '100%', resize: 'none' }}
+                            disabled={!isServiceAddressRequired}
+                            className={!isServiceAddressRequired ? 'bg-slate-50' : ''}
+                        />
+                        <p className="text-xs text-slate-500 mt-1 text-nowrap overflow-hidden text-ellipsis">
+                            {isServiceAddressRequired
+                                ? 'Address for service'
+                                : 'Default: Shop Location'}
+                        </p>
+                    </div>
                 </div>
             </Card>
         </div>

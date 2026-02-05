@@ -1,0 +1,224 @@
+import React, { useState, useEffect } from "react";
+import Login from "./login";
+import SignUpForm from "./SignUpForm";
+import ForgotPasswordForm from "./ForgotPasswordForm";
+import { useAuth } from '../context/auth/useAuth';
+import { useProfileDataPrefetch } from '../hooks/useProfileDataPrefetch';
+import useInquiryNotifications from "../hooks/useInquiryNotifications";
+import { getValidToken } from '../api/getValidToken';
+import { useNavigate } from "react-router-dom";
+
+// Simple Logo Component if needed locally, or import shared
+const Logo = ({ className }) => {
+    return (
+        <div className={`flex items-center gap-2 ${className}`}>
+            <div className="relative w-8 h-8 sm:w-10 sm:h-10">
+                <div className="absolute inset-0 bg-gradient-to-tr from-violet-600 to-fuchsia-600 rounded-lg transform rotate-6 shadow-lg"></div>
+                <div className="absolute inset-0 bg-white rounded-lg flex items-center justify-center transform -rotate-3 transition-transform group-hover:rotate-0 border border-violet-100">
+                    <span className="text-lg sm:text-xl font-bold bg-gradient-to-br from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">A</span>
+                </div>
+            </div>
+            <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+                APAI
+            </span>
+        </div>
+    );
+};
+
+export default function AuthRoot() {
+    // Mode: 'LOGIN', 'SIGNUP', 'FORGOT_PASSWORD'
+    const [authMode, setAuthMode] = useState('LOGIN');
+    const { login } = useAuth();
+    const prefetchProfileData = useProfileDataPrefetch();
+    // const { fetchUnreadCount } = useInquiryNotifications();
+    const navigate = useNavigate();
+
+    const handleLoginSuccess = async () => {
+        const token = getValidToken();
+        if (token) {
+            // Update context state
+            if (login) login(token);
+            try {
+                if (prefetchProfileData) await prefetchProfileData();
+                // if (fetchUnreadCount) await fetchUnreadCount();
+            } catch (error) {
+                console.error("Error prefetching data:", error);
+            }
+            // Navigate to dashboard/home
+            navigate("/analytics");
+        }
+    };
+
+    const handleSignUpSuccess = () => {
+        setAuthMode('LOGIN');
+    };
+
+    // Derived state for layout matching AuthPage logic
+    // isSignUpMode was boolean. Here we map: 
+    // SIGNUP -> isSignUpMode = true (Overlay Right)
+    // LOGIN / FORGOT -> isSignUpMode = false (Overlay Left)
+    const isSignUpMode = authMode === 'SIGNUP';
+
+    return (
+        <div className="w-full bg-white flex items-start justify-center p-4 pt-24 md:pt-32 pb-24 relative overflow-hidden">
+            {/* Simple static gradient background */}
+            <div
+                className="fixed inset-0 z-0 pointer-events-none opacity-20"
+                style={{ background: 'linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)' }}
+            />
+
+
+            <div
+                className="bg-white/90 backdrop-blur-md rounded-[24px] shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)] relative overflow-hidden w-full max-w-[800px] lg:max-w-[900px] min-h-[450px] md:min-h-[550px] flex flex-col md:block z-10 border border-white/20"
+            >
+                {/* DESKTOP LAYOUT */}
+                <div className="hidden md:block h-full relative min-h-[450px] md:min-h-[550px]">
+
+                    {/* SIGN UP FORM CONTAINER (Left Position) */}
+                    <div
+                        className={`absolute top-0 left-0 h-full w-[60%] transition-all duration-700 ease-in-out
+                    ${isSignUpMode ? 'opacity-100 z-10 translate-x-0' : 'opacity-0 z-0 translate-x-[20%]'}`}
+                    >
+                        <div className="h-full flex flex-col items-center justify-center p-8 bg-transparent">
+                            <div className="w-full h-full overflow-y-auto custom-scrollbar flex flex-col items-center">
+                                <div className="w-full max-w-xl pb-8">
+                                    <h1 className="text-3xl md:text-4xl font-extrabold mb-4 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent text-center mt-8 tracking-tight">Join Us</h1>
+                                    <SignUpForm onSuccess={handleSignUpSuccess} onCancel={() => setAuthMode('LOGIN')} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* LOGIN / FORGOT PASSWORD CONTAINER (Right Position) */}
+                    <div
+                        className={`absolute top-0 right-0 h-full w-[60%] transition-all duration-700 ease-in-out
+                    ${!isSignUpMode ? 'opacity-100 z-10 translate-x-0' : 'opacity-0 z-0 translate-x-[-20%]'}`}
+                    >
+                        <div className="h-full flex flex-col items-center justify-center p-8 bg-transparent">
+                            <div className="w-full h-full overflow-y-auto custom-scrollbar flex flex-col items-center justify-center">
+
+                                <div className="w-full max-w-sm transition-opacity duration-300">
+                                    {authMode === 'LOGIN' && (
+                                        <>
+                                            <h1 className="text-3xl md:text-4xl font-extrabold mb-6 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent tracking-tight text-center">Sign In</h1>
+                                            <Login
+                                                onLoginSuccess={handleLoginSuccess}
+                                                onForgotPasswordClick={() => setAuthMode('FORGOT_PASSWORD')}
+                                                onSignUpClick={() => setAuthMode('SIGNUP')}
+                                            />
+                                        </>
+                                    )}
+
+                                    {authMode === 'FORGOT_PASSWORD' && (
+                                        <>
+                                            <h1 className="text-2xl md:text-3xl font-extrabold mb-6 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent tracking-tight text-center">Reset Password</h1>
+                                            <ForgotPasswordForm
+                                                onBackToLogin={() => setAuthMode('LOGIN')}
+                                                onSuccess={() => setAuthMode('LOGIN')}
+                                            />
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* OVERLAY CONTAINER (40% Width) */}
+                    <div
+                        className={`absolute top-0 left-0 h-full w-[40%] overflow-hidden transition-transform duration-700 ease-in-out z-30
+                    ${isSignUpMode ? 'translate-x-[150%] rounded-l-[100px]' : 'translate-x-0 rounded-r-[100px]'}`}
+                        style={{ zIndex: 30 }}
+                    >
+                        <div
+                            className="h-full w-full relative text-white"
+                            style={{
+                                background: 'linear-gradient(to right, #7c3aed, #c026d3)',
+                            }}
+                        >
+
+                            {/* Overlay Content: LOGIN CTA (Visible when Overlay is Left -> Login/Forgot Mode) */}
+                            <div className={`absolute inset-0 flex flex-col items-center justify-center text-center px-8 transition-opacity duration-700
+                             ${!isSignUpMode ? 'opacity-100 delay-200 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+                            >
+                                <h1 className="text-3xl md:text-5xl font-extrabold mb-4 tracking-tight">New Here?</h1>
+                                <p className="text-lg mb-8 text-white/90 font-medium leading-relaxed">Join our network to access professional quoting and invoicing tools.</p>
+                                <button
+                                    className="px-10 py-3 rounded-full font-bold uppercase tracking-wider transition-all transform hover:scale-105 focus:outline-none cursor-pointer border-2 border-white bg-white/10 backdrop-blur-sm text-white hover:bg-white hover:text-violet-600 shadow-lg"
+                                    onClick={() => setAuthMode('SIGNUP')}
+                                >
+                                    Sign Up
+                                </button>
+                            </div>
+
+                            {/* Overlay Content: SIGNUP CTA (Visible when Overlay is Right -> SignUp Mode) */}
+                            <div className={`absolute inset-0 flex flex-col items-center justify-center text-center px-8 transition-opacity duration-700
+                            ${isSignUpMode ? 'opacity-100 delay-200 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+                            >
+                                <h1 className="text-3xl md:text-4xl font-extrabold mb-4 tracking-tight">Already a Partner?</h1>
+                                <p className="text-lg mb-8 text-white/90 font-medium leading-relaxed">Log in to your dashboard to manage quotes and invoices.</p>
+                                <button
+                                    className="px-10 py-3 rounded-full font-bold uppercase tracking-wider transition-all transform hover:scale-105 focus:outline-none cursor-pointer border-2 border-white bg-white/10 backdrop-blur-sm text-white hover:bg-white hover:text-violet-600 shadow-lg"
+                                    onClick={() => setAuthMode('LOGIN')}
+                                >
+                                    Sign In
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                {/* MOBILE LAYOUT */}
+                <div className="md:hidden p-6 flex flex-col items-center">
+                    <div className="mb-6">
+                        <Logo />
+                    </div>
+
+                    <div className="w-full bg-slate-100 p-1 rounded-lg mb-6 flex">
+                        <button
+                            className={`flex-1 py-2 rounded-md font-semibold transition-all ${authMode === 'LOGIN' || authMode === 'FORGOT_PASSWORD' ? 'bg-violet-600 shadow-md text-white' : 'text-slate-500 hover:bg-slate-200'}`}
+                            onClick={() => setAuthMode('LOGIN')}
+                        >
+                            Sign In
+                        </button>
+                        <button
+                            className={`flex-1 py-2 rounded-md font-semibold transition-all ${authMode === 'SIGNUP' ? 'bg-violet-600 shadow-md text-white' : 'text-slate-500 hover:bg-slate-200'}`}
+                            onClick={() => setAuthMode('SIGNUP')}
+                        >
+                            Sign Up
+                        </button>
+                    </div>
+
+                    <div className="w-full">
+                        {authMode === 'SIGNUP' && (
+                            <div className="animate-fade-in">
+                                <SignUpForm onSuccess={handleSignUpSuccess} onCancel={() => setAuthMode('LOGIN')} />
+                            </div>
+                        )}
+
+                        {authMode === 'LOGIN' && (
+                            <div className="animate-fade-in">
+                                <Login
+                                    onLoginSuccess={handleLoginSuccess}
+                                    onForgotPasswordClick={() => setAuthMode('FORGOT_PASSWORD')}
+                                    onSignUpClick={() => setAuthMode('SIGNUP')}
+                                />
+                            </div>
+                        )}
+
+                        {authMode === 'FORGOT_PASSWORD' && (
+                            <div className="animate-fade-in">
+                                <h2 className="text-xl font-bold mb-4 text-center">Reset Password</h2>
+                                <ForgotPasswordForm
+                                    onBackToLogin={() => setAuthMode('LOGIN')}
+                                    onSuccess={() => setAuthMode('LOGIN')}
+                                />
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    );
+}
