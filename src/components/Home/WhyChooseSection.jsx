@@ -66,7 +66,7 @@ const WhyChooseSection = () => {
                                 backgroundImage: 'linear-gradient(90deg, #7E5CFE 0%, #00A8E4 100%)'
                             } : {}}
                         >
-                            Why Choose AutoPaneAI?
+                            Why Choose APAI?
                         </h2>
                         <p
                             className="text-lg text-slate-600 leading-relaxed opacity-0"
@@ -74,7 +74,7 @@ const WhyChooseSection = () => {
                                 animation: `fadeInUp 0.6s ease-out 0.4s forwards`
                             } : {}}
                         >
-                            AutoPaneAI is purpose-built for the automotive glass industry. We understand your business challenges and provide solutions tailored to your success.
+                            APAI is purpose-built for the automotive glass industry. We understand your business challenges and provide solutions tailored to your success.
                         </p>
                     </div>
 

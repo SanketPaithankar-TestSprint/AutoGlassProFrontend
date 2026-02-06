@@ -62,7 +62,7 @@ const ValuePropSection = () => {
         {
             title: "Quote with Precision",
             focus: "Instant, VIN-driven NAGS part identification built specifically for auto glass professionals.",
-            expandedDetail: "AutoPaneAI eliminates guesswork during quoting by automatically matching vehicle VINs to the correct NAGS glass part, features, and specifications. No more manual cross-checks, outdated catalogs, or incorrect part selection that leads to rework or losses.",
+            expandedDetail: "APAI eliminates guesswork during quoting by automatically matching vehicle VINs to the correct NAGS glass part, features, and specifications. No more manual cross-checks, outdated catalogs, or incorrect part selection that leads to rework or losses.",
             keyBenefits: [
                 "Accurate windshield, back glass, and side glass identification every time",
                 "Real-time NAGS data ensures correct pricing and part compatibility",
@@ -74,7 +74,7 @@ const ValuePropSection = () => {
         {
             title: "Execute with Confidence",
             focus: "End-to-end digital work order management with full mobile support.",
-            expandedDetail: "Move away from paper, WhatsApp notes, and fragmented systems. AutoPaneAI provides a structured digital workflow from job approval to completion, accessible on mobile, tablet, or desktop — ideal for field technicians and shop managers alike.",
+            expandedDetail: "Move away from paper, WhatsApp notes, and fragmented systems. APAI provides a structured digital workflow from job approval to completion, accessible on mobile, tablet, or desktop — ideal for field technicians and shop managers alike.",
             keyBenefits: [
                 "Create and assign work orders instantly",
                 "Dispatch technicians with clear job details",
@@ -86,7 +86,7 @@ const ValuePropSection = () => {
         {
             title: "Get Paid Faster",
             focus: "Automated billing, insurance tracking, and payment follow-ups.",
-            expandedDetail: "AutoPaneAI streamlines the most painful part of auto glass operations — payments. From invoice generation to insurance coordination and customer reminders, everything is tracked and automated so nothing slips through the cracks.",
+            expandedDetail: "APAI streamlines the most painful part of auto glass operations — payments. From invoice generation to insurance coordination and customer reminders, everything is tracked and automated so nothing slips through the cracks.",
             keyBenefits: [
                 "Generate accurate invoices directly from completed work orders",
                 "Track insurance claims and approval status",
@@ -126,13 +126,13 @@ const ValuePropSection = () => {
             <AnimatedSection>
                 <div className="max-w-4xl mx-auto text-center mb-20 lg:mb-24">
                     <h2 className="text-3xl md:text-5xl font-bold mb-6 font-outfit text-slate-900">
-                        The AutoPaneAI Difference
+                        The APAI Difference
                     </h2>
                     <p className="text-xl md:text-2xl text-violet-600 font-semibold mb-6">
                         Stop Juggling Systems. Start Growing.
                     </p>
                     <p className="text-lg text-slate-600 leading-relaxed max-w-3xl mx-auto">
-                        AutoPaneAI is a specialized B2B SaaS platform designed exclusively for auto glass repair shops
+                        APAI is a specialized B2B SaaS platform designed exclusively for auto glass repair shops
                         and mobile technicians to streamline the entire service lifecycle, turning quotes into paid invoices effortlessly.
                     </p>
                 </div>

@@ -50,8 +50,8 @@ const Footer = () => {
             <a href={SOCIAL_LINKS.x} className="hover:scale-110 transition-transform" target="_blank" rel="noopener noreferrer" aria-label="X">
               <SiX size={20} color="#000000" />
             </a>
-            <a href={SOCIAL_LINKS.instagram} className="hover:scale-110 transition-transform" target="_blank" rel="noopener noreferrer" aria-label="Instagram" style={{background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)', backgroundClip: 'border-box', padding: '2px', borderRadius: '4px'}}>
-              <SiInstagram size={20} color="white" />
+            <a href={SOCIAL_LINKS.instagram} className="hover:scale-110 transition-transform" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+              <SiInstagram size={20} style={{ background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }} />
             </a>
             <a href={SOCIAL_LINKS.linkedin} className="hover:scale-110 transition-transform" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
               <SiLinkedin size={20} color="#0A66C2" />
@@ -123,7 +123,7 @@ const Footer = () => {
                 <SiX size={24} color="#000000" />
               </a>
               <a href={SOCIAL_LINKS.instagram} className="hover:scale-110 transition-transform" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-                <SiInstagram size={24} style={{background: 'linear-gradient(135deg, #833AB4 0%, #FD1D1D 45%, #FCAF45 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text'}} />
+                <SiInstagram size={24} style={{ background: 'linear-gradient(135deg, #833AB4 0%, #FD1D1D 45%, #FCAF45 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }} />
               </a>
               <a href={SOCIAL_LINKS.linkedin} className="hover:scale-110 transition-transform" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
                 <SiLinkedin size={24} color="#0A66C2" />

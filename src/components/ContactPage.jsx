@@ -247,7 +247,7 @@ ${userMessage || 'No message provided'}
                                             />
                                         </Form.Item>
 
-                                        <Form.Item className="text-right mb-0">
+                                        <Form.Item className="text-center mb-0">
                                             <Button
                                                 type="primary"
                                                 htmlType="submit"

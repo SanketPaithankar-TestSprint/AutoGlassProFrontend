@@ -13,11 +13,17 @@ const PricingPage = () => {
 
   return (
     <Layout className="flex-grow bg-white font-sans text-slate-900 flex flex-col justify-center relative overflow-hidden">
+      {/* Gradient Background */}
+      <div
+        className="fixed inset-0 z-0 pointer-events-none opacity-20"
+        style={{ background: 'linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)' }}
+      />
+      
       {/* Decorative Images - Visible on XL screens */}
-      <div className="hidden xl:block absolute left-12 2xl:left-32 top-1/2 -translate-y-1/2 w-85 z-0 opacity-80 pointer-events-none">
+      <div className="hidden xl:block absolute left-12 2xl:left-32 top-1/2 -translate-y-1/2 w-85 z-1 opacity-80 pointer-events-none">
         <img src={LeftDecoImage} alt="Decorative Left" className="w-full h-auto object-contain" />
       </div>
-      <div className="hidden xl:block absolute right-12 2xl:right-32 top-1/2 -translate-y-1/2 w-85 z-0 opacity-80 pointer-events-none">
+      <div className="hidden xl:block absolute right-12 2xl:right-32 top-1/2 -translate-y-1/2 w-85 z-1 opacity-80 pointer-events-none">
         <img src={RightDecoImage} alt="Decorative Right" className="w-full h-auto object-contain" />
       </div>
 
@@ -69,7 +75,7 @@ const PricingPage = () => {
                 block
                 className="!h-10 !rounded-lg !text-white !font-bold !border-none !text-xs shadow-md"
                 style={{ backgroundColor: '#00A8E4', boxShadow: '0 4px 14px 0 rgba(0, 168, 228, 0.39)' }}
-                onClick={() => navigate('/auth', { state: { mode: 'signup' } })}
+                onClick={() => { window.scrollTo(0, 0); window.scroll({ top: 0, left: 0, behavior: 'smooth' }); navigate('/auth', { state: { mode: 'signup' } }); }}
               >
                 Start Free Trial
               </Button>
@@ -116,7 +122,7 @@ const PricingPage = () => {
                 block
                 className="!h-10 !rounded-lg !bg-white hover:!bg-blue-50 !font-bold !border-none !text-xs shadow-lg"
                 style={{ color: '#00A8E4' }}
-                onClick={() => navigate('/auth', { state: { mode: 'signup' } })}
+                onClick={() => { window.scrollTo(0, 0); window.scroll({ top: 0, left: 0, behavior: 'smooth' }); navigate('/auth', { state: { mode: 'signup' } }); }}
               >
                 Get Started
               </Button>
@@ -155,7 +161,7 @@ const PricingPage = () => {
                 block
                 className="!h-10 !rounded-lg !text-white !font-bold !border-none !text-xs shadow-md"
                 style={{ backgroundColor: '#00A8E4', boxShadow: '0 4px 14px 0 rgba(0, 168, 228, 0.39)' }}
-                onClick={() => navigate('/contact')}
+                onClick={() => { window.scrollTo(0, 0); window.scroll({ top: 0, left: 0, behavior: 'smooth' }); navigate('/contact'); }}
               >
                 Contact Sales
               </Button>

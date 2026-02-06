@@ -159,7 +159,7 @@ const AboutPage = () => {
                         <div className="max-w-4xl mx-auto bg-white/60 backdrop-blur-md border border-white/50 p-6 md:p-10 rounded-3xl mt-6 shadow-sm">
                             <h2 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-3">Our Mission</h2>
                             <p className="text-lg md:text-xl text-slate-800 leading-relaxed font-medium">
-                                AutoPaneAI was founded to solve the core inefficiencies that plague the auto glass industry: inaccurate quotes, paper-based work orders, and slow payment cycles. We provide a single, cloud-based platform that handles the entire service flow, allowing shop owners and remote installers to focus on service delivery, not paperwork.
+                                APAI was founded to solve the core inefficiencies that plague the auto glass industry: inaccurate quotes, paper-based work orders, and slow payment cycles. We provide a single, cloud-based platform that handles the entire service flow, allowing shop owners and remote installers to focus on service delivery, not paperwork.
                             </p>
                         </div>
                     </AnimatedSection>
@@ -261,7 +261,7 @@ const AboutPage = () => {
                                 <Button
                                     type="primary"
                                     size="large"
-                                    onClick={() => navigate('/auth', { state: { mode: 'signup' } })}
+                                    onClick={() => { window.scrollTo(0, 0); window.scroll({ top: 0, left: 0, behavior: 'smooth' }); navigate('/auth', { state: { mode: 'signup' } }); }}
                                     className="!bg-violet-600 !border-violet-600 hover:!bg-violet-500 !h-12 !px-8 !text-base !rounded-full shadow-lg shadow-violet-200"
                                 >
                                     Get Started Today

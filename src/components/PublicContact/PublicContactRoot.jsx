@@ -701,9 +701,11 @@ const PublicContactRoot = () => {
                                 </div>
 
                                 {/* Submit Button */}
-                                <button type="submit" disabled={formLoading} className="premium-btn w-full h-10 text-sm font-semibold text-white rounded-lg disabled:opacity-60 disabled:cursor-not-allowed mt-4" style={{ background: `linear-gradient(135deg, ${themeColor} 0%, ${themeColor}cc 100%)` }}>
-                                    {formLoading ? (<span className="flex items-center justify-center gap-2"><span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>Sending...</span>) : 'Submit Request'}
-                                </button>
+                                <div className="flex justify-center mt-4">
+                                    <button type="submit" disabled={formLoading} className="premium-btn h-10 text-sm font-semibold text-white rounded-lg disabled:opacity-60 disabled:cursor-not-allowed px-8" style={{ background: `linear-gradient(135deg, ${themeColor} 0%, ${themeColor}cc 100%)` }}>
+                                        {formLoading ? (<span className="flex items-center justify-center gap-2"><span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>Sending...</span>) : 'Submit Request'}
+                                    </button>
+                                </div>
                             </form>
                         </div>
                     </div>
