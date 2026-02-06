@@ -115,7 +115,7 @@ const FeaturesPage = () => {
         {
             category: "Work Order & Field Service",
             title: "Mobile Management: Empower Your Technicians, Anywhere.",
-            subHeadline: "AutoPaneAI is built for the mobile service economy, giving remote installers and shop technicians the tools they need to complete jobs efficiently.",
+            subHeadline: "APAI is built for the mobile service economy, giving remote installers and shop technicians the tools they need to complete jobs efficiently.",
             color: "from-violet-500 to-fuchsia-500",
             features: [
                 {
@@ -159,7 +159,7 @@ const FeaturesPage = () => {
                 {
                     icon: <MailOutlined />,
                     title: "Automated Reminders",
-                    desc: "When an invoice reaches the Overdue status, AutoPaneAI automatically sends payment reminder emails, significantly reducing late payments."
+                    desc: "When an invoice reaches the Overdue status, APAI automatically sends payment reminder emails, significantly reducing late payments."
                 },
                 {
                     icon: <BarChartOutlined />,
@@ -217,7 +217,7 @@ const FeaturesPage = () => {
                             Everything You Need to Run Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-fuchsia-600">Auto Glass Business</span>
                         </h1>
                         <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-                            From the first quote to the final payment, AutoPaneAI provides a comprehensive suite of tools designed for speed, accuracy, and growth.
+                            From the first quote to the final payment, APAI provides a comprehensive suite of tools designed for speed, accuracy, and growth.
                         </p>
                     </div>
                 </AnimatedSection>
@@ -265,7 +265,7 @@ const FeaturesPage = () => {
                                 Ready to Transform Your Business?
                             </h2>
                             <p className="text-base text-slate-600 mb-8 max-w-xl mx-auto">
-                                Join the auto glass professionals who are saving time and increasing profits with AutoPaneAI.
+                                Join the auto glass professionals who are saving time and increasing profits with APAI.
                             </p>
                             <div className="flex flex-col sm:flex-row gap-3 justify-center">
                                 <Button

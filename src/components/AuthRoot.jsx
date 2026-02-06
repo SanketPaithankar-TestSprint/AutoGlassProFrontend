@@ -12,12 +12,6 @@ import { useNavigate } from "react-router-dom";
 const Logo = ({ className }) => {
     return (
         <div className={`flex items-center gap-2 ${className}`}>
-            <div className="relative w-8 h-8 sm:w-10 sm:h-10">
-                <div className="absolute inset-0 bg-gradient-to-tr from-violet-600 to-fuchsia-600 rounded-lg transform rotate-6 shadow-lg"></div>
-                <div className="absolute inset-0 bg-white rounded-lg flex items-center justify-center transform -rotate-3 transition-transform group-hover:rotate-0 border border-violet-100">
-                    <span className="text-lg sm:text-xl font-bold bg-gradient-to-br from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">A</span>
-                </div>
-            </div>
             <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
                 APAI
             </span>
@@ -100,7 +94,7 @@ export default function AuthRoot() {
                                 <div className="w-full max-w-sm transition-opacity duration-300">
                                     {authMode === 'LOGIN' && (
                                         <>
-                                            <h1 className="text-3xl md:text-4xl font-extrabold mb-6 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent tracking-tight text-center">Sign In</h1>
+                                            <h1 className="text-3xl md:text-4xl font-extrabold mb-6 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent tracking-tight text-center p-5">Log In</h1>
                                             <Login
                                                 onLoginSuccess={handleLoginSuccess}
                                                 onForgotPasswordClick={() => setAuthMode('FORGOT_PASSWORD')}
@@ -143,7 +137,12 @@ export default function AuthRoot() {
                                 <h1 className="text-3xl md:text-5xl font-extrabold mb-4 tracking-tight">New Here?</h1>
                                 <p className="text-lg mb-8 text-white/90 font-medium leading-relaxed">Join our network to access professional quoting and invoicing tools.</p>
                                 <button
-                                    className="px-10 py-3 rounded-full font-bold uppercase tracking-wider transition-all transform hover:scale-105 focus:outline-none cursor-pointer border-2 border-white bg-white/10 backdrop-blur-sm text-white hover:bg-white hover:text-violet-600 shadow-lg"
+                                    style={{
+                                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                        color: '#7E5CFE',
+                                        border: '2px solid white'
+                                    }}
+                                    className="px-10 py-3 rounded-full font-bold uppercase tracking-wider cursor-pointer shadow-lg transition-all transform hover:scale-105 focus:outline-none hover:shadow-xl"
                                     onClick={() => setAuthMode('SIGNUP')}
                                 >
                                     Sign Up
@@ -157,10 +156,15 @@ export default function AuthRoot() {
                                 <h1 className="text-3xl md:text-4xl font-extrabold mb-4 tracking-tight">Already a Partner?</h1>
                                 <p className="text-lg mb-8 text-white/90 font-medium leading-relaxed">Log in to your dashboard to manage quotes and invoices.</p>
                                 <button
-                                    className="px-10 py-3 rounded-full font-bold uppercase tracking-wider transition-all transform hover:scale-105 focus:outline-none cursor-pointer border-2 border-white bg-white/10 backdrop-blur-sm text-white hover:bg-white hover:text-violet-600 shadow-lg"
+                                    style={{
+                                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                        color: '#7E5CFE',
+                                        border: '2px solid white'
+                                    }}
+                                    className="px-10 py-3 rounded-full font-bold uppercase tracking-wider cursor-pointer shadow-lg transition-all transform hover:scale-105 focus:outline-none hover:shadow-xl"
                                     onClick={() => setAuthMode('LOGIN')}
                                 >
-                                    Sign In
+                                    Log In
                                 </button>
                             </div>
 
@@ -179,7 +183,7 @@ export default function AuthRoot() {
                             className={`flex-1 py-2 rounded-md font-semibold transition-all ${authMode === 'LOGIN' || authMode === 'FORGOT_PASSWORD' ? 'bg-violet-600 shadow-md text-white' : 'text-slate-500 hover:bg-slate-200'}`}
                             onClick={() => setAuthMode('LOGIN')}
                         >
-                            Sign In
+                            Log In
                         </button>
                         <button
                             className={`flex-1 py-2 rounded-md font-semibold transition-all ${authMode === 'SIGNUP' ? 'bg-violet-600 shadow-md text-white' : 'text-slate-500 hover:bg-slate-200'}`}

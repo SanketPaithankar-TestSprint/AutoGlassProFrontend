@@ -13,11 +13,17 @@ const PricingPage = () => {
 
   return (
     <Layout className="flex-grow bg-white font-sans text-slate-900 flex flex-col justify-center relative overflow-hidden">
+      {/* Gradient Background */}
+      <div
+        className="fixed inset-0 z-0 pointer-events-none opacity-20"
+        style={{ background: 'linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)' }}
+      />
+      
       {/* Decorative Images - Visible on XL screens */}
-      <div className="hidden xl:block absolute left-12 2xl:left-32 top-1/2 -translate-y-1/2 w-85 z-0 opacity-80 pointer-events-none">
+      <div className="hidden xl:block absolute left-12 2xl:left-32 top-1/2 -translate-y-1/2 w-85 z-1 opacity-80 pointer-events-none">
         <img src={LeftDecoImage} alt="Decorative Left" className="w-full h-auto object-contain" />
       </div>
-      <div className="hidden xl:block absolute right-12 2xl:right-32 top-1/2 -translate-y-1/2 w-85 z-0 opacity-80 pointer-events-none">
+      <div className="hidden xl:block absolute right-12 2xl:right-32 top-1/2 -translate-y-1/2 w-85 z-1 opacity-80 pointer-events-none">
         <img src={RightDecoImage} alt="Decorative Right" className="w-full h-auto object-contain" />
       </div>
 

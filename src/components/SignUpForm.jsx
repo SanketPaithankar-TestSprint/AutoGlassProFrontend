@@ -36,11 +36,25 @@ const customInputStyle = `
       border-width: 1.5px !important;
       border-radius: 8px !important;
       padding: 6px 11px !important;
+      height: 40px !important;
+      line-height: 28px !important;
+      display: flex !important;
+      align-items: center !important;
+  }
+  .custom-api-input .ant-input::placeholder,
+  .custom-api-input .ant-input-password .ant-input::placeholder {
+      line-height: 28px !important;
+      vertical-align: middle !important;
+  }
+  .custom-api-input .ant-input-prefix {
+      margin-right: 8px !important;
+      display: flex !important;
+      align-items: center !important;
   }
   .custom-api-input.ant-select .ant-select-selector {
-      height: 42px !important;
-      display: flex;
-      align-items: center;
+      height: 40px !important;
+      display: flex !important;
+      align-items: center !important;
   }
   .custom-api-input .ant-input:hover, 
   .custom-api-input .ant-input-password:hover .ant-input,
@@ -54,10 +68,13 @@ const customInputStyle = `
       box-shadow: 0 0 0 3px rgba(126, 92, 254, 0.2) !important;
   }
   .custom-api-input.ant-input-affix-wrapper {
-      padding: 10px 14px;
+      padding: 6px 11px !important;
       border-radius: 8px;
       border-color: #e2e8f0;
       border-width: 1.5px;
+      height: 40px !important;
+      display: flex !important;
+      align-items: center !important;
   }
   .custom-api-input.ant-input-affix-wrapper:hover {
       border-color: #7E5CFE;
@@ -65,6 +82,13 @@ const customInputStyle = `
   .custom-api-input.ant-input-affix-wrapper-focused {
        border-color: #7E5CFE;
        box-shadow: 0 0 0 3px rgba(126, 92, 254, 0.2);
+  }
+  .custom-api-input.ant-input-password {
+      height: 40px !important;
+  }
+  .custom-api-input .ant-input-password-icon {
+      display: flex !important;
+      align-items: center !important;
   }
 `;
 
@@ -171,7 +195,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
     };
 
     return (
-        <div style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: '10px' }}>
+        <div className="md:mx-4 lg:mx-6" style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: '10px' }}>
             {error && (
                 <Alert
                     message="Registration Error"
@@ -258,8 +282,9 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                         <Form.Item
                             name="alternatePhone"
                             label="Alternate Phone"
+                            style={formItemStyle}
                         >
-                            <Input prefix={<PhoneOutlined />} placeholder="098-765-4321" />
+                            <Input prefix={<PhoneOutlined style={{ color: '#a0aec0' }} />} placeholder="098-765-4321" className="custom-api-input" />
                         </Form.Item>
                     </Col>
                 </Row>
@@ -276,8 +301,9 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                 <Form.Item
                     name="addressLine2"
                     label="Address Line 2"
+                    style={formItemStyle}
                 >
-                    <Input placeholder="Suite 100" />
+                    <Input placeholder="Suite 100" className="custom-api-input" />
                 </Form.Item>
 
                 <Row gutter={16}>
@@ -286,8 +312,9 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             name="city"
                             label="City"
                             rules={[{ required: true, message: 'Please enter or select city!' }]}
+                            style={formItemStyle}
                         >
-                            <Input placeholder="Enter city name" />
+                            <Input placeholder="Enter city name" className="custom-api-input" />
                         </Form.Item>
                     </Col>
                     <Col xs={24} sm={12}>
@@ -295,6 +322,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             name="state"
                             label={selectedCountry === 'Canada' ? 'Province' : 'State'}
                             rules={[{ required: true, message: `Please select ${selectedCountry === 'Canada' ? 'province' : 'state'}!` }]}
+                            style={formItemStyle}
                         >
                             <Select
                                 placeholder={`Select ${selectedCountry === 'Canada' ? 'province' : 'state'}`}
@@ -320,6 +348,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             label="Country"
                             rules={[{ required: true, message: 'Please select country!' }]}
                             initialValue="USA"
+                            style={formItemStyle}
                         >
                             <Select
                                 placeholder="Select country"
@@ -341,8 +370,9 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             name="postalCode"
                             label="Postal Code"
                             rules={[{ required: true, message: 'Please input postal code!' }]}
+                            style={formItemStyle}
                         >
-                            <Input placeholder="10001" />
+                            <Input placeholder="10001" className="custom-api-input" />
                         </Form.Item>
                     </Col>
                 </Row>
@@ -351,6 +381,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                     name="userType"
                     label="User Type"
                     rules={[{ required: true, message: 'Please select user type!' }]}
+                    style={formItemStyle}
                 >
                     <Select placeholder="Select user type" className="custom-api-input">
                         <Select.Option value="SHOP_OWNER">Shop Owner</Select.Option>
@@ -364,8 +395,9 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             name="ein"
                             label="EIN"
                             rules={[{ required: true, message: 'Please input EIN!' }]}
+                            style={formItemStyle}
                         >
-                            <Input placeholder="12-3456789" />
+                            <Input placeholder="12-3456789" className="custom-api-input" />
                         </Form.Item>
                     </Col>
                 </Row>

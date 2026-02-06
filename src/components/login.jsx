@@ -16,8 +16,24 @@ const customInputStyle = `
   .custom-api-input .ant-input, .custom-api-input .ant-input-password .ant-input {
       border-color: #e2e8f0; /* Light grey border */
       border-width: 1.5px;
-      padding: 10px 14px;
+      padding: 6px 11px;
       border-radius: 8px;
+      height: 40px;
+      display: flex !important;
+      align-items: center !important;
+      line-height: 28px !important;
+  }
+  .custom-api-input .ant-input::placeholder, .custom-api-input .ant-input-password .ant-input::placeholder {
+      line-height: 28px !important;
+      vertical-align: middle !important;
+  }
+  .custom-api-input .ant-input-prefix {
+      display: flex !important;
+      align-items: center !important;
+  }
+  .custom-api-input .ant-input-password-icon {
+      display: flex !important;
+      align-items: center !important;
   }
   .custom-api-input .ant-input:hover, .custom-api-input .ant-input-password:hover .ant-input {
       border-color: #7E5CFE;
@@ -27,10 +43,11 @@ const customInputStyle = `
       box-shadow: 0 0 0 3px rgba(126, 92, 254, 0.2);
   }
   .custom-api-input.ant-input-affix-wrapper {
-      padding: 10px 14px;
+      padding: 6px 11px;
       border-radius: 8px;
       border-color: #e2e8f0;
       border-width: 1.5px;
+      height: 40px;
   }
   .custom-api-input.ant-input-affix-wrapper:hover {
       border-color: #7E5CFE;
@@ -38,6 +55,10 @@ const customInputStyle = `
   .custom-api-input.ant-input-affix-wrapper-focused {
        border-color: #7E5CFE;
        box-shadow: 0 0 0 3px rgba(126, 92, 254, 0.2);
+  }
+  .custom-api-input.ant-input-password .ant-input-affix-wrapper {
+      padding: 6px 11px;
+      height: 40px;
   }
 `;
 
@@ -97,7 +118,7 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
             <style>{customInputStyle}</style>
             {error && (
                 <Alert
-                    message="Sign In Failed"
+                    message="Log In Failed"
                     description={error}
                     type="error"
                     showIcon
@@ -108,6 +129,7 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
             )}
 
             <Form
+                
                 name="login"
                 initialValues={{ remember: true }}
                 onFinish={onFinish}
@@ -173,7 +195,7 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
                             boxShadow: '0 4px 14px 0 rgba(118, 75, 162, 0.39)'
                         }}
                     >
-                        {loading ? 'Signing in...' : 'Sign In'}
+                        {loading ? 'Logging in...' : 'Log In'}
                     </Button>
                 </Form.Item>
             </Form>
