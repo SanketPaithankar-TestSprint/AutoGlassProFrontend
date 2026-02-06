@@ -909,7 +909,7 @@ const SearchByRoot = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-200 flex flex-col px-0 pt-0 pb-1">
+    <div className="h-screen bg-slate-200 flex flex-col px-0 pt-0 pb-1 overflow-hidden">
       {contextHolder}
 
       {/* Kit Selection Modal */}
@@ -984,7 +984,7 @@ const SearchByRoot = () => {
         </div>
 
         {/* CONTENT AREA */}
-        <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 overflow-y-auto">
 
           <div className="flex-1 flex flex-col gap-2 min-h-0">
             {/* DYNAMIC TOP CONTENT BASED ON TAB */}

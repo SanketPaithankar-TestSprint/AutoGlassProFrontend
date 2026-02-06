@@ -44,14 +44,41 @@ const TaskTableView = ({ tasks = [], onStatusChange, onViewDetails }) => {
             title: 'Status',
             dataIndex: 'status',
             key: 'status',
-            width: 120,
+            width: 140,
             render: (status) => {
-                let color = 'default';
-                if (status === 'COMPLETED') color = 'success';
-                if (status === 'IN_PROGRESS') color = 'processing';
-                if (status === 'PENDING') color = 'warning';
-                if (status === 'OVERDUE') color = 'error';
-                return <Tag color={color}>{status}</Tag>;
+                let colorClass = 'bg-slate-500';
+                let textClass = 'text-slate-600';
+                let label = status || 'UNKNOWN';
+                let pulse = false;
+
+                if (status === 'COMPLETED') {
+                    colorClass = 'bg-emerald-500';
+                    textClass = 'text-emerald-700';
+                    label = 'Completed';
+                } else if (status === 'IN_PROGRESS') {
+                    colorClass = 'bg-blue-500';
+                    textClass = 'text-blue-700';
+                    label = 'In Progress';
+                    pulse = true;
+                } else if (status === 'PENDING') {
+                    colorClass = 'bg-amber-500';
+                    textClass = 'text-amber-700';
+                    label = 'To Do';
+                } else if (status === 'OVERDUE') {
+                    colorClass = 'bg-red-500';
+                    textClass = 'text-red-700';
+                    label = 'Overdue';
+                }
+
+                return (
+                    <div className="flex items-center gap-2">
+                        <span className="relative flex h-2.5 w-2.5">
+                            {pulse && <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${colorClass} opacity-75`}></span>}
+                            <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${colorClass}`}></span>
+                        </span>
+                        <span className={`text-sm font-medium ${textClass}`}>{label}</span>
+                    </div>
+                );
             }
         },
         {
