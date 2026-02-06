@@ -8,9 +8,8 @@ const { Option } = Select;
 const { TextArea } = Input;
 
 const SERVICE_LOCATION_OPTIONS = [
-    { value: 'IN_SHOP', label: 'Shop', icon: <HomeOutlined /> },
-    { value: 'MOBILE', label: 'Mobile', icon: <EnvironmentOutlined /> },
-    { value: 'CUSTOMER_LOCATION', label: 'Customer Location', icon: <EnvironmentOutlined /> }
+    { value: 'IN_SHOP', label: 'In Shop', icon: <HomeOutlined /> },
+    { value: 'MOBILE', label: 'Mobile', icon: <EnvironmentOutlined /> }
 ];
 
 const JobSchedulingPanel = ({

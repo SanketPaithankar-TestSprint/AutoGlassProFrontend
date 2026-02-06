@@ -1864,50 +1864,11 @@ ${shopName}`;
             />
 
             {/* Header / Metadata */}
-            <div className="bg-white p-2 sm:p-3 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg mb-3 sm:mb-4">
-                {/* Header with Dropdown and Save Changes Button */}
-                <div className="flex items-center justify-between gap-2 mb-3 sm:mb-4">
-                    <div className="flex items-center gap-2">
-                        <Dropdown
-                            menu={{
-                                items: [
-                                    { key: 'Quote', label: <span className="font-semibold text-slate-700">Quote</span>, onClick: () => setManualDocType('Quote') },
-                                    { key: 'Work Order', label: <span className="font-semibold text-slate-700">Work Order</span>, onClick: () => setManualDocType('Work Order') },
-                                    { key: 'Invoice', label: <span className="font-semibold text-slate-700">Invoice</span>, onClick: () => setManualDocType('Invoice') },
-                                ]
-                            }}
-                            trigger={['click']}
-                            disabled={isSaved && docMetadata?.documentType === 'INVOICE'}
-                        >
-                            <h3 className={`text-sm sm:text-base font-bold text-[#7E5CFE] flex items-center gap-1 cursor-pointer hover:bg-violet-50 px-1 py-0.5 rounded transition-colors select-none ${isSaved && docMetadata?.documentType === 'INVOICE' ? 'cursor-not-allowed opacity-75' : ''}`}>
-                                {manualDocType} Details <DownOutlined style={{ fontSize: '10px', marginTop: '2px' }} />
-                            </h3>
-                        </Dropdown>
-
-                        {/* Add Button Dropdown - In Header */}
-                        <Dropdown
-                            menu={{
-                                items: [
-                                    { key: 'Part', label: <span className="text-xs">Part</span>, onClick: () => handleAddRow("Part") },
-                                    { key: 'Labor', label: <span className="text-xs">Labor</span>, onClick: () => handleAddRow("Labor") },
-                                    { key: 'Service', label: <span className="text-xs">Service</span>, onClick: () => handleAddRow("Service") },
-                                    { key: 'ADAS', label: <span className="text-xs">ADAS Recalibration</span>, onClick: () => handleAddRow("ADAS") },
-                                ],
-                                className: "min-w-auto [&_.ant-dropdown-menu-item]:!py-1.5 [&_.ant-dropdown-menu-item]:font-semibold"
-                            }}
-                        >
-                            <button className="flex items-center justify-center w-6 h-6 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded transition-colors">
-                                <PlusOutlined className="text-sm" />
-                            </button>
-                        </Dropdown>
-                    </div>
-                </div>
-
-                {/* Line Items Table - Height for 6 rows + header */}
+            <div className="bg-white shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg mb-3 sm:mb-4">
                 <div className="border border-slate-100 bg-white rounded-sm max-h-[350px] sm:max-h-[400px] overflow-x-auto overflow-y-auto" data-quote-details-table>
                     <table className="min-w-full divide-y divide-slate-100">
                         <thead className="bg-slate-50 sticky top-0 z-10">
-                            <tr className="text-left text-xs sm:text-sm font-bold text-slate-700 tracking-tight">
+                            <tr className="text-left text-sm sm:text-base font-bold text-slate-700 tracking-tight">
                                 <th className="px-1 sm:px-2 py-2 w-[100px] sm:w-[160px] bg-slate-50">Part</th>
                                 <th className="px-1 sm:px-2 py-2 bg-slate-50">Description</th>
                                 <th className="px-1 sm:px-2 py-2 w-[80px] sm:w-[110px] bg-slate-50 hidden md:table-cell">Manufacturer</th>
@@ -1974,7 +1935,7 @@ ${shopName}`;
                                                                 e.currentTarget.blur();
                                                             }
                                                         }}
-                                                        className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all font-medium text-xs"
+                                                        className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all font-medium text-sm"
                                                         placeholder="Part No"
                                                     />
                                                 ) : (
@@ -1982,7 +1943,7 @@ ${shopName}`;
                                                         type="text"
                                                         value={it.type === 'Labor' ? 'LABOR' : it.type === 'ADAS' ? 'ADAS' : it.type === 'Kit' ? (it.nagsId || 'KIT') : 'SERVICE'}
                                                         readOnly
-                                                        className="w-full h-7 px-1 sm:px-2 rounded border-none outline-none bg-transparent text-slate-500 font-medium cursor-default text-xs"
+                                                        className="w-full h-7 px-1 sm:px-2 rounded border-none outline-none bg-transparent text-slate-500 font-medium cursor-default text-sm"
                                                     />
                                                 )}
                                             </div>
@@ -1990,7 +1951,7 @@ ${shopName}`;
                                         <td className="px-1 sm:px-2 py-1 align-middle">
                                             {it.type === 'ADAS' ? (
                                                 <Select
-                                                    className="w-full text-xs custom-select-borderless"
+                                                    className="w-full text-sm custom-select-borderless"
                                                     size="small"
                                                     bordered={false}
                                                     placeholder="Select Type"
@@ -2011,11 +1972,11 @@ ${shopName}`;
                                                         value={it.description || ''}
                                                         onChange={(e) => updateItem(it.id, "description", e.target.value)}
                                                         placeholder="Enter service details"
-                                                        className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all text-xs"
+                                                        className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all text-sm"
                                                     />
                                                 ) : (
                                                     <Select
-                                                        className="w-full text-xs custom-select-borderless"
+                                                        className="w-full text-sm custom-select-borderless"
                                                         size="small"
                                                         bordered={false}
                                                         placeholder="Select Service"
@@ -2034,11 +1995,11 @@ ${shopName}`;
                                                         value={it.description || ''}
                                                         onChange={(e) => updateItem(it.id, "description", e.target.value)}
                                                         placeholder="Enter labor details"
-                                                        className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all text-xs"
+                                                        className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all text-sm"
                                                     />
                                                 ) : (
                                                     <Select
-                                                        className="w-full text-xs custom-select-borderless"
+                                                        className="w-full text-sm custom-select-borderless"
                                                         size="small"
                                                         bordered={false}
                                                         placeholder="Select Labor"
@@ -2054,7 +2015,7 @@ ${shopName}`;
                                                 <input
                                                     value={it.description || ''}
                                                     onChange={(e) => updateItem(it.id, "description", e.target.value)}
-                                                    className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all text-xs"
+                                                    className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all text-sm"
                                                 />
                                             )}
                                         </td>
@@ -2062,7 +2023,7 @@ ${shopName}`;
                                             <input
                                                 value={it.manufacturer}
                                                 onChange={(e) => updateItem(it.id, "manufacturer", e.target.value)}
-                                                className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all text-xs"
+                                                className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all text-sm"
                                                 disabled={!it.isManual && it.type === 'Labor'}
                                             />
                                         </td>
@@ -2071,7 +2032,7 @@ ${shopName}`;
                                                 type="number"
                                                 value={it.qty}
                                                 onChange={(e) => updateItem(it.id, "qty", e.target.value)}
-                                                className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-right outline-none bg-transparent text-slate-700 transition-all font-medium text-xs"
+                                                className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-right outline-none bg-transparent text-slate-700 transition-all font-medium text-sm"
                                                 disabled={!it.isManual && it.type === 'Labor'}
                                             />
                                         </td>
@@ -2079,7 +2040,7 @@ ${shopName}`;
                                             <CurrencyInput
                                                 value={it.listPrice}
                                                 onChange={(val) => updateItem(it.id, "listPrice", val)}
-                                                className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-right outline-none bg-transparent text-slate-700 transition-all text-xs"
+                                                className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-right outline-none bg-transparent text-slate-700 transition-all text-sm"
                                                 disabled={!it.isManual && it.type === 'Labor'}
                                                 placeholder="$0.00"
                                             />
@@ -2088,7 +2049,7 @@ ${shopName}`;
                                             <CurrencyInput
                                                 value={it.amount}
                                                 onChange={(val) => updateItem(it.id, "amount", val)}
-                                                className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-right outline-none bg-transparent text-slate-900 font-bold transition-all text-xs"
+                                                className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-right outline-none bg-transparent text-slate-900 font-bold transition-all text-sm"
                                                 placeholder="$0.00"
                                             />
                                         </td>

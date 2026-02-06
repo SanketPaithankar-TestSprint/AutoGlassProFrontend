@@ -579,137 +579,137 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
             <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-4 h-full">
 
                 {/* LEFT SIDEBAR: Selection Modes */}
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col h-full">
 
-                    {/* Client Type Toggle */}
-                    <div className="bg-white rounded-md border border-gray-200 shadow-sm p-4">
-                        <label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Client Type</label>
-                        <Segmented
-                            block
-                            options={[
-                                { label: 'Individual', value: 'INDIVIDUAL', icon: <UserOutlined /> },
-                                { label: 'Business', value: 'BUSINESS', icon: <ShopOutlined /> },
-                            ]}
-                            value={clientType}
-                            onChange={handleClientTypeChange}
-                        />
-                    </div>
+                    {/* Unified Sidebar Card: Client, Selection & Vehicles */}
+                    <div className="bg-white rounded-md border border-gray-200 shadow-sm p-4 flex flex-col h-full overflow-y-auto">
 
-                    {/* Customer Selection Card (INDIVIDUAL ONLY) */}
-                    {clientType === "INDIVIDUAL" && (
-                        <div className="bg-white rounded-md border border-gray-200 shadow-sm p-4 text-sm animate-fade-in">
-                            <h4 className="text-xs font-bold text-gray-800 uppercase border-b pb-2 mb-3">Customer Selection</h4>
+                        {/* 1. Client Type Toggle */}
+                        <div className="mb-4 shrink-0">
+                            <label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Client Type</label>
+                            <Segmented
+                                block
+                                options={[
+                                    { label: 'Individual', value: 'INDIVIDUAL', icon: <UserOutlined /> },
+                                    { label: 'Business', value: 'BUSINESS', icon: <ShopOutlined /> },
+                                ]}
+                                value={clientType}
+                                onChange={handleClientTypeChange}
+                            />
+                        </div>
 
-                            <div className="flex flex-col gap-3">
-                                <Radio.Group
-                                    onChange={handleCustomerModeChange}
-                                    value={customerMode}
-                                    className="flex flex-col gap-2"
-                                >
-                                    <Radio value="NEW">New Customer</Radio>
-                                    <Radio value="EXISTING">Existing Customer</Radio>
-                                </Radio.Group>
+                        {/* 2. Customer Selection (INDIVIDUAL ONLY) */}
+                        {clientType === "INDIVIDUAL" && (
+                            <div className="animate-fade-in mt-4 pt-4 border-t border-gray-300 shrink-0">
+                                <h4 className="text-xs font-bold text-gray-800 uppercase mb-3">Customer Selection</h4>
 
-                                {customerMode === "EXISTING" && (
-                                    <div className="mt-2 animate-fade-in">
-                                        <label className="text-xs font-semibold text-gray-500 mb-1 block">Search Customer</label>
-                                        <Select
-                                            showSearch
-                                            allowClear
-                                            placeholder="Search by name/phone"
-                                            className="w-full"
-                                            loading={loadingCustomers}
-                                            filterOption={(input, option) =>
-                                                String(option.children).toLowerCase().includes(input.toLowerCase())
-                                            }
-                                            onChange={handleCustomerSelect}
-                                            value={formData.customerId}
-                                        >
-                                            {customers.map(c => (
-                                                <Option key={c.customerId} value={c.customerId}>
-                                                    {c.firstName} {c.lastName}
-                                                </Option>
-                                            ))}
-                                        </Select>
+                                <div className="flex flex-col gap-3">
+                                    <Radio.Group
+                                        onChange={handleCustomerModeChange}
+                                        value={customerMode}
+                                        className="flex flex-col gap-2"
+                                    >
+                                        <Radio value="NEW">New Customer</Radio>
+                                        <Radio value="EXISTING">Existing Customer</Radio>
+                                    </Radio.Group>
 
+                                    {customerMode === "EXISTING" && (
+                                        <div className="mt-2 animate-fade-in">
+                                            <label className="text-xs font-semibold text-gray-500 mb-1 block">Search Customer</label>
+                                            <Select
+                                                showSearch
+                                                allowClear
+                                                placeholder="Search by name/phone"
+                                                className="w-full"
+                                                loading={loadingCustomers}
+                                                filterOption={(input, option) =>
+                                                    String(option.children).toLowerCase().includes(input.toLowerCase())
+                                                }
+                                                onChange={handleCustomerSelect}
+                                                value={formData.customerId}
+                                            >
+                                                {customers.map(c => (
+                                                    <Option key={c.customerId} value={c.customerId}>
+                                                        {c.firstName} {c.lastName}
+                                                    </Option>
+                                                ))}
+                                            </Select>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
 
-                                    </div>
+                        {/* 2. Organization Selection (BUSINESS ONLY) */}
+                        {clientType === "BUSINESS" && (
+                            <div className="animate-fade-in mt-4 pt-4 border-t border-gray-300 shrink-0">
+                                <h4 className="text-xs font-bold text-gray-800 uppercase mb-3">Organization Selection</h4>
+
+                                <div className="flex flex-col gap-3">
+                                    <Radio.Group
+                                        onChange={handleOrgModeChange}
+                                        value={orgMode}
+                                        className="flex flex-col gap-2"
+                                    >
+                                        <Radio value="NEW">New Organization</Radio>
+                                        <Radio value="EXISTING">Existing Organization</Radio>
+                                    </Radio.Group>
+
+                                    {orgMode === "EXISTING" && (
+                                        <div className="mt-2 animate-fade-in">
+                                            <label className="text-xs font-semibold text-gray-500 mb-1 block">Search Organization</label>
+                                            <Select
+                                                showSearch
+                                                allowClear
+                                                placeholder="Search Company..."
+                                                className="w-full"
+                                                loading={loadingOrganizations}
+                                                filterOption={(input, option) =>
+                                                    String(option.children).toLowerCase().includes(input.toLowerCase())
+                                                }
+                                                onChange={handleOrganizationSelect}
+                                                value={formData.organizationId}
+                                            >
+                                                {organizations.map(org => (
+                                                    <Option key={org.organizationId} value={org.organizationId}>
+                                                        {org.companyName}
+                                                    </Option>
+                                                ))}
+                                            </Select>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 3. Vehicle Details - Expanded Vertical Section */}
+                        <div className="mt-4 pt-4 border-t border-gray-100 flex-1 flex flex-col">
+                            <div className="flex justify-between items-center mb-3 shrink-0">
+                                <h4 className="text-xs font-bold text-gray-800 uppercase">Vehicle Details</h4>
+                                {vehicles.length > 0 && (
+                                    <Select
+                                        size="small"
+                                        placeholder="Select Saved Vehicle"
+                                        className="w-40"
+                                        onChange={handleVehicleSelect}
+                                        allowClear
+                                    >
+                                        {vehicles.map(v => (
+                                            <Option key={v.vehicleId} value={v.vehicleId}>
+                                                {v.vehicleYear} {v.vehicleMake}
+                                            </Option>
+                                        ))}
+                                    </Select>
                                 )}
                             </div>
-                        </div>
-                    )}
 
-                    {/* Organization Selection Card (BUSINESS ONLY) */}
-                    {clientType === "BUSINESS" && (
-                        <div className="bg-white rounded-md border border-gray-200 shadow-sm p-4 text-sm animate-fade-in">
-                            <h4 className="text-xs font-bold text-gray-800 uppercase border-b pb-2 mb-3">Organization Selection</h4>
-
-                            <div className="flex flex-col gap-3">
-                                <Radio.Group
-                                    onChange={handleOrgModeChange}
-                                    value={orgMode}
-                                    className="flex flex-col gap-2"
-                                >
-                                    <Radio value="NEW">New Organization</Radio>
-                                    <Radio value="EXISTING">Existing Organization</Radio>
-                                </Radio.Group>
-
-                                {orgMode === "EXISTING" && (
-                                    <div className="mt-2 animate-fade-in">
-                                        <label className="text-xs font-semibold text-gray-500 mb-1 block">Search Organization</label>
-                                        <Select
-                                            showSearch
-                                            allowClear
-                                            placeholder="Search Company..."
-                                            className="w-full"
-                                            loading={loadingOrganizations}
-                                            filterOption={(input, option) =>
-                                                String(option.children).toLowerCase().includes(input.toLowerCase())
-                                            }
-                                            onChange={handleOrganizationSelect}
-                                            value={formData.organizationId}
-                                        >
-                                            {organizations.map(org => (
-                                                <Option key={org.organizationId} value={org.organizationId}>
-                                                    {org.companyName}
-                                                </Option>
-                                            ))}
-                                        </Select>
-
-
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Vehicle Quick Info (Common) */}
-                    <div className="bg-white rounded-md border border-gray-200 shadow-sm p-4 animate-fade-in">
-                        <div className="flex justify-between items-center border-b pb-1 mb-3">
-                            <h4 className="text-xs font-bold text-gray-800 uppercase">Vehicle Details</h4>
-                            {vehicles.length > 0 && (
-                                <Select
-                                    size="small"
-                                    placeholder="Select Saved Vehicle"
-                                    className="w-40"
-                                    onChange={handleVehicleSelect}
-                                    allowClear
-                                >
-                                    {vehicles.map(v => (
-                                        <Option key={v.vehicleId} value={v.vehicleId}>
-                                            {v.vehicleYear} {v.vehicleMake}
-                                        </Option>
-                                    ))}
-                                </Select>
-                            )}
-                        </div>
-                        <div className="space-y-2">
-                            <div className="grid grid-cols-2 gap-2">
+                            {/* Inputs Container filling separate space */}
+                            <div className="flex-1 flex flex-col justify-center gap-4">
                                 <FormInput label="Year" name="vehicleYear" value={formData.vehicleYear} onChange={handleChange} type="number" />
                                 <FormInput label="Make" name="vehicleMake" value={formData.vehicleMake} onChange={handleChange} />
+                                <FormInput label="Model" name="vehicleModel" value={formData.vehicleModel} onChange={handleChange} />
+                                <FormInput label="VIN" name="vin" value={formData.vin} onChange={handleChange} />
                             </div>
-                            <FormInput label="Model" name="vehicleModel" value={formData.vehicleModel} onChange={handleChange} />
-                            <FormInput label="VIN" name="vin" value={formData.vin} onChange={handleChange} />
                         </div>
                     </div>
 
@@ -772,10 +772,12 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                 <FormInput label="Phone" name="phone" value={orgFormData.phone} onChange={handleOrgFormChange} required disabled={orgMode === "EXISTING" && !isEditingOrg} />
                                 <FormInput label="Contact Person" name="individualName" value={orgFormData.individualName} onChange={handleOrgFormChange} className="sm:col-span-2" placeholder="Individual's Name (Optional)" disabled={orgMode === "EXISTING" && !isEditingOrg} />
 
-                                <FormInput label="Address Line 1" name="addressLine1" value={orgFormData.addressLine1} onChange={handleOrgFormChange} className="sm:col-span-2" disabled={orgMode === "EXISTING" && !isEditingOrg} />
-                                <FormInput label="City" name="city" value={orgFormData.city} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING" && !isEditingOrg} />
-                                <FormSelect label="State" name="state" value={orgFormData.state} onChange={handleOrgFormChange} options={US_STATES} disabled={orgMode === "EXISTING" && !isEditingOrg} />
-                                <FormInput label="Zip" name="postalCode" value={orgFormData.postalCode} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING" && !isEditingOrg} />
+                                <div className="col-span-full grid grid-cols-1 sm:grid-cols-4 gap-3">
+                                    <FormInput label="Address Line 1" name="addressLine1" value={orgFormData.addressLine1} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING" && !isEditingOrg} />
+                                    <FormInput label="City" name="city" value={orgFormData.city} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING" && !isEditingOrg} />
+                                    <FormSelect label="State" name="state" value={orgFormData.state} onChange={handleOrgFormChange} options={US_STATES} disabled={orgMode === "EXISTING" && !isEditingOrg} />
+                                    <FormInput label="Zip" name="postalCode" value={orgFormData.postalCode} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING" && !isEditingOrg} />
+                                </div>
                             </div>
                         </div>
                     )}
@@ -817,10 +819,9 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                     <FormInput label="Email" name="email" value={formData.email} onChange={handleChange} type="email" required disabled={customerMode === "EXISTING" && !isEditingCustomer} />
                                     <FormInput label="Phone" name="phone" value={formData.phone} onChange={handleChange} required disabled={customerMode === "EXISTING" && !isEditingCustomer} />
                                 </div>
-                                <div className="border-t pt-3 mt-2">
-                                    <h5 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Address</h5>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                                        <FormInput label="Address Line 1" name="addressLine1" value={formData.addressLine1} onChange={handleChange} className="sm:col-span-2" disabled={customerMode === "EXISTING" && !isEditingCustomer} />
+                                <div className="mt-2">
+                                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                                        <FormInput label="Address Line 1" name="addressLine1" value={formData.addressLine1} onChange={handleChange} disabled={customerMode === "EXISTING" && !isEditingCustomer} />
                                         <FormInput label="City" name="city" value={formData.city} onChange={handleChange} disabled={customerMode === "EXISTING" && !isEditingCustomer} />
                                         <FormSelect label="State" name="state" value={formData.state} onChange={handleChange} options={US_STATES} disabled={customerMode === "EXISTING" && !isEditingCustomer} />
                                         <FormInput label="Zip" name="postalCode" value={formData.postalCode} onChange={handleChange} disabled={customerMode === "EXISTING" && !isEditingCustomer} />

@@ -3,11 +3,11 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getCustomers } from "../../api/getCustomers";
 import { createCustomer } from "../../api/createCustomer";
 import { updateCustomer } from "../../api/updateCustomer";
-import { deleteCustomer } from "../../api/deleteCustomer";
-import { getOrganizations, deleteOrganization, createOrganization, updateOrganization, getOrganizationById } from "../../api/organizationApi";
+
+import { getOrganizations, createOrganization, updateOrganization, getOrganizationById } from "../../api/organizationApi";
 import { getValidToken } from "../../api/getValidToken";
-import { TeamOutlined, EditOutlined, PlusOutlined, DeleteOutlined, ShopOutlined, UserOutlined, FilterOutlined } from "@ant-design/icons";
-import { Modal, Form, Input, Button, notification, Tabs, Popconfirm, Tag, Empty } from "antd";
+import { TeamOutlined, EditOutlined, PlusOutlined, ShopOutlined, UserOutlined, FilterOutlined } from "@ant-design/icons";
+import { Modal, Form, Input, Button, notification, Tabs, Tag, Empty } from "antd";
 import { getProfile } from "../../api/getProfile";
 
 // Imports for Filter/Layout
@@ -172,15 +172,7 @@ const CustomersRoot = () => {
         customerForm.setFieldsValue({ ...c, vehicle: null });
         setIsCustomerModalVisible(true);
     };
-    const handleDeleteCustomer = async (id) => {
-        try {
-            await deleteCustomer(token, id);
-            notification.success({ message: "Customer deleted successfully" });
-            queryClient.invalidateQueries({ queryKey: ['customers'] });
-        } catch (err) {
-            notification.error({ message: "Failed to delete customer", description: err.message });
-        }
-    };
+
     const handleSaveCustomer = async () => {
         try {
             const values = await customerForm.validateFields();
@@ -217,16 +209,7 @@ const CustomersRoot = () => {
         orgForm.setFieldsValue(org);
         setIsOrgModalVisible(true);
     };
-    const handleDeleteOrg = async (id) => {
-        try {
-            await deleteOrganization(id);
-            notification.success({ message: "Organization deleted" });
-            await queryClient.invalidateQueries({ queryKey: ['organizations'] });
-            refetchOrgs();
-        } catch (err) {
-            notification.error({ message: "Failed to delete organization", description: err.message });
-        }
-    };
+
     const handleSaveOrg = async () => {
         try {
             const values = await orgForm.validateFields();
@@ -269,9 +252,7 @@ const CustomersRoot = () => {
                                     </div>
                                     <div className="flex gap-2 ml-2">
                                         <Button type="text" size="small" className="text-violet-600 bg-violet-50 hover:bg-violet-100" icon={<EditOutlined />} onClick={() => handleEditCustomer(c)} />
-                                        <Popconfirm title="Delete?" onConfirm={() => handleDeleteCustomer(c.customerId)} okText="Yes" cancelText="No">
-                                            <Button type="text" size="small" danger className="bg-red-50 hover:bg-red-100" icon={<DeleteOutlined />} />
-                                        </Popconfirm>
+
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -310,9 +291,7 @@ const CustomersRoot = () => {
                                         <td className="p-4 text-right pr-6">
                                             <div className="flex items-center justify-end gap-2">
                                                 <Button type="text" size="small" className="text-violet-600 hover:bg-violet-100" icon={<EditOutlined />} onClick={() => handleEditCustomer(c)} />
-                                                <Popconfirm title="Delete?" onConfirm={() => handleDeleteCustomer(c.customerId)} okText="Yes" cancelText="No">
-                                                    <Button type="text" size="small" danger icon={<DeleteOutlined />} />
-                                                </Popconfirm>
+
                                             </div>
                                         </td>
                                     </tr>
@@ -344,9 +323,7 @@ const CustomersRoot = () => {
                                     </div>
                                     <div className="flex gap-2 ml-2">
                                         <Button type="text" size="small" className="text-violet-600 bg-violet-50 hover:bg-violet-100" icon={<EditOutlined />} onClick={() => handleEditOrg(org)} />
-                                        <Popconfirm title="Delete?" onConfirm={() => handleDeleteOrg(org.organizationId)} okText="Yes" cancelText="No">
-                                            <Button type="text" size="small" danger className="bg-red-50 hover:bg-red-100" icon={<DeleteOutlined />} />
-                                        </Popconfirm>
+
                                     </div>
                                 </div>
                                 <div className="space-y-1 text-sm text-gray-600">
@@ -409,9 +386,7 @@ const CustomersRoot = () => {
                                         <td className="p-4 text-right pr-6">
                                             <div className="flex items-center justify-end gap-2">
                                                 <Button type="text" size="small" className="text-violet-600 hover:bg-violet-100" icon={<EditOutlined />} onClick={() => handleEditOrg(org)} />
-                                                <Popconfirm title="Delete?" onConfirm={() => handleDeleteOrg(org.organizationId)} okText="Yes" cancelText="No">
-                                                    <Button type="text" size="small" danger icon={<DeleteOutlined />} />
-                                                </Popconfirm>
+
                                             </div>
                                         </td>
                                     </tr>

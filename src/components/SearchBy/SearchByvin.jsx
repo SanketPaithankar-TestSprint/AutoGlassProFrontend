@@ -156,9 +156,6 @@ export default function SearchByVin({
             VIN must be 17 characters and cannot contain I, O, or Q.
           </span>
         )}
-        {loading && isValid && (
-          <span className="text-slate-500">Decoding…</span>
-        )}
         {error && <span className="text-rose-400">{error}</span>}
       </div>
 
