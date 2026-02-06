@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { Tabs, Button, Select, Space, message, Spin, DatePicker, Input, Switch } from 'antd';
+import { Tabs, Button, Select, Space, message, Spin, DatePicker, Input, Switch, notification } from 'antd';
 import { PlusOutlined, AppstoreOutlined, UnorderedListOutlined, ReloadOutlined, CalendarOutlined, FileTextOutlined, TeamOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import moment from 'moment';
 import dayjs from 'dayjs';
+import { playNotificationSound } from '../../utils/playNotificationSound';
 import TaskStats from './TaskStats';
 import KanbanView from './KanbanView';
 import TaskTableView from './TaskTableView';
@@ -16,6 +17,8 @@ import { getEmployeeTasks } from '../../api/getEmployeeTasks';
 import { getShopTasks } from '../../api/getShopTasks';
 import { updateTaskStatus } from '../../api/updateTaskStatus';
 import { getServiceDocumentSchedule } from '../../api/getServiceDocumentSchedule';
+import { getCompositeServiceDocument } from '../../api/getCompositeServiceDocument';
+import { useNavigate } from 'react-router-dom';
 
 const { Search } = Input;
 
@@ -145,6 +148,83 @@ const ScheduleRoot = () => {
 
     const isLoading = activeTab === 'schedule' ? isLoadingSchedule : isLoadingTasks;
 
+    // ===== Notifications Logic =====
+    React.useEffect(() => {
+        if (isLoadingSchedule || !scheduledDocuments?.length) return;
+
+        const checkNotifications = () => {
+            const lastNotify = localStorage.getItem('lastScheduleNotify');
+            const todayStr = dayjs().format('YYYY-MM-DD');
+
+            // Prevent spamming on refresh (notify once per day)
+            if (lastNotify === todayStr) {
+                return;
+            }
+
+            const today = dayjs();
+            const threeDaysLater = today.add(3, 'day');
+
+            // Filter Today's Tasks
+            const todayDocs = scheduledDocuments.filter(doc =>
+                doc.scheduledDate && dayjs(doc.scheduledDate).isSame(today, 'day')
+            );
+
+            // Filter Upcoming Tasks (Next 3 days)
+            const upcomingDocs = scheduledDocuments.filter(doc => {
+                if (!doc.scheduledDate) return false;
+                const d = dayjs(doc.scheduledDate);
+                return d.isAfter(today, 'day') && d.isBefore(threeDaysLater, 'day');
+            });
+
+            if (todayDocs.length > 0 || upcomingDocs.length > 0) {
+                playNotificationSound();
+            }
+
+            // Notify for Today (Each task)
+            todayDocs.forEach(doc => {
+                notification.info({
+                    message: `Scheduled for Today: ${doc.documentNumber}`,
+                    description: `${doc.customer?.name || 'Customer'} - ${doc.vehicle?.year || ''} ${doc.vehicle?.make || ''} ${doc.vehicle?.model || ''}`,
+                    placement: 'topRight',
+                    duration: 0, // Persistent so they don't miss it
+                });
+            });
+
+            // Notify for Upcoming (Summary)
+            if (upcomingDocs.length > 0) {
+                notification.warning({
+                    message: 'Upcoming Schedule',
+                    description: `You have ${upcomingDocs.length} upcoming jobs in the next 72 hours.`,
+                    placement: 'topRight',
+                    duration: 6, // Auto dismiss summary
+                });
+            }
+
+            // Update persistence
+            localStorage.setItem('lastScheduleNotify', todayStr);
+        };
+
+        checkNotifications();
+
+    }, [scheduledDocuments, isLoadingSchedule]);
+
+    // ===== Navigation Logic =====
+    const navigate = useNavigate();
+
+    const handleDocumentClick = async (documentNumber) => {
+        if (!documentNumber) return;
+
+        message.loading({ content: 'Loading document details...', key: 'navLoading' });
+        try {
+            const compositeData = await getCompositeServiceDocument(documentNumber);
+            message.success({ content: 'Loaded!', key: 'navLoading', duration: 1 });
+            navigate('/search-by-root', { state: { compositeData } });
+        } catch (error) {
+            console.error("Error fetching composite document:", error);
+            message.error({ content: 'Failed to load document details', key: 'navLoading' });
+        }
+    };
+
     const tabItems = [
         {
             key: 'schedule',
@@ -262,27 +342,27 @@ const ScheduleRoot = () => {
 
                     {/* Schedule Stats */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                        <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-100">
-                            <div className="text-2xl font-bold text-blue-600">{filteredDocuments.length}</div>
-                            <div className="text-sm text-slate-500">Total Scheduled</div>
+                        <div className="bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-sm border border-slate-200/60">
+                            <div className="text-2xl font-bold text-violet-600">{filteredDocuments.length}</div>
+                            <div className="text-sm text-slate-500 font-medium">Total Scheduled</div>
                         </div>
-                        <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-100">
-                            <div className="text-2xl font-bold text-amber-600">
+                        <div className="bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-sm border border-slate-200/60">
+                            <div className="text-2xl font-bold text-amber-500">
                                 {filteredDocuments.filter(d => d.status === 'QUOTE').length}
                             </div>
-                            <div className="text-sm text-slate-500">Quotes</div>
+                            <div className="text-sm text-slate-500 font-medium">Quotes</div>
                         </div>
-                        <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-100">
-                            <div className="text-2xl font-bold text-orange-600">
+                        <div className="bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-sm border border-slate-200/60">
+                            <div className="text-2xl font-bold text-orange-500">
                                 {filteredDocuments.filter(d => d.status === 'WORK_ORDER').length}
                             </div>
-                            <div className="text-sm text-slate-500">Work Orders</div>
+                            <div className="text-sm text-slate-500 font-medium">Work Orders</div>
                         </div>
-                        <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-100">
-                            <div className="text-2xl font-bold text-green-600">
+                        <div className="bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-sm border border-slate-200/60">
+                            <div className="text-2xl font-bold text-emerald-500">
                                 {filteredDocuments.filter(d => d.status === 'INVOICE').length}
                             </div>
-                            <div className="text-sm text-slate-500">Invoices</div>
+                            <div className="text-sm text-slate-500 font-medium">Invoices</div>
                         </div>
                     </div>
 
@@ -296,6 +376,7 @@ const ScheduleRoot = () => {
                             <DocumentScheduleView
                                 documents={filteredDocuments}
                                 viewMode={viewMode}
+                                onDocumentClick={handleDocumentClick}
                             />
                         )}
                     </div>
@@ -347,7 +428,7 @@ const ScheduleRoot = () => {
                             <Button
                                 type="primary"
                                 icon={<PlusOutlined />}
-                                className="bg-violet-600"
+                                className="bg-gradient-to-r from-violet-600 to-indigo-600 border-0 hover:from-violet-500 hover:to-indigo-500 shadow-md"
                                 onClick={() => setCreateModalVisible(true)}
                             >
                                 New Task

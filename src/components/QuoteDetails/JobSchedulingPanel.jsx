@@ -50,7 +50,7 @@ const JobSchedulingPanel = ({
                 title={
                     <span className="flex items-center gap-2">
                         <CalendarOutlined className="text-violet-500" />
-                        Job Scheduling
+                        Appointment
                     </span>
                 }
                 className="shadow-sm"

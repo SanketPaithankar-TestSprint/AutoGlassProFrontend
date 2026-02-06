@@ -11,7 +11,6 @@ import {
     CarOutlined,
     UserOutlined
 } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
 
 const localizer = momentLocalizer(moment);
 
@@ -113,7 +112,7 @@ const DocumentStatusColumn = ({ title, docType, documents, color, onViewDetails 
                             key={doc.id}
                             size="small"
                             bordered={false}
-                            className="shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                            className="shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-1 cursor-pointer border border-transparent hover:border-violet-100"
                             onClick={() => onViewDetails && onViewDetails(doc)}
                             actions={[
                                 <div className="text-xs text-slate-400 px-4 text-left">
@@ -306,12 +305,16 @@ const DocumentTableView = ({ documents = [], onViewDetails }) => {
 };
 
 // Main Component
-const DocumentScheduleView = ({ documents = [], viewMode = 'calendar' }) => {
-    const navigate = useNavigate();
+const DocumentScheduleView = ({ documents = [], viewMode = 'calendar', onDocumentClick }) => {
+    // const navigate = useNavigate(); // Navigation moved to ScheduleRoot
 
     const handleViewDetails = (document) => {
-        if (document.documentNumber) {
-            navigate(`/quote/${document.documentNumber}`);
+        if (onDocumentClick && document.documentNumber) {
+            onDocumentClick(document.documentNumber);
+        } else if (document.documentNumber) {
+            // Fallback if no handler provided (legacy behavior)
+            // navigate(`/quote/${document.documentNumber}`);
+            console.warn("No click handler provided for document:", document.documentNumber);
         }
     };
 
