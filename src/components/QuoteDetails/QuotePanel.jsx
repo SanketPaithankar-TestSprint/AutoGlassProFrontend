@@ -1624,7 +1624,7 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
             const shopName = userProfile?.businessName || "Auto Glass Pro Team";
             const shopPhone = userProfile?.phone ? ` at ${userProfile.phone}` : "";
 
-            const body = `Dear ${customerData.firstName || 'Customer'} ${customerData.lastName || ''},
+            const body = `Hello ${customerData.firstName || 'Customer'} ${customerData.lastName || ''},
 
 Please find attached the ${effectiveDocType.toLowerCase()} for your ${customerData.vehicleYear || ''} ${customerData.vehicleMake || ''} ${customerData.vehicleModel || ''}.
 

@@ -5,10 +5,11 @@ import dayjs from 'dayjs';
 import RevenueChart from './RevenueChart';
 import IncomeDistribution from './IncomeDistribution';
 import StatusDistribution from './StatusDistribution';
-import OutstandingBalanceCard from './OutstandingBalanceCard';
+import TopKpiStats from './TopKpiStats';
+import ServiceLocationChart from './ServiceLocationChart';
 import RecentActivityTable from './RecentActivityTable';
 import { getAnalyticsDashboard } from '../../api/getAnalyticsDashboard';
-import { getValidToken } from '../../api/getValidToken';
+
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -132,33 +133,29 @@ const AnalyticsRoot = () => {
                 </div>
             </header>
 
-            {/* Top Stats Row - Expanded for future stats, currently focusing on Balance */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <OutstandingBalanceCard amount={data?.outstanding_balance} />
-                {/* Placeholder for future stat cards if needed */}
-                <div className="hidden md:block"></div>
-                <div className="hidden md:block"></div>
-            </div>
+            {/* Top Stats Row */}
+            <TopKpiStats data={data} />
 
-            {/* Charts Row */}
+            {/* Revenue & Activity Row */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Revenue Chart - Takes up 2 columns on large screens */}
-                <div className="lg:col-span-2 h-[400px]">
+                <div className="lg:col-span-2 h-[450px]">
                     <RevenueChart data={data?.revenue_trend} />
                 </div>
-                {/* Income Distribution - Takes up 1 column */}
-                <div className="h-[400px]">
-                    <IncomeDistribution data={data?.income_breakdown} />
+                <div className="h-[450px]">
+                    <RecentActivityTable data={data?.recent_activity} />
                 </div>
             </div>
 
-            {/* Bottom Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Distribution Charts Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="h-[350px]">
+                    <IncomeDistribution data={data?.income_breakdown} />
+                </div>
                 <div className="h-[350px]">
                     <StatusDistribution data={data?.job_status_distribution} />
                 </div>
                 <div className="h-[350px]">
-                    <RecentActivityTable data={data?.recent_activity} />
+                    <ServiceLocationChart data={data?.service_location_breakdown} />
                 </div>
             </div>
         </div>
