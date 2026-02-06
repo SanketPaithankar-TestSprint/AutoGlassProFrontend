@@ -313,7 +313,7 @@ const PublicContactRoot = () => {
                 vehicleModel: formData.model,
                 licensePlateNumber: "", // Not captured
                 serviceType: [formData.serviceType], // API expects array
-                servicePreference: formData.servicePreference === 'Mobile service' ? 'MOBILE' : 'SHOP',
+                servicePreference: formData.servicePreference === 'Mobile service' ? 'MOBILE' : 'IN_SHOP',
                 windshieldFeatures: formData.windshieldFeatures,
                 affectedGlassLocation: [
                     // Map main service type to a glass location if applicable, plus specific locations

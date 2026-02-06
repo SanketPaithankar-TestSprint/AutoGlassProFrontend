@@ -91,7 +91,7 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
         assignedEmployeeId: null,
         employeeId: null,
         customPaymentTerms: "",
-        serviceLocation: "SHOP", // SHOP | MOBILE | CUSTOMER_LOCATION
+        serviceLocation: "IN_SHOP", // SHOP | MOBILE | CUSTOMER_LOCATION
         serviceAddress: "" // Required when serviceLocation is MOBILE or CUSTOMER_LOCATION
     });
 

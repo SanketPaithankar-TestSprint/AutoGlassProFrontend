@@ -8,7 +8,7 @@ const { Option } = Select;
 const { TextArea } = Input;
 
 const SERVICE_LOCATION_OPTIONS = [
-    { value: 'SHOP', label: 'Shop', icon: <HomeOutlined /> },
+    { value: 'IN_SHOP', label: 'Shop', icon: <HomeOutlined /> },
     { value: 'MOBILE', label: 'Mobile', icon: <EnvironmentOutlined /> },
     { value: 'CUSTOMER_LOCATION', label: 'Customer Location', icon: <EnvironmentOutlined /> }
 ];
@@ -62,7 +62,7 @@ const JobSchedulingPanel = ({
                             Service Location <span className="text-red-500">*</span>
                         </label>
                         <Select
-                            value={schedulingData.serviceLocation || 'SHOP'}
+                            value={schedulingData.serviceLocation || 'IN_SHOP'}
                             style={{ width: '100%' }}
                             onChange={(val) => handleChange('serviceLocation', val)}
                         >

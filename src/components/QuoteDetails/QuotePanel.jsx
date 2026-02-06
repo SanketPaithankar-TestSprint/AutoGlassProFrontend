@@ -1394,7 +1394,7 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                 employeeId: schedulingData?.assignedEmployeeId || schedulingData?.employeeId || null,
                 notes: printableNote,
                 internalNotes: internalNote,
-                serviceLocation: schedulingData?.serviceLocation || "SHOP",
+                serviceLocation: schedulingData?.serviceLocation || "IN_SHOP",
                 serviceAddress: effectiveServiceAddress,
                 taxRate: customerData.isTaxExempt ? 0 : (Number(globalTaxRate) || 0),
                 discountAmount: 0.00,
@@ -2200,108 +2200,108 @@ ${shopName}`;
 
                         {/* Totals Table */}
                         <table className="flex-1 text-xs sm:text-sm rounded-xl overflow-hidden bg-slate-50/50">
-                        <tbody>
-                            {/* Labor Row */}
-                            <tr className="">
-                                <td className="px-2 py-1 text-slate-600">Labor</td>
-                                <td className="px-2 py-1 text-right text-slate-900">{currency(laborCostDisplay)}</td>
-                            </tr>
-                            {/* Subtotal Row */}
-                            <tr className="">
-                                <td className="px-2 py-1 text-slate-600">Subtotal</td>
-                                <td className="px-2 py-1 text-right text-slate-900">{currency(subtotal)}</td>
-                            </tr>
-                            {/* Tax Row */}
-                            <tr className="">
-                                <td className="px-2 py-1 text-slate-600">Tax ({globalTaxRate}%)</td>
-                                <td className="px-2 py-1 text-right text-slate-900">{currency(totalTax)}</td>
-                            </tr>
+                            <tbody>
+                                {/* Labor Row */}
+                                <tr className="">
+                                    <td className="px-2 py-1 text-slate-600">Labor</td>
+                                    <td className="px-2 py-1 text-right text-slate-900">{currency(laborCostDisplay)}</td>
+                                </tr>
+                                {/* Subtotal Row */}
+                                <tr className="">
+                                    <td className="px-2 py-1 text-slate-600">Subtotal</td>
+                                    <td className="px-2 py-1 text-right text-slate-900">{currency(subtotal)}</td>
+                                </tr>
+                                {/* Tax Row */}
+                                <tr className="">
+                                    <td className="px-2 py-1 text-slate-600">Tax ({globalTaxRate}%)</td>
+                                    <td className="px-2 py-1 text-right text-slate-900">{currency(totalTax)}</td>
+                                </tr>
 
-                            {/* Total Row */}
-                            <tr className="bg-slate-50">
-                                <td className="px-2 py-1 font-semibold text-slate-700">
-                                    <div className="flex items-center gap-1">
-                                        Total
-                                        <button
-                                            onClick={handleRoundUp}
-                                            className="w-4 h-4 flex items-center justify-center bg-sky-100 hover:bg-sky-200 text-sky-600 rounded text-[10px] font-bold"
-                                            title="Round Up"
-                                        >↑</button>
-                                    </div>
-                                </td>
-                                <td className="px-2 py-1 text-right font-bold text-slate-900">
-                                    <input
-                                        type="text"
-                                        value={manualTotal !== null ? `$${manualTotal}` : currency(total)}
-                                        onChange={(e) => {
-                                            const val = e.target.value.replace(/[^0-9.]/g, '');
-                                            setManualTotal(val);
-                                        }}
-                                        onBlur={() => {
-                                            if (manualTotal !== null && manualTotal !== '') {
-                                                const newTotal = parseFloat(manualTotal);
-                                                applyTotalAdjustment(newTotal);
-                                            } else if (manualTotal === '') {
-                                                setManualTotal(null);
-                                            }
-                                        }}
-                                        className="w-full text-right bg-transparent text-sm font-bold text-slate-900 outline-none border-b border-transparent hover:border-slate-300 focus:border-sky-400"
-                                    />
-                                </td>
-                            </tr>
-                            <tr className="">
-                                <td className="px-2 py-1 text-slate-600">Paid</td>
-                                <td className="px-2 py-1 text-right text-slate-900 font-medium">
-                                    {currency(totalPaid)}
-                                </td>
-                            </tr>
-                            {/* Balance Row */}
-                            <tr className="bg-slate-50">
-                                <td className="px-2 py-1 font-semibold text-slate-700">Balance</td>
-                                <td className="px-2 py-1 text-right font-bold text-slate-900">{currency(balance)}</td>
-                            </tr>
-                            {/* Action Buttons Row */}
-                            <tr>
-                                <td colSpan="2" className="p-1">
-                                    <div className="flex gap-1">
-                                        <select
-                                            value={manualDocType}
-                                            onChange={(e) => setManualDocType(e.target.value)}
-                                            disabled={isSaved && docMetadata?.documentType === 'INVOICE'}
-                                            className={`flex-1 px-2 py-1 text-[10px] font-medium border border-slate-300 rounded bg-white text-slate-700 outline-none ${isSaved && docMetadata?.documentType === 'INVOICE' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                        >
-                                            <option value="Quote">Quote</option>
-                                            <option value="Work Order">W.Order</option>
-                                            <option value="Invoice">Invoice</option>
-                                        </select>
-                                        <button
-                                            onClick={handleSave}
-                                            disabled={saveLoading}
-                                            className="flex-1 px-3 py-1.5 rounded bg-green-500 text-white text-[11px] font-bold hover:bg-green-600 transition shadow-sm disabled:opacity-50"
-                                        >
-                                            {saveLoading ? '...' : 'Save'}
-                                        </button>
-                                        <button
-                                            onClick={handlePreview}
-                                            disabled={previewLoading}
-                                            className="flex-1 px-3 py-1.5 rounded bg-[#3B82F6] text-white text-[11px] font-medium hover:bg-[#7E5CFE] hover:text-white transition shadow-sm disabled:opacity-50"
-                                            title="Preview PDF"
-                                        >
-                                            {previewLoading ? '...' : 'Print'}
-                                        </button>
-                                        <button
-                                            onClick={handleEmail}
-                                            disabled={emailLoading}
-                                            className="flex-1 px-3 py-1.5 rounded bg-[#3B82F6] text-white text-[11px] font-medium hover:bg-[#7E5CFE] hover:text-white transition shadow-sm disabled:opacity-50"
-                                            title="Send via email"
-                                        >
-                                            {emailLoading ? '...' : 'Email'}
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table >
+                                {/* Total Row */}
+                                <tr className="bg-slate-50">
+                                    <td className="px-2 py-1 font-semibold text-slate-700">
+                                        <div className="flex items-center gap-1">
+                                            Total
+                                            <button
+                                                onClick={handleRoundUp}
+                                                className="w-4 h-4 flex items-center justify-center bg-sky-100 hover:bg-sky-200 text-sky-600 rounded text-[10px] font-bold"
+                                                title="Round Up"
+                                            >↑</button>
+                                        </div>
+                                    </td>
+                                    <td className="px-2 py-1 text-right font-bold text-slate-900">
+                                        <input
+                                            type="text"
+                                            value={manualTotal !== null ? `$${manualTotal}` : currency(total)}
+                                            onChange={(e) => {
+                                                const val = e.target.value.replace(/[^0-9.]/g, '');
+                                                setManualTotal(val);
+                                            }}
+                                            onBlur={() => {
+                                                if (manualTotal !== null && manualTotal !== '') {
+                                                    const newTotal = parseFloat(manualTotal);
+                                                    applyTotalAdjustment(newTotal);
+                                                } else if (manualTotal === '') {
+                                                    setManualTotal(null);
+                                                }
+                                            }}
+                                            className="w-full text-right bg-transparent text-sm font-bold text-slate-900 outline-none border-b border-transparent hover:border-slate-300 focus:border-sky-400"
+                                        />
+                                    </td>
+                                </tr>
+                                <tr className="">
+                                    <td className="px-2 py-1 text-slate-600">Paid</td>
+                                    <td className="px-2 py-1 text-right text-slate-900 font-medium">
+                                        {currency(totalPaid)}
+                                    </td>
+                                </tr>
+                                {/* Balance Row */}
+                                <tr className="bg-slate-50">
+                                    <td className="px-2 py-1 font-semibold text-slate-700">Balance</td>
+                                    <td className="px-2 py-1 text-right font-bold text-slate-900">{currency(balance)}</td>
+                                </tr>
+                                {/* Action Buttons Row */}
+                                <tr>
+                                    <td colSpan="2" className="p-1">
+                                        <div className="flex gap-1">
+                                            <select
+                                                value={manualDocType}
+                                                onChange={(e) => setManualDocType(e.target.value)}
+                                                disabled={isSaved && docMetadata?.documentType === 'INVOICE'}
+                                                className={`flex-1 px-2 py-1 text-[10px] font-medium border border-slate-300 rounded bg-white text-slate-700 outline-none ${isSaved && docMetadata?.documentType === 'INVOICE' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                            >
+                                                <option value="Quote">Quote</option>
+                                                <option value="Work Order">W.Order</option>
+                                                <option value="Invoice">Invoice</option>
+                                            </select>
+                                            <button
+                                                onClick={handleSave}
+                                                disabled={saveLoading}
+                                                className="flex-1 px-3 py-1.5 rounded bg-green-500 text-white text-[11px] font-bold hover:bg-green-600 transition shadow-sm disabled:opacity-50"
+                                            >
+                                                {saveLoading ? '...' : 'Save'}
+                                            </button>
+                                            <button
+                                                onClick={handlePreview}
+                                                disabled={previewLoading}
+                                                className="flex-1 px-3 py-1.5 rounded bg-[#3B82F6] text-white text-[11px] font-medium hover:bg-[#7E5CFE] hover:text-white transition shadow-sm disabled:opacity-50"
+                                                title="Preview PDF"
+                                            >
+                                                {previewLoading ? '...' : 'Print'}
+                                            </button>
+                                            <button
+                                                onClick={handleEmail}
+                                                disabled={emailLoading}
+                                                className="flex-1 px-3 py-1.5 rounded bg-[#3B82F6] text-white text-[11px] font-medium hover:bg-[#7E5CFE] hover:text-white transition shadow-sm disabled:opacity-50"
+                                                title="Send via email"
+                                            >
+                                                {emailLoading ? '...' : 'Email'}
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table >
                     </div>
                 </div >
             </div >
