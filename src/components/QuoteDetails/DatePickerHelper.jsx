@@ -77,7 +77,29 @@ const DatePickerHelper = ({ value, onChange }) => {
     // Time Handling
     const handleTimeChange = (type, val) => {
         if (!selectedDate) return;
-        const newDate = selectedDate[type](val);
+
+        let newDate = dayjs(selectedDate);
+
+        if (type === 'hour') {
+            const currentHour = newDate.hour();
+            const isPM = currentHour >= 12;
+
+            // logic for 12h -> 24h
+            if (isPM && val !== 12) val += 12;
+            else if (!isPM && val === 12) val = 0;
+
+            newDate = newDate.hour(val);
+        } else if (type === 'minute') {
+            newDate = newDate.minute(val);
+        } else if (type === 'ampm') {
+            const currentHour = newDate.hour();
+            if (val === 'PM' && currentHour < 12) {
+                newDate = newDate.hour(currentHour + 12);
+            } else if (val === 'AM' && currentHour >= 12) {
+                newDate = newDate.hour(currentHour - 12);
+            }
+        }
+
         setSelectedDate(newDate);
         onChange(newDate);
     };
@@ -162,24 +184,24 @@ const DatePickerHelper = ({ value, onChange }) => {
 
             <div className="px-4 py-3 border-t border-slate-100 bg-slate-50/50">
                 {/* Presets */}
-                <div className="flex gap-2 mb-4">
+                <div className="flex gap-3 mb-4">
                     <button
                         onClick={setToday}
-                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:border-blue-500 hover:text-blue-600 transition-colors shadow-sm"
+                        className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-200 rounded-lg text-base font-medium text-slate-700 hover:border-blue-500 hover:text-blue-600 transition-colors shadow-sm"
                     >
                         <CalendarOutlined />
                         Today
                     </button>
                     <button
                         onClick={setTomorrow}
-                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:border-blue-500 hover:text-blue-600 transition-colors shadow-sm"
+                        className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-200 rounded-lg text-base font-medium text-slate-700 hover:border-blue-500 hover:text-blue-600 transition-colors shadow-sm"
                     >
-                        <RightOutlined className="text-xs" />
+                        <RightOutlined className="text-sm" />
                         Tmrw
                     </button>
                     <button
                         onClick={setNextWeek}
-                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:border-blue-500 hover:text-blue-600 transition-colors shadow-sm"
+                        className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-200 rounded-lg text-base font-medium text-slate-700 hover:border-blue-500 hover:text-blue-600 transition-colors shadow-sm"
                     >
                         <ClockCircleOutlined />
                         Week
@@ -187,31 +209,33 @@ const DatePickerHelper = ({ value, onChange }) => {
                 </div>
 
                 {/* Time Picker */}
-                <div className="flex items-center justify-between bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
+                <div className="flex items-center justify-between bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
                     <div className="flex items-center gap-2 text-slate-600">
-                        <FieldTimeOutlined className="text-lg" />
-                        <span className="text-sm font-medium">Time</span>
+                        <FieldTimeOutlined className="text-xl" />
+                        <span className="text-base font-medium">Time</span>
                     </div>
 
                     <div className="flex items-center gap-1">
+                        {/* Hour 1-12 */}
                         <Select
                             variant="borderless"
-                            value={selectedDate ? selectedDate.hour() : 9}
+                            value={selectedDate ? (selectedDate.hour() % 12 || 12) : 9}
                             onChange={(val) => handleTimeChange('hour', val)}
-                            className="w-16 text-right font-bold text-lg"
+                            className="w-20 text-right font-bold text-2xl h-10 flex items-center"
                             popupMatchSelectWidth={false}
                             disabled={!selectedDate}
-                            options={Array.from({ length: 24 }, (_, i) => ({
-                                value: i,
-                                label: i.toString().padStart(2, '0')
+                            options={Array.from({ length: 12 }, (_, i) => ({
+                                value: i + 1,
+                                label: (i + 1).toString().padStart(2, '0')
                             }))}
                         />
-                        <span className="text-slate-400 font-bold">:</span>
+                        <span className="text-slate-400 font-bold text-xl">:</span>
+                        {/* Minute */}
                         <Select
                             variant="borderless"
                             value={selectedDate ? selectedDate.minute() : 0}
                             onChange={(val) => handleTimeChange('minute', val)}
-                            className="w-16 text-left font-bold text-lg"
+                            className="w-20 text-center font-bold text-2xl h-10 flex items-center"
                             popupMatchSelectWidth={false}
                             disabled={!selectedDate}
                             options={[0, 15, 30, 45].map(m => ({
@@ -219,13 +243,26 @@ const DatePickerHelper = ({ value, onChange }) => {
                                 label: m.toString().padStart(2, '0')
                             }))}
                         />
+                        {/* AM/PM */}
+                        <Select
+                            variant="borderless"
+                            value={selectedDate ? (selectedDate.hour() >= 12 ? 'PM' : 'AM') : 'AM'}
+                            onChange={(val) => handleTimeChange('ampm', val)}
+                            className="w-24 font-bold text-2xl text-blue-600 h-10 flex items-center"
+                            popupMatchSelectWidth={false}
+                            disabled={!selectedDate}
+                            options={[
+                                { value: 'AM', label: 'AM' },
+                                { value: 'PM', label: 'PM' }
+                            ]}
+                        />
                     </div>
                 </div>
 
                 {selectedDate && (
                     <div className="mt-3 text-center">
                         <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
-                            {selectedDate.format('dddd, MMM D • HH:mm')}
+                            {selectedDate.format('dddd, MMM D • hh:mm A')}
                         </span>
                     </div>
                 )}
@@ -244,7 +281,7 @@ const DatePickerHelper = ({ value, onChange }) => {
         >
             <Input
                 readOnly
-                value={selectedDate ? selectedDate.format('YYYY-MM-DD HH:mm') : ''}
+                value={selectedDate ? selectedDate.format('MM/DD/YYYY hh:mm A') : ''}
                 placeholder="Select date and time"
                 prefix={<CalendarOutlined className="text-slate-400" />}
                 className="cursor-pointer hover:border-blue-400 focus:border-blue-500"

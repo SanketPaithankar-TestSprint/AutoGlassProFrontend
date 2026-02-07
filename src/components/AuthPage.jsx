@@ -113,7 +113,7 @@ const AuthPage = () => {
                                     className="bg-white border-2 border-white !text-violet-600 rounded-full px-12 py-3 font-bold uppercase tracking-wider transition-transform hover:scale-105 focus:outline-none cursor-pointer"
                                     onClick={() => setIsSignUpMode(false)}
                                 >
-                                    Sign In
+                                    SignIn
                                 </button>
                             </div>
                         </div>
@@ -135,7 +135,7 @@ const AuthPage = () => {
                             className={`flex-1 py-2 rounded-md font-semibold transition-all ${!isSignUpMode ? 'bg-violet-600 shadow-md text-white' : 'text-slate-500 hover:bg-slate-200'}`}
                             onClick={() => setIsSignUpMode(false)}
                         >
-                            Sign In
+                            SignIn
                         </button>
                         <button
                             className={`flex-1 py-2 rounded-md font-semibold transition-all ${isSignUpMode ? 'bg-violet-600 shadow-md text-white' : 'text-slate-500 hover:bg-slate-200'}`}

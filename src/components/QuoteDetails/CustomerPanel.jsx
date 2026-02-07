@@ -5,15 +5,15 @@ import { getValidToken } from "../../api/getValidToken";
 import { getCustomers } from "../../api/getCustomers";
 import { getCustomerWithVehicles } from "../../api/getCustomerWithVehicles";
 import { updateCustomer } from "../../api/updateCustomer";
-import { getOrganizations, getOrganizationById, createOrganization, updateOrganization, updateOrganizationTaxExempt } from "../../api/organizationApi";
+import { getOrganizations, getOrganizationById, createOrganization, updateOrganization, updateOrganizationTaxExempt, getOrganizationVehicles } from "../../api/organizationApi";
 import { COUNTRIES, US_STATES } from "../../const/locations";
 
 const { Option } = Select;
 
 // Reusable Input Component
 const FormInput = ({ label, name, value, onChange, onBlur, required = false, type = "text", className = "", ...props }) => (
-    <div className={`flex flex-col gap-1 ${className}`}>
-        <label className="text-xs font-medium text-gray-500">{label}</label>
+    <div className={`${className}`}>
+        <label className="block text-sm font-medium text-slate-700 mb-1">{label} {required && <span className="text-red-500">*</span>}</label>
         <input
             name={name}
             value={value || ""}
@@ -21,35 +21,32 @@ const FormInput = ({ label, name, value, onChange, onBlur, required = false, typ
             onBlur={onBlur}
             required={required}
             type={type}
-            className="border border-gray-200 rounded px-2 py-1.5 text-sm focus:ring-1 focus:ring-violet-500 focus:border-violet-500 focus:outline-none transition-all"
+            className="border border-gray-200 rounded px-2 py-1 text-sm focus:ring-1 focus:ring-violet-500 focus:border-violet-500 focus:outline-none transition-all w-full"
             placeholder={label}
             {...props}
         />
     </div>
 );
 
-const FormSelect = ({ label, name, value, onChange, options, required = false, className = "", ...props }) => (
-    <div className={`flex flex-col gap-1 ${className}`}>
-        <label className="text-xs font-medium text-gray-500">{label}</label>
-        <select
-            name={name}
-            value={value || ""}
-            onChange={onChange}
-            required={required}
-            className="border border-gray-200 rounded px-2 py-1.5 text-sm focus:ring-1 focus:ring-violet-500 focus:border-violet-500 focus:outline-none transition-all bg-white"
+const FormSelect = ({ label, name, value, onChange, onBlur, options, required = false, className = "", ...props }) => (
+    <div className={`${className}`}>
+        <label className="block text-sm font-medium text-slate-700 mb-1">{label} {required && <span className="text-red-500">*</span>}</label>
+        <Select
+            value={value || undefined}
+            onChange={(val) => onChange({ target: { name, value: val } })}
+            onBlur={onBlur} // Pass onBlur directly
+            placeholder={`Select ${label}`}
+            className="w-full"
+            allowClear
+            showSearch
+            optionFilterProp="label"
+            options={options}
             {...props}
-        >
-            <option value="">Select State</option>
-            {options.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                </option>
-            ))}
-        </select>
+        />
     </div>
 );
 
-export default function CustomerPanel({ formData, setFormData, setCanShowQuotePanel, setPanel }) {
+export default function CustomerPanel({ formData, setFormData, setCanShowQuotePanel, setPanel, isDocumentLoaded = false }) {
     // Organizations
     const [organizations, setOrganizations] = useState([]);
     const [loadingOrganizations, setLoadingOrganizations] = useState(false);
@@ -61,6 +58,13 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
     // Vehicles
     const [vehicles, setVehicles] = useState([]);
 
+    const initialOrgForm = {
+        companyName: "", taxId: "", email: "", phone: "", alternatePhone: "",
+        individualName: "",
+        addressLine1: "", addressLine2: "", city: "", state: "", postalCode: "", country: "USA", notes: ""
+    };
+    const [orgFormData, setOrgFormData] = useState(initialOrgForm);
+
     // Master Mode: INDIVIDUAL vs BUSINESS
     const [clientType, setClientType] = useState("INDIVIDUAL");
 
@@ -69,11 +73,35 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
     const [orgMode, setOrgMode] = useState("NEW"); // "NEW" | "EXISTING" (No "NONE" anymore in Business mode)
 
     // Edit Mode States
-    const [isEditingCustomer, setIsEditingCustomer] = useState(false);
-    const [isEditingOrg, setIsEditingOrg] = useState(false);
+
     const [savingCustomer, setSavingCustomer] = useState(false);
     const [savingOrg, setSavingOrg] = useState(false);
-    // ...existing code...
+
+    // Auto-Save / Dirty Tracking State
+    const [lastSavedCustomerData, setLastSavedCustomerData] = useState(null);
+    const [lastSavedOrgData, setLastSavedOrgData] = useState(null);
+
+    const isCustomerDirty = React.useMemo(() => {
+        if (!lastSavedCustomerData) return false;
+        const fields = ["firstName", "lastName", "email", "phone", "alternatePhone", "addressLine1", "addressLine2", "city", "state", "postalCode", "country", "preferredContactMethod", "notes"];
+        return fields.some(key => (formData[key] || "") !== (lastSavedCustomerData[key] || ""));
+    }, [formData, lastSavedCustomerData]);
+
+    const isOrgDirty = React.useMemo(() => {
+        if (!lastSavedOrgData) return false;
+        const fields = ["companyName", "taxId", "email", "phone", "individualName", "addressLine1", "city", "state", "postalCode"];
+        return fields.some(key => (orgFormData[key] || "") !== (lastSavedOrgData[key] || ""));
+    }, [orgFormData, lastSavedOrgData]);
+
+    const handleInputBlur = () => {
+        if (clientType === "INDIVIDUAL" && customerMode === "EXISTING" && isCustomerDirty) {
+            handleSaveCustomer(true);
+        } else if (clientType === "BUSINESS" && orgMode === "EXISTING" && isOrgDirty) {
+            handleSaveOrganization(true);
+        }
+    };
+
+
 
     // Initial Load & Sync
     useEffect(() => {
@@ -86,7 +114,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
             setOrgMode(formData.organizationId ? "EXISTING" : "NEW");
 
             // Populate Org Form from passed data
-            setOrgFormData({
+            const initialOrgData = {
                 companyName: formData.companyName || formData.organizationName || "",
                 taxId: formData.taxId || "",
                 email: formData.email || "",
@@ -99,12 +127,32 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                 postalCode: formData.postalCode || "",
                 country: formData.country || "USA",
                 notes: formData.notes || ""
-            });
+            };
+            setOrgFormData(initialOrgData);
+            setLastSavedOrgData(initialOrgData);
         } else {
             setClientType("INDIVIDUAL");
             setCustomerMode(formData.customerId ? "EXISTING" : "NEW");
+
+            // Initialize last saved customer data for dirty checking
+            if (formData.customerId) {
+                setLastSavedCustomerData({
+                    firstName: formData.firstName || "",
+                    lastName: formData.lastName || "",
+                    email: formData.email || "",
+                    phone: formData.phone || "",
+                    addressLine1: formData.addressLine1 || "",
+                    addressLine2: formData.addressLine2 || "",
+                    city: formData.city || "",
+                    state: formData.state || "",
+                    postalCode: formData.postalCode || "",
+                    country: formData.country || "USA",
+                    preferredContactMethod: formData.preferredContactMethod || "phone",
+                    notes: formData.notes || ""
+                });
+            }
         }
-    }, []);
+    }, [formData.customerId]); // Added formData.customerId dependency to re-run if it changes (e.g. after save)
 
     const fetchOrganizations = async () => {
         try {
@@ -200,6 +248,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
             return;
         }
 
+
+
         try {
             const orgDetails = await getOrganizationById(val);
             setFormData(prev => ({
@@ -209,7 +259,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                 isTaxExempt: orgDetails.taxExempt === true
             }));
 
-            setOrgFormData({
+            const newOrgData = {
                 companyName: orgDetails.companyName || "",
                 taxId: orgDetails.taxId || "",
                 email: orgDetails.email || "",
@@ -222,7 +272,19 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                 postalCode: orgDetails.postalCode || "",
                 country: orgDetails.country || "USA",
                 notes: orgDetails.notes || ""
-            });
+            };
+            setOrgFormData(newOrgData);
+            setLastSavedOrgData(newOrgData);
+
+            // Fetch Organization Vehicles
+            try {
+                const orgVehicles = await getOrganizationVehicles(val);
+                setVehicles(Array.isArray(orgVehicles) ? orgVehicles : []);
+            } catch (err) {
+                console.warn("Failed to load organization vehicles", err);
+                setVehicles([]);
+            }
+
         } catch (error) {
             console.error("Error loading organization:", error);
         }
@@ -260,6 +322,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
             const customer = response.customer || {};
             const customerVehicles = response.vehicles || [];
 
+
+
             setFormData(prev => ({
                 ...prev,
                 customerId: customer.customerId,
@@ -277,12 +341,28 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                 country: customer.country || "USA",
             }));
 
+            setLastSavedCustomerData({
+                firstName: customer.firstName || "",
+                lastName: customer.lastName || "",
+                email: customer.email || "",
+                phone: customer.phone || "",
+                addressLine1: customer.addressLine1 || "",
+                addressLine2: customer.addressLine2 || "",
+                city: customer.city || "",
+                state: customer.state || "",
+                postalCode: customer.postalCode || "",
+                country: customer.country || "USA",
+                preferredContactMethod: customer.preferredContactMethod || "phone",
+                notes: customer.notes || ""
+            });
+
             setVehicles(customerVehicles);
 
         } catch (error) {
             console.error("Error loading customer:", error);
         }
     };
+
 
     // --- Form Data Handling ---
 
@@ -293,12 +373,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
         setFormData(prev => ({ ...prev, [name]: finalValue }));
     };
 
-    const initialOrgForm = {
-        companyName: "", taxId: "", email: "", phone: "", alternatePhone: "",
-        individualName: "",
-        addressLine1: "", addressLine2: "", city: "", state: "", postalCode: "", country: "USA", notes: ""
-    };
-    const [orgFormData, setOrgFormData] = useState(initialOrgForm);
+
 
     const handleOrgFormChange = (e) => {
         const { name, value } = e.target;
@@ -356,20 +431,12 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
     };
 
     // --- Customer Edit/Delete Handlers ---
-    const handleEditCustomer = () => {
-        setIsEditingCustomer(true);
-    };
 
-    const handleCancelEditCustomer = async () => {
-        setIsEditingCustomer(false);
-        // Reload original customer data
-        if (formData.customerId) {
-            await handleCustomerSelect(formData.customerId);
-        }
-    };
 
-    const handleSaveCustomer = async () => {
+
+    const handleSaveCustomer = async (silent = false) => {
         if (!formData.customerId) return;
+
 
         if (!formData.email || formData.email.trim() === "") {
             notification.error({
@@ -413,22 +480,40 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
             await updateCustomer(token, formData.customerId, customerPayload);
 
-            notification.success({
-                message: "Customer Updated",
-                description: "Customer information has been updated successfully.",
-                placement: "topRight"
+            setLastSavedCustomerData({
+                firstName: formData.firstName || "",
+                lastName: formData.lastName || "",
+                email: formData.email || "",
+                phone: formData.phone || "",
+                addressLine1: formData.addressLine1 || "",
+                addressLine2: formData.addressLine2 || "",
+                city: formData.city || "",
+                state: formData.state || "",
+                postalCode: formData.postalCode || "",
+                country: formData.country || "USA",
+                preferredContactMethod: formData.preferredContactMethod || "phone",
+                notes: formData.notes || ""
             });
 
-            setIsEditingCustomer(false);
+            if (!silent) {
+                notification.success({
+                    message: "Customer Updated",
+                    description: "Customer information has been updated successfully.",
+                    placement: "topRight"
+                });
+            }
+
             // Refresh customer list
             await fetchCustomers();
         } catch (error) {
             console.error("Error updating customer:", error);
-            notification.error({
-                message: "Update Failed",
-                description: "Failed to update customer. Please try again.",
-                placement: "topRight"
-            });
+            if (!silent) {
+                notification.error({
+                    message: "Update Failed",
+                    description: "Failed to update customer. Please try again.",
+                    placement: "topRight"
+                });
+            }
         } finally {
             setSavingCustomer(false);
         }
@@ -437,20 +522,12 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
     // ...existing code...
 
     // --- Organization Edit/Delete Handlers ---
-    const handleEditOrganization = () => {
-        setIsEditingOrg(true);
-    };
 
-    const handleCancelEditOrganization = async () => {
-        setIsEditingOrg(false);
-        // Reload original organization data
-        if (formData.organizationId) {
-            await handleOrganizationSelect(formData.organizationId);
-        }
-    };
 
-    const handleSaveOrganization = async () => {
+
+    const handleSaveOrganization = async (silent = false) => {
         if (!formData.organizationId) return;
+
 
         // Validate required fields
         if (!orgFormData.phone || orgFormData.phone.trim() === "") {
@@ -509,22 +586,27 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                 companyName: orgFormData.companyName
             }));
 
-            notification.success({
-                message: "Organization Updated",
-                description: "Organization information has been updated successfully.",
-                placement: "topRight"
-            });
+            setLastSavedOrgData({ ...orgFormData });
 
-            setIsEditingOrg(false);
+            if (!silent) {
+                notification.success({
+                    message: "Organization Updated",
+                    description: "Organization information has been updated successfully.",
+                    placement: "topRight"
+                });
+            }
+
             // Refresh organization list
             await fetchOrganizations();
         } catch (error) {
             console.error("Error updating organization:", error);
-            notification.error({
-                message: "Update Failed",
-                description: "Failed to update organization. Please try again.",
-                placement: "topRight"
-            });
+            if (!silent) {
+                notification.error({
+                    message: "Update Failed",
+                    description: "Failed to update organization. Please try again.",
+                    placement: "topRight"
+                });
+            }
         } finally {
             setSavingOrg(false);
         }
@@ -595,6 +677,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                 ]}
                                 value={clientType}
                                 onChange={handleClientTypeChange}
+                                disabled={isDocumentLoaded} // Disable when editing existing document
                             />
                         </div>
 
@@ -608,6 +691,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                         onChange={handleCustomerModeChange}
                                         value={customerMode}
                                         className="flex flex-col gap-2"
+                                        disabled={isDocumentLoaded} // Disable mode switch
                                     >
                                         <Radio value="NEW">New Customer</Radio>
                                         <Radio value="EXISTING">Existing Customer</Radio>
@@ -627,6 +711,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                                 }
                                                 onChange={handleCustomerSelect}
                                                 value={formData.customerId}
+                                                disabled={isDocumentLoaded} // Disable search
                                             >
                                                 {customers.map(c => (
                                                     <Option key={c.customerId} value={c.customerId}>
@@ -650,6 +735,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                         onChange={handleOrgModeChange}
                                         value={orgMode}
                                         className="flex flex-col gap-2"
+                                        disabled={isDocumentLoaded} // Disable mode switch
                                     >
                                         <Radio value="NEW">New Organization</Radio>
                                         <Radio value="EXISTING">Existing Organization</Radio>
@@ -669,6 +755,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                                 }
                                                 onChange={handleOrganizationSelect}
                                                 value={formData.organizationId}
+                                                disabled={isDocumentLoaded} // Disable search
                                             >
                                                 {organizations.map(org => (
                                                     <Option key={org.organizationId} value={org.organizationId}>
@@ -682,35 +769,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                             </div>
                         )}
 
-                        {/* 3. Vehicle Details - Expanded Vertical Section */}
-                        <div className="mt-4 pt-4 border-t border-gray-100 flex-1 flex flex-col">
-                            <div className="flex justify-between items-center mb-3 shrink-0">
-                                <h4 className="text-xs font-bold text-gray-800 uppercase">Vehicle Details</h4>
-                                {vehicles.length > 0 && (
-                                    <Select
-                                        size="small"
-                                        placeholder="Select Saved Vehicle"
-                                        className="w-40"
-                                        onChange={handleVehicleSelect}
-                                        allowClear
-                                    >
-                                        {vehicles.map(v => (
-                                            <Option key={v.vehicleId} value={v.vehicleId}>
-                                                {v.vehicleYear} {v.vehicleMake}
-                                            </Option>
-                                        ))}
-                                    </Select>
-                                )}
-                            </div>
 
-                            {/* Inputs Container filling separate space */}
-                            <div className="flex-1 flex flex-col justify-center gap-4">
-                                <FormInput label="Year" name="vehicleYear" value={formData.vehicleYear} onChange={handleChange} type="number" />
-                                <FormInput label="Make" name="vehicleMake" value={formData.vehicleMake} onChange={handleChange} />
-                                <FormInput label="Model" name="vehicleModel" value={formData.vehicleModel} onChange={handleChange} />
-                                <FormInput label="VIN" name="vin" value={formData.vin} onChange={handleChange} />
-                            </div>
-                        </div>
                     </div>
 
                 </div>
@@ -723,60 +782,65 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                         <div className="bg-white rounded-md border border-gray-200 shadow-sm flex flex-col shrink-0 animate-slide-up">
                             <div className="bg-violet-50 border-b border-violet-100 px-4 py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                                 <h3 className="text-sm font-bold text-violet-900">
-                                    {orgMode === "NEW" ? "New Organization Details" : (isEditingOrg ? "Edit Organization" : "Organization Details")}
+                                    {orgMode === "NEW" ? "New Organization Details" : "Organization Details"}
                                 </h3>
                                 <div className="flex items-center gap-2 flex-wrap">
-                                    {/* Save/Cancel buttons when editing */}
-                                    {isEditingOrg && orgMode === "EXISTING" && (
-                                        <>
-                                            <Button
-                                                size="small"
-                                                icon={<CloseOutlined />}
-                                                onClick={handleCancelEditOrganization}
-                                            >
-                                                Cancel
-                                            </Button>
-                                            <Button
-                                                type="primary"
-                                                size="small"
-                                                icon={<SaveOutlined />}
-                                                loading={savingOrg}
-                                                onClick={handleSaveOrganization}
-                                            >
-                                                Save
-                                            </Button>
-                                        </>
+                                    {/* Save button for EXISTING mode */}
+                                    {orgMode === "EXISTING" && (
+                                        <Button
+                                            type="primary"
+                                            size="small"
+                                            icon={<SaveOutlined />}
+                                            loading={savingOrg}
+                                            onClick={() => handleSaveOrganization(false)}
+                                            disabled={!isOrgDirty}
+                                        >
+                                            Save Changes
+                                        </Button>
                                     )}
                                     {/* Tax Exempt Switch */}
-                                    <div className="flex items-center gap-1 bg-white/50 px-2 py-0.5 rounded">
-                                        <Switch
-                                            size="small"
-                                            checked={formData.isTaxExempt}
-                                            disabled={orgMode === "EXISTING" && !isEditingOrg}
-                                            onChange={(checked) => {
-                                                setFormData(prev => ({ ...prev, isTaxExempt: checked }));
-                                                if (formData.organizationId && orgMode === "EXISTING" && !isEditingOrg) {
-                                                    updateOrganizationTaxExempt(formData.organizationId, checked).catch(console.error);
-                                                }
-                                            }}
-                                        />
-                                        <span className="text-xs text-violet-700">{formData.isTaxExempt ? "Tax Exempt" : "Taxable"}</span>
-                                    </div>
+                                    {/* Tax Exempt Switch moved to form body */}
                                 </div>
                             </div>
 
                             <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                                <FormInput label="Company Name *" name="companyName" value={orgFormData.companyName} onChange={handleOrgFormChange} required disabled={orgMode === "EXISTING" && !isEditingOrg} />
-                                <FormInput label="Tax ID" name="taxId" value={orgFormData.taxId} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING" && !isEditingOrg} />
-                                <FormInput label="Email" name="email" value={orgFormData.email} onChange={handleOrgFormChange} required disabled={orgMode === "EXISTING" && !isEditingOrg} />
-                                <FormInput label="Phone" name="phone" value={orgFormData.phone} onChange={handleOrgFormChange} required disabled={orgMode === "EXISTING" && !isEditingOrg} />
-                                <FormInput label="Contact Person" name="individualName" value={orgFormData.individualName} onChange={handleOrgFormChange} className="sm:col-span-2" placeholder="Individual's Name (Optional)" disabled={orgMode === "EXISTING" && !isEditingOrg} />
+                                <FormInput label="Company Name *" name="companyName" value={orgFormData.companyName} onChange={handleOrgFormChange} onBlur={handleInputBlur} required />
+                                <FormInput label="Tax ID" name="taxId" value={orgFormData.taxId} onChange={handleOrgFormChange} onBlur={handleInputBlur} />
+                                <FormInput label="Email" name="email" value={orgFormData.email} onChange={handleOrgFormChange} onBlur={handleInputBlur} required />
+                                <FormInput label="Phone" name="phone" value={orgFormData.phone} onChange={handleOrgFormChange} onBlur={handleInputBlur} required />
+                                <FormInput label="Contact Person" name="individualName" value={orgFormData.individualName} onChange={handleOrgFormChange} onBlur={handleInputBlur} placeholder="Individual's Name (Optional)" />
 
-                                <div className="col-span-full grid grid-cols-1 sm:grid-cols-4 gap-3">
-                                    <FormInput label="Address Line 1" name="addressLine1" value={orgFormData.addressLine1} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING" && !isEditingOrg} />
-                                    <FormInput label="City" name="city" value={orgFormData.city} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING" && !isEditingOrg} />
-                                    <FormSelect label="State" name="state" value={orgFormData.state} onChange={handleOrgFormChange} options={US_STATES} disabled={orgMode === "EXISTING" && !isEditingOrg} />
-                                    <FormInput label="Zip" name="postalCode" value={orgFormData.postalCode} onChange={handleOrgFormChange} disabled={orgMode === "EXISTING" && !isEditingOrg} />
+                                <FormInput label="Address Line 1" name="addressLine1" value={orgFormData.addressLine1} onChange={handleOrgFormChange} onBlur={handleInputBlur} />
+                                <FormInput label="City" name="city" value={orgFormData.city} onChange={handleOrgFormChange} onBlur={handleInputBlur} />
+                                <FormSelect label="State" name="state" value={orgFormData.state} onChange={handleOrgFormChange} onBlur={handleInputBlur} options={US_STATES} />
+                                <FormInput label="Zip" name="postalCode" value={orgFormData.postalCode} onChange={handleOrgFormChange} onBlur={handleInputBlur} />
+
+                                {/* Tax Exempt Switch in Form Body */}
+                                <div className="flex flex-col justify-end pb-1">
+                                    <div className="flex items-center gap-2 border border-gray-200 rounded px-3 py-1.5 bg-gray-50 h-[38px]"> {/* Match input height approx */}
+                                        <span className="text-sm font-medium text-slate-700">Tax Status:</span>
+                                        <Switch
+                                            size="small"
+                                            checked={formData.isTaxExempt}
+                                            onChange={(checked) => {
+                                                setFormData(prev => ({ ...prev, isTaxExempt: checked }));
+                                                // Auto-save tax status change if existing org
+                                                if (formData.organizationId && orgMode === "EXISTING") {
+                                                    updateOrganizationTaxExempt(formData.organizationId, checked)
+                                                        .then(() => {
+                                                            notification.success({ message: "Tax Status Updated", description: checked ? "Organization is now Tax Exempt" : "Organization is now Taxable" });
+                                                        })
+                                                        .catch((err) => {
+                                                            console.error(err);
+                                                            notification.error({ message: "Update Failed", description: "Could not update tax status." });
+                                                        });
+                                                }
+                                            }}
+                                        />
+                                        <span className={`text-sm font-medium ${formData.isTaxExempt ? "text-violet-600" : "text-slate-500"}`}>
+                                            {formData.isTaxExempt ? "Tax Exempt" : "Taxable"}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -787,26 +851,20 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                         <div className="bg-white rounded-md border border-gray-200 shadow-sm flex flex-col shrink-0 animate-slide-up">
                             <div className="bg-gray-50 border-b border-gray-100 px-4 py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                                 <h3 className="text-sm font-bold text-gray-800">
-                                    {customerMode === "NEW" ? "New Customer Details" : (isEditingCustomer ? "Edit Customer" : "Customer Details")}
+                                    {customerMode === "NEW" ? "New Customer Details" : "Customer Details"}
                                 </h3>
-                                {/* Save/Cancel buttons when editing */}
-                                {isEditingCustomer && customerMode === "EXISTING" && (
+                                {/* Save button when EXISTING */}
+                                {customerMode === "EXISTING" && (
                                     <div className="flex items-center gap-2">
-                                        <Button
-                                            size="small"
-                                            icon={<CloseOutlined />}
-                                            onClick={handleCancelEditCustomer}
-                                        >
-                                            Cancel
-                                        </Button>
                                         <Button
                                             type="primary"
                                             size="small"
                                             icon={<SaveOutlined />}
                                             loading={savingCustomer}
-                                            onClick={handleSaveCustomer}
+                                            onClick={() => handleSaveCustomer(false)}
+                                            disabled={!isCustomerDirty}
                                         >
-                                            Save
+                                            Save Changes
                                         </Button>
                                     </div>
                                 )}
@@ -814,22 +872,60 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
                             <div className="p-4">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
-                                    <FormInput label="First Name" name="firstName" value={formData.firstName} onChange={handleChange} required disabled={customerMode === "EXISTING" && !isEditingCustomer} />
-                                    <FormInput label="Last Name" name="lastName" value={formData.lastName} onChange={handleChange} disabled={customerMode === "EXISTING" && !isEditingCustomer} />
-                                    <FormInput label="Email" name="email" value={formData.email} onChange={handleChange} type="email" required disabled={customerMode === "EXISTING" && !isEditingCustomer} />
-                                    <FormInput label="Phone" name="phone" value={formData.phone} onChange={handleChange} required disabled={customerMode === "EXISTING" && !isEditingCustomer} />
+                                    <FormInput label="First Name" name="firstName" value={formData.firstName} onChange={handleChange} onBlur={handleInputBlur} required />
+                                    <FormInput label="Last Name" name="lastName" value={formData.lastName} onChange={handleChange} onBlur={handleInputBlur} />
+                                    <FormInput label="Email" name="email" value={formData.email} onChange={handleChange} onBlur={handleInputBlur} type="email" required />
+                                    <FormInput label="Phone" name="phone" value={formData.phone} onChange={handleChange} onBlur={handleInputBlur} required />
                                 </div>
                                 <div className="mt-2">
                                     <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                                        <FormInput label="Address Line 1" name="addressLine1" value={formData.addressLine1} onChange={handleChange} disabled={customerMode === "EXISTING" && !isEditingCustomer} />
-                                        <FormInput label="City" name="city" value={formData.city} onChange={handleChange} disabled={customerMode === "EXISTING" && !isEditingCustomer} />
-                                        <FormSelect label="State" name="state" value={formData.state} onChange={handleChange} options={US_STATES} disabled={customerMode === "EXISTING" && !isEditingCustomer} />
-                                        <FormInput label="Zip" name="postalCode" value={formData.postalCode} onChange={handleChange} disabled={customerMode === "EXISTING" && !isEditingCustomer} />
+                                        <FormInput label="Address Line 1" name="addressLine1" value={formData.addressLine1} onChange={handleChange} onBlur={handleInputBlur} />
+                                        <FormInput label="City" name="city" value={formData.city} onChange={handleChange} onBlur={handleInputBlur} />
+                                        <FormSelect label="State" name="state" value={formData.state} onChange={handleChange} onBlur={handleInputBlur} options={US_STATES} />
+                                        <FormInput label="Zip" name="postalCode" value={formData.postalCode} onChange={handleChange} onBlur={handleInputBlur} />
                                     </div>
                                 </div>
                             </div>
                         </div>
                     )}
+
+                    {/* Vehicle Details Section - Moved to Main Panel */}
+                    <div className="bg-white rounded-md border border-gray-200 shadow-sm flex flex-col shrink-0 animate-slide-up">
+                        <div className={`${clientType === "BUSINESS" ? "bg-violet-50 border-violet-100" : "bg-gray-50 border-gray-100"} border-b px-4 py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2`}>
+                            <h3 className={`text-sm font-bold ${clientType === "BUSINESS" ? "text-violet-900" : "text-gray-800"}`}>
+                                Vehicle Details
+                            </h3>
+
+                            {/* Vehicle Selection Dropdown */}
+                            {(vehicles.length > 0) && (
+                                <div className="w-full sm:w-64">
+                                    <Select
+                                        placeholder="Select Saved Vehicle"
+                                        className="w-full"
+                                        onChange={handleVehicleSelect}
+                                        allowClear
+                                        optionLabelProp="label"
+                                    >
+                                        {vehicles.map(v => (
+                                            <Option key={v.vehicleId} value={v.vehicleId} label={`${v.vehicleYear} ${v.vehicleMake} ${v.vehicleModel}`}>
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium">{v.vehicleYear} {v.vehicleMake} {v.vehicleModel}</span>
+                                                    <span className="text-xs text-gray-400">VIN: {v.vin}</span>
+                                                </div>
+                                            </Option>
+                                        ))}
+                                    </Select>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                            <FormInput label="Year" name="vehicleYear" value={formData.vehicleYear} onChange={handleChange} onBlur={handleInputBlur} type="number" />
+                            <FormInput label="Make" name="vehicleMake" value={formData.vehicleMake} onChange={handleChange} onBlur={handleInputBlur} />
+                            <FormInput label="Model" name="vehicleModel" value={formData.vehicleModel} onChange={handleChange} onBlur={handleInputBlur} />
+                            <FormInput label="VIN" name="vin" value={formData.vin} onChange={handleChange} onBlur={handleInputBlur} />
+                        </div>
+                    </div>
 
                     {/* Action Bar */}
                     <div className="mt-auto flex justify-end">

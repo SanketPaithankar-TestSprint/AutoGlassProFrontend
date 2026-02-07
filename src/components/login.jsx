@@ -195,7 +195,7 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
                             boxShadow: '0 4px 14px 0 rgba(118, 75, 162, 0.39)'
                         }}
                     >
-                        {loading ? 'Logging in...' : 'Log In'}
+                        {loading ? 'Signing in...' : 'Sign In'}
                     </Button>
                 </Form.Item>
             </Form>

@@ -120,6 +120,7 @@ const SearchByRoot = () => {
     preferredContactMethod: "phone", notes: "",
     vehicleYear: "", vehicleMake: "", vehicleModel: "", vehicleStyle: "", bodyType: "",
     licensePlateNumber: "", vin: "", vehicleNotes: "",
+    customerId: null,
     // Organization Fields
     customerType: "INDIVIDUAL",
     organizationId: null,
@@ -213,6 +214,7 @@ const SearchByRoot = () => {
 
       if (customer) {
         baseData = {
+          customerId: customer.customerId || null,
           firstName: customer.firstName || "",
           lastName: customer.lastName || "",
           email: customer.email || "",
@@ -930,6 +932,21 @@ const SearchByRoot = () => {
           <div className="flex justify-start gap-1 overflow-x-auto w-full md:w-auto pb-1 no-scrollbar">
             {tabs.map(tab => {
               if (tab.id === 'quote') {
+                if (manualDocType === 'Invoice') {
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab('quote')}
+                      className={`px-4 py-1.5 font-bold text-xs tracking-wide transition-all rounded-md shadow-sm border whitespace-nowrap flex-shrink-0 flex items-center gap-1 ${activeTab === tab.id
+                        ? 'bg-white text-blue-600 border-blue-600'
+                        : 'bg-white text-slate-600 border-slate-200 hover:text-slate-900 hover:border-slate-300'
+                        }`}
+                    >
+                      {manualDocType}
+                    </button>
+                  );
+                }
+
                 return (
                   <Dropdown
                     key={tab.id}
@@ -1047,6 +1064,7 @@ const SearchByRoot = () => {
                     setFormData={setCustomerData}
                     setCanShowQuotePanel={() => { }}
                     setPanel={() => setActiveTab('quote')}
+                    isDocumentLoaded={isSaved}
                   />
                 </div>
               )}

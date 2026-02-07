@@ -94,7 +94,7 @@ export default function AuthRoot() {
                                 <div className="w-full max-w-sm transition-opacity duration-300">
                                     {authMode === 'LOGIN' && (
                                         <>
-                                            <h1 className="text-3xl md:text-4xl font-extrabold mb-6 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent tracking-tight text-center p-5">Log In</h1>
+                                            <h1 className="text-3xl md:text-4xl font-extrabold mb-6 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent tracking-tight text-center p-5">Sign In</h1>
                                             <Login
                                                 onLoginSuccess={handleLoginSuccess}
                                                 onForgotPasswordClick={() => setAuthMode('FORGOT_PASSWORD')}
@@ -164,7 +164,7 @@ export default function AuthRoot() {
                                     className="px-10 py-3 rounded-full font-bold uppercase tracking-wider cursor-pointer shadow-lg transition-all transform hover:scale-105 focus:outline-none hover:shadow-xl"
                                     onClick={() => setAuthMode('LOGIN')}
                                 >
-                                    Log In
+                                    Sign In
                                 </button>
                             </div>
 
@@ -183,7 +183,7 @@ export default function AuthRoot() {
                             className={`flex-1 py-2 rounded-md font-semibold transition-all ${authMode === 'LOGIN' || authMode === 'FORGOT_PASSWORD' ? 'bg-violet-600 shadow-md text-white' : 'text-slate-500 hover:bg-slate-200'}`}
                             onClick={() => setAuthMode('LOGIN')}
                         >
-                            Log In
+                            SignIn
                         </button>
                         <button
                             className={`flex-1 py-2 rounded-md font-semibold transition-all ${authMode === 'SIGNUP' ? 'bg-violet-600 shadow-md text-white' : 'text-slate-500 hover:bg-slate-200'}`}
