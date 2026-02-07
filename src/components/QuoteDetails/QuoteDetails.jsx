@@ -257,7 +257,7 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
                     className={`px-4 py-2 rounded-md font-semibold border transition-all duration-150 ${panel === 'scheduling' ? 'border-violet-500 text-violet-700 bg-white' : 'border-transparent text-slate-500 bg-slate-50 hover:bg-slate-100'}`}
                     onClick={() => handlePanelSwitch('scheduling')}
                 >
-                    Job Scheduling
+                    Appointment
                 </button>
             </div>
             {panel === 'customer' && (

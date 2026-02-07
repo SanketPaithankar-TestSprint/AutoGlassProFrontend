@@ -901,7 +901,7 @@ const SearchByRoot = () => {
   const tabs = [
     { id: 'quote', label: 'Quote' },
     { id: 'customer', label: 'Customer Information' },
-    { id: 'scheduling', label: 'Job Scheduling' },
+    { id: 'scheduling', label: 'Appointment' },
     { id: 'insurance', label: 'Insurance' },
     { id: 'attachment', label: 'Attachment' },
     { id: 'payment', label: 'Payment' },
