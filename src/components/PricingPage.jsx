@@ -3,8 +3,7 @@ import { Layout, Button, Tooltip } from "antd";
 import { CheckOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { freeTierFeatures, professionalTierFeatures, enterpriseTierFeatures } from "../const/pricingPage";
-import LeftDecoImage from "../assets/6.2.png";
-import RightDecoImage from "../assets/6.3.png";
+
 
 const { Content } = Layout;
 
@@ -18,14 +17,8 @@ const PricingPage = () => {
         className="fixed inset-0 z-0 pointer-events-none opacity-20"
         style={{ background: 'linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)' }}
       />
-      
-      {/* Decorative Images - Visible on XL screens */}
-      <div className="hidden xl:block absolute left-12 2xl:left-32 top-1/2 -translate-y-1/2 w-85 z-1 opacity-80 pointer-events-none">
-        <img src={LeftDecoImage} alt="Decorative Left" className="w-full h-auto object-contain" />
-      </div>
-      <div className="hidden xl:block absolute right-12 2xl:right-32 top-1/2 -translate-y-1/2 w-85 z-1 opacity-80 pointer-events-none">
-        <img src={RightDecoImage} alt="Decorative Right" className="w-full h-auto object-contain" />
-      </div>
+
+
 
       {/* Reduced padding to ensure fit */}
       <Content className="p-4 md:p-6 flex flex-col justify-center h-full relative z-10">
