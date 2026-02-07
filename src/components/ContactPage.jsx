@@ -134,7 +134,7 @@ ${userMessage || 'No message provided'}
 
                                     <div className="mb-6">
                                         <Paragraph className="text-slate-600">
-                                            Want to test out AutoPane? We'll show you around, or you can drive the bus!
+                                            Want to test out APAI? We'll show you around, or you can drive the bus!
                                         </Paragraph>
                                     </div>
 
