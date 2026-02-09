@@ -11,6 +11,8 @@ import RecentActivityTable from './RecentActivityTable';
 import QuoteStatsRow from './QuoteStatsRow';
 import JobStatusGauge from './JobStatusGauge';
 import JobProductivityRow from './JobProductivityRow';
+import FinancialStatsRow from './FinancialStatsRow';
+import ProductRadarChart from './ProductRadarChart';
 import { getAnalyticsDashboard } from '../../api/getAnalyticsDashboard';
 
 const { RangePicker } = DatePicker;
@@ -130,6 +132,10 @@ const AnalyticsRoot = () => {
             {/* Financial Metrics Section */}
             <div>
                 <h2 className="text-xl font-semibold text-slate-800 mb-4 px-1">Financial Metrics</h2>
+
+                {/* Financial Stats Cards */}
+                <FinancialStatsRow data={data?.financial_metrics} />
+
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 h-[420px]">
                         <RevenueChart data={data?.revenue_trend} />
@@ -153,10 +159,17 @@ const AnalyticsRoot = () => {
                 </div>
             </div>
 
-            {/* Job Metrics Section */}
+            {/* Job and Services Metrics Section */}
             <div>
-                <h2 className="text-xl font-semibold text-slate-800 mb-4 px-1">Job Metrics</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <h2 className="text-xl font-semibold text-slate-800 mb-4 px-1">Job and Services Metrics</h2>
+
+                {/* Job Productivity KPIs */}
+                <JobProductivityRow
+                    productivityData={data?.job_productivity_metrics}
+                    avgJobValue={data?.financial_metrics?.average_job_value}
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                     <div className="h-[400px]">
                         <JobStatusGauge data={data?.job_status_distribution} />
                     </div>
@@ -164,9 +177,14 @@ const AnalyticsRoot = () => {
                         <ServiceLocationChart data={data?.service_location_breakdown} />
                     </div>
                 </div>
+            </div>
 
-                {/* Job Productivity KPIs */}
-                <JobProductivityRow productivityData={data?.job_productivity_metrics} />
+            {/* Product Breakdown Section */}
+            <div>
+                <h2 className="text-xl font-semibold text-slate-800 mb-4 px-1">Product Breakdown</h2>
+                <div className="h-[450px]">
+                    <ProductRadarChart data={data?.product_breakdown} />
+                </div>
             </div>
         </div>
     );

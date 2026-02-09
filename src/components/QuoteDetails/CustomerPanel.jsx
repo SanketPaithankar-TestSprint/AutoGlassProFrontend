@@ -852,10 +852,11 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                             </div>
 
                             <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                                <FormInput label="Company Name *" name="companyName" value={orgFormData.companyName} onChange={handleOrgFormChange} required />
-                                <FormInput label="Tax ID" name="taxId" value={orgFormData.taxId} onChange={handleOrgFormChange} />
-                                <FormInput label="Email" name="email" value={orgFormData.email} onChange={handleOrgFormChange} required />
-                                <FormInput label="Phone" name="phone" value={orgFormData.phone} onChange={handleOrgFormChange} required />
+                                <FormInput label="Company Name" name="companyName" value={orgFormData.companyName} onChange={handleOrgFormChange} onBlur={handleInputBlur} required />
+                                <FormInput label="Tax ID" name="taxId" value={orgFormData.taxId} onChange={handleOrgFormChange} onBlur={handleInputBlur} />
+                                <FormInput label="Email" name="email" value={orgFormData.email} onChange={handleOrgFormChange} onBlur={handleInputBlur} required />
+                                <FormInput label="Phone" name="phone" value={orgFormData.phone} onChange={handleOrgFormChange} onBlur={handleInputBlur} required />
+                                <FormInput label="Contact Person" name="individualName" value={orgFormData.individualName} onChange={handleOrgFormChange} onBlur={handleInputBlur} placeholder="Individual's Name (Optional)" />
 
                                 <div className="col-span-1">
                                     <label className="block text-sm font-medium text-slate-700 mb-1">Contact Name</label>

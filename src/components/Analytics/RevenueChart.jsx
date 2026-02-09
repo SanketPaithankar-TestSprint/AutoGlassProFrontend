@@ -95,7 +95,7 @@ const RevenueChart = ({ data }) => {
                         return gradient;
                     },
                 borderColor: '#7E5CFE',
-                tension: 0.4,
+                tension: 0,
                 pointBackgroundColor: '#7E5CFE',
                 pointBorderColor: '#fff',
                 pointHoverBackgroundColor: '#fff',
