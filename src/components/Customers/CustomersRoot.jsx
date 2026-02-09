@@ -215,11 +215,34 @@ const CustomersRoot = () => {
             const values = await orgForm.validateFields();
             setSaving(true);
             if (editingItem) {
-                const payload = { ...values, userId: editingItem.userId };
+                const payload = {
+                    ...values,
+                    userId: editingItem.userId,
+                    contacts: editingItem.contacts || [], // Preserve existing contacts
+                    contactName: values.contactName || ""
+                };
+
+                // Remove deprecated fields if they exist in values
+                delete payload.city;
+                delete payload.state;
+                delete payload.addressLine2;
+
                 await updateOrganization(editingItem.organizationId, payload);
                 notification.success({ message: "Organization updated" });
             } else {
-                await createOrganization(values);
+                // For new organization
+                const payload = {
+                    ...values,
+                    contacts: [],
+                    contactName: values.contactName || ""
+                };
+
+                // Remove deprecated fields if they exist in values
+                delete payload.city;
+                delete payload.state;
+                delete payload.addressLine2;
+
+                await createOrganization(payload);
                 notification.success({ message: "Organization created" });
             }
             setIsOrgModalVisible(false);
@@ -328,12 +351,8 @@ const CustomersRoot = () => {
                                 </div>
                                 <div className="space-y-1 text-sm text-gray-600">
                                     <div className="flex items-center gap-2">
-                                        <ShopOutlined className="text-gray-400 flex-shrink-0" />
-                                        <span className="truncate">{[org.city, org.state].filter(Boolean).join(", ") || "-"}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-gray-400 text-xs flex-shrink-0">Ph:</span>
-                                        <span className="truncate">{org.phone || "-"}</span>
+                                        <span className="text-gray-400 text-xs flex-shrink-0">Contact:</span>
+                                        <span className="truncate">{org.contactName || "-"}</span>
                                     </div>
                                     {org.taxId && (
                                         <div className="flex items-center gap-2">
@@ -361,7 +380,7 @@ const CustomersRoot = () => {
                                     <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider pl-6">Company Name</th>
                                     <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Email</th>
                                     <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Phone</th>
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Location</th>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Contact</th>
                                     <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Tax ID</th>
                                     <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right pr-6">Actions</th>
                                 </tr>
@@ -380,7 +399,7 @@ const CustomersRoot = () => {
                                             {org.phone || org.companyPhone || org.contactPhone || org.phoneNumber || "-"}
                                         </td>
                                         <td className="p-4 text-sm text-gray-600">
-                                            {[org.city, org.state].filter(Boolean).join(", ") || "-"}
+                                            {org.contactName || "-"}
                                         </td>
                                         <td className="p-4 text-sm text-gray-600 font-mono">{org.taxId || "-"}</td>
                                         <td className="p-4 text-right pr-6">
@@ -530,13 +549,10 @@ const CustomersRoot = () => {
                         <div className="border-t pt-4 mt-2">
                             <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">Address</h4>
                             <Form.Item name="addressLine1" label="Address Line 1"><Input /></Form.Item>
-                            <Form.Item name="addressLine2" label="Address Line 2"><Input /></Form.Item>
-                            <div className="grid grid-cols-3 gap-4">
-                                <Form.Item name="city" label="City"><Input /></Form.Item>
-                                <Form.Item name="state" label="State"><Input /></Form.Item>
+                            <div className="grid grid-cols-2 gap-4">
                                 <Form.Item name="postalCode" label="Zip"><Input /></Form.Item>
+                                <Form.Item name="country" label="Country"><Input /></Form.Item>
                             </div>
-                            <Form.Item name="country" label="Country"><Input /></Form.Item>
                         </div>
                     </Form>
                 </Modal>
