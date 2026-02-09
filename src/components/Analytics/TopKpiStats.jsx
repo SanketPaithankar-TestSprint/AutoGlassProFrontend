@@ -3,25 +3,16 @@ import { ArrowUpOutlined, ArrowDownOutlined, EyeOutlined, ThunderboltOutlined, D
 
 const TopKpiStats = ({ data }) => {
     // Real Data extraction with fallback
-    const adasCount = data?.quote_analysis?.adas_count || 1; // Default to 1 as per user prompt example
+    const adasCount = data?.quote_analysis?.adas_count || 0;
     const conversionRate = data?.quote_analysis?.conversion_rate || 0;
-
-    // Dummy Data
-    const dummyTraffic = 854;
-    const dummyProfit = 12450;
-
-    // Growth Data (Dummy)
-    const incomeGrowth = 15.3;
-    const trafficGrowth = 8.2;
-    const conversionGrowth = -1.5;
-    const adasGrowth = 12.0;
+    const quotesCreated = data?.quote_analysis?.quotes_created || 0; // Quotes created from API
+    // Calculate total income from income breakdown (same as IncomeDistribution component)
+    const totalIncome = (data?.income_breakdown?.parts || 0) + (data?.income_breakdown?.labor || 0) + (data?.income_breakdown?.tax || 0);
 
     const formatCurrency = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
 
-    const HeroKpiCard = ({ title, value, icon, growth, growthLabel, isCurrency }) => {
+    const HeroKpiCard = ({ title, value, icon, isCurrency }) => {
         const displayValue = isCurrency ? formatCurrency(value) : value;
-        const isPositive = growth >= 0;
-        const GrowthIcon = isPositive ? ArrowUpOutlined : ArrowDownOutlined;
 
         return (
             <div className="bg-[#7E5CFE] p-8 rounded-2xl shadow-lg flex flex-col justify-between h-64 relative overflow-hidden group transition-all hover:-translate-y-1 hover:shadow-xl">
@@ -38,15 +29,6 @@ const TopKpiStats = ({ data }) => {
                         {displayValue}{!isCurrency && typeof value === 'number' && title.includes('Rate') ? '%' : ''}
                     </div>
                 </div>
-
-                <div className="relative z-10 mt-auto">
-                    <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-lg border border-white/5">
-                        <span className={`text-sm font-bold flex items-center rounded px-2 py-1 ${isPositive ? 'bg-green-400/30 text-green-200' : 'bg-red-400/30 text-red-200'}`}>
-                            <GrowthIcon className="mr-1" /> {Math.abs(growth)}%
-                        </span>
-                        <span className="text-purple-100 text-sm font-light">{growthLabel || 'vs last month'}</span>
-                    </div>
-                </div>
             </div>
         );
     };
@@ -56,27 +38,23 @@ const TopKpiStats = ({ data }) => {
             {/* 1. Total Income (Profit) */}
             <HeroKpiCard
                 title="Total Income"
-                value={dummyProfit}
+                value={totalIncome}
                 icon={<DollarOutlined />}
-                growth={incomeGrowth}
                 isCurrency={true}
             />
 
-            {/* 2. Enquiry Form Traffic */}
+            {/* 2. Quotes Created */}
             <HeroKpiCard
-                title="Enquiry Traffic"
-                value={dummyTraffic}
-                icon={<EyeOutlined />}
-                growth={trafficGrowth}
-                growthLabel="vs last week"
+                title="Quotes Created"
+                value={quotesCreated}
+                icon={<ThunderboltOutlined />}
             />
 
             {/* 3. Conversion Rate */}
             <HeroKpiCard
                 title="Conversion Rate"
-                value={conversionRate > 0 ? conversionRate : 24.8}
+                value={conversionRate}
                 icon={<CheckCircleOutlined />}
-                growth={conversionGrowth}
             />
 
             {/* 4. ADAS Calibrations (New Metric) */}
@@ -84,7 +62,6 @@ const TopKpiStats = ({ data }) => {
                 title="ADAS Calibrations"
                 value={adasCount}
                 icon={<ScanOutlined />}
-                growth={adasGrowth}
             />
         </div>
     );
