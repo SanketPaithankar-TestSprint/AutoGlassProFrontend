@@ -6,7 +6,7 @@ import { useAuth } from '../context/auth/useAuth';
 import { useProfileDataPrefetch } from '../hooks/useProfileDataPrefetch';
 import useInquiryNotifications from "../hooks/useInquiryNotifications";
 import { getValidToken } from '../api/getValidToken';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 // Simple Logo Component if needed locally, or import shared
 const Logo = ({ className }) => {
@@ -26,6 +26,16 @@ export default function AuthRoot() {
     const prefetchProfileData = useProfileDataPrefetch();
     // const { fetchUnreadCount } = useInquiryNotifications();
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Check location state for signup mode
+    useEffect(() => {
+        if (location.state?.mode === 'signup') {
+            setAuthMode('SIGNUP');
+        } else if (location.state?.mode === 'signin') {
+            setAuthMode('LOGIN');
+        }
+    }, [location.state]);
 
     const handleLoginSuccess = async () => {
         const token = getValidToken();

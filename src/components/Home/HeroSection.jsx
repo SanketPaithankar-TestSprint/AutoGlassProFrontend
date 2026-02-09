@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "antd";
 import { LinkOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import Logo from "../logo";
 import VideoModal from "../VideoModal/VideoModal";
@@ -8,6 +9,7 @@ import BrowserMockup from "../../assets/browser_mockup.png";
 
 const HeroSection = () => {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <section
@@ -70,7 +72,7 @@ const HeroSection = () => {
                 e.currentTarget.style.borderColor = '#7E5CFE';
               }}
               onClick={() => {
-                window.location.href = 'http://localhost:5173/auth';
+                navigate('/auth', { state: { mode: 'signup' } });
               }}
             >
               Start Your Free Trial

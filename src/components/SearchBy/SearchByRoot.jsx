@@ -4,8 +4,7 @@ import { useQuoteStore } from "../../store";
 import { useQueryClient } from "@tanstack/react-query";
 import { useKitPrices } from "../../hooks/usePricing";
 import { getPilkingtonPrice } from "../../api/getVendorPrices";
-import { Modal, Dropdown } from "antd";
-import { DownOutlined } from "@ant-design/icons";
+import { Modal, Select } from "antd";
 import SearchByVin from "./SearchByvin";
 import SearchByYMM from "./SearchByYMM";
 import CarGlassViewer from "../carGlassViewer/CarGlassViewer";
@@ -24,6 +23,7 @@ import 'react-quill-new/dist/quill.snow.css';
 import JobSchedulingPanel from "../QuoteDetails/JobSchedulingPanel";
 import { getEmployees } from "../../api/getEmployees";
 import { getValidToken } from "../../api/getValidToken";
+import DocumentEditorHeader from "./DocumentEditorHeader";
 
 
 const SearchByRoot = () => {
@@ -109,6 +109,9 @@ const SearchByRoot = () => {
 
   // Lifted Document Type State
   const [manualDocType, setManualDocType] = useState('Quote');
+
+  // Lifted Notes State
+  const [showInternalNotes, setShowInternalNotes] = useState(false);
 
   // Modal Context for better visibility/theming
   const [modal, contextHolder] = Modal.useModal();
@@ -900,16 +903,6 @@ const SearchByRoot = () => {
     );
   };
 
-  const tabs = [
-    { id: 'quote', label: 'Quote' },
-    { id: 'customer', label: 'Customer Information' },
-    { id: 'scheduling', label: 'Appointment' },
-    { id: 'insurance', label: 'Insurance' },
-    { id: 'attachment', label: 'Attachment' },
-    { id: 'payment', label: 'Payment' },
-    { id: 'notes', label: 'Notes' },
-  ];
-
   return (
     <div className="bg-slate-200 flex flex-col px-0 pt-0 pb-1 ">
       {contextHolder}
@@ -925,80 +918,14 @@ const SearchByRoot = () => {
 
       <div className="w-full mx-auto space-y-2 flex flex-col max-w-full px-2 lg:px-4 2xl:max-w-[1900px] flex-1">
 
-
-
-        {/* TABS & ACTIONS */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-3 mt-2">
-          <div className="flex justify-start gap-1 overflow-x-auto w-full md:w-auto pb-1 no-scrollbar">
-            {tabs.map(tab => {
-              if (tab.id === 'quote') {
-                if (manualDocType === 'Invoice') {
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab('quote')}
-                      className={`px-4 py-1.5 font-bold text-xs tracking-wide transition-all rounded-md shadow-sm border whitespace-nowrap flex-shrink-0 flex items-center gap-1 ${activeTab === tab.id
-                        ? 'bg-white text-blue-600 border-blue-600'
-                        : 'bg-white text-slate-600 border-slate-200 hover:text-slate-900 hover:border-slate-300'
-                        }`}
-                    >
-                      {manualDocType}
-                    </button>
-                  );
-                }
-
-                return (
-                  <Dropdown
-                    key={tab.id}
-                    menu={{
-                      items: [
-                        { key: 'Quote', label: 'Quote', onClick: () => { setActiveTab('quote'); setManualDocType('Quote'); } },
-                        { key: 'Work Order', label: 'Work Order', onClick: () => { setActiveTab('quote'); setManualDocType('Work Order'); } },
-                        { key: 'Invoice', label: 'Invoice', onClick: () => { setActiveTab('quote'); setManualDocType('Invoice'); } },
-                      ]
-                    }}
-                    trigger={['click']}
-                  >
-                    <button
-                      onClick={() => setActiveTab('quote')}
-                      className={`px-4 py-1.5 font-bold text-xs tracking-wide transition-all rounded-md shadow-sm border whitespace-nowrap flex-shrink-0 flex items-center gap-1 ${activeTab === tab.id
-                        ? 'bg-white text-blue-600 border-blue-600'
-                        : 'bg-white text-slate-600 border-slate-200 hover:text-slate-900 hover:border-slate-300'
-                        }`}
-                    >
-                      {manualDocType} <DownOutlined className="text-[10px]" />
-                    </button>
-                  </Dropdown>
-                );
-              }
-
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`px-4 py-1.5 font-bold text-xs tracking-wide transition-all rounded-md shadow-sm border whitespace-nowrap flex-shrink-0 ${activeTab === tab.id
-                    ? 'bg-white text-blue-600 border-blue-600'
-                    : 'bg-white text-slate-600 border-slate-200 hover:text-slate-900 hover:border-slate-300'
-                    }`}
-                >
-                  {tab.label}
-                </button>
-              )
-            })}
-          </div>
-
-          <div className="md:pr-4 w-full md:w-auto flex justify-end">
-            <button
-              onClick={handleGlobalClear}
-              className="px-3 py-1.5 rounded-md bg-transparent border border-red-200 text-red-600 font-medium text-sm transition-colors hover:bg-red-50 hover:text-red-700 flex items-center gap-1"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-              </svg>
-              Clear All
-            </button>
-          </div>
-        </div>
+        {/* DOCUMENT EDITOR HEADER */}
+        <DocumentEditorHeader
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          manualDocType={manualDocType}
+          setManualDocType={setManualDocType}
+          handleGlobalClear={handleGlobalClear}
+        />
 
         {/* CONTENT AREA */}
         <div className="flex-1 overflow-y-auto">
@@ -1117,30 +1044,66 @@ const SearchByRoot = () => {
               )}
 
               {activeTab === 'notes' && (
-                <div className="p-2 grid grid-cols-1 md:grid-cols-2 gap-4 bg-white shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg">
-                  <div className="space-y-2 h-[250px] flex flex-col ">
-                    <label className="text-sm font-bold text-slate-700">Printable Note <span className="text-slate-400 font-normal">(Customer Notes)</span></label>
-                    <div className="flex-1 overflow-hidden border border-slate-200 rounded-lg">
+                <div className="p-6 space-y-4 bg-gradient-to-br from-white to-slate-50">
+                  {/* Printable Note Section - Always Visible */}
+                  <div className="flex flex-col">
+                    <div className="mb-3 flex items-center gap-2">
+                      <div className="w-1 h-6 bg-emerald-500 rounded-full"></div>
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-900">Printable Note</h3>
+                        <p className="text-xs text-slate-500 font-medium">(Visible to customer)</p>
+                      </div>
+                    </div>
+                    <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md hover:border-slate-300 transition-all bg-white">
                       <ReactQuill
                         theme="snow"
                         value={printableNote}
                         onChange={setPrintableNote}
-                        className="h-[210px]"
+                        className="h-[200px] quill-custom-light"
                         modules={{
                           toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered' }, { 'list': 'bullet' }]]
                         }}
                       />
                     </div>
                   </div>
-                  <div className="space-y-2 h-[250px] flex flex-col">
-                    <label className="text-sm font-bold text-slate-700">Internal Note</label>
-                    <textarea
-                      value={internalNote}
-                      onChange={(e) => setInternalNote(e.target.value)}
-                      className="w-full flex-1 rounded-lg border border-slate-200 p-2 text-xs text-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-yellow-50/50 resize-none shadow-sm"
-                      placeholder="Internal notes for office use only..."
+
+                  {/* Add Internal Notes Checkbox */}
+                  <div className="bg-white rounded-lg border border-slate-200 p-4 flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="addInternalNotes"
+                      checked={showInternalNotes}
+                      onChange={(e) => setShowInternalNotes(e.target.checked)}
+                      className="w-4 h-4 accent-violet-500 cursor-pointer rounded"
                     />
+                    <label htmlFor="addInternalNotes" className="text-sm font-medium text-slate-700 cursor-pointer">
+                      Add Internal Notes?
+                    </label>
                   </div>
+
+                  {/* Internal Note Section - Conditional */}
+                  {showInternalNotes && (
+                    <div className="flex flex-col">
+                      <div className="mb-3 flex items-center gap-2">
+                        <div className="w-1 h-6 bg-violet-500 rounded-full"></div>
+                        <div>
+                          <h3 className="text-sm font-bold text-slate-900">Internal Note</h3>
+                          <p className="text-xs text-slate-500 font-medium">(Private - office use only)</p>
+                        </div>
+                      </div>
+                      <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md hover:border-slate-300 transition-all bg-white">
+                        <ReactQuill
+                          theme="snow"
+                          value={internalNote}
+                          onChange={setInternalNote}
+                          className="h-[200px] quill-custom-light"
+                          modules={{
+                            toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered' }, { 'list': 'bullet' }]]
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

@@ -188,7 +188,7 @@ const ServiceContactFormRoot = () => {
     return (
         <div style={{ padding: '24px' }}>
             <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Title level={2}>Service Inquiries</Title>
+                <h1 className="text-xl font-bold text-slate-900 m-0">Service Inquiries</h1>
                 <Button
                     icon={<ReloadOutlined />}
                     onClick={fetchInquiries}

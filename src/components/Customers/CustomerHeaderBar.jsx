@@ -16,7 +16,7 @@ const CustomerHeaderBar = ({
             {/* Title Section */}
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
                 <div>
-                    <h1 className="text-3xl lg:text-4xl font-bold text-slate-900 tracking-tight">
+                    <h1 className="text-xl font-bold text-slate-900">
                         Customer Management
                     </h1>
                     <p className="text-slate-500 mt-1">

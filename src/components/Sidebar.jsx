@@ -101,6 +101,7 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
             label: <Link to="/customers">Customers</Link>,
         },
         {
+            key: '/search-by-root',
             icon: <FormOutlined />,
             label: <Link to="/search-by-root">Quote</Link>,
         },

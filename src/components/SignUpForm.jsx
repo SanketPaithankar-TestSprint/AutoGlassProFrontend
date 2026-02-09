@@ -14,10 +14,7 @@ import {
 import {
     UserOutlined,
     MailOutlined,
-    LockOutlined,
-    PhoneOutlined,
-    EyeInvisibleOutlined,
-    EyeTwoTone
+    PhoneOutlined
 } from '@ant-design/icons';
 import axios from 'axios';
 import { COUNTRIES, getStatesOrProvinces } from '../const/locations';
@@ -110,7 +107,6 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                 businessName: values.businessName,
                 ownerName: values.ownerName,
                 email: values.email,
-                password: values.password,
                 phone: values.phone,
                 alternatePhone: values.alternatePhone,
                 addressLine1: values.addressLine1,
@@ -158,29 +154,6 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
             setLoading(false);
         }
     };
-
-    const validatePassword = (_, value) => {
-        if (!value) {
-            return Promise.reject(new Error('Please input your password!'));
-        }
-        if (value.length < 6) {
-            return Promise.reject(new Error('Password must be at least 6 characters long!'));
-        }
-        // Keeping the complexity check as it's good practice
-        if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(value)) {
-            return Promise.reject(new Error('Password must contain uppercase, lowercase, number and special character!'));
-        }
-        return Promise.resolve();
-    };
-
-    const validateConfirmPassword = ({ getFieldValue }) => ({
-        validator(_, value) {
-            if (!value || getFieldValue('password') === value) {
-                return Promise.resolve();
-            }
-            return Promise.reject(new Error('The two passwords do not match!'));
-        },
-    });
 
     const handleCountryChange = (value) => {
         setSelectedCountry(value);
@@ -368,8 +341,8 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                     <Col xs={24} sm={12}>
                         <Form.Item
                             name="postalCode"
-                            label="Postal Code"
-                            rules={[{ required: true, message: 'Please input postal code!' }]}
+                            label="Zip Code"
+                            rules={[{ required: true, message: 'Please input zip code!' }]}
                             style={formItemStyle}
                         >
                             <Input placeholder="10001" className="custom-api-input" />
@@ -398,43 +371,6 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             style={formItemStyle}
                         >
                             <Input placeholder="12-3456789" className="custom-api-input" />
-                        </Form.Item>
-                    </Col>
-                </Row>
-
-                <Row gutter={16}>
-                    <Col xs={24} sm={12}>
-                        <Form.Item
-                            name="password"
-                            label="Password"
-                            rules={[{ validator: validatePassword }]}
-                            style={formItemStyle}
-                        >
-                            <Input.Password
-                                prefix={<LockOutlined style={{ color: '#a0aec0' }} />}
-                                placeholder="Password"
-                                iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
-                                className="custom-api-input"
-                            />
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} sm={12}>
-                        <Form.Item
-                            name="confirmPassword"
-                            label="Confirm Password"
-                            dependencies={['password']}
-                            rules={[
-                                { required: true, message: 'Please confirm password!' },
-                                validateConfirmPassword
-                            ]}
-                            style={formItemStyle}
-                        >
-                            <Input.Password
-                                prefix={<LockOutlined style={{ color: '#a0aec0' }} />}
-                                placeholder="Confirm Password"
-                                iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
-                                className="custom-api-input"
-                            />
                         </Form.Item>
                     </Col>
                 </Row>

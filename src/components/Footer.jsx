@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import logo from "../assets/APAI.png";
 import { Link } from "react-router-dom";
 import { Layout, Row, Col, Typography, Space, Divider, Button } from "antd";
 
@@ -25,7 +24,6 @@ const Footer = () => {
           {/* Left: Brand + Copy */}
           <div className="flex items-center gap-3 text-slate-400">
             <div className="flex items-center gap-2">
-              <img src={logo} alt="APAI Logo" className="h-6 w-auto" />
               <span className="font-semibold text-slate-800">APAI</span>
             </div>
             <span className="hidden sm:inline">|</span>
@@ -74,7 +72,6 @@ const Footer = () => {
           {/* Brand Section */}
           <Col xs={24} md={6} lg={6} className="ps-4 md:ps-0">
             <div className="flex items-center gap-2 mb-3">
-              <img src={logo} alt="APAI Logo" className="h-6 w-auto" />
               <span className="font-semibold text-slate-800">APAI</span>
             </div>
 

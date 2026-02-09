@@ -106,7 +106,7 @@ const AnalyticsRoot = () => {
         <div className="p-6 md:p-8 space-y-6 max-w-[1600px] mx-auto">
             <header className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800">Dashboard</h1>
+                    <h1 className="text-xl font-bold text-slate-900">Dashboard</h1>
                     <p className="text-slate-500">Overview of your business performance</p>
                 </div>
 

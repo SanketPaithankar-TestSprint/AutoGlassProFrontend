@@ -703,12 +703,19 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                             <Select
                                                 showSearch
                                                 allowClear
-                                                placeholder="Search by name/phone"
+                                                placeholder="Search by name/phone/email"
                                                 className="w-full"
                                                 loading={loadingCustomers}
-                                                filterOption={(input, option) =>
-                                                    String(option.children).toLowerCase().includes(input.toLowerCase())
-                                                }
+                                                filterOption={(input, option) => {
+                                                    const customer = customers.find(c => c.customerId === option.value);
+                                                    if (!customer) return false;
+                                                    const searchText = input.toLowerCase();
+                                                    return (
+                                                        `${customer.firstName} ${customer.lastName}`.toLowerCase().includes(searchText) ||
+                                                        (customer.phone && customer.phone.toLowerCase().includes(searchText)) ||
+                                                        (customer.email && customer.email.toLowerCase().includes(searchText))
+                                                    );
+                                                }}
                                                 onChange={handleCustomerSelect}
                                                 value={formData.customerId}
                                                 disabled={isDocumentLoaded} // Disable search
@@ -747,12 +754,19 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                             <Select
                                                 showSearch
                                                 allowClear
-                                                placeholder="Search Company..."
+                                                placeholder="Search by name/phone/email"
                                                 className="w-full"
                                                 loading={loadingOrganizations}
-                                                filterOption={(input, option) =>
-                                                    String(option.children).toLowerCase().includes(input.toLowerCase())
-                                                }
+                                                filterOption={(input, option) => {
+                                                    const org = organizations.find(o => o.organizationId === option.value);
+                                                    if (!org) return false;
+                                                    const searchText = input.toLowerCase();
+                                                    return (
+                                                        (org.companyName && org.companyName.toLowerCase().includes(searchText)) ||
+                                                        (org.phone && org.phone.toLowerCase().includes(searchText)) ||
+                                                        (org.email && org.email.toLowerCase().includes(searchText))
+                                                    );
+                                                }}
                                                 onChange={handleOrganizationSelect}
                                                 value={formData.organizationId}
                                                 disabled={isDocumentLoaded} // Disable search
@@ -782,7 +796,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                         <div className="bg-white rounded-md border border-gray-200 shadow-sm flex flex-col shrink-0 animate-slide-up">
                             <div className="bg-violet-50 border-b border-violet-100 px-4 py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                                 <h3 className="text-sm font-bold text-violet-900">
-                                    {orgMode === "NEW" ? "New Organization Details" : "Organization Details"}
+                                    {orgMode === "NEW" ? "Organization Details" : "Organization Details"}
                                 </h3>
                                 <div className="flex items-center gap-2 flex-wrap">
                                     {/* Save button for EXISTING mode */}
@@ -804,7 +818,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                             </div>
 
                             <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                                <FormInput label="Company Name *" name="companyName" value={orgFormData.companyName} onChange={handleOrgFormChange} onBlur={handleInputBlur} required />
+                                <FormInput label="Company Name" name="companyName" value={orgFormData.companyName} onChange={handleOrgFormChange} onBlur={handleInputBlur} required />
                                 <FormInput label="Tax ID" name="taxId" value={orgFormData.taxId} onChange={handleOrgFormChange} onBlur={handleInputBlur} />
                                 <FormInput label="Email" name="email" value={orgFormData.email} onChange={handleOrgFormChange} onBlur={handleInputBlur} required />
                                 <FormInput label="Phone" name="phone" value={orgFormData.phone} onChange={handleOrgFormChange} onBlur={handleInputBlur} required />
@@ -849,8 +863,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                     {/* Customer Form (INDIVIDUAL Mode) */}
                     {clientType === "INDIVIDUAL" && (
                         <div className="bg-white rounded-md border border-gray-200 shadow-sm flex flex-col shrink-0 animate-slide-up">
-                            <div className="bg-gray-50 border-b border-gray-100 px-4 py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                                <h3 className="text-sm font-bold text-gray-800">
+                            <div className="bg-violet-50 border-b border-violet-100 px-4 py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                                <h3 className="text-sm font-bold text-violet-900">
                                     {customerMode === "NEW" ? "New Customer Details" : "Customer Details"}
                                 </h3>
                                 {/* Save button when EXISTING */}
@@ -891,8 +905,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
                     {/* Vehicle Details Section - Moved to Main Panel */}
                     <div className="bg-white rounded-md border border-gray-200 shadow-sm flex flex-col shrink-0 animate-slide-up">
-                        <div className={`${clientType === "BUSINESS" ? "bg-violet-50 border-violet-100" : "bg-gray-50 border-gray-100"} border-b px-4 py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2`}>
-                            <h3 className={`text-sm font-bold ${clientType === "BUSINESS" ? "text-violet-900" : "text-gray-800"}`}>
+                        <div className="bg-violet-50 border-b border-violet-100 px-4 py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                            <h3 className="text-sm font-bold text-violet-900">
                                 Vehicle Details
                             </h3>
 

@@ -123,15 +123,10 @@ const ReportsRoot = () => {
             <div className="max-w-[1200px] mx-auto">
                 {/* Header */}
                 <div className="mb-8">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg">
-                            <FileTextOutlined className="text-white text-lg" />
-                        </div>
-                        <h1 className="text-2xl font-bold bg-gradient-to-r from-violet-700 to-purple-600 bg-clip-text text-transparent">
-                            Sales Reports
-                        </h1>
-                    </div>
-                    <p className="text-slate-500 ml-13">Generate and download sales breakdown reports</p>
+                    <h1 className="text-xl font-bold text-slate-900 mb-2">
+                        Sales Reports
+                    </h1>
+                    <p className="text-slate-500">Generate and download sales breakdown reports</p>
                 </div>
 
                 {/* Controls Card */}

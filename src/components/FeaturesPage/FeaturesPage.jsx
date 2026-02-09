@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Layout, Button } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import {
     FileSearchOutlined,
     FundProjectionScreenOutlined,
@@ -76,6 +77,7 @@ const FeatureBlock = ({ icon, title, description }) => (
 );
 
 const FeaturesPage = () => {
+    const navigate = useNavigate();
     const [isVideoOpen, setIsVideoOpen] = useState(false);
 
     useEffect(() => {
@@ -171,7 +173,7 @@ const FeaturesPage = () => {
     ];
 
     const handleStartTrial = () => {
-        window.location.href = '/auth';
+        navigate('/auth', { state: { mode: 'signup' } });
     };
 
     return (

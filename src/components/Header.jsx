@@ -174,7 +174,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
             <Button
               type="text"
               className="!h-9 !px-2 sm:!px-3 !text-slate-700 hover:!text-[#7E5CFE] !bg-transparent hover:!bg-transparent !border-0 focus:!outline-none focus:!ring-0 focus:!shadow-none hover:!shadow-none active:!shadow-none transition-colors duration-300 !text-[1.1rem]"
-              onClick={() => navigate('/auth')}
+              onClick={() => navigate('/auth', { state: { mode: 'signin' } })}
             >
               Login
             </Button>
@@ -289,14 +289,16 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
 
             {!isAuthed && (
               <div className="px-4 pt-4 border-t border-slate-200 mt-4">
-                <Link to="/auth" onClick={() => setDrawerOpen(false)}>
-                  <Button
-                    type="text"
-                    className="w-full !h-10 !text-slate-700 !bg-transparent hover:!bg-violet-100 !border-0 text-base"
-                  >
-                    Login
-                  </Button>
-                </Link>
+                <Button
+                  type="text"
+                  className="w-full !h-10 !text-slate-700 !bg-transparent hover:!bg-violet-100 !border-0 text-base"
+                  onClick={() => {
+                    setDrawerOpen(false);
+                    navigate('/auth', { state: { mode: 'signin' } });
+                  }}
+                >
+                  Login
+                </Button>
                 <Button
                   type="primary"
                   onClick={() => {
@@ -346,14 +348,16 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
             </ul>
 
             <div className="px-4 pt-4 border-t border-slate-200 mt-4">
-              <Link to="/auth" onClick={() => setDrawerOpen(false)}>
-                <Button
-                  type="text"
-                  className="w-full !h-10 !text-slate-700 !bg-transparent hover:!bg-violet-100 !border-0 text-base"
-                >
-                  Login
-                </Button>
-              </Link>
+              <Button
+                type="text"
+                className="w-full !h-10 !text-slate-700 !bg-transparent hover:!bg-violet-100 !border-0 text-base"
+                onClick={() => {
+                  setDrawerOpen(false);
+                  navigate('/auth', { state: { mode: 'signin' } });
+                }}
+              >
+                Login
+              </Button>
               <Button
                 type="primary"
                 onClick={() => {
