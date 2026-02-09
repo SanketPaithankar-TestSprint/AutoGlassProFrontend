@@ -16,7 +16,7 @@ const RecentActivityTable = ({ data }) => {
     return (
         <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden h-full flex flex-col">
             <div className="p-6 border-b border-slate-100 shrink-0">
-                <h3 className="text-lg font-semibold text-slate-800">Activity</h3>
+                <h3 className="text-lg font-semibold text-slate-800">Quotes Activity</h3>
             </div>
             <div className="overflow-auto flex-1 min-h-0">
                 <table className="w-full text-left text-sm text-slate-600 relative">
@@ -46,20 +46,20 @@ const RecentActivityTable = ({ data }) => {
                                             const s = Number(status);
                                             switch (s) {
                                                 case 0: return { label: 'Draft', className: 'bg-gray-100 text-gray-800' };
-                                                case 1: return { label: 'Quoted', className: 'bg-indigo-100 text-indigo-800' };
+                                                case 1: return { label: 'Quoted', className: 'bg-purple-100 text-purple-800' };
                                                 case 2: return { label: 'Pending', className: 'bg-yellow-100 text-yellow-800' };
-                                                case 3: return { label: 'Confirmed', className: 'bg-blue-100 text-blue-800' };
-                                                case 4: return { label: 'Scheduled', className: 'bg-blue-100 text-blue-800' };
+                                                case 3: return { label: 'Confirmed', className: 'bg-cyan-100 text-cyan-800' };
+                                                case 4: return { label: 'Scheduled', className: 'bg-cyan-100 text-cyan-800' };
                                                 case 5: return { label: 'In Progress', className: 'bg-purple-100 text-purple-800' };
                                                 case 6: return { label: 'Completed', className: 'bg-green-100 text-green-800' };
                                                 case 7: return { label: 'Cancelled', className: 'bg-red-100 text-red-800' };
-                                                case 8: return { label: 'Sent', className: 'bg-indigo-100 text-indigo-800' };
-                                                case 9: return { label: 'Viewed', className: 'bg-indigo-100 text-indigo-800' };
+                                                case 8: return { label: 'Sent', className: 'bg-cyan-100 text-cyan-800' };
+                                                case 9: return { label: 'Viewed', className: 'bg-purple-100 text-purple-800' };
                                                 case 10: return { label: 'Partial Paid', className: 'bg-yellow-100 text-yellow-800' };
                                                 case 11: return { label: 'Paid', className: 'bg-green-100 text-green-800' };
                                                 case 12: return { label: 'Overdue', className: 'bg-red-100 text-red-800' };
                                                 case 13: return { label: 'Refunded', className: 'bg-orange-100 text-orange-800' };
-                                                case 14: return { label: 'Accepted', className: 'bg-green-100 text-green-800' };
+                                                case 14: return { label: 'Accepted', className: 'bg-purple-100 text-purple-800' };
                                                 default: return { label: String(status), className: 'bg-gray-100 text-gray-800' };
                                             }
                                         };

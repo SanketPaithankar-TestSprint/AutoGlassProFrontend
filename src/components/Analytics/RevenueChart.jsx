@@ -78,15 +78,30 @@ const RevenueChart = ({ data }) => {
             {
                 label: 'Total Revenue',
                 data: processedData.values,
-                fill: false,
-                backgroundColor: viewType === 'monthly' ? 'rgb(124, 58, 237)' : 'rgba(124, 58, 237, 0.2)',
-                borderColor: 'rgb(124, 58, 237)', // Violet-600
-                tension: 0, // Straight lines
-                pointBackgroundColor: 'rgb(124, 58, 237)',
+                fill: viewType === 'daily',
+                backgroundColor: viewType === 'monthly'
+                    ? (context) => {
+                        const ctx = context.chart.ctx;
+                        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                        gradient.addColorStop(0, '#7E5CFE');
+                        gradient.addColorStop(1, '#00A8E4');
+                        return gradient;
+                    }
+                    : (context) => {
+                        const ctx = context.chart.ctx;
+                        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                        gradient.addColorStop(0, 'rgba(126, 92, 254, 0.2)');
+                        gradient.addColorStop(1, 'rgba(0, 168, 228, 0.1)');
+                        return gradient;
+                    },
+                borderColor: '#7E5CFE',
+                tension: 0,
+                pointBackgroundColor: '#7E5CFE',
                 pointBorderColor: '#fff',
                 pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: 'rgb(124, 58, 237)',
-                borderRadius: viewType === 'monthly' ? 4 : 0,
+                pointHoverBorderColor: '#00A8E4',
+                borderRadius: viewType === 'monthly' ? 8 : 0,
+                borderWidth: 2,
             },
         ],
     };

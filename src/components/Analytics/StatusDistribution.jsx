@@ -37,22 +37,22 @@ const StatusDistribution = ({ data }) => {
                 backgroundColor: data.map(item => {
                     const s = Number(item.status);
                     switch (s) {
-                        case 0: return '#9ca3af'; // Draft: Gray
-                        case 1: return '#818cf8'; // Quoted: Indigo
-                        case 2: return '#facc15'; // Pending: Yellow
-                        case 3: return '#60a5fa'; // Confirmed: Blue
-                        case 4: return '#22d3ee'; // Scheduled: Cyan
-                        case 5: return '#c084fc'; // In Progress: Purple
-                        case 6: return '#4ade80'; // Completed: Green
-                        case 7: return '#f87171'; // Cancelled: Red
-                        case 8: return '#2dd4bf'; // Sent: Teal
-                        case 9: return '#f472b6'; // Viewed: Pink
-                        case 10: return '#fbbf24'; // Partial Paid: Amber
-                        case 11: return '#34d399'; // Paid: Emerald
-                        case 12: return '#ef4444'; // Overdue: Red
-                        case 13: return '#fb923c'; // Refunded: Orange
-                        case 14: return '#a3e635'; // Accepted: Lime
-                        default: return '#cbd5e1'; // Fallback: Slate
+                        case 0: return '#94A3B8'; // Draft: Slate
+                        case 1: return '#7E5CFE'; // Quoted: Primary Purple
+                        case 2: return '#FFC107'; // Pending: Amber/Gold
+                        case 3: return '#00A8E4'; // Confirmed: Primary Cyan
+                        case 4: return '#3B82F6'; // Scheduled: Royal Blue
+                        case 5: return '#8B5CF6'; // In Progress: Violet
+                        case 6: return '#10B981'; // Completed: Emerald
+                        case 7: return '#EF4444'; // Cancelled: Red
+                        case 8: return '#06B6D4'; // Sent: Cyan-Teal
+                        case 9: return '#EC4899'; // Viewed: Pink/Magenta
+                        case 10: return '#F59E0B'; // Partial Paid: Orange
+                        case 11: return '#059669'; // Paid: Darker Emerald
+                        case 12: return '#DC2626'; // Overdue: Dark Red
+                        case 13: return '#F97316'; // Refunded: Bright Orange
+                        case 14: return '#6366F1'; // Accepted: Indigo
+                        default: return '#CBD5E1'; // Fallback: Light Slate
                     }
                 }),
                 borderWidth: 1,

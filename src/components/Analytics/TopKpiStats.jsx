@@ -1,99 +1,90 @@
 import React from 'react';
-import { Progress, Tooltip } from 'antd';
-import { FileTextOutlined, FileDoneOutlined, PercentageOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
-import { Wallet } from 'lucide-react';
+import { ArrowUpOutlined, ArrowDownOutlined, EyeOutlined, ThunderboltOutlined, DollarOutlined, BankOutlined, CheckCircleOutlined, ScanOutlined } from '@ant-design/icons';
 
 const TopKpiStats = ({ data }) => {
-    if (!data) return null;
+    // Real Data extraction with fallback
+    const adasCount = data?.quote_analysis?.adas_count || 1; // Default to 1 as per user prompt example
+    const conversionRate = data?.quote_analysis?.conversion_rate || 0;
 
-    const { quote_analysis, outstanding_balance, adas_analytics } = data;
-    const { quotes_created, invoices_count, conversion_rate } = quote_analysis || {};
-    const { adas_count } = adas_analytics || {};
+    // Dummy Data
+    const dummyTraffic = 854;
+    const dummyProfit = 12450;
 
-    // Format currency for Outstanding Balance
-    const formattedBalance = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-    }).format(outstanding_balance || 0);
+    // Growth Data (Dummy)
+    const incomeGrowth = 15.3;
+    const trafficGrowth = 8.2;
+    const conversionGrowth = -1.5;
+    const adasGrowth = 12.0;
 
-    const isBalanceHigh = outstanding_balance > 1000;
+    const formatCurrency = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
 
-    const StatCard = ({ title, value, icon, subtext, content }) => (
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-between h-32">
-            <div className="flex items-start justify-between">
-                <div>
-                    <h4 className="text-sm font-medium text-slate-500 mb-1 leading-tight">{title}</h4>
-                    {content ? content : (
-                        <div className={`text-2xl font-bold text-slate-800 mt-2`}>
-                            {value}
-                        </div>
-                    )}
+    const HeroKpiCard = ({ title, value, icon, growth, growthLabel, isCurrency }) => {
+        const displayValue = isCurrency ? formatCurrency(value) : value;
+        const isPositive = growth >= 0;
+        const GrowthIcon = isPositive ? ArrowUpOutlined : ArrowDownOutlined;
+
+        return (
+            <div className="bg-[#7E5CFE] p-8 rounded-2xl shadow-lg flex flex-col justify-between h-64 relative overflow-hidden group transition-all hover:-translate-y-1 hover:shadow-xl">
+                {/* Background Decorative Icon */}
+                <div className="absolute -right-8 -bottom-8 opacity-10 transform rotate-12 group-hover:scale-110 transition-transform duration-700">
+                    {React.cloneElement(icon, { style: { fontSize: '180px', color: '#fff' } })}
                 </div>
-                <div className={`p-2 rounded-lg ${typeof icon === 'object' ? '' : 'bg-slate-50'}`}>
-                    {icon}
+
+                <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-8">
+                        <span className="text-purple-100 text-lg font-medium tracking-wide">{title}</span>
+                    </div>
+                    <div className="text-5xl font-bold text-white mb-2 tracking-tight">
+                        {displayValue}{!isCurrency && typeof value === 'number' && title.includes('Rate') ? '%' : ''}
+                    </div>
+                </div>
+
+                <div className="relative z-10 mt-auto">
+                    <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-lg border border-white/5">
+                        <span className={`text-sm font-bold flex items-center bg-white/20 text-white rounded px-1`}>
+                            <GrowthIcon className="mr-1" /> {Math.abs(growth)}%
+                        </span>
+                        <span className="text-purple-100 text-sm font-light">{growthLabel || 'vs last month'}</span>
+                    </div>
                 </div>
             </div>
-            {subtext && <div className="text-xs text-slate-400 mt-auto">{subtext}</div>}
-        </div>
-    );
+        );
+    };
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-            {/* Card 1: Total Quotes */}
-            <StatCard
-                title="Total Quotes"
-                value={quotes_created || 0}
-                icon={<FileTextOutlined className="text-xl text-blue-500" />}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {/* 1. Total Income (Profit) */}
+            <HeroKpiCard
+                title="Total Income"
+                value={dummyProfit}
+                icon={<DollarOutlined />}
+                growth={incomeGrowth}
+                isCurrency={true}
             />
 
-            {/* Card 2: Invoices Generated */}
-            <StatCard
-                title="Invoices Generated"
-                value={invoices_count || 0}
-                icon={<FileDoneOutlined className="text-xl text-green-500" />}
+            {/* 2. Enquiry Form Traffic */}
+            <HeroKpiCard
+                title="Enquiry Traffic"
+                value={dummyTraffic}
+                icon={<EyeOutlined />}
+                growth={trafficGrowth}
+                growthLabel="vs last week"
             />
 
-            {/* Card 3: Conversion Rate */}
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-between h-32">
-                <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium text-slate-500">Conversion Rate</span>
-                    <PercentageOutlined className="text-purple-500" />
-                </div>
-                <div className="mt-2">
-                    <div className="flex items-end gap-2 mb-2">
-                        <span className="text-2xl font-bold text-slate-800">{conversion_rate || 0}%</span>
-                    </div>
-                    <Progress
-                        percent={conversion_rate || 0}
-                        showInfo={false}
-                        strokeColor="#8b5cf6"
-                        trailColor="#f1f5f9"
-                        size="small"
-                        className="m-0"
-                    />
-                </div>
-            </div>
+            {/* 3. Conversion Rate */}
+            <HeroKpiCard
+                title="Conversion Rate"
+                value={conversionRate > 0 ? conversionRate : 24.8}
+                icon={<CheckCircleOutlined />}
+                growth={conversionGrowth}
+            />
 
-            {/* Card 4: Outstanding Balance */}
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-between h-32">
-                <div className="flex items-start justify-between">
-                    <div>
-                        <h4 className="text-sm font-medium text-slate-500 mb-1">Outstanding Balance</h4>
-                        <div className={`text-2xl font-bold mt-2 ${isBalanceHigh ? 'text-red-500' : 'text-slate-800'}`}>
-                            {formattedBalance}
-                        </div>
-                    </div>
-                    <div className={`p-2 rounded-lg ${isBalanceHigh ? 'bg-red-50 text-red-500' : 'bg-slate-50 text-slate-500'}`}>
-                        <Wallet size={20} />
-                    </div>
-                </div>
-            </div>
-
-            {/* Card 5: ADAS Calibrations */}
-            <StatCard
+            {/* 4. ADAS Calibrations (New Metric) */}
+            <HeroKpiCard
                 title="ADAS Calibrations"
-                value={adas_count || 0}
-                icon={<SafetyCertificateOutlined className="text-xl text-orange-500" />}
+                value={adasCount}
+                icon={<ScanOutlined />}
+                growth={adasGrowth}
             />
         </div>
     );

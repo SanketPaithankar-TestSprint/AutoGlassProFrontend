@@ -26,12 +26,12 @@ const ServiceLocationChart = ({ data }) => {
             {
                 data: [in_shop_count, mobile_count],
                 backgroundColor: [
-                    'rgba(59, 130, 246, 0.8)', // blue-500
-                    'rgba(16, 185, 129, 0.8)', // emerald-500
+                    'rgba(126, 92, 254, 0.8)', // Primary Purple
+                    'rgba(0, 168, 228, 0.8)', // Primary Cyan
                 ],
                 borderColor: [
-                    'rgba(59, 130, 246, 1)',
-                    'rgba(16, 185, 129, 1)',
+                    'rgba(126, 92, 254, 1)',
+                    'rgba(0, 168, 228, 1)',
                 ],
                 borderWidth: 1,
             },
