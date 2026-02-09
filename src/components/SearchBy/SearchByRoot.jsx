@@ -57,7 +57,14 @@ const SearchByRoot = () => {
 
   // Edit Workflow State
   const [isSaved, setIsSaved] = useState(false);
-  const [docMetadata, setDocMetadata] = useState(null);
+  const [docMetadata, setDocMetadata] = useState(() => {
+    const saved = localStorage.getItem("agp_doc_metadata");
+    if (saved) {
+      try { return JSON.parse(saved); }
+      catch (e) { console.error("Failed to parse saved doc metadata", e); }
+    }
+    return null;
+  });
   const [isEditMode, setIsEditMode] = useState(false);
   const [createdDocumentNumber, setCreatedDocumentNumber] = useState(null);
   const [lastRemovedPartKey, setLastRemovedPartKey] = useState(null); // Track last removed part for CarGlassViewer sync
@@ -157,6 +164,15 @@ const SearchByRoot = () => {
       // 0. Set Metadata & Saved State
       setIsSaved(true);
       if (serviceDocument) {
+        // Persist metadata immediately
+        localStorage.setItem("agp_doc_metadata", JSON.stringify({
+          documentNumber: serviceDocument.documentNumber,
+          documentType: serviceDocument.documentType,
+          documentDate: serviceDocument.documentDate,
+          createdAt: serviceDocument.createdAt,
+          updatedAt: serviceDocument.updatedAt
+        }));
+
         setDocMetadata({
           documentNumber: serviceDocument.documentNumber,
           documentType: serviceDocument.documentType,
@@ -408,6 +424,7 @@ const SearchByRoot = () => {
       // 0. Ensure New Quote Mode
       setIsSaved(false);
       setDocMetadata(null);
+      localStorage.removeItem("agp_doc_metadata");
       if (incomingAiContactFormId) {
         setAiContactFormId(incomingAiContactFormId);
       }
@@ -484,6 +501,13 @@ const SearchByRoot = () => {
       localStorage.setItem("agp_customer_data", JSON.stringify(customerData));
     }
   }, [customerData]);
+
+  // Persist Metadata
+  useEffect(() => {
+    if (docMetadata) {
+      localStorage.setItem("agp_doc_metadata", JSON.stringify(docMetadata));
+    }
+  }, [docMetadata]);
 
   // Handle VIN decode - now receives all IDs directly from API
   const handleVinDecoded = async (data) => {
@@ -814,6 +838,8 @@ const SearchByRoot = () => {
     const performClear = () => {
       // 1. Clear Local Storage FIRST
       localStorage.removeItem("agp_customer_data");
+      localStorage.removeItem("agp_doc_metadata");
+      localStorage.removeItem("agp_quote_store");
 
       // 2. Reset Store (Global State)
       resetStore();

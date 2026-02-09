@@ -438,10 +438,10 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
         if (!formData.customerId) return;
 
 
-        if (!formData.email || formData.email.trim() === "") {
+        if (!formData.firstName || formData.firstName.trim() === "") {
             notification.error({
                 message: "Validation Error",
-                description: "Email is required.",
+                description: "Name is required.",
                 placement: "topRight"
             });
             return;
@@ -670,14 +670,24 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
             }
         } else {
             // Check Customer contact
-            const email = formData.email || "";
-            const phone = formData.phone || "";
-            const hasCustomerContact = email.trim().length > 0 || phone.trim().length > 0;
 
-            if (!hasCustomerContact) {
+            const hasPhone = phone.trim().length > 0;
+
+            if (!hasPhone) {
                 notification.error({
                     message: "Missing Contact Information",
-                    description: "Please provide at least one contact method (email or phone number) for the customer.",
+                    description: "Phone number is required.",
+                    placement: "topRight",
+                    duration: 4
+                });
+                return false;
+            }
+            // Check Customer name
+            const firstName = formData.firstName || "";
+            if (!firstName.trim().length > 0) {
+                notification.error({
+                    message: "Missing Customer Information",
+                    description: "First Name is required.",
                     placement: "topRight",
                     duration: 4
                 });
@@ -964,7 +974,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
                                     <FormInput label="First Name" name="firstName" value={formData.firstName} onChange={handleChange} onBlur={handleInputBlur} required />
                                     <FormInput label="Last Name" name="lastName" value={formData.lastName} onChange={handleChange} onBlur={handleInputBlur} />
-                                    <FormInput label="Email" name="email" value={formData.email} onChange={handleChange} onBlur={handleInputBlur} type="email" required />
+                                    <FormInput label="Email" name="email" value={formData.email} onChange={handleChange} onBlur={handleInputBlur} type="email" />
                                     <FormInput label="Phone" name="phone" value={formData.phone} onChange={handleChange} onBlur={handleInputBlur} required />
                                 </div>
                                 <div className="mt-2">
