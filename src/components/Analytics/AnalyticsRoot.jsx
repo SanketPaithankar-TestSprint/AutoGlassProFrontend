@@ -8,20 +8,17 @@ import StatusDistribution from './StatusDistribution';
 import TopKpiStats from './TopKpiStats';
 import ServiceLocationChart from './ServiceLocationChart';
 import RecentActivityTable from './RecentActivityTable';
+import QuoteStatsRow from './QuoteStatsRow';
+import JobStatusGauge from './JobStatusGauge';
+import JobProductivityRow from './JobProductivityRow';
 import { getAnalyticsDashboard } from '../../api/getAnalyticsDashboard';
-
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
 
 const AnalyticsRoot = () => {
     // We need the userId. Ideally, this should come from context or a user profile hook.
-    // For now, we will rely on the API service fetching the token and the backend handling user identity,
-    // OR we can fetch the profile first if the analytics API strictly requires a userId parameter.
-    // Looking at the prompt, the API endpoint is `.../dashboard?user_id=2`.
-    // So we need to get the userId.
-
-    // We can try to get it from sessionStorage as seen in getProfile.js: sessionStorage.setItem('userId', profileData.userId);
+    // For now, we will rely on the API service fetching the token and the backend handling user identity.
     const userId = sessionStorage.getItem('userId');
 
     const [filterType, setFilterType] = React.useState('all_time');
@@ -60,16 +57,11 @@ const AnalyticsRoot = () => {
         queryKey: ['analyticsDashboard', userId, dateParams],
         queryFn: async () => {
             if (!userId) {
-                // If no userId in session, maybe we should fetch profile? 
-                // However, for this implementation, let's assume valid session or let the API handle it if userId is missing/null/handled via token
-                // If the prompt strictly said pass user_id, we need it. 
-                // Let's fallback to "me" or handle it if the API supports it, otherwise throwing error.
-                // Re-reading Step 1: "Parameters: user_id (get from your auth context/store)"
                 throw new Error("User ID not found. Please ensure you are logged in.");
             }
             return getAnalyticsDashboard(userId, dateParams.startDate, dateParams.endDate);
         },
-        enabled: !!userId, // specific dependent query
+        enabled: !!userId,
     });
 
     if (!userId) {
@@ -101,10 +93,9 @@ const AnalyticsRoot = () => {
         );
     }
 
-
     return (
-        <div className="p-6 md:p-8 space-y-6 max-w-[1600px] mx-auto">
-            <header className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="p-6 md:p-8 space-y-8 max-w-[1600px] mx-auto">
+            <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-xl font-bold text-slate-900">Dashboard</h1>
                     <p className="text-slate-500">Overview of your business performance</p>
@@ -133,30 +124,49 @@ const AnalyticsRoot = () => {
                 </div>
             </header>
 
-            {/* Top Stats Row */}
+            {/* Top KPIs Overview */}
             <TopKpiStats data={data} />
 
-            {/* Revenue & Activity Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 h-[450px]">
-                    <RevenueChart data={data?.revenue_trend} />
+            {/* Financial Metrics Section */}
+            <div>
+                <h2 className="text-xl font-semibold text-slate-800 mb-4 px-1">Financial Metrics</h2>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="lg:col-span-2 h-[420px]">
+                        <RevenueChart data={data?.revenue_trend} />
+                    </div>
+                    <div className="h-[420px]">
+                        <IncomeDistribution data={data?.income_breakdown} />
+                    </div>
                 </div>
-                <div className="h-[450px]">
+            </div>
+
+            {/* Quote Metrics Section */}
+            <div>
+                <h2 className="text-xl font-semibold text-slate-800 mb-4 px-1">Quote Metrics</h2>
+
+                {/* Specific Quote Metrics Row */}
+                <QuoteStatsRow quoteAnalysis={data?.quote_analysis} />
+
+                {/* Recent Activity Table */}
+                <div className="h-[400px] mt-6">
                     <RecentActivityTable data={data?.recent_activity} />
                 </div>
             </div>
 
-            {/* Distribution Charts Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="h-[350px]">
-                    <IncomeDistribution data={data?.income_breakdown} />
+            {/* Job Metrics Section */}
+            <div>
+                <h2 className="text-xl font-semibold text-slate-800 mb-4 px-1">Job Metrics</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="h-[400px]">
+                        <JobStatusGauge data={data?.job_status_distribution} />
+                    </div>
+                    <div className="h-[400px]">
+                        <ServiceLocationChart data={data?.service_location_breakdown} />
+                    </div>
                 </div>
-                <div className="h-[350px]">
-                    <StatusDistribution data={data?.job_status_distribution} />
-                </div>
-                <div className="h-[350px]">
-                    <ServiceLocationChart data={data?.service_location_breakdown} />
-                </div>
+
+                {/* Job Productivity KPIs */}
+                <JobProductivityRow productivityData={data?.job_productivity_metrics} />
             </div>
         </div>
     );
