@@ -118,7 +118,25 @@ export default function PaymentPanel({ paymentData, setPaymentData, existingPaym
 
     return (
         <div className="h-full flex flex-col gap-4">
-            {/* Existing Payments List - MOVED TO TOP */}
+            {/* Payment Summary - MOVED TO TOP */}
+            <div className="bg-slate-50 border border-slate-200 rounded-md p-4 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="flex flex-col items-center md:items-start">
+                    <span className="text-xs text-slate-500 uppercase font-bold tracking-wider">Total Amount</span>
+                    <span className="text-lg font-bold text-slate-900">{formatCurrency(totalAmount)}</span>
+                </div>
+                <div className="flex flex-col items-center md:items-start">
+                    <span className="text-xs text-slate-500 uppercase font-bold tracking-wider">Total Paid</span>
+                    <span className="text-lg font-bold text-emerald-600">{formatCurrency(totalPaid)}</span>
+                </div>
+                <div className="flex flex-col items-center md:items-end bg-white px-6 py-2 rounded-lg border border-slate-200 shadow-sm">
+                    <span className="text-xs text-slate-500 uppercase font-bold tracking-wider">Balance Due</span>
+                    <span className={`text-xl font-extrabold ${balanceDue > 0 ? 'text-amber-600' : 'text-slate-400'}`}>
+                        {formatCurrency(balanceDue)}
+                    </span>
+                </div>
+            </div>
+
+            {/* Existing Payments List */}
             {existingPayments.length > 0 && (
                 <div className="bg-white rounded-md border border-gray-200 shadow-sm overflow-hidden">
                     <h3 className="text-sm font-bold text-gray-800 bg-gray-50 px-4 py-2 border-b">Payment History</h3>
@@ -251,54 +269,8 @@ export default function PaymentPanel({ paymentData, setPaymentData, existingPaym
                 </div>
             )}
 
-            {/* Payment Terms */}
-            <div className="bg-white rounded-md border border-gray-200 shadow-sm p-4">
-                <h3 className="text-sm font-bold text-gray-800 mb-3">Payment Terms</h3>
-                <div className="flex flex-col gap-2">
-                    <select
-                        value={paymentTerms}
-                        onChange={(e) => onPaymentTermsChange && onPaymentTermsChange(e.target.value)}
-                        className="w-full max-w-xs border border-gray-200 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-violet-500 focus:border-violet-500 outline-none transition-all bg-white"
-                    >
-                        <option value="">Select Terms</option>
-                        {PAYMENT_TERMS.map((term) => (
-                            <option key={term.value} value={term.value}>
-                                {term.label}
-                            </option>
-                        ))}
-                    </select>
-                    {paymentTerms === 'Custom' && (
-                        <input
-                            type="text"
-                            value={customPaymentTerms}
-                            onChange={(e) => onCustomPaymentTermsChange && onCustomPaymentTermsChange(e.target.value)}
-                            placeholder="Enter custom terms"
-                            className="w-full max-w-xs border border-gray-200 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-violet-500 focus:border-violet-500 outline-none transition-all"
-                        />
-                    )}
-                </div>
-            </div>
-
-            {/* Payment Summary */}
-            <div className="bg-slate-50 border border-slate-200 rounded-md p-4 flex flex-col md:flex-row justify-between items-center gap-4">
-                <div className="flex flex-col items-center md:items-start">
-                    <span className="text-xs text-slate-500 uppercase font-bold tracking-wider">Total Amount</span>
-                    <span className="text-lg font-bold text-slate-900">{formatCurrency(totalAmount)}</span>
-                </div>
-                <div className="flex flex-col items-center md:items-start">
-                    <span className="text-xs text-slate-500 uppercase font-bold tracking-wider">Total Paid</span>
-                    <span className="text-lg font-bold text-emerald-600">{formatCurrency(totalPaid)}</span>
-                </div>
-                <div className="flex flex-col items-center md:items-end bg-white px-6 py-2 rounded-lg border border-slate-200 shadow-sm">
-                    <span className="text-xs text-slate-500 uppercase font-bold tracking-wider">Balance Due</span>
-                    <span className={`text-xl font-extrabold ${balanceDue > 0 ? 'text-amber-600' : 'text-slate-400'}`}>
-                        {formatCurrency(balanceDue)}
-                    </span>
-                </div>
-            </div>
-
             {/* New Payment Entry - FULL WIDTH, REDUCED HEIGHT */}
-            <div className="bg-white rounded-md border border-gray-200 shadow-sm p-4 animate-fade-in w-full">
+            <div className="w-full bg-white rounded-md border border-gray-200 shadow-sm p-4 animate-fade-in">
                 <div className="flex justify-between items-center mb-3 border-b pb-2">
                     <h3 className="text-sm font-bold text-gray-800">Add New Payment</h3>
                     <button
@@ -310,7 +282,35 @@ export default function PaymentPanel({ paymentData, setPaymentData, existingPaym
                     </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
+                    {/* Payment Terms - Moved here */}
+                    <div className="flex flex-col gap-1">
+                        <label className="text-xs font-semibold text-gray-500">
+                            Payment Terms
+                        </label>
+                        <select
+                            value={paymentTerms}
+                            onChange={(e) => onPaymentTermsChange && onPaymentTermsChange(e.target.value)}
+                            className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-violet-500 focus:border-violet-500 outline-none transition-all bg-white"
+                        >
+                            <option value="">Select Terms</option>
+                            {PAYMENT_TERMS.map((term) => (
+                                <option key={term.value} value={term.value}>
+                                    {term.label}
+                                </option>
+                            ))}
+                        </select>
+                        {paymentTerms === 'Custom' && (
+                            <input
+                                type="text"
+                                value={customPaymentTerms}
+                                onChange={(e) => onCustomPaymentTermsChange && onCustomPaymentTermsChange(e.target.value)}
+                                placeholder="Enter custom terms"
+                                className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-violet-500 focus:border-violet-500 outline-none transition-all mt-1"
+                            />
+                        )}
+                    </div>
+
                     {/* Amount */}
                     <div className="flex flex-col gap-1">
                         <label className="text-xs font-semibold text-gray-500">
