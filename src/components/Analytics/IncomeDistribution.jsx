@@ -16,9 +16,9 @@ const IncomeDistribution = ({ data }) => {
                 label: 'Income Distribution',
                 data: [data.parts || 0, data.labor || 0, data.tax || 0],
                 backgroundColor: [
-                    'rgb(59, 130, 246)', // Blue-500
-                    'rgb(16, 185, 129)', // Emerald-500
-                    'rgb(245, 158, 11)', // Amber-500
+                    '#7E5CFE', // Primary Purple
+                    '#00A8E4', // Primary Cyan
+                    '#EC4899', // Pink/Magenta for contrast
                 ],
                 borderWidth: 0,
                 hoverOffset: 4,

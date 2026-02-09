@@ -43,21 +43,21 @@ const TopKpiStats = ({ data }) => {
             <StatCard
                 title="Total Quotes"
                 value={quotes_created || 0}
-                icon={<FileTextOutlined className="text-xl text-blue-500" />}
+                icon={<FileTextOutlined className="text-xl" style={{ color: '#7E5CFE' }} />}
             />
 
             {/* Card 2: Invoices Generated */}
             <StatCard
                 title="Invoices Generated"
                 value={invoices_count || 0}
-                icon={<FileDoneOutlined className="text-xl text-green-500" />}
+                icon={<FileDoneOutlined className="text-xl" style={{ color: '#7E5CFE' }} />}
             />
 
             {/* Card 3: Conversion Rate */}
             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-between h-32">
                 <div className="flex items-center justify-between mb-1">
                     <span className="text-sm font-medium text-slate-500">Conversion Rate</span>
-                    <PercentageOutlined className="text-purple-500" />
+                    <PercentageOutlined className="text-xl" style={{ color: '#7E5CFE' }} />
                 </div>
                 <div className="mt-2">
                     <div className="flex items-end gap-2 mb-2">
@@ -66,7 +66,7 @@ const TopKpiStats = ({ data }) => {
                     <Progress
                         percent={conversion_rate || 0}
                         showInfo={false}
-                        strokeColor="#8b5cf6"
+                        strokeColor="#7E5CFE"
                         trailColor="#f1f5f9"
                         size="small"
                         className="m-0"
@@ -83,7 +83,7 @@ const TopKpiStats = ({ data }) => {
                             {formattedBalance}
                         </div>
                     </div>
-                    <div className={`p-2 rounded-lg ${isBalanceHigh ? 'bg-red-50 text-red-500' : 'bg-slate-50 text-slate-500'}`}>
+                    <div className={`p-2 rounded-lg ${isBalanceHigh ? 'bg-red-50' : 'bg-slate-50'}`} style={{ color: '#7E5CFE' }}>
                         <Wallet size={20} />
                     </div>
                 </div>
@@ -93,7 +93,7 @@ const TopKpiStats = ({ data }) => {
             <StatCard
                 title="ADAS Calibrations"
                 value={adas_count || 0}
-                icon={<SafetyCertificateOutlined className="text-xl text-orange-500" />}
+                icon={<SafetyCertificateOutlined className="text-xl" style={{ color: '#7E5CFE' }} />}
             />
         </div>
     );
