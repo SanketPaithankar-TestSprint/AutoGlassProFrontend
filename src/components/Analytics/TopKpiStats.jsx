@@ -41,7 +41,7 @@ const TopKpiStats = ({ data }) => {
 
                 <div className="relative z-10 mt-auto">
                     <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-lg border border-white/5">
-                        <span className={`text-sm font-bold flex items-center bg-white/20 text-white rounded px-1`}>
+                        <span className={`text-sm font-bold flex items-center rounded px-2 py-1 ${isPositive ? 'bg-green-400/30 text-green-200' : 'bg-red-400/30 text-red-200'}`}>
                             <GrowthIcon className="mr-1" /> {Math.abs(growth)}%
                         </span>
                         <span className="text-purple-100 text-sm font-light">{growthLabel || 'vs last month'}</span>

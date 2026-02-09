@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Layout, Button } from 'antd';
+import { Layout, Button, Collapse } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import {
     FileSearchOutlined,
@@ -257,6 +257,77 @@ const FeaturesPage = () => {
                     </div>
                 ))}
             </div>
+
+            {/* FAQ Section */}
+            <AnimatedSection>
+                <div className="max-w-4xl mx-auto mt-24 px-5">
+                    <div className="text-center mb-12">
+                        <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3">Frequently Asked Questions</h2>
+                        <p className="text-slate-600">Find answers to common questions about AutoPaneAi features and functionality</p>
+                    </div>
+
+                    <Collapse
+                        items={[
+                            {
+                                key: '1',
+                                label: <span className="font-semibold text-slate-900">What document types does AutoPaneAi support?</span>,
+                                children: (
+                                    <p className="text-slate-700 leading-relaxed">
+                                        AutoPaneAi supports multiple document types including Quotes, Invoices, Work Orders, and Composite Service Documents. Each document type includes customizable fields, automatic calculations, and export capabilities to PDF format.
+                                    </p>
+                                ),
+                                style: { borderRadius: '8px', marginBottom: '8px' }
+                            },
+                            {
+                                key: '2',
+                                label: <span className="font-semibold text-slate-900">Can I manage multiple customers and vehicles?</span>,
+                                children: (
+                                    <p className="text-slate-700 leading-relaxed">
+                                        Yes! AutoPaneAi features a comprehensive Customer Management system where you can store unlimited customer profiles with contact information, phone numbers, emails, vehicles, and service history. Quickly search and filter customers by name, phone, or email for easy access.
+                                    </p>
+                                ),
+                                style: { borderRadius: '8px', marginBottom: '8px' }
+                            },
+                            {
+                                key: '3',
+                                label: <span className="font-semibold text-slate-900">How does the scheduling system work?</span>,
+                                children: (
+                                    <p className="text-slate-700 leading-relaxed">
+                                        The integrated scheduling system allows you to manage appointments, assign tasks to employees, and track service dates. View your schedule in Calendar, Kanban Board, or Table view. Never miss a scheduled appointment with built-in notifications.
+                                    </p>
+                                ),
+                                style: { borderRadius: '8px', marginBottom: '8px' }
+                            },
+                            {
+                                key: '4',
+                                label: <span className="font-semibold text-slate-900">Can I track payments and invoices?</span>,
+                                children: (
+                                    <p className="text-slate-700 leading-relaxed">
+                                        Absolutely! AutoPaneAi includes advanced payment tracking with payment history, multiple payment methods, overdue tracking, and sales reports. Easily monitor which invoices are paid, pending, or overdue. Generate comprehensive sales reports for any date range.
+                                    </p>
+                                ),
+                                style: { borderRadius: '8px', marginBottom: '8px' }
+                            },
+                            {
+                                key: '5',
+                                label: <span className="font-semibold text-slate-900">Is there mobile support or do I need a desktop?</span>,
+                                children: (
+                                    <p className="text-slate-700 leading-relaxed">
+                                        AutoPaneAi is web-based and responsive, working on both desktop and mobile devices. You can access quotes, customer information, and schedules from your phone or tablet on the job site, making it perfect for on-the-go business management.
+                                    </p>
+                                ),
+                                style: { borderRadius: '8px', marginBottom: '8px' }
+                            }
+                        ]}
+                        accordion
+                        style={{
+                            backgroundColor: '#f8fafc',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '12px'
+                        }}
+                    />
+                </div>
+            </AnimatedSection>
 
             <AnimatedSection>
                 <div className='flex items-center justify-center'>
