@@ -829,7 +829,7 @@ const SearchByRoot = () => {
     };
     newItems.push(partItem);
 
-    if (Number(labor) > 0) {
+    if (Number(labor) >= 0) {
       const globalLaborRate = parseFloat(localStorage.getItem('GlobalLaborRate')) || 0;
       newItems.push({
         type: "Labor", id: `${uniqueId}_LABOR`,
