@@ -504,7 +504,7 @@ const CustomersRoot = () => {
                             <Form.Item name="firstName" label="First Name" rules={[{ required: true }]}><Input /></Form.Item>
                             <Form.Item name="lastName" label="Last Name"><Input /></Form.Item>
                         </div>
-                        <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email' }]}><Input /></Form.Item>
+                        <Form.Item name="email" label="Email" rules={[{ type: 'email' }]}><Input /></Form.Item>
                         <Form.Item name="phone" label="Phone" rules={[{ required: true, message: 'Phone is required' }]}>
                             <Input
                                 placeholder="(XXX) XXX-XXXX"
@@ -537,7 +537,7 @@ const CustomersRoot = () => {
                             <Form.Item name="taxId" label="Tax ID"><Input /></Form.Item>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
-                            <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email' }]}><Input /></Form.Item>
+                            <Form.Item name="email" label="Email" rules={[{ type: 'email' }]}><Input /></Form.Item>
                             <Form.Item name="phone" label="Phone" rules={[{ required: true }]}>
                                 <Input
                                     placeholder="(XXX) XXX-XXXX"
