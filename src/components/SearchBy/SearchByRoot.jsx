@@ -73,6 +73,9 @@ const SearchByRoot = () => {
 
   const [aiContactFormId, setAiContactFormId] = useState(null); // Track AI Contact Form ID to update status on completion
 
+  // Status State
+  const [currentStatus, setCurrentStatus] = useState(null);
+
   // Lifted Scheduling State
   const [schedulingData, setSchedulingData] = useState({
     scheduledDate: null,
@@ -224,6 +227,11 @@ const SearchByRoot = () => {
             id: t.assignmentId || t.id || Math.random().toString(36).substr(2, 9)
           }))
         });
+
+        // 0.3 Map Status
+        if (serviceDocument && serviceDocument.status) {
+          setCurrentStatus(serviceDocument.status);
+        }
       }
 
       // 1. Map Customer & Vehicle
@@ -428,6 +436,9 @@ const SearchByRoot = () => {
       if (incomingAiContactFormId) {
         setAiContactFormId(incomingAiContactFormId);
       }
+
+      // Reset status for new quotes
+      setCurrentStatus(null);
 
       // 1. Map Customer
       if (customer) {
@@ -818,7 +829,7 @@ const SearchByRoot = () => {
     };
     newItems.push(partItem);
 
-    if (Number(labor) > 0) {
+    if (Number(labor) >= 0) {
       const globalLaborRate = parseFloat(localStorage.getItem('GlobalLaborRate')) || 0;
       newItems.push({
         type: "Labor", id: `${uniqueId}_LABOR`,
@@ -863,6 +874,9 @@ const SearchByRoot = () => {
 
       // Reset doc type
       setManualDocType('Quote');
+
+      // Reset status
+      setCurrentStatus(null);
 
       // 4. Reset Customer & Vehicle
       setCustomerData({ ...initialCustomerData });
@@ -1040,6 +1054,9 @@ const SearchByRoot = () => {
                     setSchedulingData={setSchedulingData}
                     employees={employees}
                     loadingEmployees={loadingEmployees}
+                    status={currentStatus}
+                    documentNumber={docMetadata?.documentNumber}
+                    onStatusChange={setCurrentStatus}
                   />
                 </div>
               )}

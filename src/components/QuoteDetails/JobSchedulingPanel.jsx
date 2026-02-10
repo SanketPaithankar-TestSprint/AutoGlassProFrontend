@@ -1,8 +1,10 @@
 import React from 'react';
 import { Input, Select, Card } from 'antd';
-import { EnvironmentOutlined, UserOutlined, CalendarOutlined, HomeOutlined } from '@ant-design/icons';
+import { EnvironmentOutlined, UserOutlined, CalendarOutlined, HomeOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import DatePickerHelper from './DatePickerHelper';
+import { updateServiceDocumentStatus } from '../../api/updateServiceDocumentStatus';
+import { App } from 'antd';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -12,12 +14,27 @@ const SERVICE_LOCATION_OPTIONS = [
     { value: 'MOBILE', label: 'Mobile', icon: <EnvironmentOutlined /> }
 ];
 
+const STATUS_OPTIONS = [
+    { value: 'DRAFT', label: 'Draft', color: 'default' },
+    { value: 'SENT', label: 'Sent', color: 'blue' },
+    { value: 'VIEWED', label: 'Viewed', color: 'cyan' },
+    { value: 'ACCEPTED', label: 'Accepted', color: 'green' },
+    { value: 'REJECTED', label: 'Rejected', color: 'red' },
+    { value: 'EXPIRED', label: 'Expired', color: 'orange' },
+    { value: 'COMPLETED', label: 'Completed', color: 'purple' },
+    { value: 'IN_PROGRESS', label: 'In Progress', color: 'processing' }
+];
+
 const JobSchedulingPanel = ({
     schedulingData,
     setSchedulingData,
     employees = [],
-    loadingEmployees = false
+    loadingEmployees = false,
+    status = null,
+    documentNumber = null,
+    onStatusChange = () => { }
 }) => {
+    const { message } = App.useApp();
 
     // Helper to handle date changes
     const handleDateChange = (field, date) => {
@@ -40,6 +57,20 @@ const JobSchedulingPanel = ({
         return isoString ? dayjs(isoString) : null;
     };
 
+    // Handle status change
+    const handleStatusChange = async (newStatus) => {
+        if (!documentNumber) return;
+
+        try {
+            await updateServiceDocumentStatus(documentNumber, newStatus);
+            onStatusChange(newStatus);
+            message.success(`Status updated to ${newStatus}`);
+        } catch (error) {
+            console.error("Failed to update status", error);
+            message.error("Failed to update status");
+        }
+    };
+
     // Check if service address is required
     const isServiceAddressRequired = schedulingData.serviceLocation === 'MOBILE' || schedulingData.serviceLocation === 'CUSTOMER_LOCATION';
 
@@ -55,6 +86,35 @@ const JobSchedulingPanel = ({
                 className="shadow-sm"
             >
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                    {/* Status Dropdown - Only visible if documentNumber exists */}
+                    {documentNumber && status && (
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">
+                                <span className="flex items-center gap-1">
+                                    <CheckCircleOutlined />
+                                    Service Document Status
+                                </span>
+                            </label>
+                            <Select
+                                value={status}
+                                style={{ width: '100%' }}
+                                onChange={handleStatusChange}
+                                placeholder="Select Status"
+                            >
+                                {STATUS_OPTIONS.map(option => (
+                                    <Option key={option.value} value={option.value}>
+                                        <span className={`flex items-center gap-2`}>
+                                            {option.label}
+                                        </span>
+                                    </Option>
+                                ))}
+                            </Select>
+                            <p className="text-xs text-slate-500 mt-1">
+                                update status
+                            </p>
+                        </div>
+                    )}
+
                     {/* Service Location */}
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1">
