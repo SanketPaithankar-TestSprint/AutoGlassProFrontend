@@ -1065,56 +1065,56 @@ const SearchByRoot = () => {
                     existingPayments={existingPayments}
                     totalAmount={currentTotalAmount}
                     onPaymentDeleted={handlePaymentDeleted}
+                    paymentTerms={schedulingData.paymentTerms || "Due upon receipt"}
+                    onPaymentTermsChange={(value) =>
+                      setSchedulingData((prev) => ({
+                        ...prev,
+                        paymentTerms: value
+                      }))
+                    }
+                    customPaymentTerms={schedulingData.customPaymentTerms || ""}
+                    onCustomPaymentTermsChange={(value) =>
+                      setSchedulingData((prev) => ({
+                        ...prev,
+                        customPaymentTerms: value
+                      }))
+                    }
                   />
                 </div>
               )}
 
               {activeTab === 'notes' && (
                 <div className="p-6 space-y-4 bg-gradient-to-br from-white to-slate-50">
-                  {/* Printable Note Section - Always Visible */}
-                  <div className="flex flex-col">
-                    <div className="mb-3 flex items-center gap-2">
-                      <div className="w-1 h-6 bg-emerald-500 rounded-full"></div>
-                      <div>
-                        <h3 className="text-sm font-bold text-slate-900">Printable Note</h3>
-                        <p className="text-xs text-slate-500 font-medium">(Visible to customer)</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Printable Note Section */}
+                    <div className="flex flex-col">
+                      <div className="mb-3 flex items-center gap-2">
+                        <div className="w-1 h-6 bg-emerald-500 rounded-full"></div>
+                        <div>
+                          <h3 className="text-xs font-semibold text-slate-900">Printable Note</h3>
+                          <p className="text-[11px] text-slate-500 font-medium">(Visible to customer)</p>
+                        </div>
+                      </div>
+                      <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md hover:border-slate-300 transition-all bg-white">
+                        <ReactQuill
+                          theme="snow"
+                          value={printableNote}
+                          onChange={setPrintableNote}
+                          className="h-[280px] quill-custom-light"
+                          modules={{
+                            toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered' }, { 'list': 'bullet' }]]
+                          }}
+                        />
                       </div>
                     </div>
-                    <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md hover:border-slate-300 transition-all bg-white">
-                      <ReactQuill
-                        theme="snow"
-                        value={printableNote}
-                        onChange={setPrintableNote}
-                        className="h-[200px] quill-custom-light"
-                        modules={{
-                          toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered' }, { 'list': 'bullet' }]]
-                        }}
-                      />
-                    </div>
-                  </div>
 
-                  {/* Add Internal Notes Checkbox */}
-                  <div className="bg-white rounded-lg border border-slate-200 p-4 flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      id="addInternalNotes"
-                      checked={showInternalNotes}
-                      onChange={(e) => setShowInternalNotes(e.target.checked)}
-                      className="w-4 h-4 accent-violet-500 cursor-pointer rounded"
-                    />
-                    <label htmlFor="addInternalNotes" className="text-sm font-medium text-slate-700 cursor-pointer">
-                      Add Internal Notes?
-                    </label>
-                  </div>
-
-                  {/* Internal Note Section - Conditional */}
-                  {showInternalNotes && (
+                    {/* Internal Note Section */}
                     <div className="flex flex-col">
                       <div className="mb-3 flex items-center gap-2">
                         <div className="w-1 h-6 bg-violet-500 rounded-full"></div>
                         <div>
-                          <h3 className="text-sm font-bold text-slate-900">Internal Note</h3>
-                          <p className="text-xs text-slate-500 font-medium">(Private - office use only)</p>
+                          <h3 className="text-xs font-semibold text-slate-900">Internal Note</h3>
+                          <p className="text-[11px] text-slate-500 font-medium">(Private - office use only)</p>
                         </div>
                       </div>
                       <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md hover:border-slate-300 transition-all bg-white">
@@ -1122,14 +1122,14 @@ const SearchByRoot = () => {
                           theme="snow"
                           value={internalNote}
                           onChange={setInternalNote}
-                          className="h-[200px] quill-custom-light"
+                          className="h-[280px] quill-custom-light"
                           modules={{
                             toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered' }, { 'list': 'bullet' }]]
                           }}
                         />
                       </div>
                     </div>
-                  )}
+                  </div>
                 </div>
               )}
 

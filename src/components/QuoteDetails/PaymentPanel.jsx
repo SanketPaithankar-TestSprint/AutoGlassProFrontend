@@ -25,7 +25,7 @@ const PAYMENT_TERMS = [
     { label: "Custom", value: "Custom" }
 ];
 
-export default function PaymentPanel({ paymentData, setPaymentData, existingPayments = [], totalAmount = 0, onPaymentDeleted = null, paymentTerms = '', onPaymentTermsChange = null, customPaymentTerms = '', onCustomPaymentTermsChange = null }) {
+export default function PaymentPanel({ paymentData, setPaymentData, existingPayments = [], totalAmount = 0, onPaymentDeleted = null, paymentTerms = 'Due upon receipt', onPaymentTermsChange = null, customPaymentTerms = '', onCustomPaymentTermsChange = null }) {
     // Modal state for delete confirmation
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [paymentToDelete, setPaymentToDelete] = useState(null);

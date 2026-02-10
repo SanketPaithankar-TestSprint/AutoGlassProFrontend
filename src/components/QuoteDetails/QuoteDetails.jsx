@@ -296,6 +296,20 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
                     <PaymentPanel
                         paymentData={paymentData}
                         setPaymentData={setPaymentData}
+                        paymentTerms={schedulingData.paymentTerms || "Due upon receipt"}
+                        onPaymentTermsChange={(value) =>
+                            setSchedulingData((prev) => ({
+                                ...prev,
+                                paymentTerms: value
+                            }))
+                        }
+                        customPaymentTerms={schedulingData.customPaymentTerms || ""}
+                        onCustomPaymentTermsChange={(value) =>
+                            setSchedulingData((prev) => ({
+                                ...prev,
+                                customPaymentTerms: value
+                            }))
+                        }
                     />
                 </div>
             )}

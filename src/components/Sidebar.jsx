@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Button, Avatar, Dropdown, Space, Drawer } from 'antd';
+import { Layout, Menu, Button, Avatar, Dropdown, Space, Drawer, Badge } from 'antd';
 import {
     HomeOutlined,
     FileTextOutlined,
@@ -21,6 +21,7 @@ import { Link, useLocation } from 'react-router-dom';
 import Logo from './logo';
 import { getUserLogo } from '../api/getUserLogo';
 import { getValidToken } from '../api/getValidToken';
+import urls from '../config';
 
 const { Sider } = Layout;
 
@@ -37,6 +38,7 @@ const useIsMobile = () => {
 const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
     const location = useLocation();
     const [userLogo, setUserLogo] = useState(localStorage.getItem('userLogo'));
+    const [newInquiryCount, setNewInquiryCount] = useState(0);
 
     // Fetch logo on mount and when route changes (to catch post-login state)
     useEffect(() => {
@@ -88,6 +90,50 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
         };
     }, []);
 
+    useEffect(() => {
+        let isMounted = true;
+
+        const fetchNewInquiryCount = async () => {
+            const token = getValidToken();
+            if (!token) {
+                if (isMounted) setNewInquiryCount(0);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${urls.javaApiUrl}/v1/service-inquiries/my?page=0&size=50&sort=createdAt,desc`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': '*/*'
+                    }
+                });
+
+                if (!response.ok) return;
+
+                const data = await response.json();
+                const content = Array.isArray(data?.content) ? data.content : [];
+                const nextCount = content.filter(item => item?.status === 'NEW').length;
+
+                if (isMounted) setNewInquiryCount(nextCount);
+            } catch (error) {
+                console.error('Failed to fetch inquiry count', error);
+            }
+        };
+
+        fetchNewInquiryCount();
+
+        const handleInquiryReceived = () => {
+            fetchNewInquiryCount();
+        };
+
+        window.addEventListener('INQUIRY_RECEIVED', handleInquiryReceived);
+
+        return () => {
+            isMounted = false;
+            window.removeEventListener('INQUIRY_RECEIVED', handleInquiryReceived);
+        };
+    }, [location.pathname]);
+
     const items = [
 
         {
@@ -122,8 +168,35 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
         },
         {
             key: '/service-contact-form',
-            icon: <MessageOutlined />,
-            label: <Link to="/service-contact-form">Service Inquiries</Link>,
+            icon: (
+                <div className="relative inline-block">
+                    <MessageOutlined />
+                    {collapsed && newInquiryCount > 0 && (
+                        <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 bg-red-500 w-2 h-2 rounded-full"></div>
+                    )}
+                </div>
+            ),
+            label: (
+                <Link to="/service-contact-form">
+                    <span className="inline-flex items-center gap-2">
+                        <span>Service Inquiries</span>
+                        {!collapsed && newInquiryCount > 0 && (
+                            <Badge
+                                count={newInquiryCount}
+                                size="small"
+                                color="#ef4444"
+                                overflowCount={99}
+                                style={{
+                                    fontSize: 10,
+                                    minWidth: 16,
+                                    height: 16,
+                                    lineHeight: '16px'
+                                }}
+                            />
+                        )}
+                    </span>
+                </Link>
+            ),
         },
 
         // Add other authenticated links here if needed

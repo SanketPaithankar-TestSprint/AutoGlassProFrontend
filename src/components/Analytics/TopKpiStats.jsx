@@ -2,8 +2,9 @@ import React from 'react';
 import { ArrowUpOutlined, ArrowDownOutlined, EyeOutlined, ThunderboltOutlined, DollarOutlined, BankOutlined, CheckCircleOutlined, ScanOutlined } from '@ant-design/icons';
 
 const TopKpiStats = ({ data }) => {
+    console.log('TopKpiStats received data:', data); // Debug log to check data structure
     // Real Data extraction with fallback
-    const adasCount = data?.quote_analysis?.adas_count || 0;
+    const adasCount = data?.adas_analytics?.adas_count || 0;
     const conversionRate = data?.quote_analysis?.conversion_rate || 0;
     const quotesCreated = data?.quote_analysis?.quotes_created || 0; // Quotes created from API
     // Calculate total income from income breakdown (same as IncomeDistribution component)

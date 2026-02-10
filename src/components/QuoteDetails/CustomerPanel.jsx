@@ -852,7 +852,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                             </div>
 
                             <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                                <FormInput label="Company Name *" name="companyName" value={orgFormData.companyName} onChange={handleOrgFormChange} required />
+                                <FormInput label="Company Name" name="companyName" value={orgFormData.companyName} onChange={handleOrgFormChange} required />
                                 <FormInput label="Tax ID" name="taxId" value={orgFormData.taxId} onChange={handleOrgFormChange} />
                                 <FormInput label="Email" name="email" value={orgFormData.email} onChange={handleOrgFormChange} />
                                 <FormInput label="Phone" name="phone" value={orgFormData.phone} onChange={handleOrgFormChange} required />
