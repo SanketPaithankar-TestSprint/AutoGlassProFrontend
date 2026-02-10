@@ -654,15 +654,14 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
         // Validation: Check at least one contact field is filled
         if (clientType === "BUSINESS") {
-            // Check Organization contact
-            const email = orgFormData.email || "";
+            // Check Organization contact - Phone is Mandatory
             const phone = orgFormData.phone || "";
-            const hasOrgContact = email.trim().length > 0 || phone.trim().length > 0;
+            const hasPhone = phone.trim().length > 0;
 
-            if (!hasOrgContact) {
+            if (!hasPhone) {
                 notification.error({
                     message: "Missing Contact Information",
-                    description: "Please provide at least one contact method (email or phone number) for the organization.",
+                    description: "Phone number is mandatory for the organization.",
                     placement: "topRight",
                     duration: 4
                 });

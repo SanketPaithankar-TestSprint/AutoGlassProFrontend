@@ -1168,15 +1168,15 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
             return false;
         }
 
-        // Validation: Contact Information (Email or Phone Required)
-        const email = customerData.email || "";
+        // Validation: Contact Information (Phone Required)
+        // const email = customerData.email || ""; // Email is optional now? User said "make the phone mandatory"
         const phone = customerData.phone || "";
-        const hasContactInfo = email.trim().length > 0 || phone.trim().length > 0;
+        const hasPhone = phone.trim().length > 0;
 
-        if (!hasContactInfo) {
+        if (!hasPhone) {
             modal.warning({
-                title: 'Missing Contact Information',
-                content: 'Please provide at least one contact method (email or phone number) for the customer or organization before saving.',
+                title: 'Missing Phone Number',
+                content: 'Phone number is mandatory. Please provide a phone number for the customer or organization before saving.',
                 okText: 'OK',
             });
             return false;
@@ -1455,16 +1455,28 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                 // Capture the response - this is the source of truth for PDF generation
                 response = await updateCompositeServiceDocument(docMetadata.documentNumber, compositePayload);
                 createdDocNumber = response?.documentNumber || response?.serviceDocument?.documentNumber || docMetadata.documentNumber;
-                message.success(`Service Document Updated Successfully!`);
+                notification.success({
+                    message: "Success",
+                    description: `Document save with the ${createdDocNumber}`,
+                    placement: "topRight"
+                });
             } else {
                 // CREATE NEW DOCUMENT
                 response = await createCompositeServiceDocument(compositePayload, files);
                 createdDocNumber = response?.documentNumber || response?.serviceDocument?.documentNumber;
 
                 if (createdDocNumber) {
-                    message.success(`Service Document Created Successfully! Document #: ${createdDocNumber}`);
+                    notification.success({
+                        message: "Success",
+                        description: `Document save with the ${createdDocNumber}`,
+                        placement: "topRight"
+                    });
                 } else {
-                    message.success("Service Document Created Successfully!");
+                    notification.success({
+                        message: "Success",
+                        description: "Document save successfully!",
+                        placement: "topRight"
+                    });
                 }
             }
 
@@ -1481,9 +1493,21 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
 
         } catch (err) {
             console.error(err);
+            let errorMessage = err.message || "An unexpected error occurred.";
+
+            // Extract message from backend error object if available
+            if (err.response && err.response.data) {
+                const backendError = err.response.data;
+                if (backendError.message) {
+                    errorMessage = backendError.message;
+                } else if (backendError.error) {
+                    errorMessage = backendError.error;
+                }
+            }
+
             modal.error({
                 title: 'Save Failed',
-                content: err.message,
+                content: errorMessage,
             });
             return { success: false };
         } finally {
