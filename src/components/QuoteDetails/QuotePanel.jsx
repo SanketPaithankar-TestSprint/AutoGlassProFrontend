@@ -736,8 +736,8 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
 
             const additionalItems = [];
 
-            // Add Labor row if labor > 0
-            if (Number(labor) > 0) {
+            // Add Labor row if labor >= 0
+            if (Number(labor) >= 0) {
                 additionalItems.push({
                     id: `${itemId}_LABOR`,
                     type: 'Labor',
