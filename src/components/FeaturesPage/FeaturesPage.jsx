@@ -263,17 +263,17 @@ const FeaturesPage = () => {
                 <div className="max-w-4xl mx-auto mt-24 px-5">
                     <div className="text-center mb-12">
                         <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3">Frequently Asked Questions</h2>
-                        <p className="text-slate-600">Find answers to common questions about AutoPaneAi features and functionality</p>
+                        <p className="text-slate-600">Find answers to common questions about APAI features and functionality</p>
                     </div>
 
                     <Collapse
                         items={[
                             {
                                 key: '1',
-                                label: <span className="font-semibold text-slate-900">What document types does AutoPaneAi support?</span>,
+                                label: <span className="font-semibold text-slate-900">What document types does APAI support?</span>,
                                 children: (
                                     <p className="text-slate-700 leading-relaxed">
-                                        AutoPaneAi supports multiple document types including Quotes, Invoices, Work Orders, and Composite Service Documents. Each document type includes customizable fields, automatic calculations, and export capabilities to PDF format.
+                                        APAI supports multiple document types including Quotes, Invoices, Work Orders, and Composite Service Documents. Each document type includes customizable fields, automatic calculations, and export capabilities to PDF format.
                                     </p>
                                 ),
                                 style: { borderRadius: '8px', marginBottom: '8px' }
@@ -283,7 +283,7 @@ const FeaturesPage = () => {
                                 label: <span className="font-semibold text-slate-900">Can I manage multiple customers and vehicles?</span>,
                                 children: (
                                     <p className="text-slate-700 leading-relaxed">
-                                        Yes! AutoPaneAi features a comprehensive Customer Management system where you can store unlimited customer profiles with contact information, phone numbers, emails, vehicles, and service history. Quickly search and filter customers by name, phone, or email for easy access.
+                                        Yes! APAI features a comprehensive Customer Management system where you can store unlimited customer profiles with contact information, phone numbers, emails, vehicles, and service history. Quickly search and filter customers by name, phone, or email for easy access.
                                     </p>
                                 ),
                                 style: { borderRadius: '8px', marginBottom: '8px' }
@@ -303,7 +303,7 @@ const FeaturesPage = () => {
                                 label: <span className="font-semibold text-slate-900">Can I track payments and invoices?</span>,
                                 children: (
                                     <p className="text-slate-700 leading-relaxed">
-                                        Absolutely! AutoPaneAi includes advanced payment tracking with payment history, multiple payment methods, overdue tracking, and sales reports. Easily monitor which invoices are paid, pending, or overdue. Generate comprehensive sales reports for any date range.
+                                        Absolutely! APAI includes advanced payment tracking with payment history, multiple payment methods, overdue tracking, and sales reports. Easily monitor which invoices are paid, pending, or overdue. Generate comprehensive sales reports for any date range.
                                     </p>
                                 ),
                                 style: { borderRadius: '8px', marginBottom: '8px' }
@@ -313,7 +313,7 @@ const FeaturesPage = () => {
                                 label: <span className="font-semibold text-slate-900">Is there mobile support or do I need a desktop?</span>,
                                 children: (
                                     <p className="text-slate-700 leading-relaxed">
-                                        AutoPaneAi is web-based and responsive, working on both desktop and mobile devices. You can access quotes, customer information, and schedules from your phone or tablet on the job site, making it perfect for on-the-go business management.
+                                        APAI is web-based and responsive, working on both desktop and mobile devices. You can access quotes, customer information, and schedules from your phone or tablet on the job site, making it perfect for on-the-go business management.
                                     </p>
                                 ),
                                 style: { borderRadius: '8px', marginBottom: '8px' }

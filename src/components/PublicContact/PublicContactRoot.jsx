@@ -713,14 +713,14 @@ const PublicContactRoot = () => {
 
                                 {/* File Upload */}
                                 <div>
-                                    <label className="premium-label">Upload Images (Optional)</label>
+                                    <label className="premium-label">Upload Image (Optional)</label>
                                     <Upload
                                         beforeUpload={() => false}
                                         fileList={fileList}
                                         onChange={({ fileList }) => setFileList(fileList)}
                                         listType="picture"
-                                        maxCount={5}
-                                        multiple
+                                        maxCount={1}
+                                        accept="image/*"
                                     >
                                         <Button icon={<UploadOutlined />}>Click to Upload</Button>
                                     </Upload>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Descriptions, Card, Tag, Typography, Spin, Alert } from 'antd';
+import { Descriptions, Card, Tag, Typography, Spin, Alert, Image } from 'antd';
 import { getValidToken } from '../../api/getValidToken';
 import urls from '../../config';
 
@@ -11,6 +11,52 @@ const ServiceInquiryView = () => {
     const [inquiry, setInquiry] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    // Secure Image Component to fetch image with auth token
+    const SecureImage = ({ attachment }) => {
+        const [imageUrl, setImageUrl] = useState(null);
+        const [loading, setLoading] = useState(true);
+
+        useEffect(() => {
+            const fetchImage = async () => {
+                try {
+                    const token = getValidToken();
+                    const response = await fetch(`${urls.javaApiUrl}/v1/service-inquiries/attachments/${attachment.id}/download`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Accept': '*/*'
+                        }
+                    });
+
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        // Force type if needed, or rely on blob type. User mentioned adding .jpg extension, 
+                        // effectively ensuring it's treated as an image.
+                        const imageBlob = blob.type ? blob : new Blob([blob], { type: 'image/jpeg' });
+                        const url = URL.createObjectURL(imageBlob);
+                        setImageUrl(url);
+                    }
+                } catch (err) {
+                    console.error("Error loading image:", err);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            fetchImage();
+        }, [attachment.id]);
+
+        if (loading) return <Spin size="small" />;
+
+        return (
+            <Image
+                width={100}
+                src={imageUrl || 'error_placeholder'}
+                alt={attachment.fileName}
+                fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQ7_8HAAABjElEQVR4nO3BMQEAAADCoPVPbQ0PoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPwZkAAAAEAA="
+            />
+        );
+    };
 
     useEffect(() => {
         const fetchInquiry = async () => {
@@ -95,6 +141,19 @@ const ServiceInquiryView = () => {
                             inquiry.windshieldFeatures.map(f => <Tag key={f}>{f}</Tag>)
                         ) : '-'}
                     </Descriptions.Item>
+
+                    <Descriptions.Item label="Attachments">
+                        {inquiry.attachments && inquiry.attachments.length > 0 ? (
+                            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                                {inquiry.attachments.map(att => (
+                                    <div key={att.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                        <SecureImage attachment={att} />
+                                    </div>
+                                ))}
+                            </div>
+                        ) : 'No attachments'}
+                    </Descriptions.Item>
+
                     <Descriptions.Item label="Customer Message">{inquiry.customerMessage || '-'}</Descriptions.Item>
                     <Descriptions.Item label="Address">
                         {inquiry.addressLine1} {inquiry.addressLine2}, {inquiry.city}, {inquiry.state} {inquiry.postalCode}
