@@ -903,7 +903,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                 </div>
 
                                 <FormInput label="Address Line 1" name="addressLine1" value={orgFormData.addressLine1} onChange={handleOrgFormChange} />
-                                <FormInput label="Zip" name="postalCode" value={orgFormData.postalCode} onChange={handleOrgFormChange} />
+                                <FormInput label="Zip Code" name="postalCode" value={orgFormData.postalCode} onChange={handleOrgFormChange} />
 
                                 {/* Tax Exempt Switch in Form Body */}
                                 <div className="flex flex-col justify-end pb-1">
@@ -972,7 +972,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                         <FormInput label="Address Line 1" name="addressLine1" value={formData.addressLine1} onChange={handleChange} onBlur={handleInputBlur} />
                                         <FormInput label="City" name="city" value={formData.city} onChange={handleChange} onBlur={handleInputBlur} />
                                         <FormSelect label="State" name="state" value={formData.state} onChange={handleChange} onBlur={handleInputBlur} options={US_STATES} />
-                                        <FormInput label="Zip" name="postalCode" value={formData.postalCode} onChange={handleChange} onBlur={handleInputBlur} />
+                                        <FormInput label="Zip Code" name="postalCode" value={formData.postalCode} onChange={handleChange} onBlur={handleInputBlur} />
                                     </div>
                                 </div>
                             </div>
