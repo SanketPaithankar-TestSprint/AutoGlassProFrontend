@@ -1,28 +1,26 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Spin, Alert, Select, DatePicker, Space } from 'antd';
+import { Spin, Alert, Select, DatePicker } from 'antd';
 import dayjs from 'dayjs';
-import RevenueChart from './RevenueChart';
-import IncomeDistribution from './IncomeDistribution';
-import StatusDistribution from './StatusDistribution';
-import TopKpiStats from './TopKpiStats';
-import ServiceLocationChart from './ServiceLocationChart';
-import RecentActivityTable from './RecentActivityTable';
-import QuoteStatsRow from './QuoteStatsRow';
-import JobStatusGauge from './JobStatusGauge';
-import JobProductivityRow from './JobProductivityRow';
-import FinancialStatsRow from './FinancialStatsRow';
-import ProductRadarChart from './ProductRadarChart';
 import { getAnalyticsDashboard } from '../../api/getAnalyticsDashboard';
+
+// Import new components
+import KpiGrid from './KpiGrid';
+import RevenueTrendChart from './RevenueTrendChart';
+import IncomeBreakdownCard from './IncomeBreakdownCard';
+import JobStatusChart from './JobStatusChart';
+import ServiceLocationCard from './ServiceLocationCard';
+import InsuranceBreakdownCard from './InsuranceBreakdownCard';
+import ArAgingChart from './ArAgingChart';
+import GlassTypeChart from './GlassTypeChart';
+import QuoteConversionCard from './QuoteConversionCard';
+import RecentActivityTable from './RecentActivityTable';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
 
 const AnalyticsRoot = () => {
-    // We need the userId. Ideally, this should come from context or a user profile hook.
-    // For now, we will rely on the API service fetching the token and the backend handling user identity.
     const userId = sessionStorage.getItem('userId');
-
     const [filterType, setFilterType] = React.useState('all_time');
     const [customRange, setCustomRange] = React.useState(null);
 
@@ -41,6 +39,10 @@ const AnalyticsRoot = () => {
                 startDate = dayjs().subtract(30, 'day').format('YYYY-MM-DD');
                 endDate = today;
                 break;
+            case 'last_3_months':
+                startDate = dayjs().subtract(90, 'day').format('YYYY-MM-DD');
+                endDate = today;
+                break;
             case 'custom':
                 if (customRange && customRange[0] && customRange[1]) {
                     startDate = customRange[0].format('YYYY-MM-DD');
@@ -49,7 +51,6 @@ const AnalyticsRoot = () => {
                 break;
             case 'all_time':
             default:
-                // No date params
                 break;
         }
         return { startDate, endDate };
@@ -76,7 +77,7 @@ const AnalyticsRoot = () => {
 
     if (isLoading) {
         return (
-            <div className="h-full flex items-center justify-center">
+            <div className="h-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #f0f4ff 0%, #faf5ff 50%, #f0fdf4 100%)' }}>
                 <Spin size="large" tip="Loading Dashboard..." />
             </div>
         );
@@ -84,7 +85,7 @@ const AnalyticsRoot = () => {
 
     if (error) {
         return (
-            <div className="p-8">
+            <div className="p-8" style={{ background: 'linear-gradient(135deg, #f0f4ff 0%, #faf5ff 50%, #f0fdf4 100%)' }}>
                 <Alert
                     message="Error Loading Dashboard"
                     description={error.message || "Failed to fetch analytics data."}
@@ -96,95 +97,112 @@ const AnalyticsRoot = () => {
     }
 
     return (
-        <div className="p-6 md:p-8 space-y-8 max-w-[1600px] mx-auto">
-            <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-xl font-bold text-slate-900">Dashboard</h1>
-                    <p className="text-slate-500">Overview of your business performance</p>
-                </div>
+        <div className="min-h-screen p-4 md:p-8" style={{ background: 'linear-gradient(135deg, #f0f4ff 0%, #faf5ff 50%, #f0fdf4 100%)' }}>
+            <div className="max-w-[1600px] mx-auto space-y-8">
+                {/* Header */}
+                <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-3xl font-extrabold bg-gradient-to-r from-slate-800 via-blue-800 to-violet-800 bg-clip-text text-transparent">
+                            Dashboard
+                        </h1>
+                        <p className="text-slate-500 mt-1 text-sm">Comprehensive business analytics and insights</p>
+                    </div>
 
-                <div className="flex items-center gap-2">
-                    <Select
-                        value={filterType}
-                        style={{ width: 140 }}
-                        onChange={(value) => setFilterType(value)}
-                        className="rounded-lg"
-                    >
-                        <Option value="all_time">All Time</Option>
-                        <Option value="last_week">Last Week</Option>
-                        <Option value="last_month">Last Month</Option>
-                        <Option value="custom">Custom Date</Option>
-                    </Select>
-
-                    {filterType === 'custom' && (
-                        <RangePicker
-                            value={customRange}
-                            onChange={(dates) => setCustomRange(dates)}
+                    <div className="flex items-center gap-2">
+                        <Select
+                            value={filterType}
+                            style={{ width: 150 }}
+                            onChange={(value) => setFilterType(value)}
                             className="rounded-lg"
-                        />
-                    )}
-                </div>
-            </header>
+                        >
+                            <Option value="all_time">All Time</Option>
+                            <Option value="last_week">Last Week</Option>
+                            <Option value="last_month">Last Month</Option>
+                            <Option value="last_3_months">Last 3 Months</Option>
+                            <Option value="custom">Custom Date</Option>
+                        </Select>
 
-            {/* Top KPIs Overview */}
-            <TopKpiStats data={data} />
-
-            {/* Financial Metrics Section */}
-            <div>
-                <h2 className="text-xl font-semibold text-slate-800 mb-4 px-1">Financial Metrics</h2>
-
-                {/* Financial Stats Cards */}
-                <FinancialStatsRow data={data?.financial_metrics} />
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-2 h-[420px]">
-                        <RevenueChart data={data?.revenue_trend} />
+                        {filterType === 'custom' && (
+                            <RangePicker
+                                value={customRange}
+                                onChange={(dates) => setCustomRange(dates)}
+                                className="rounded-lg"
+                            />
+                        )}
                     </div>
-                    <div className="h-[420px]">
-                        <IncomeDistribution data={data?.income_breakdown} />
+                </header>
+
+                {/* KPI Overview */}
+                <KpiGrid data={data} />
+
+                {/* Financial Section */}
+                <section>
+                    <div className="flex items-center gap-2 mb-4">
+                        <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></div>
+                        <h2 className="text-lg font-bold text-slate-700">Financial Overview</h2>
                     </div>
-                </div>
-            </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="lg:col-span-2 h-[400px]">
+                            <RevenueTrendChart data={data?.revenue_trend} />
+                        </div>
+                        <div className="h-[400px]">
+                            <IncomeBreakdownCard data={data?.income_breakdown} />
+                        </div>
+                    </div>
+                </section>
 
-            {/* Quote Metrics Section */}
-            <div>
-                <h2 className="text-xl font-semibold text-slate-800 mb-4 px-1">Quote Metrics</h2>
+                {/* Job Analysis Section */}
+                <section>
+                    <div className="flex items-center gap-2 mb-4">
+                        <div className="w-1 h-6 bg-gradient-to-b from-emerald-500 to-teal-600 rounded-full"></div>
+                        <h2 className="text-lg font-bold text-slate-700">Job Analysis</h2>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="h-[400px]">
+                            <QuoteConversionCard data={data?.quote_analysis} />
+                        </div>
+                        <div className="h-[400px]">
+                            <JobStatusChart data={data?.job_status_distribution} />
+                        </div>
+                        <div className="h-[400px]">
+                            <ServiceLocationCard data={data?.service_location_breakdown} />
+                        </div>
+                    </div>
+                </section>
 
-                {/* Specific Quote Metrics Row */}
-                <QuoteStatsRow quoteAnalysis={data?.quote_analysis} />
+                {/* Operational Insights */}
+                <section>
+                    <div className="flex items-center gap-2 mb-4">
+                        <div className="w-1 h-6 bg-gradient-to-b from-violet-500 to-purple-600 rounded-full"></div>
+                        <h2 className="text-lg font-bold text-slate-700">Operational Insights</h2>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="h-[400px]">
+                            <InsuranceBreakdownCard data={data?.insurance_breakdown} />
+                        </div>
+                        <div className="h-[400px]">
+                            <ArAgingChart data={data?.ar_aging} />
+                        </div>
+                    </div>
+                </section>
 
-                {/* Recent Activity Table */}
-                <div className="h-[400px] mt-6">
-                    <RecentActivityTable data={data?.recent_activity} />
-                </div>
-            </div>
-
-            {/* Job and Services Metrics Section */}
-            <div>
-                <h2 className="text-xl font-semibold text-slate-800 mb-4 px-1">Job and Services Metrics</h2>
-
-                {/* Job Productivity KPIs */}
-                <JobProductivityRow
-                    productivityData={data?.job_productivity_metrics}
-                    avgJobValue={data?.financial_metrics?.average_job_value}
-                />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                {/* Product Analysis */}
+                <section>
+                    <div className="flex items-center gap-2 mb-4">
+                        <div className="w-1 h-6 bg-gradient-to-b from-amber-500 to-orange-600 rounded-full"></div>
+                        <h2 className="text-lg font-bold text-slate-700">Product Analysis</h2>
+                    </div>
                     <div className="h-[400px]">
-                        <JobStatusGauge data={data?.job_status_distribution} />
+                        <GlassTypeChart data={data?.glass_type_breakdown} />
                     </div>
-                    <div className="h-[400px]">
-                        <ServiceLocationChart data={data?.service_location_breakdown} />
-                    </div>
-                </div>
-            </div>
+                </section>
 
-            {/* Product Breakdown Section */}
-            <div>
-                <h2 className="text-xl font-semibold text-slate-800 mb-4 px-1">Product Breakdown</h2>
-                <div className="h-[450px]">
-                    <ProductRadarChart data={data?.product_breakdown} />
-                </div>
+                {/* Recent Activity */}
+                <section>
+                    <div className="h-[500px]">
+                        <RecentActivityTable data={data?.recent_activity} />
+                    </div>
+                </section>
             </div>
         </div>
     );
