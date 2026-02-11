@@ -67,6 +67,9 @@ const ServiceContactFormRoot = () => {
             if (response.ok) {
                 message.success('Inquiry deleted successfully');
                 fetchInquiries(); // Refetch the list to update the UI
+
+                // Dispatch event to notify sidebar to refresh badge count
+                window.dispatchEvent(new CustomEvent('INQUIRY_STATUS_CHANGED'));
             } else {
                 message.error('Failed to delete inquiry');
             }
@@ -82,23 +85,29 @@ const ServiceContactFormRoot = () => {
             title: 'Name',
             dataIndex: 'name',
             key: 'name',
+            ellipsis: true,
+            width: 150,
         },
         {
             title: 'Vehicle',
             dataIndex: 'vehicle',
             key: 'vehicle',
+            ellipsis: true,
+            responsive: ['md'],
         },
         {
-            title: 'Service Type',
+            title: 'Service',
             dataIndex: 'serviceType',
             key: 'serviceType',
+            responsive: ['lg'],
             render: (types) => (
                 <>
-                    {Array.isArray(types) ? types.map(tag => (
-                        <Tag color="blue" key={tag}>
+                    {Array.isArray(types) ? types.slice(0, 2).map(tag => (
+                        <Tag color="blue" key={tag} className="text-xs">
                             {tag}
                         </Tag>
                     )) : types}
+                    {Array.isArray(types) && types.length > 2 && <span className="text-xs text-gray-500">+{types.length - 2}</span>}
                 </>
             ),
         },
@@ -106,28 +115,33 @@ const ServiceContactFormRoot = () => {
             title: 'Status',
             dataIndex: 'status',
             key: 'status',
+            width: 80,
             render: (status) => (
-                <Tag color={status === 'NEW' ? 'green' : 'default'}>
+                <Tag color={status === 'NEW' ? 'green' : 'default'} className="text-xs">
                     {status || 'NEW'}
                 </Tag>
             ),
         },
         {
-            title: 'Created At',
+            title: 'Date',
             dataIndex: 'createdAt',
             key: 'createdAt',
-            render: (date) => date ? new Date(date).toLocaleString() : '-',
+            width: 120,
+            responsive: ['sm'],
+            render: (date) => date ? new Date(date).toLocaleDateString() : '-',
         },
         {
             title: 'Actions',
             key: 'actions',
+            width: 100,
+            fixed: 'right',
             render: (text, record) => (
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div className="flex gap-2">
                     <Tooltip title="View Details">
                         <Button
                             icon={<EyeOutlined />}
                             onClick={() => handleViewDetails(record)}
-                            shape="circle"
+                            size="small"
                         />
                     </Tooltip>
                     <Popconfirm
@@ -141,7 +155,7 @@ const ServiceContactFormRoot = () => {
                             <Button
                                 icon={<DeleteOutlined />}
                                 danger
-                                shape="circle"
+                                size="small"
                             />
                         </Tooltip>
                     </Popconfirm>
@@ -179,6 +193,9 @@ const ServiceContactFormRoot = () => {
                 setInquiries(prev => prev.map(item =>
                     item.id === record.id ? { ...item, status: 'READ' } : item
                 ));
+
+                // Dispatch event to notify sidebar to refresh badge count
+                window.dispatchEvent(new CustomEvent('INQUIRY_STATUS_CHANGED'));
             } catch (error) {
                 console.error("Failed to update status", error);
             }
@@ -186,20 +203,21 @@ const ServiceContactFormRoot = () => {
     };
 
     return (
-        <div style={{ padding: '24px' }}>
-            <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h1 className="text-xl font-bold text-slate-900 m-0">Service Inquiries</h1>
+        <div className="p-4 md:p-6">
+            <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <h1 className="text-xl md:text-2xl font-bold text-slate-900 m-0">Service Inquiries</h1>
                 <Button
                     icon={<ReloadOutlined />}
                     onClick={fetchInquiries}
                     loading={loading}
+                    className="w-full sm:w-auto"
                 >
                     Refresh
                 </Button>
             </div>
 
-            <Row gutter={16} style={{ marginBottom: '24px' }}>
-                <Col span={8}>
+            <Row gutter={[16, 16]} className="mb-6">
+                <Col xs={24} sm={12} md={8}>
                     <Card>
                         <Statistic title="Total Inquiries" value={total} />
                     </Card>
@@ -214,7 +232,8 @@ const ServiceContactFormRoot = () => {
                 pagination={{
                     total: total,
                     pageSize: 20,
-                    showSizeChanger: false
+                    showSizeChanger: false,
+                    position: ['bottomCenter']
                 }}
             />
         </div>

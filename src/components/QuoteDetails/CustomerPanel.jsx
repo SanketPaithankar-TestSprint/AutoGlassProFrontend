@@ -702,7 +702,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
                         {/* 1. Client Type Toggle */}
                         <div className="mb-4 shrink-0">
-                            <label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Client Type</label>
+                            <label className="text-xs !font-semibold text-slate-800 uppercase tracking-wide mb-2 block">Client Type:</label>
                             <Segmented
                                 block
                                 options={[
@@ -718,7 +718,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                         {/* 2. Customer Selection (INDIVIDUAL ONLY) */}
                         {clientType === "INDIVIDUAL" && (
                             <div className="animate-fade-in mt-4 pt-4 border-t border-gray-300 shrink-0">
-                                <h4 className="text-xs font-bold text-gray-800 uppercase mb-3">Customer Selection</h4>
+                                <h4 className="text-xs !font-semibold text-slate-800 uppercase tracking-wide mb-3">Customer Selection</h4>
 
                                 <div className="flex flex-col gap-3">
                                     <Radio.Group
@@ -769,7 +769,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                         {/* 2. Organization Selection (BUSINESS ONLY) */}
                         {clientType === "BUSINESS" && (
                             <div className="animate-fade-in mt-4 pt-4 border-t border-gray-300 shrink-0">
-                                <h4 className="text-xs font-bold text-gray-800 uppercase mb-3">Organization Selection</h4>
+                                <h4 className="text-xs !font-semibold text-slate-800 uppercase tracking-wide mb-3">Organization Selection</h4>
 
                                 <div className="flex flex-col gap-3">
                                     <Radio.Group
@@ -828,8 +828,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                     {/* Organization Form (BUSINESS Mode) */}
                     {clientType === "BUSINESS" && (
                         <div className="bg-white rounded-md border border-gray-200 shadow-sm flex flex-col shrink-0 animate-slide-up">
-                            <div className="bg-violet-50 border-b border-violet-100 px-4 py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                                <h3 className="text-sm font-bold text-violet-900">
+                            <div className="bg-white border-b border-gray-100 px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                                <h3 className="text-sm font-bold text-gray-800">
                                     {orgMode === "NEW" ? "Organization Details" : "Organization Details"}
                                 </h3>
                                 <div className="flex items-center gap-2 flex-wrap">
@@ -939,8 +939,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                     {/* Customer Form (INDIVIDUAL Mode) */}
                     {clientType === "INDIVIDUAL" && (
                         <div className="bg-white rounded-md border border-gray-200 shadow-sm flex flex-col shrink-0 animate-slide-up">
-                            <div className="bg-violet-50 border-b border-violet-100 px-4 py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                                <h3 className="text-sm font-bold text-violet-900">
+                            <div className="bg-white border-b border-gray-100 px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                                <h3 className="text-sm font-bold text-gray-800">
                                     {customerMode === "NEW" ? "New Customer Details" : "Customer Details"}
                                 </h3>
                                 {/* Save button when EXISTING */}
@@ -981,8 +981,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
                     {/* Vehicle Details Section - Moved to Main Panel */}
                     <div className="bg-white rounded-md border border-gray-200 shadow-sm flex flex-col shrink-0 animate-slide-up">
-                        <div className="bg-violet-50 border-b border-violet-100 px-4 py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                            <h3 className="text-sm font-bold text-violet-900">
+                        <div className="bg-white border-b border-gray-100 px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                            <h3 className="text-sm font-bold text-gray-800">
                                 Vehicle Details
                             </h3>
 

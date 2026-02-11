@@ -1382,7 +1382,7 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
             const effectiveServiceAddress = (schedulingData?.serviceLocation === 'MOBILE' || schedulingData?.serviceLocation === 'CUSTOMER_LOCATION')
                 ? (schedulingData?.serviceAddress || '')
                 : `${customerData.addressLine1 || ''}, ${customerData.city || ''}, ${customerData.state || ''} ${customerData.postalCode || ''}`;
-            console.log("data:",schedulingData);
+            console.log("data:", schedulingData);
             const compositePayload = {
                 documentType: currentDocType.replace(" ", "_").toUpperCase(),
                 documentDate: new Date().toISOString(),

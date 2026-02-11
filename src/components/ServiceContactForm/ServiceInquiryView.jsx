@@ -109,9 +109,13 @@ const ServiceInquiryView = () => {
     }
 
     return (
-        <div style={{ padding: '24px', backgroundColor: '#f0f2f5', minHeight: '100vh' }}>
-            <Card title={<Title level={4}>Inquiry Details #{inquiry.id}</Title>} bordered={false}>
-                <Descriptions bordered column={1}>
+        <div className="p-4 md:p-6 bg-slate-50 min-h-screen">
+            <Card
+                title={<Title level={4} className="m-0">Inquiry Details #{inquiry.id}</Title>}
+                bordered={false}
+                className="shadow-sm"
+            >
+                <Descriptions bordered column={{ xs: 1, sm: 1, md: 1 }}>
                     {/* <Descriptions.Item label="Status">
                         <Tag color={inquiry.status === 'NEW' ? 'green' : 'blue'}>{inquiry.status}</Tag>
                     </Descriptions.Item> */}
@@ -144,9 +148,9 @@ const ServiceInquiryView = () => {
 
                     <Descriptions.Item label="Attachments">
                         {inquiry.attachments && inquiry.attachments.length > 0 ? (
-                            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                            <div className="flex gap-2 flex-wrap">
                                 {inquiry.attachments.map(att => (
-                                    <div key={att.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                    <div key={att.id} className="flex flex-col items-center">
                                         <SecureImage attachment={att} />
                                     </div>
                                 ))}

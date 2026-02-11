@@ -18,6 +18,7 @@ import { useProfileDataPrefetch } from './hooks/useProfileDataPrefetch';
 import useInquiryNotifications from './hooks/useInquiryNotifications';
 import { useAuth } from './context/auth/useAuth';
 import { AuthProvider } from './context/auth/authProvide';
+import { InquiryProvider } from './context/InquiryContext';
 
 // Lazy Load Main Components
 const Home = React.lazy(() => import('./components/Home/HomeRoot.jsx'));
@@ -217,9 +218,11 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AntApp>
         <AuthProvider>
-          <Router>
-            <AppContent />
-          </Router>
+          <InquiryProvider>
+            <Router>
+              <AppContent />
+            </Router>
+          </InquiryProvider>
         </AuthProvider>
       </AntApp>
     </QueryClientProvider>
