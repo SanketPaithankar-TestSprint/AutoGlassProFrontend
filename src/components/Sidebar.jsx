@@ -22,6 +22,7 @@ import Logo from './logo';
 import { getUserLogo } from '../api/getUserLogo';
 import { getValidToken } from '../api/getValidToken';
 import urls from '../config';
+import { useInquiry } from '../context/InquiryContext';
 
 const { Sider } = Layout;
 
@@ -38,7 +39,8 @@ const useIsMobile = () => {
 const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
     const location = useLocation();
     const [userLogo, setUserLogo] = useState(localStorage.getItem('userLogo'));
-    const [newInquiryCount, setNewInquiryCount] = useState(0);
+    const { badgeCount } = useInquiry(); // Get badge count from context
+    const [localBadgeCount, setLocalBadgeCount] = useState(0);
 
     // Fetch logo on mount and when route changes (to catch post-login state)
     useEffect(() => {
@@ -90,13 +92,12 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
         };
     }, []);
 
+    // Direct event listener for badge updates - increment/decrement approach
     useEffect(() => {
-        let isMounted = true;
-
-        const fetchNewInquiryCount = async () => {
+        const fetchBadgeCount = async () => {
             const token = getValidToken();
             if (!token) {
-                if (isMounted) setNewInquiryCount(0);
+                setLocalBadgeCount(0);
                 return;
             }
 
@@ -112,27 +113,37 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
 
                 const data = await response.json();
                 const content = Array.isArray(data?.content) ? data.content : [];
-                const nextCount = content.filter(item => item?.status === 'NEW').length;
+                const count = content.filter(item => item?.status === 'NEW').length;
 
-                if (isMounted) setNewInquiryCount(nextCount);
+                console.log('🎯 Sidebar: Updating local badge count to', count);
+                setLocalBadgeCount(count);
             } catch (error) {
-                console.error('Failed to fetch inquiry count', error);
+                console.error('Sidebar: Failed to fetch badge count', error);
             }
         };
 
-        fetchNewInquiryCount();
+        // Initial fetch
+        fetchBadgeCount();
 
-        const handleInquiryReceived = () => {
-            fetchNewInquiryCount();
+        // Listen to events and update count directly
+        const handleInquiryReceived = (event) => {
+            console.log('🔔 Sidebar: New inquiry received, incrementing badge');
+            setLocalBadgeCount(prev => prev + 1);
+        };
+
+        const handleInquiryStatusChanged = () => {
+            console.log('🔔 Sidebar: Inquiry status changed, decrementing badge');
+            setLocalBadgeCount(prev => Math.max(0, prev - 1));
         };
 
         window.addEventListener('INQUIRY_RECEIVED', handleInquiryReceived);
+        window.addEventListener('INQUIRY_STATUS_CHANGED', handleInquiryStatusChanged);
 
         return () => {
-            isMounted = false;
             window.removeEventListener('INQUIRY_RECEIVED', handleInquiryReceived);
+            window.removeEventListener('INQUIRY_STATUS_CHANGED', handleInquiryStatusChanged);
         };
-    }, [location.pathname]);
+    }, []);
 
     const items = [
 
@@ -171,7 +182,7 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
             icon: (
                 <div className="relative inline-block">
                     <MessageOutlined />
-                    {collapsed && newInquiryCount > 0 && (
+                    {collapsed && localBadgeCount > 0 && (
                         <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 bg-red-500 w-2 h-2 rounded-full"></div>
                     )}
                 </div>
@@ -180,9 +191,9 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
                 <Link to="/service-contact-form">
                     <span className="inline-flex items-center gap-2">
                         <span>Service Inquiries</span>
-                        {!collapsed && newInquiryCount > 0 && (
+                        {!collapsed && localBadgeCount > 0 && (
                             <Badge
-                                count={newInquiryCount}
+                                count={localBadgeCount}
                                 size="small"
                                 color="#ef4444"
                                 overflowCount={99}

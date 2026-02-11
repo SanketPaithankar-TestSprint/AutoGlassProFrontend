@@ -980,7 +980,7 @@ const SearchByRoot = () => {
                   <div className="bg-white p-4 flex flex-col gap-1 overflow-visible shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg w-full md:w-[380px] md:flex-shrink-0">
                     {/* VIN */}
                     <div>
-                      <h2 className="text-xs font-bold text-slate-800 mb-1 uppercase tracking-wide">Search by VIN:</h2>
+                      <h2 className="text-xs !font-semibold text-slate-800 mb-1 uppercase tracking-wide">Search by VIN:</h2>
                       <ErrorBoundary>
                         <SearchByVin key={`vin-${resetKey}`} autoDecode delayMs={500} onDecoded={handleVinDecoded} />
                       </ErrorBoundary>
@@ -988,7 +988,7 @@ const SearchByRoot = () => {
                     <hr className="border-slate-100" />
                     {/* YMM */}
                     <div className="flex-1 flex flex-col">
-                      <h2 className="text-xs font-bold text-slate-800 mb-1 uppercase tracking-wide">Search by Year Make Model:</h2>
+                      <h2 className="text-xs !font-semibold text-slate-800 mb-1 uppercase tracking-wide">Search by Year Make Model:</h2>
                       <ErrorBoundary>
                         <SearchByYMM
                           key={`ymm-${resetKey}`}
@@ -1024,7 +1024,7 @@ const SearchByRoot = () => {
               </div>
 
               {activeTab === 'customer' && (
-                <div className="w-full p-2">
+                <div className="w-full">
                   <CustomerPanel
                     key={`cust-${resetKey}`}
                     formData={customerData}
@@ -1037,7 +1037,7 @@ const SearchByRoot = () => {
               )}
 
               {activeTab === 'insurance' && (
-                <div className="p-4">
+                <div className="w-full">
                   <InsuranceDetails
                     data={insuranceData}
                     onChange={setInsuranceData}
@@ -1062,7 +1062,7 @@ const SearchByRoot = () => {
               )}
 
               {activeTab === 'attachment' && (
-                <div className="p-4">
+                <div className="w-full">
                   <AttachmentDetails
                     attachments={attachments}
                     setAttachments={setAttachments}
@@ -1075,7 +1075,7 @@ const SearchByRoot = () => {
               )}
 
               {activeTab === 'payment' && (
-                <div className="p-4">
+                <div className="w-full">
                   <PaymentPanel
                     paymentData={paymentData}
                     setPaymentData={setPaymentData}
@@ -1105,12 +1105,10 @@ const SearchByRoot = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Printable Note Section */}
                     <div className="flex flex-col">
-                      <div className="mb-3 flex items-center gap-2">
-                        <div className="w-1 h-6 bg-emerald-500 rounded-full"></div>
-                        <div>
-                          <h3 className="text-xs font-semibold text-slate-900">Printable Note</h3>
-                          <p className="text-[11px] text-slate-500 font-medium">(Visible to customer)</p>
-                        </div>
+                      <div className="mb-3">
+                        <h3 className="text-xs font-semibold text-slate-900">
+                          Printable Note <span className="text-[11px] text-slate-500 font-medium">(Visible to customer)</span>
+                        </h3>
                       </div>
                       <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md hover:border-slate-300 transition-all bg-white">
                         <ReactQuill
@@ -1125,24 +1123,18 @@ const SearchByRoot = () => {
                       </div>
                     </div>
 
-                    {/* Internal Note Section */}
                     <div className="flex flex-col">
-                      <div className="mb-3 flex items-center gap-2">
-                        <div className="w-1 h-6 bg-violet-500 rounded-full"></div>
-                        <div>
-                          <h3 className="text-xs font-semibold text-slate-900">Internal Note</h3>
-                          <p className="text-[11px] text-slate-500 font-medium">(Private - office use only)</p>
-                        </div>
+                      <div className="mb-3">
+                        <h3 className="text-xs font-semibold text-slate-900">
+                          Internal Note <span className="text-[11px] text-slate-500 font-medium">(Private - office use only)</span>
+                        </h3>
                       </div>
                       <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md hover:border-slate-300 transition-all bg-white">
-                        <ReactQuill
-                          theme="snow"
+                        <textarea
                           value={internalNote}
-                          onChange={setInternalNote}
-                          className="h-[280px] quill-custom-light"
-                          modules={{
-                            toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered' }, { 'list': 'bullet' }]]
-                          }}
+                          onChange={(e) => setInternalNote(e.target.value)}
+                          className="w-full h-[280px] p-4 text-sm focus:outline-none resize-none"
+                          placeholder="Type internal notes here..."
                         />
                       </div>
                     </div>

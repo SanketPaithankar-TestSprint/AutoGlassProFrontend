@@ -43,7 +43,7 @@ const useInquiryNotifications = () => {
             eventSource.addEventListener('NEW_INQUIRY', (event) => {
                 try {
                     const data = JSON.parse(event.data);
-                    console.log('New Inquiry Received:', data);
+                    console.log('✅ New Inquiry Received:', data);
 
                     // Play chime
                     playNotificationSound();
@@ -60,9 +60,12 @@ const useInquiryNotifications = () => {
                     });
 
                     // Dispatch custom event for components to refresh data
-                    window.dispatchEvent(new CustomEvent('INQUIRY_RECEIVED', { detail: data }));
+                    console.log('🔔 Dispatching INQUIRY_RECEIVED event...');
+                    const customEvent = new CustomEvent('INQUIRY_RECEIVED', { detail: data });
+                    window.dispatchEvent(customEvent);
+                    console.log('✅ INQUIRY_RECEIVED event dispatched');
                 } catch (error) {
-                    console.error('Error parsing SSE event data:', error);
+                    console.error('❌ Error parsing SSE event data:', error);
                 }
             });
 

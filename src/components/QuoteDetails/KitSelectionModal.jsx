@@ -102,6 +102,8 @@ const KitSelectionModal = ({
                 className: 'bg-violet-600 hover:bg-violet-700'
             }}
             width={700}
+            style={{ maxWidth: 'calc(100vw - 16px)', top: 20, padding: 0 }}
+            bodyStyle={{ padding: '16px' }}
             maskClosable={false}
         >
             <div className="py-2">
@@ -109,7 +111,8 @@ const KitSelectionModal = ({
                     Select an installation kit for <strong>{partNumber}</strong>:
                 </p>
 
-                <div className="overflow-hidden border border-slate-200 rounded-lg">
+                {/* Desktop Table View */}
+                <div className="hidden md:block border border-slate-200 rounded-lg overflow-hidden">
                     <table className="min-w-full divide-y divide-slate-200">
                         <thead className="bg-slate-50">
                             <tr>
@@ -159,6 +162,48 @@ const KitSelectionModal = ({
                             )}
                         </tbody>
                     </table>
+                </div>
+
+                {/* Mobile Card View */}
+                <div className="md:hidden space-y-3">
+                    {availableKits.length > 0 ? (
+                        availableKits.map((kit) => {
+                            const isSelected = selectedStandardKit === kit.code;
+                            return (
+                                <div
+                                    key={kit.code}
+                                    className={`border rounded-lg p-4 cursor-pointer transition-colors ${isSelected ? 'border-violet-500 bg-violet-50' : 'border-slate-200 bg-white'
+                                        }`}
+                                    onClick={() => setSelectedStandardKit(kit.code)}
+                                >
+                                    <div className="flex items-start gap-3">
+                                        <Radio checked={isSelected} className="mt-1" />
+                                        <div className="flex-1">
+                                            <p className="text-sm font-medium text-slate-700 mb-2">{kit.desc}</p>
+                                            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                                                <span className="text-xs text-slate-500">Price:</span>
+                                                <div className="flex items-center">
+                                                    <span className="text-slate-400 text-sm mr-1">$</span>
+                                                    <input
+                                                        type="number"
+                                                        step="0.01"
+                                                        value={standardPrices[kit.code] || ''}
+                                                        onChange={(e) => handlePriceChange(kit.code, e.target.value)}
+                                                        className="w-24 rounded border border-slate-300 px-2 py-1 text-sm focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none"
+                                                        placeholder="0.00"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    ) : (
+                        <div className="border border-slate-200 rounded-lg p-8 text-center text-slate-500">
+                            No authorized kits available for this part.
+                        </div>
+                    )}
                 </div>
             </div>
         </Modal>
