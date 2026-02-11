@@ -1230,6 +1230,10 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                         itemType: 'PART', // Uppercase as per request example
                         // Standard fields
                         nagsGlassId: it.nagsId || "",
+                        // Pass through glass codes
+                        prefixCd: it.prefixCd || null,
+                        posCd: it.posCd || null,
+                        sideCd: it.sideCd || null,
                         // Optional/Extra fields
                         partDescription: it.description || "",
                         partPrice: Number(it.amount) || 0, // Using amount as the partPrice
@@ -1272,6 +1276,10 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                 serviceDocumentItems.push({
                     partId: manualIt.originalPartId || null,
                     itemType: manualIt.type === 'Service' ? 'SERVICE' : (manualIt.type === 'ADAS' ? 'ADAS' : (isLabor ? 'LABOR' : 'PART')),
+                    // Ensure glass codes are passed even for manual labor if available
+                    prefixCd: manualIt.prefixCd || null,
+                    posCd: manualIt.posCd || null,
+                    sideCd: manualIt.sideCd || null,
                     partDescription: manualIt.description,
                     partPrice: Number(manualIt.amount) || 0,
                     quantity: 1,
@@ -1369,7 +1377,8 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                 makeId: customerData.makeId || null,
                 modelId: customerData.modelId || null,
                 bodyStyleId: customerData.bodyStyleId || null,
-                masterVehId: customerData.vehId || null
+                masterVehId: customerData.vehId || null,
+                vechModifierId: customerData.vehModifierId || null // Added as per requirement
             };
 
             const attachmentMetadata = attachments.map(att => ({

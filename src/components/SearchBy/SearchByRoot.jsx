@@ -140,6 +140,7 @@ const SearchByRoot = () => {
     organizationName: "",
     taxId: "",
     isTaxExempt: false,
+    vehModifierId: null, // Added for vehicle modifier ID tracking
   };
 
   // Lifted Customer State
@@ -301,7 +302,8 @@ const SearchByRoot = () => {
         bodyType: vehicle?.bodyType || "",
         licensePlateNumber: vehicle?.licensePlateNumber || "",
         vin: vehicle?.vin || "",
-        vehicleNotes: vehicle?.notes || ""
+        vehicleNotes: vehicle?.notes || "",
+        vehModifierId: vehicle?.vehModifierId || null // Ensure vehModifierId is mapped
       };
       setCustomerData(prev => ({ ...prev, ...newCustomerData }));
 
@@ -322,7 +324,7 @@ const SearchByRoot = () => {
           makeId: vehicle.makeId,
           makeModelId: vehicle.modelId, // SearchByYMM expects makeModelId
           bodyStyleId: vehicle.bodyStyleId,
-          vehModifierId: null // Typically null unless specified
+          vehModifierId: vehicle.vechModifierId || vehicle.vehModifierId || null // Map modifier ID
         });
 
         // Use existing vehicleId and modelId if available to avoid redundant API calls
@@ -350,6 +352,10 @@ const SearchByRoot = () => {
             type: item.itemType === 'PART' ? 'Part' : (item.itemType === 'LABOR' ? 'Labor' : (item.itemType === 'ADAS' ? 'ADAS' : 'Service')),
             nagsId: item.nagsGlassId || "",
             oemId: "",
+            // Map missing fields from backend item
+            prefixCd: item.prefixCd || null,
+            posCd: item.posCd || null,
+            sideCd: item.sideCd || null,
             description: item.partDescription || "",
             adasCode: item.itemType === 'ADAS' && item.partDescription ? item.partDescription.replace('ADAS Recalibration - ', '') : null,
             manufacturer: "",
@@ -580,6 +586,7 @@ const SearchByRoot = () => {
       modelId: make_model_id || prev.modelId,
       bodyStyleId: body_style_id || prev.bodyStyleId,
       vehId: veh_id || prev.vehId,
+      vehModifierId: veh_modifier_id || prev.vehModifierId, // Store modifier ID
     }));
   };
 
@@ -602,6 +609,7 @@ const SearchByRoot = () => {
       modelId: info.makeModelId || prev.modelId,
       bodyStyleId: info.bodyStyleId || prev.bodyStyleId,
       vehId: info.veh_id || info.vehId || prev.vehId,
+      vehModifierId: info.vehModifierId || prev.vehModifierId, // Store modifier ID
     }));
   };
 
