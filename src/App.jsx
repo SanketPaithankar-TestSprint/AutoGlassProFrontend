@@ -148,7 +148,7 @@ function AppContent() {
                     </div>
                   }>
                     <Routes>
-                      <Route path="/" element={isAuthed ? <Navigate to="/analytics" replace /> : <Home />} />
+                      <Route path="/" element={isAuthed ? <Navigate to="/search-by-root" replace /> : <Home />} />
                       <Route path="/analytics" element={<AnalyticsRoot />} />
                       <Route path="/customers" element={<CustomersRoot />} />
                       <Route path="/search-by-root" element={<SearchByRoot />} />
