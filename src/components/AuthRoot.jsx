@@ -49,7 +49,7 @@ export default function AuthRoot() {
                 console.error("Error prefetching data:", error);
             }
             // Navigate to dashboard/home
-            navigate("/analytics");
+            navigate("/search-by-root");
         }
     };
 

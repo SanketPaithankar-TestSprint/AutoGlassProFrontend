@@ -33,8 +33,10 @@ const ServiceContactFormRoot = React.lazy(() => import('./components/ServiceCont
 const ServiceInquiryView = React.lazy(() => import('./components/ServiceContactForm/ServiceInquiryView.jsx'));
 const ContactPage = React.lazy(() => import('./components/ContactPage.jsx'));
 const PrivacyPolicy = React.lazy(() => import('./components/PrivacyPolicy.jsx'));
-const SitemapPage = React.lazy(() => import('./components/Sitemap/SitemapPage.jsx'));
+const EmployeeAttendance = React.lazy(() => import('./components/EmployeeAttendance/EmployeeAttendance.jsx'));
 import ErrorBoundary from './components/PublicContact/ErrorBoundary';
+const SitemapPage = React.lazy(() => import('./components/Sitemap/SitemapPage.jsx'));
+
 
 
 const { Content } = Layout;
@@ -150,7 +152,7 @@ function AppContent() {
                     </div>
                   }>
                     <Routes>
-                      <Route path="/" element={isAuthed ? <Navigate to="/analytics" replace /> : <Home />} />
+                      <Route path="/" element={isAuthed ? <Navigate to="/search-by-root" replace /> : <Home />} />
                       <Route path="/analytics" element={<AnalyticsRoot />} />
                       <Route path="/customers" element={<CustomersRoot />} />
                       <Route path="/search-by-root" element={<SearchByRoot />} />
@@ -162,17 +164,19 @@ function AppContent() {
                       <Route path="/open" element={<OpenRoot />} />
                       <Route path="/reports" element={<ReportsRoot />} />
                       <Route path="/auth" element={<AuthRoot />} />
-
-                      <Route path="/service-contact-form" element={<ServiceContactFormRoot />} />
                       <Route path="/sitemap" element={<SitemapPage />} />
-                    </Routes>
-                  </Suspense>
-                </ErrorBoundary>
-              </div>
-              {!isAuthenticated && <Footer />}
-            </Content>
-          </Layout>
-        </Layout>
+                      <Route path="/service-contact-form" element={<ServiceContactFormRoot />} />
+                      <Route path="/employee-attendance" element={<EmployeeAttendance />} />
+                      <Route path="/sitemap" element={<SitemapPage />} />
+                    </Routes >
+                  </Suspense >
+                </ErrorBoundary >
+              </div >
+              {!isAuthenticated && <Footer />
+              }
+            </Content >
+          </Layout >
+        </Layout >
       ) : (
         // Public Layout: Header + Content Area
         <Layout className="min-h-screen bg-white flex flex-col">
@@ -206,7 +210,7 @@ function AppContent() {
         </Layout>
       )}
       <Chatbot />
-    </Layout>
+    </Layout >
   );
 }
 

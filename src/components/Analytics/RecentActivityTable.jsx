@@ -1,79 +1,76 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 
 const RecentActivityTable = ({ data }) => {
-    const navigate = useNavigate();
-
     if (!data || data.length === 0) {
         return (
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 text-center text-slate-400">
-                No recent activity
+            <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 p-6 h-full flex items-center justify-center"
+                style={{ boxShadow: '0 4px 24px -4px rgba(0, 0, 0, 0.06)' }}>
+                <p className="text-slate-400">No recent activity</p>
             </div>
         );
     }
 
+    const statusNames = {
+        0: { label: 'Draft', color: 'bg-slate-100 text-slate-600 border border-slate-200' },
+        1: { label: 'Pending', color: 'bg-amber-50 text-amber-700 border border-amber-200' },
+        2: { label: 'Scheduled', color: 'bg-indigo-50 text-indigo-700 border border-indigo-200' },
+        3: { label: 'In Progress', color: 'bg-violet-50 text-violet-700 border border-violet-200' },
+        4: { label: 'On Hold', color: 'bg-orange-50 text-orange-700 border border-orange-200' },
+        5: { label: 'Cancelled', color: 'bg-red-50 text-red-700 border border-red-200' },
+        6: { label: 'Completed', color: 'bg-emerald-50 text-emerald-700 border border-emerald-200' },
+    };
+
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden h-full flex flex-col">
-            <div className="p-6 border-b border-slate-100 shrink-0">
-                <h3 className="text-lg font-semibold text-slate-800">Quotes Activity</h3>
+        <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 h-full flex flex-col overflow-hidden"
+            style={{ boxShadow: '0 4px 24px -4px rgba(0, 0, 0, 0.06)' }}>
+            <div className="p-6 border-b border-slate-100/60">
+                <h3 className="text-base font-bold text-slate-700">Recent Activity</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Latest service documents</p>
             </div>
-            <div className="overflow-auto flex-1 min-h-0">
-                <table className="w-full text-left text-sm text-slate-600 relative">
-                    <thead className="bg-slate-50 text-slate-500 uppercase text-xs font-semibold sticky top-0 z-10">
+
+            <div className="flex-1 overflow-auto">
+                <table className="w-full">
+                    <thead className="bg-slate-50/80 sticky top-0">
                         <tr>
-                            <th className="px-6 py-4">Document</th>
-                            <th className="px-6 py-4">Date</th>
-                            <th className="px-6 py-4">Amount</th>
-                            <th className="px-6 py-4">Status</th>
+                            <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-slate-400 px-6 py-3">Document #</th>
+                            <th className="text-left text-[10px] uppercase tracking-wider font-semibold text-slate-400 px-6 py-3">Status</th>
+                            <th className="text-right text-[10px] uppercase tracking-wider font-semibold text-slate-400 px-6 py-3">Amount</th>
+                            <th className="text-right text-[10px] uppercase tracking-wider font-semibold text-slate-400 px-6 py-3">Created</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
-                        {data.map((item, index) => (
-                            <tr
-                                key={index}
-                                className="hover:bg-slate-50 cursor-pointer transition-colors"
-                                onClick={() => navigate(`/quote-details/${item.document_number}`)} // Assuming route
-                            >
-                                <td className="px-6 py-4 font-medium text-slate-800">#{item.document_number}</td>
-                                <td className="px-6 py-4">{dayjs(item.created_at).format('MM/DD/YYYY')}</td>
-                                <td className="px-6 py-4 font-medium">
-                                    {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(item.total_amount)}
-                                </td>
-                                <td className="px-6 py-4">
-                                    {(() => {
-                                        const getStatusDetails = (status) => {
-                                            const s = Number(status);
-                                            switch (s) {
-                                                case 0: return { label: 'Draft', className: 'bg-gray-100 text-gray-800' };
-                                                case 1: return { label: 'Quoted', className: 'bg-purple-100 text-purple-800' };
-                                                case 2: return { label: 'Pending', className: 'bg-yellow-100 text-yellow-800' };
-                                                case 3: return { label: 'Confirmed', className: 'bg-cyan-100 text-cyan-800' };
-                                                case 4: return { label: 'Scheduled', className: 'bg-cyan-100 text-cyan-800' };
-                                                case 5: return { label: 'In Progress', className: 'bg-purple-100 text-purple-800' };
-                                                case 6: return { label: 'Completed', className: 'bg-green-100 text-green-800' };
-                                                case 7: return { label: 'Cancelled', className: 'bg-red-100 text-red-800' };
-                                                case 8: return { label: 'Sent', className: 'bg-cyan-100 text-cyan-800' };
-                                                case 9: return { label: 'Viewed', className: 'bg-purple-100 text-purple-800' };
-                                                case 10: return { label: 'Partial Paid', className: 'bg-yellow-100 text-yellow-800' };
-                                                case 11: return { label: 'Paid', className: 'bg-green-100 text-green-800' };
-                                                case 12: return { label: 'Overdue', className: 'bg-red-100 text-red-800' };
-                                                case 13: return { label: 'Refunded', className: 'bg-orange-100 text-orange-800' };
-                                                case 14: return { label: 'Accepted', className: 'bg-purple-100 text-purple-800' };
-                                                default: return { label: String(status), className: 'bg-gray-100 text-gray-800' };
-                                            }
-                                        };
+                    <tbody className="divide-y divide-slate-100/60">
+                        {data.map((activity, index) => {
+                            const status = statusNames[activity.status] || { label: 'Unknown', color: 'bg-gray-100 text-gray-600 border border-gray-200' };
 
-                                        const { label, className } = getStatusDetails(item.status);
-                                        return (
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${className}`}>
-                                                {label}
-                                            </span>
-                                        );
-                                    })()}
-                                </td>
-                            </tr>
-                        ))}
+                            return (
+                                <tr key={index} className="hover:bg-indigo-50/30 transition-colors duration-200">
+                                    <td className="px-6 py-3.5">
+                                        <span className="text-sm font-semibold text-slate-700">
+                                            {activity.document_number}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-3.5">
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${status.color}`}>
+                                            {status.label}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-3.5 text-right">
+                                        <span className="text-sm font-bold text-slate-700">
+                                            ${activity.total_amount.toLocaleString()}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-3.5 text-right">
+                                        <span className="text-sm text-slate-500">
+                                            {dayjs(activity.created_at).format('MMM DD, YYYY')}
+                                        </span>
+                                        <div className="text-[10px] text-slate-400">
+                                            {dayjs(activity.created_at).format('h:mm A')}
+                                        </div>
+                                    </td>
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </table>
             </div>

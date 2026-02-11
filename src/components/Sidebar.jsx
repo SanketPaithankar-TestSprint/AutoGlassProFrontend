@@ -15,7 +15,8 @@ import {
     PieChartOutlined,
     TeamOutlined,
     FormOutlined,
-    MessageOutlined
+    MessageOutlined,
+    AuditOutlined
 } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 import Logo from './logo';
@@ -208,6 +209,12 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
                     </span>
                 </Link>
             ),
+        },
+
+        {
+            key: '/employee-attendance',
+            icon: <AuditOutlined />,
+            label: <Link to="/employee-attendance">Employee Attendance</Link>,
         },
 
         // Add other authenticated links here if needed
