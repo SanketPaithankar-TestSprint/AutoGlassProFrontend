@@ -32,7 +32,9 @@ const ServiceContactFormRoot = React.lazy(() => import('./components/ServiceCont
 const ServiceInquiryView = React.lazy(() => import('./components/ServiceContactForm/ServiceInquiryView.jsx'));
 const ContactPage = React.lazy(() => import('./components/ContactPage.jsx'));
 const PrivacyPolicy = React.lazy(() => import('./components/PrivacyPolicy.jsx'));
+const EmployeeAttendance = React.lazy(() => import('./components/EmployeeAttendance/EmployeeAttendance.jsx'));
 import ErrorBoundary from './components/PublicContact/ErrorBoundary';
+
 
 
 const { Content } = Layout;
@@ -162,6 +164,8 @@ function AppContent() {
                       <Route path="/auth" element={<AuthRoot />} />
 
                       <Route path="/service-contact-form" element={<ServiceContactFormRoot />} />
+                      <Route path="/employee-attendance" element={<EmployeeAttendance />} />
+
                     </Routes>
                   </Suspense>
                 </ErrorBoundary>
