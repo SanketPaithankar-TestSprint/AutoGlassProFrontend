@@ -1,0 +1,23 @@
+# robots.txt for AutoPane AI
+# This file tells search engine crawlers which pages to crawl and where to find the sitemap
+
+User-agent: *
+Allow: /
+
+# Disallow private/authenticated pages
+Disallow: /analytics
+Disallow: /customers
+Disallow: /schedule
+Disallow: /reports
+Disallow: /profile
+Disallow: /Profile
+Disallow: /auth
+Disallow: /login
+Disallow: /Order
+Disallow: /open
+Disallow: /search-by-root
+Disallow: /service-contact-form
+
+# Sitemap location
+Sitemap: https://autopaneai.com/sitemap.xml
+Sitemap: https://autopaneai.com/sitemap.html

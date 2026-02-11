@@ -37,7 +37,7 @@ const Footer = () => {
             <Link to="/features" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Features</Link>
             <Link to="/about" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">About</Link>
             <Link to="/contact" className="text-slate-500 hover:text-slate-800 transition-colors tracking-wide">Contact</Link>
-            <a href={SITEMAP_LINK} className="text-slate-500 hover:text-slate-800 transition-colors tracking-wide" target="_blank" rel="noopener noreferrer">Sitemap</a>
+            <Link to="/sitemap" className="text-slate-500 hover:text-slate-800 transition-colors tracking-wide">Sitemap</Link>
             <Link to="/privacy-policy" className="text-slate-500 hover:text-slate-800 transition-colors tracking-wide">Privacy Policy</Link>
           </div>
           {/* Social Media Section */}
@@ -102,7 +102,7 @@ const Footer = () => {
             <ul className="space-y-2 text-sm">
               <li><Link to="/contact" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Contact</Link></li>
               <li><a href="/" className="text-slate-500 hover:text-[#7E5CFE] transition-colors">Blogs</a></li>
-              <li><a href={SITEMAP_LINK} className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide" target="_blank" rel="noopener noreferrer">Sitemap</a></li>
+              <li><Link to="/sitemap" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Sitemap</Link></li>
               <li><Link to="/privacy-policy" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Privacy Policy</Link></li>
             </ul>
           </Col>
