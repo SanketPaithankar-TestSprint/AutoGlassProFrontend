@@ -1,6 +1,7 @@
 // src/components/PublicContact/PublicContactRoot.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { Select } from 'antd';
+import { Select, Upload, Button } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
 import { useParams } from 'react-router-dom';
 import { validateSlug, submitContactForm, createServiceInquiry, decodeVin, fetchVehicleMakes, fetchVehicleModels } from '../../api/publicContactForm';
 import { clearSessionId, generateSessionId } from '../../utils/sessionUtils';
@@ -62,6 +63,7 @@ const PublicContactRoot = () => {
     const [vinLoading, setVinLoading] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [showNote, setShowNote] = useState(false);
+    const [fileList, setFileList] = useState([]);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -295,7 +297,7 @@ const PublicContactRoot = () => {
             // Clean up potentially empty values if user switched selections
             additionalGlassLocation = additionalGlassLocation.filter(Boolean);
 
-            const payload = {
+            const jsonPayload = {
                 userId: userId, // From shop/slug validation
                 firstName: firstName,
                 lastName: lastName, // Fallback if no last name provided? API might require it.
@@ -321,8 +323,16 @@ const PublicContactRoot = () => {
                     ...additionalGlassLocation
                 ],
                 customerMessage: formData.message
-
             };
+
+            const payload = new FormData();
+            payload.append('data', JSON.stringify(jsonPayload));
+
+            fileList.forEach((file) => {
+                if (file.originFileObj) {
+                    payload.append('files', file.originFileObj);
+                }
+            });
 
             await createServiceInquiry(payload);
             setIsSubmitted(true);
@@ -361,6 +371,7 @@ const PublicContactRoot = () => {
 
     const handleNewMessage = () => {
         setIsSubmitted(false);
+        setFileList([]);
         setFormData({
             name: '',
             email: '',
@@ -698,6 +709,21 @@ const PublicContactRoot = () => {
                                             />
                                         </div>
                                     )}
+                                </div>
+
+                                {/* File Upload */}
+                                <div>
+                                    <label className="premium-label">Upload Images (Optional)</label>
+                                    <Upload
+                                        beforeUpload={() => false}
+                                        fileList={fileList}
+                                        onChange={({ fileList }) => setFileList(fileList)}
+                                        listType="picture"
+                                        maxCount={5}
+                                        multiple
+                                    >
+                                        <Button icon={<UploadOutlined />}>Click to Upload</Button>
+                                    </Upload>
                                 </div>
 
                                 {/* Submit Button */}

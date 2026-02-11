@@ -118,13 +118,19 @@ Please create a lead for this customer.`;
  * @returns {Promise<Object>} - The created service inquiry
  */
 export async function createServiceInquiry(payload) {
+    const isFormData = payload instanceof FormData;
+    const headers = {
+        'accept': '*/*',
+    };
+
+    if (!isFormData) {
+        headers['Content-Type'] = 'application/json';
+    }
+
     const response = await fetch(`${urls.javaApiUrl}/v1/service-inquiries`, {
         method: 'POST',
-        headers: {
-            'accept': '*/*',
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
+        headers: headers,
+        body: isFormData ? payload : JSON.stringify(payload),
     });
 
     if (!response.ok) {

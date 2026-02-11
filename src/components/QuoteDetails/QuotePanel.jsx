@@ -1382,13 +1382,13 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
             const effectiveServiceAddress = (schedulingData?.serviceLocation === 'MOBILE' || schedulingData?.serviceLocation === 'CUSTOMER_LOCATION')
                 ? (schedulingData?.serviceAddress || '')
                 : `${customerData.addressLine1 || ''}, ${customerData.city || ''}, ${customerData.state || ''} ${customerData.postalCode || ''}`;
-
+            console.log("data:",schedulingData);
             const compositePayload = {
                 documentType: currentDocType.replace(" ", "_").toUpperCase(),
                 documentDate: new Date().toISOString(),
-                scheduledDate: schedulingData?.scheduledDate || new Date().toISOString(),
-                estimatedCompletion: schedulingData?.estimatedCompletion || new Date().toISOString(),
-                dueDate: schedulingData?.dueDate || new Date().toISOString().split('T')[0],
+                scheduledDate: schedulingData?.scheduledDate || null,
+                estimatedCompletion: schedulingData?.estimatedCompletion || null,
+                dueDate: schedulingData?.dueDate || null,
                 paymentTerms: schedulingData?.paymentTerms || "Due upon receipt",
                 technicianId: schedulingData?.assignedEmployeeId || schedulingData?.employeeId || null,
                 employeeId: schedulingData?.assignedEmployeeId || schedulingData?.employeeId || null,
