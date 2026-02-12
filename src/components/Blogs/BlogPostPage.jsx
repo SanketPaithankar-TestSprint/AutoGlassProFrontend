@@ -78,7 +78,7 @@ const BlogPostPage = () => {
     });
 
     return (
-        <div className="min-h-screen bg-white pt-24 pb-20 relative overflow-hidden font-sans text-slate-900">
+        <div className="min-h-screen bg-white pt-20 pb-20 relative overflow-hidden font-sans text-slate-900">
             {/* Gradient Background */}
             <div
                 className="fixed inset-0 z-0 pointer-events-none opacity-20"
@@ -87,7 +87,7 @@ const BlogPostPage = () => {
 
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 {/* Back Button */}
-                <Link to="/blogs" className="inline-flex items-center gap-2 text-slate-500 hover:text-violet-600 transition-colors mb-8 font-medium">
+                <Link to="/blogs" className="inline-flex items-center gap-2 text-slate-500 hover:text-violet-600 transition-colors mb-6 font-medium">
                     <ArrowLeftOutlined /> Back to Resources
                 </Link>
 
@@ -98,7 +98,7 @@ const BlogPostPage = () => {
                     transition={{ duration: 0.5 }}
                 >
                     {/* Cover Image */}
-                    <div className="w-full h-64 md:h-96 rounded-2xl overflow-hidden mb-8 shadow-sm">
+                    <div className="w-full h-56 md:h-80 rounded-2xl overflow-hidden mb-6 shadow-sm">
                         <img
                             src={post.coverImageUrl || defaultCover}
                             alt={post.title}
@@ -106,13 +106,15 @@ const BlogPostPage = () => {
                         />
                     </div>
 
-                    <h1 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6 font-outfit leading-tight">
+                    <h1 className="text-3xl md:text-5xl font-bold text-slate-900 mb-4 font-outfit leading-tight">
                         {post.title}
                     </h1>
 
-                    <div className="flex flex-wrap items-center gap-6 text-sm text-slate-500 border-b border-slate-100 pb-8 mb-8">
+                    <div className="flex flex-wrap items-center gap-6 text-sm text-slate-500 border-b border-slate-100 pb-6 mb-6">
                         <div className="flex items-center gap-2">
-                            <Avatar size="small" icon={<UserOutlined />} className="bg-violet-100 text-violet-600" />
+                            <span className="flex-shrink-0">
+                                <Avatar icon={<UserOutlined />} className="bg-violet-100 text-violet-600 flex items-center justify-center" />
+                            </span>
                             <span className="font-medium">Admin</span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -133,7 +135,14 @@ const BlogPostPage = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
-                    className="prose prose-lg prose-slate max-w-none prose-headings:font-bold prose-headings:text-slate-900 prose-p:text-slate-600 prose-a:text-violet-600 hover:prose-a:text-violet-700 prose-img:rounded-xl mb-20"
+                    className="prose prose-lg prose-slate max-w-none 
+                        prose-headings:font-bold prose-headings:text-slate-900 prose-headings:font-outfit
+                        prose-p:text-slate-600 prose-p:leading-relaxed
+                        prose-a:text-violet-600 hover:prose-a:text-violet-700 
+                        prose-img:rounded-xl prose-img:shadow-md
+                        prose-strong:text-slate-800
+                        prose-blockquote:border-l-4 prose-blockquote:border-violet-500 prose-blockquote:bg-violet-50 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:italic
+                        mb-16"
                 >
                     {/* Render HTML content safely */}
                     <div dangerouslySetInnerHTML={{ __html: post.content }} />

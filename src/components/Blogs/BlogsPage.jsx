@@ -60,7 +60,7 @@ const BlogCard = ({ post }) => {
 
                 <div className="mt-auto pt-6 flex items-center justify-between border-t border-slate-100">
                     <div className="flex items-center gap-3">
-                        <Avatar icon={<UserOutlined />} className="bg-slate-100 text-slate-500" />
+                        <Avatar size="large" icon={<UserOutlined style={{ fontSize: '1.2rem' }} />} className="bg-slate-100 text-slate-500 flex-shrink-0 flex items-center justify-center z-10" />
                         <div className="flex flex-col">
                             <span className="text-sm font-medium text-slate-700">Admin</span>
                             <span className="text-xs text-slate-400">Author</span>
