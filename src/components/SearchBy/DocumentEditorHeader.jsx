@@ -1,6 +1,6 @@
 import React from 'react';
-import { Flex, Tabs, Button } from 'antd';
-import { DeleteOutlined } from '@ant-design/icons';
+import { Tabs, Button, Dropdown } from 'antd';
+import { DeleteOutlined, DownOutlined } from '@ant-design/icons';
 
 const DocumentEditorHeader = ({
   activeTab,
@@ -11,11 +11,11 @@ const DocumentEditorHeader = ({
 }) => {
   // Style configuration for transparent tabs
   const stylesObject = {
-    root: { 
+    root: {
       backgroundColor: 'transparent',
       borderBottom: 'none'
     },
-    header: { 
+    header: {
       backgroundColor: 'transparent',
       margin: 0
     },
@@ -30,11 +30,42 @@ const DocumentEditorHeader = ({
     }
   };
 
+  const docTypeItems = [
+    {
+      key: 'Quote',
+      label: 'Quote',
+      onClick: () => setManualDocType('Quote'),
+    },
+    {
+      key: 'Work Order',
+      label: 'Work Order',
+      onClick: () => setManualDocType('Work Order'),
+    },
+    {
+      key: 'Invoice',
+      label: 'Invoice',
+      onClick: () => setManualDocType('Invoice'),
+    },
+  ];
+
   // Create tab items
   const tabItems = [
     {
       key: 'quote',
-      label: manualDocType || 'Quote',
+      label: (
+        <div className="flex items-center gap-0 px-2">
+          <span className=''>{manualDocType || 'Quote'}</span>
+          <Dropdown menu={{ items: docTypeItems }} trigger={['click']} placement="bottomLeft">
+            <button
+              onClick={(e) => e.stopPropagation()}
+              className="p-0 cursor-pointer transition !bg-transparent border-none flex items-center justify-center"
+              title="Change document type"
+            >
+              <DownOutlined className="text-[10px] text-slate-600" />
+            </button>
+          </Dropdown>
+        </div>
+      ),
       children: null,
     },
     {
@@ -70,7 +101,7 @@ const DocumentEditorHeader = ({
   ];
 
   return (
-    <div className="w-full bg-[#E2E8F0] backdrop-blur-sm border-b border-transparent overflow-hidden">
+    <div className="w-full bg-[#E2E8F0] backdrop-blur-sm border-b border-transparent relative">
       {/* Tabs Container */}
       <div className="w-full px-2 lg:px-4 overflow-x-auto py-0">
         <div className="flex justify-between items-center min-w-fit">
