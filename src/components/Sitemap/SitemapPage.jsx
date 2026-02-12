@@ -12,6 +12,7 @@ const SitemapPage = () => {
                 { path: '/pricing', title: 'Pricing', description: 'View our pricing plans' },
                 { path: '/about', title: 'About', description: 'Learn more about us' },
                 { path: '/contact', title: 'Contact', description: 'Get in touch with us' },
+                { path: '/blogs', title: 'Blogs', description: 'Read our latest articles and updates' },
             ]
         },
         {
@@ -69,20 +70,17 @@ const SitemapPage = () => {
                             <h2 className="text-xl font-semibold text-slate-800 mb-6 pb-2 border-b border-slate-200">
                                 {section.title}
                             </h2>
-                            <ul className="space-y-4">
+                            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                                 {section.links.map((link, linkIndex) => (
                                     <li key={linkIndex} className="group">
-                                        <Link to={link.path} className="block hover:bg-white/60 p-3 -mx-3 rounded-lg transition-colors border border-transparent hover:border-slate-100 hover:shadow-sm">
-                                            <div className="flex items-baseline gap-3">
-                                                <span className="text-violet-600 font-medium group-hover:underline decoration-2 underline-offset-2">
+                                        <Link to={link.path} className="flex flex-col h-full bg-gradient-to-br from-white/50 to-white/30 p-4 md:p-5 rounded-lg transition-all duration-300 border border-white/40 hover:border-violet-300 hover:bg-gradient-to-br hover:from-white/70 hover:to-white/50 hover:shadow-md cursor-pointer">
+                                            <div className="flex flex-col gap-3">
+                                                <span className="text-violet-600 font-semibold text-base md:text-lg group-hover:underline decoration-2 underline-offset-2 transition-all">
                                                     {link.title}
-                                                </span>
-                                                <span className="text-sm text-slate-400 font-mono hidden sm:inline-block">
-                                                    https://autopaneai.com{link.path}
                                                 </span>
                                             </div>
                                             {link.description && (
-                                                <p className="text-sm text-slate-500 mt-1">
+                                                <p className="text-sm md:text-base text-slate-600 leading-relaxed flex-grow">
                                                     {link.description}
                                                 </p>
                                             )}

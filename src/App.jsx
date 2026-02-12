@@ -36,6 +36,8 @@ const PrivacyPolicy = React.lazy(() => import('./components/PrivacyPolicy.jsx'))
 const EmployeeAttendance = React.lazy(() => import('./components/EmployeeAttendance/EmployeeAttendance.jsx'));
 import ErrorBoundary from './components/PublicContact/ErrorBoundary';
 const SitemapPage = React.lazy(() => import('./components/Sitemap/SitemapPage.jsx'));
+const BlogsPage = React.lazy(() => import('./components/Blogs/BlogsPage.jsx'));
+const BlogPostPage = React.lazy(() => import('./components/Blogs/BlogPostPage.jsx'));
 
 
 
@@ -201,6 +203,8 @@ function AppContent() {
                   <Route path="/pricing" element={<PricingPage />} />
                   <Route path="/auth" element={<AuthRoot />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                  <Route path="/blogs" element={<BlogsPage />} />
+                  <Route path="/blogs/:slug" element={<BlogPostPage />} />
                   <Route path="/sitemap" element={<SitemapPage />} />
                 </Routes>
               </Suspense>
