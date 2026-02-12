@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import { useQuoteStore } from "../../store";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { Modal, Input, Button, message, notification, Dropdown, Select, InputNumber } from "antd";
-import { DownOutlined, UnorderedListOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import { DownOutlined, UnorderedListOutlined, DeleteOutlined, PlusOutlined, LoadingOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { createCompositeServiceDocument } from "../../api/createCompositeServiceDocument";
 import { updateCompositeServiceDocument } from "../../api/updateCompositeServiceDocument";
@@ -2079,12 +2079,19 @@ ${shopName}`;
                                             />
                                         </td>
                                         <td className="px-1 sm:px-2 py-1 text-right align-middle">
-                                            <CurrencyInput
-                                                value={it.amount}
-                                                onChange={(val) => updateItem(it.id, "amount", val)}
-                                                className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-right outline-none bg-transparent text-slate-900 font-bold transition-all text-sm"
-                                                placeholder="$0.00"
-                                            />
+                                            {it.isLoadingVendorPrice ? (
+                                                <div className="flex items-center justify-end gap-2 h-7">
+                                                    <LoadingOutlined className="text-violet-600" style={{ fontSize: '14px' }} />
+                                                    <span className="text-xs text-slate-500">Fetching...</span>
+                                                </div>
+                                            ) : (
+                                                <CurrencyInput
+                                                    value={it.amount}
+                                                    onChange={(val) => updateItem(it.id, "amount", val)}
+                                                    className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-right outline-none bg-transparent text-slate-900 font-bold transition-all text-sm"
+                                                    placeholder="$0.00"
+                                                />
+                                            )}
                                         </td>
                                         {showDeleteButton && (
                                             <td className="px-1 py-0.5 text-center align-middle" rowSpan={rowSpan}>
