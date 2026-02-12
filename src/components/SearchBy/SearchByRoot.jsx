@@ -141,6 +141,7 @@ const SearchByRoot = () => {
     taxId: "",
     isTaxExempt: false,
     vehModifierId: null, // Added for vehicle modifier ID tracking
+    organizationContactId: null, // Added for organization contact linking
   };
 
   // Lifted Customer State
@@ -263,6 +264,7 @@ const SearchByRoot = () => {
           organizationName: customer.organizationName || organization?.companyName || "",
           taxId: customer.taxId || organization?.taxId || "",
           isTaxExempt: customer.isTaxExempt || organization?.taxExempt || false,
+          organizationContactId: customer.organizationContactId || null,
         };
       } else if (organization) {
         // No customer, but we have organization -> Map to "Business" mode defaults
@@ -587,6 +589,7 @@ const SearchByRoot = () => {
       bodyStyleId: body_style_id || prev.bodyStyleId,
       vehId: veh_id || prev.vehId,
       vehModifierId: veh_modifier_id || prev.vehModifierId, // Store modifier ID
+      organizationContactId: prev.organizationContactId, // Preserve contact ID
     }));
   };
 
@@ -610,6 +613,7 @@ const SearchByRoot = () => {
       bodyStyleId: info.bodyStyleId || prev.bodyStyleId,
       vehId: info.veh_id || info.vehId || prev.vehId,
       vehModifierId: info.vehModifierId || prev.vehModifierId, // Store modifier ID
+      organizationContactId: prev.organizationContactId, // Preserve contact ID
     }));
   };
 

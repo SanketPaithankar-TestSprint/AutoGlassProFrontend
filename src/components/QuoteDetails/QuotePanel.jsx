@@ -1345,15 +1345,46 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
             if (customerData.organizationId) {
                 // Link EXISTING Organization
                 organizationPayload = {
-                    organizationId: customerData.organizationId
+                    organizationId: customerData.organizationId,
+                    organizationContactId: customerData.organizationContactId || null
                 };
             } else if (customerData.newOrganizationDetails && customerData.newOrganizationDetails.companyName) {
                 // Create NEW Organization (using dedicated details from CustomerPanel)
+                // Use client-generated UUID for new contact if available
+                const contactId = customerData.organizationContactId || crypto.randomUUID();
+
                 organizationPayload = {
                     ...customerData.newOrganizationDetails,
                     phone: customerData.newOrganizationDetails.phone?.replace(/[^\d]/g, '') || "",
-                    alternatePhone: customerData.newOrganizationDetails.alternatePhone?.replace(/[^\d]/g, '') || ""
+                    alternatePhone: customerData.newOrganizationDetails.alternatePhone?.replace(/[^\d]/g, '') || "",
+                    // Add contacts array with the new contact
+                    contacts: [{
+                        id: contactId,
+                        contactName: customerData.newOrganizationDetails.contactName || "",
+                        // Ensure we have name field as well
+                        name: customerData.newOrganizationDetails.contactName || "",
+                        phone: customerData.newOrganizationDetails.phone || "",
+                        email: customerData.newOrganizationDetails.email || "",
+                        jobTitle: customerData.newOrganizationDetails.contactJobTitle || "",
+                        addressLine1: customerData.newOrganizationDetails.contactAddressLine1 || "",
+                        city: customerData.newOrganizationDetails.contactCity || "",
+                        state: customerData.newOrganizationDetails.contactState || "",
+                        postalCode: customerData.newOrganizationDetails.contactPostalCode || ""
+                    }]
                 };
+
+                // Link the contact ID in the root request (or org payload depending on backend req)
+                // The requirements say: send it in both contacts array and organizationContactId
+                // But organizationContactId is usually at the root of the request or inside organization object?
+                // Request example Scenario 2 shows organizationContactId at ROOT level of the request, OR inside?
+                // Actually Scenario 2 shows:
+                /*
+                  "organization": { ... contacts: [{ id: "gen-uuid-1" ... }] },
+                  "organizationContactId": "gen-uuid-1"
+                */
+                // So we need to put it in the ROOT payload, handled below.
+                // We'll also store it in a variable to use later.
+                organizationPayload.organizationContactId = contactId; // Just in case backend looks here too
             } else if (customerData.organizationName) {
                 // Fallback: If no dedicated object but name exists (Legacy/Edge Case)
                 organizationPayload = {
@@ -1365,6 +1396,49 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                     postalCode: customerData.postalCode || ""
                 };
             }
+
+            // Special handling for Existing Org + New Contact (Scenario not explicitly detailed but implied)
+            // If organizationId exists AND we have a new contact ID (generated in CustomerPanel) 
+            // AND that contact isn't in the existing organization's contact list (we can't easily check that here without fetching)
+            // Actually CustomerPanel sets organizationContactId to the UUID.
+            // If it's a NEW contact, we might need to send the contact details to create it?
+            // The requirement says: "When creating a NEW contact that you want to link immediately, generate the UUID on the client side and send it in both the contacts array and organizationContactId."
+            // This usually implies sending the Organization object with the new contact in the `contacts` array, even if Org ID exists?
+            // Or maybe a separate endpoint / different payload structure?
+            // Scenario 1: Existing Org + Existing Contact -> Just IDs. 
+            // Scenario 2: New Org + New Contact -> Org Object + Contact Object + Contact ID.
+
+            // Missing Scenario: Existing Org + New Contact.
+            // If we have organizationId, we usually just send the ID. 
+            // To add a contact to an EXISTING org in the SAME request, we might need to send the org object WITH the id AND the new contact?
+            // Let's assume for now we only handle the explicit "New Org + New Contact" and "Existing Org + Existing Contact" as per user request.
+            // But if the user selects "Existing Org" and types a NEW contact name, CustomerPanel generates a UUID.
+            // We should probably check if we need to send contact details.
+
+            if (customerData.organizationId && customerData.newContactDetails && customerData.organizationContactId) {
+                // Existing Org, but New Contact details present
+                // We need to construct a partial organization object to add the contact?
+                // Or just trust the backend handles it? 
+                // Current backend implementation likely expects the contact to exist if we only send IDs.
+                // To create a contact on an existing org via this composite endpoint Might require sending the org object with ID and contacts list.
+
+                // Let's try to send the organization object with ID and the new contact list
+                if (!organizationPayload) organizationPayload = {};
+                organizationPayload.organizationId = customerData.organizationId;
+                organizationPayload.contacts = [{
+                    id: customerData.organizationContactId,
+                    name: customerData.newContactDetails.name || "",
+                    contactName: customerData.newContactDetails.name || "",
+                    email: customerData.newContactDetails.email || "",
+                    phone: customerData.newContactDetails.phone || "",
+                    jobTitle: customerData.newContactDetails.jobTitle || "",
+                    addressLine1: customerData.newContactDetails.addressLine1 || "",
+                    city: customerData.newContactDetails.city || "",
+                    state: customerData.newContactDetails.state || "",
+                    postalCode: customerData.newContactDetails.postalCode || ""
+                }];
+            }
+
 
             const vehiclePayload = {
                 vehicleYear: Number(customerData.vehicleYear) || 2024,
@@ -1427,6 +1501,7 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
 
                 customer: customerPayload,
                 organization: organizationPayload, // Add Organization Object
+                organizationContactId: customerData.organizationContactId || organizationPayload?.organizationContactId || null, // Add to Root Level
                 vehicle: vehiclePayload,
                 insurance: includeInsurance ? {
                     ...insuranceData,
