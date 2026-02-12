@@ -60,16 +60,9 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
     const initialOrgForm = {
         companyName: "", taxId: "", email: "", phone: "", alternatePhone: "",
-        contactName: "", // Renamed from individualName
-        contactEmail: "", // Contact person email
-        contactPhone: "", // Contact person phone
-        contactJobTitle: "", // Contact job title
-        contactAddressLine1: "", // Contact address
-        contactCity: "", // Contact city
-        contactState: "", // Contact state
-        contactPostalCode: "", // Contact postal code
+        contactName: "",
         addressLine1: "", postalCode: "", country: "USA", notes: "",
-        contacts: [] // Added contacts array
+        contacts: []
     };
     const [orgFormData, setOrgFormData] = useState(initialOrgForm);
 
@@ -97,7 +90,11 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
     const isOrgDirty = React.useMemo(() => {
         if (!lastSavedOrgData) return false;
-        const fields = ["companyName", "taxId", "email", "phone", "individualName", "addressLine1", "city", "state", "postalCode"];
+        const fields = [
+            "companyName", "taxId", "email", "phone", "alternatePhone",
+            "addressLine1", "postalCode", "country", "notes",
+            "contactName"
+        ];
         return fields.some(key => (orgFormData[key] || "") !== (lastSavedOrgData[key] || ""));
     }, [orgFormData, lastSavedOrgData]);
 
@@ -128,6 +125,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                 email: formData.email || "",
                 phone: formData.phone || "",
                 alternatePhone: formData.alternatePhone || "",
+                contactName: formData.organizationContactName || "", // Prefill contact name from saved document
                 addressLine1: formData.addressLine1 || "",
                 addressLine2: formData.addressLine2 || "",
                 city: formData.city || "",
@@ -264,7 +262,10 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                 ...prev,
                 organizationId: val,
                 organizationName: orgDetails.companyName || "",
-                isTaxExempt: orgDetails.taxExempt === true
+                isTaxExempt: orgDetails.taxExempt === true,
+                // Sync organization phone and email to formData for validation
+                phone: orgDetails.phone || "",
+                email: orgDetails.email || ""
             }));
 
             const newOrgData = {
@@ -385,8 +386,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
     const handleOrgFormChange = (e) => {
         const { name, value } = e.target;
         let finalValue = value;
-        // Format both organization and contact phone numbers
-        if (name === 'phone' || name === 'alternatePhone' || name === 'contactPhone') {
+        // Format organization phone numbers
+        if (name === 'phone' || name === 'alternatePhone') {
             finalValue = formatPhoneNumber(value);
         }
         setOrgFormData(prev => ({ ...prev, [name]: finalValue }));
@@ -410,28 +411,15 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
             }));
         }
 
-        // Sync contact fields to newContactDetails if we have a new contact ID
-        if (formData.organizationContactId && formData.newContactDetails) {
-            const contactFieldMap = {
-                'contactName': 'name',
-                'contactEmail': 'email',
-                'contactPhone': 'phone',
-                'contactJobTitle': 'jobTitle',
-                'contactAddressLine1': 'addressLine1',
-                'contactCity': 'city',
-                'contactState': 'state',
-                'contactPostalCode': 'postalCode'
-            };
-
-            if (contactFieldMap[name]) {
-                setFormData(prev => ({
-                    ...prev,
-                    newContactDetails: {
-                        ...prev.newContactDetails,
-                        [contactFieldMap[name]]: finalValue
-                    }
-                }));
-            }
+        // Sync contact name to newContactDetails if we have a new contact ID
+        if (formData.organizationContactId && formData.newContactDetails && name === 'contactName') {
+            setFormData(prev => ({
+                ...prev,
+                newContactDetails: {
+                    ...prev.newContactDetails,
+                    name: finalValue
+                }
+            }));
         }
     };
 
@@ -566,7 +554,13 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                 phone: selectedContact.phone || prev.phone,
                 alternatePhone: selectedContact.alternatePhone || prev.alternatePhone
             }));
-            // Optional: Show notification or visual feedback
+
+            // Sync to parent formData to persist across tab switches
+            setFormData(prev => ({
+                ...prev,
+                organizationContactId: selectedContact.id,
+                organizationContactName: selectedContact.contactName || ""
+            }));
         }
     };
 
@@ -601,27 +595,32 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
             setSavingOrg(true);
 
             const currentContact = {
-                name: orgFormData.contactName, // Use 'name' for contacts array
-                contactName: orgFormData.contactName, // Keep contactName for compatibility if needed/used elsewhere
-                email: orgFormData.contactEmail,
-                phone: orgFormData.contactPhone,
-                jobTitle: orgFormData.contactJobTitle || "",
-                addressLine1: orgFormData.contactAddressLine1 || "",
-                city: orgFormData.contactCity || "",
-                state: orgFormData.contactState || "",
-                postalCode: orgFormData.contactPostalCode || ""
+                id: formData.organizationContactId || null, // Include the UUID
+                name: orgFormData.contactName,
+                contactName: orgFormData.contactName
             };
 
             let updatedContacts = [...(orgFormData.contacts || [])];
-            // Check against 'name' or 'contactName'
-            const existingContactIndex = updatedContacts.findIndex(c => (c.name || c.contactName) === currentContact.contactName);
 
-            if (existingContactIndex >= 0) {
-                // Update existing contact
-                updatedContacts[existingContactIndex] = { ...updatedContacts[existingContactIndex], ...currentContact };
+            // For new contacts (with UUID but not in contacts array)
+            if (formData.organizationContactId && !updatedContacts.find(c => c.id === formData.organizationContactId)) {
+                if (currentContact.contactName) {
+                    updatedContacts.push(currentContact);
+                }
+            } else if (formData.organizationContactId) {
+                // Update existing contact by UUID
+                const existingContactIndex = updatedContacts.findIndex(c => c.id === formData.organizationContactId);
+                if (existingContactIndex >= 0) {
+                    updatedContacts[existingContactIndex] = { ...updatedContacts[existingContactIndex], ...currentContact };
+                }
             } else if (currentContact.contactName) {
-                // Add new contact
-                updatedContacts.push(currentContact);
+                // Fallback: find by name (legacy behavior)
+                const existingContactIndex = updatedContacts.findIndex(c => (c.name || c.contactName) === currentContact.contactName);
+                if (existingContactIndex >= 0) {
+                    updatedContacts[existingContactIndex] = { ...updatedContacts[existingContactIndex], ...currentContact };
+                } else {
+                    updatedContacts.push(currentContact);
+                }
             }
 
             const orgPayload = {
@@ -649,7 +648,10 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                 companyName: orgFormData.companyName
             }));
 
-            setLastSavedOrgData({ ...orgFormData });
+            setLastSavedOrgData({
+                ...orgFormData,
+                contactName: orgFormData.contactName
+            });
 
             if (!silent) {
                 notification.success({
@@ -914,14 +916,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
                                                 setOrgFormData(prev => ({
                                                     ...prev,
-                                                    contactName: "",
-                                                    contactEmail: "",
-                                                    contactPhone: "",
-                                                    contactJobTitle: "",
-                                                    contactAddressLine1: "",
-                                                    contactCity: "",
-                                                    contactState: "",
-                                                    contactPostalCode: ""
+                                                    contactName: ""
                                                 }));
 
                                                 // Set the new contact ID
@@ -931,14 +926,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                                     // Prepare new contact details for saving
                                                     newContactDetails: {
                                                         id: newContactId,
-                                                        name: "",
-                                                        email: "",
-                                                        phone: "",
-                                                        jobTitle: "",
-                                                        addressLine1: "",
-                                                        city: "",
-                                                        state: "",
-                                                        postalCode: ""
+                                                        name: ""
                                                     }
                                                 }));
                                             } else {
@@ -948,14 +936,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                                     console.log('[CustomerPanel] Selected existing contact:', selected);
                                                     setOrgFormData(prev => ({
                                                         ...prev,
-                                                        contactName: selected.name || selected.contactName,
-                                                        contactEmail: selected.email || "",
-                                                        contactPhone: selected.phone || "",
-                                                        contactJobTitle: selected.jobTitle || "",
-                                                        contactAddressLine1: selected.addressLine1 || "",
-                                                        contactCity: selected.city || "",
-                                                        contactState: selected.state || "",
-                                                        contactPostalCode: selected.postalCode || ""
+                                                        contactName: selected.name || selected.contactName
                                                     }));
 
                                                     // Set existing contact ID
@@ -982,13 +963,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                     />
                                 </div>
 
-                                <FormInput label="Contact Email" name="contactEmail" value={orgFormData.contactEmail} onChange={handleOrgFormChange} />
-                                <FormInput label="Contact Phone" name="contactPhone" value={orgFormData.contactPhone} onChange={handleOrgFormChange} />
-                                <FormInput label="Job Title" name="contactJobTitle" value={orgFormData.contactJobTitle} onChange={handleOrgFormChange} />
-                                <FormInput label="Contact Address" name="contactAddressLine1" value={orgFormData.contactAddressLine1} onChange={handleOrgFormChange} />
-                                <FormInput label="Contact City" name="contactCity" value={orgFormData.contactCity} onChange={handleOrgFormChange} />
-                                <FormSelect label="Contact State" name="contactState" value={orgFormData.contactState} onChange={handleOrgFormChange} options={US_STATES} />
-                                <FormInput label="Zip Code" name="contactPostalCode" value={orgFormData.contactPostalCode} onChange={handleOrgFormChange} />
+
 
                                 {/* Tax Exempt Switch in Form Body */}
                                 <div className="flex flex-col justify-end pb-1">

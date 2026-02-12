@@ -142,6 +142,7 @@ const SearchByRoot = () => {
     isTaxExempt: false,
     vehModifierId: null, // Added for vehicle modifier ID tracking
     organizationContactId: null, // Added for organization contact linking
+    organizationContactName: "", // Added for organization contact name prefill
   };
 
   // Lifted Customer State
@@ -264,7 +265,8 @@ const SearchByRoot = () => {
           organizationName: customer.organizationName || organization?.companyName || "",
           taxId: customer.taxId || organization?.taxId || "",
           isTaxExempt: customer.isTaxExempt || organization?.taxExempt || false,
-          organizationContactId: customer.organizationContactId || null,
+          organizationContactId: customer.organizationContactId || serviceDocument?.organizationContactId || null,
+          organizationContactName: serviceDocument?.organizationContactName || "",
         };
       } else if (organization) {
         // No customer, but we have organization -> Map to "Business" mode defaults

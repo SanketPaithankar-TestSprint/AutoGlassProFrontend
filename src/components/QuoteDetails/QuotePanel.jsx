@@ -1342,11 +1342,25 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
             }
 
             // --- ORGANIZATION LOGIC ---
-            if (customerData.organizationId) {
-                // Link EXISTING Organization
+            let rootOrganizationId = null;
+            let rootOrganizationContactId = null;
+
+            if (customerData.organizationId && !customerData.newContactDetails) {
+                // Scenario: Link to EXISTING Organization (with or without existing contact)
+                // Send IDs at root level, organization object is null
+                rootOrganizationId = customerData.organizationId;
+                rootOrganizationContactId = customerData.organizationContactId || null;
+                organizationPayload = null; // Don't send organization object
+            } else if (customerData.organizationId && customerData.newContactDetails && customerData.organizationContactId) {
+                // Scenario: Existing Org + New Contact
+                // Send organization object with contacts array
                 organizationPayload = {
                     organizationId: customerData.organizationId,
-                    organizationContactId: customerData.organizationContactId || null
+                    contacts: [{
+                        id: customerData.organizationContactId,
+                        name: customerData.newContactDetails.name || "",
+                        contactName: customerData.newContactDetails.name || ""
+                    }]
                 };
             } else if (customerData.newOrganizationDetails && customerData.newOrganizationDetails.companyName) {
                 // Create NEW Organization (using dedicated details from CustomerPanel)
@@ -1361,15 +1375,7 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                     contacts: [{
                         id: contactId,
                         contactName: customerData.newOrganizationDetails.contactName || "",
-                        // Ensure we have name field as well
-                        name: customerData.newOrganizationDetails.contactName || "",
-                        phone: customerData.newOrganizationDetails.contactPhone || "",
-                        email: customerData.newOrganizationDetails.contactEmail || "",
-                        jobTitle: customerData.newOrganizationDetails.contactJobTitle || "",
-                        addressLine1: customerData.newOrganizationDetails.contactAddressLine1 || "",
-                        city: customerData.newOrganizationDetails.contactCity || "",
-                        state: customerData.newOrganizationDetails.contactState || "",
-                        postalCode: customerData.newOrganizationDetails.contactPostalCode || ""
+                        name: customerData.newOrganizationDetails.contactName || ""
                     }]
                 };
 
@@ -1387,22 +1393,7 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                 };
             }
 
-            // Handle scenario: Existing Org + New Contact
-            // If we have an existing org but also have newContactDetails, add the contact to the payload
-            if (customerData.organizationId && customerData.newContactDetails && customerData.organizationContactId) {
-                organizationPayload.contacts = [{
-                    id: customerData.organizationContactId,
-                    name: customerData.newContactDetails.name || "",
-                    contactName: customerData.newContactDetails.name || "",
-                    email: customerData.newContactDetails.email || "",
-                    phone: customerData.newContactDetails.phone || "",
-                    jobTitle: customerData.newContactDetails.jobTitle || "",
-                    addressLine1: customerData.newContactDetails.addressLine1 || "",
-                    city: customerData.newContactDetails.city || "",
-                    state: customerData.newContactDetails.state || "",
-                    postalCode: customerData.newContactDetails.postalCode || ""
-                }];
-            }
+
 
             const vehiclePayload = {
                 vehicleYear: Number(customerData.vehicleYear) || 2024,
@@ -1463,8 +1454,12 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                 taxRate: customerData.isTaxExempt ? 0 : (Number(globalTaxRate) || 0),
                 discountAmount: 0.00,
 
+                // Organization IDs at root level (for existing org linking)
+                organizationId: rootOrganizationId,
+                organizationContactId: rootOrganizationContactId,
+
                 customer: customerPayload,
-                organization: organizationPayload, // Add Organization Object
+                organization: organizationPayload, // Full object only for new orgs or new contacts
                 vehicle: vehiclePayload,
                 insurance: includeInsurance ? {
                     ...insuranceData,
