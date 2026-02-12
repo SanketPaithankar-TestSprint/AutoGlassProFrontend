@@ -1345,15 +1345,36 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
             if (customerData.organizationId) {
                 // Link EXISTING Organization
                 organizationPayload = {
-                    organizationId: customerData.organizationId
+                    organizationId: customerData.organizationId,
+                    organizationContactId: customerData.organizationContactId || null
                 };
             } else if (customerData.newOrganizationDetails && customerData.newOrganizationDetails.companyName) {
                 // Create NEW Organization (using dedicated details from CustomerPanel)
+                // Use client-generated UUID for new contact if available
+                const contactId = customerData.organizationContactId || crypto.randomUUID();
+
                 organizationPayload = {
                     ...customerData.newOrganizationDetails,
                     phone: customerData.newOrganizationDetails.phone?.replace(/[^\d]/g, '') || "",
-                    alternatePhone: customerData.newOrganizationDetails.alternatePhone?.replace(/[^\d]/g, '') || ""
+                    alternatePhone: customerData.newOrganizationDetails.alternatePhone?.replace(/[^\d]/g, '') || "",
+                    // Add contacts array with the new contact
+                    contacts: [{
+                        id: contactId,
+                        contactName: customerData.newOrganizationDetails.contactName || "",
+                        // Ensure we have name field as well
+                        name: customerData.newOrganizationDetails.contactName || "",
+                        phone: customerData.newOrganizationDetails.contactPhone || "",
+                        email: customerData.newOrganizationDetails.contactEmail || "",
+                        jobTitle: customerData.newOrganizationDetails.contactJobTitle || "",
+                        addressLine1: customerData.newOrganizationDetails.contactAddressLine1 || "",
+                        city: customerData.newOrganizationDetails.contactCity || "",
+                        state: customerData.newOrganizationDetails.contactState || "",
+                        postalCode: customerData.newOrganizationDetails.contactPostalCode || ""
+                    }]
                 };
+
+                // Set organizationContactId at root level for validation
+                organizationPayload.organizationContactId = contactId;
             } else if (customerData.organizationName) {
                 // Fallback: If no dedicated object but name exists (Legacy/Edge Case)
                 organizationPayload = {
@@ -1364,6 +1385,23 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                     state: customerData.state || "",
                     postalCode: customerData.postalCode || ""
                 };
+            }
+
+            // Handle scenario: Existing Org + New Contact
+            // If we have an existing org but also have newContactDetails, add the contact to the payload
+            if (customerData.organizationId && customerData.newContactDetails && customerData.organizationContactId) {
+                organizationPayload.contacts = [{
+                    id: customerData.organizationContactId,
+                    name: customerData.newContactDetails.name || "",
+                    contactName: customerData.newContactDetails.name || "",
+                    email: customerData.newContactDetails.email || "",
+                    phone: customerData.newContactDetails.phone || "",
+                    jobTitle: customerData.newContactDetails.jobTitle || "",
+                    addressLine1: customerData.newContactDetails.addressLine1 || "",
+                    city: customerData.newContactDetails.city || "",
+                    state: customerData.newContactDetails.state || "",
+                    postalCode: customerData.newContactDetails.postalCode || ""
+                }];
             }
 
             const vehiclePayload = {

@@ -61,6 +61,13 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
     const initialOrgForm = {
         companyName: "", taxId: "", email: "", phone: "", alternatePhone: "",
         contactName: "", // Renamed from individualName
+        contactEmail: "", // Contact person email
+        contactPhone: "", // Contact person phone
+        contactJobTitle: "", // Contact job title
+        contactAddressLine1: "", // Contact address
+        contactCity: "", // Contact city
+        contactState: "", // Contact state
+        contactPostalCode: "", // Contact postal code
         addressLine1: "", postalCode: "", country: "USA", notes: "",
         contacts: [] // Added contacts array
     };
@@ -378,10 +385,13 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
     const handleOrgFormChange = (e) => {
         const { name, value } = e.target;
         let finalValue = value;
-        if (name === 'phone' || name === 'alternatePhone') finalValue = formatPhoneNumber(value);
+        // Format both organization and contact phone numbers
+        if (name === 'phone' || name === 'alternatePhone' || name === 'contactPhone') {
+            finalValue = formatPhoneNumber(value);
+        }
         setOrgFormData(prev => ({ ...prev, [name]: finalValue }));
 
-        // Always sync email and phone to formData for validation
+        // Sync organization email and phone to formData for validation
         if (name === 'email' || name === 'phone') {
             setFormData(prev => ({ ...prev, [name]: finalValue }));
         }
@@ -398,6 +408,30 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                     [name]: finalValue
                 }
             }));
+        }
+
+        // Sync contact fields to newContactDetails if we have a new contact ID
+        if (formData.organizationContactId && formData.newContactDetails) {
+            const contactFieldMap = {
+                'contactName': 'name',
+                'contactEmail': 'email',
+                'contactPhone': 'phone',
+                'contactJobTitle': 'jobTitle',
+                'contactAddressLine1': 'addressLine1',
+                'contactCity': 'city',
+                'contactState': 'state',
+                'contactPostalCode': 'postalCode'
+            };
+
+            if (contactFieldMap[name]) {
+                setFormData(prev => ({
+                    ...prev,
+                    newContactDetails: {
+                        ...prev.newContactDetails,
+                        [contactFieldMap[name]]: finalValue
+                    }
+                }));
+            }
         }
     };
 
@@ -569,9 +603,13 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
             const currentContact = {
                 name: orgFormData.contactName, // Use 'name' for contacts array
                 contactName: orgFormData.contactName, // Keep contactName for compatibility if needed/used elsewhere
-                email: orgFormData.email,
-                phone: orgFormData.phone,
-                alternatePhone: orgFormData.alternatePhone || ""
+                email: orgFormData.contactEmail,
+                phone: orgFormData.contactPhone,
+                jobTitle: orgFormData.contactJobTitle || "",
+                addressLine1: orgFormData.contactAddressLine1 || "",
+                city: orgFormData.contactCity || "",
+                state: orgFormData.contactState || "",
+                postalCode: orgFormData.contactPostalCode || ""
             };
 
             let updatedContacts = [...(orgFormData.contacts || [])];
@@ -852,11 +890,16 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                             </div>
 
                             <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                {/* Organization Details - First Rows */}
                                 <FormInput label="Company Name" name="companyName" value={orgFormData.companyName} onChange={handleOrgFormChange} required />
                                 <FormInput label="Tax ID" name="taxId" value={orgFormData.taxId} onChange={handleOrgFormChange} />
-                                <FormInput label="Email" name="email" value={orgFormData.email} onChange={handleOrgFormChange} />
-                                <FormInput label="Phone" name="phone" value={orgFormData.phone} onChange={handleOrgFormChange} required />
+                                <FormInput label="Organization Email" name="email" value={orgFormData.email} onChange={handleOrgFormChange} />
+                                <FormInput label="Organization Phone" name="phone" value={orgFormData.phone} onChange={handleOrgFormChange} required />
 
+                                <FormInput label="Address Line 1" name="addressLine1" value={orgFormData.addressLine1} onChange={handleOrgFormChange} />
+                                <FormInput label="Organization Zip Code" name="postalCode" value={orgFormData.postalCode} onChange={handleOrgFormChange} />
+
+                                {/* Contact Person Details - Last Rows */}
                                 <div className="col-span-1">
                                     <label className="block text-sm font-medium text-slate-700 mb-1">Contact Name</label>
                                     <AutoComplete
@@ -865,23 +908,60 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                         onChange={(val) => handleOrgFormChange({ target: { name: 'contactName', value: val } })}
                                         onSelect={(val) => {
                                             if (val === "NEW_CONTACT_TRIGGER") {
+                                                // Generate new UUID for new contact
+                                                const newContactId = crypto.randomUUID();
+                                                console.log('[CustomerPanel] Generating new contact UUID:', newContactId);
+
                                                 setOrgFormData(prev => ({
                                                     ...prev,
                                                     contactName: "",
-                                                    email: "",
-                                                    phone: "",
-                                                    alternatePhone: ""
+                                                    contactEmail: "",
+                                                    contactPhone: "",
+                                                    contactJobTitle: "",
+                                                    contactAddressLine1: "",
+                                                    contactCity: "",
+                                                    contactState: "",
+                                                    contactPostalCode: ""
+                                                }));
+
+                                                // Set the new contact ID
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    organizationContactId: newContactId,
+                                                    // Prepare new contact details for saving
+                                                    newContactDetails: {
+                                                        id: newContactId,
+                                                        name: "",
+                                                        email: "",
+                                                        phone: "",
+                                                        jobTitle: "",
+                                                        addressLine1: "",
+                                                        city: "",
+                                                        state: "",
+                                                        postalCode: ""
+                                                    }
                                                 }));
                                             } else {
                                                 // Find by 'name' or 'contactName'
                                                 const selected = orgFormData.contacts.find(c => (c.name === val || c.contactName === val));
                                                 if (selected) {
+                                                    console.log('[CustomerPanel] Selected existing contact:', selected);
                                                     setOrgFormData(prev => ({
                                                         ...prev,
                                                         contactName: selected.name || selected.contactName,
-                                                        email: selected.email || prev.email,
-                                                        phone: selected.phone || prev.phone,
-                                                        alternatePhone: selected.alternatePhone || prev.alternatePhone
+                                                        contactEmail: selected.email || "",
+                                                        contactPhone: selected.phone || "",
+                                                        contactJobTitle: selected.jobTitle || "",
+                                                        contactAddressLine1: selected.addressLine1 || "",
+                                                        contactCity: selected.city || "",
+                                                        contactState: selected.state || "",
+                                                        contactPostalCode: selected.postalCode || ""
+                                                    }));
+
+                                                    // Set existing contact ID
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        organizationContactId: selected.id || selected.contactId
                                                     }));
                                                 }
                                             }
@@ -902,8 +982,13 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                     />
                                 </div>
 
-                                <FormInput label="Address Line 1" name="addressLine1" value={orgFormData.addressLine1} onChange={handleOrgFormChange} />
-                                <FormInput label="Zip Code" name="postalCode" value={orgFormData.postalCode} onChange={handleOrgFormChange} />
+                                <FormInput label="Contact Email" name="contactEmail" value={orgFormData.contactEmail} onChange={handleOrgFormChange} />
+                                <FormInput label="Contact Phone" name="contactPhone" value={orgFormData.contactPhone} onChange={handleOrgFormChange} />
+                                <FormInput label="Job Title" name="contactJobTitle" value={orgFormData.contactJobTitle} onChange={handleOrgFormChange} />
+                                <FormInput label="Contact Address" name="contactAddressLine1" value={orgFormData.contactAddressLine1} onChange={handleOrgFormChange} />
+                                <FormInput label="Contact City" name="contactCity" value={orgFormData.contactCity} onChange={handleOrgFormChange} />
+                                <FormSelect label="Contact State" name="contactState" value={orgFormData.contactState} onChange={handleOrgFormChange} options={US_STATES} />
+                                <FormInput label="Zip Code" name="contactPostalCode" value={orgFormData.contactPostalCode} onChange={handleOrgFormChange} />
 
                                 {/* Tax Exempt Switch in Form Body */}
                                 <div className="flex flex-col justify-end pb-1">
