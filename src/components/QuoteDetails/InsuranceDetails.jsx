@@ -82,7 +82,7 @@ export default function InsuranceDetails({ data, onChange, enabled, onToggle }) 
                             <label className="block text-[11px] font-medium text-slate-500 mb-1">Incident Date</label>
                             <DatePicker
                                 value={data.incidentDate ? dayjs(data.incidentDate) : null}
-                                onChange={(date, dateString) => handleChange('incidentDate', dateString)}
+                                onChange={(date) => handleChange('incidentDate', date ? date.format('YYYY-MM-DD') : null)}
                                 className="w-full h-8 text-xs"
                                 format="MM/DD/YYYY"
                                 placeholder="Select date"

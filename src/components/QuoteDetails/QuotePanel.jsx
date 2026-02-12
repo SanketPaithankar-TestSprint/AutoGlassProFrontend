@@ -1392,12 +1392,29 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                 ? (schedulingData?.serviceAddress || '')
                 : `${customerData.addressLine1 || ''}, ${customerData.city || ''}, ${customerData.state || ''} ${customerData.postalCode || ''}`;
             console.log("data:", schedulingData);
+            // Extract claim number for root level
+            const rootClaimNumber = (includeInsurance && insuranceData?.claimNumber) ? insuranceData.claimNumber : null;
+
+            // Helper to ensure YYYY-MM-DD format
+            const toISODate = (val) => {
+                if (!val) return null;
+                // If it matches MM/DD/YYYY
+                if (/^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
+                    const [m, d, y] = val.split('/');
+                    return `${y}-${m}-${d}`;
+                }
+                // If it contains T (ISO string), split it
+                if (val.includes('T')) return val.split('T')[0];
+                return val;
+            };
+
             const compositePayload = {
                 documentType: currentDocType.replace(" ", "_").toUpperCase(),
                 documentDate: new Date().toISOString(),
+                insuranceClaimNumber: rootClaimNumber,
                 scheduledDate: schedulingData?.scheduledDate || null,
                 estimatedCompletion: schedulingData?.estimatedCompletion || null,
-                dueDate: schedulingData?.dueDate || null,
+                dueDate: toISODate(schedulingData?.dueDate),
                 paymentTerms: schedulingData?.paymentTerms || "Due upon receipt",
                 technicianId: schedulingData?.assignedEmployeeId || schedulingData?.employeeId || null,
                 employeeId: schedulingData?.assignedEmployeeId || schedulingData?.employeeId || null,
@@ -1411,7 +1428,10 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                 customer: customerPayload,
                 organization: organizationPayload, // Add Organization Object
                 vehicle: vehiclePayload,
-                insurance: includeInsurance ? insuranceData : null,
+                insurance: includeInsurance ? {
+                    ...insuranceData,
+                    incidentDate: toISODate(insuranceData?.incidentDate)
+                } : null,
                 items: serviceDocumentItems,
                 attachments: attachmentMetadata,
                 // Combine Existing Payments (History) + New Payment (Form)
