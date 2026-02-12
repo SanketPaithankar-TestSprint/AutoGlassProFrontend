@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { notification, Select, Spin, Radio, Switch, Segmented, Button, Popconfirm, AutoComplete } from "antd";
+import { notification, Select, Spin, Radio, Switch, Segmented, Button, Popconfirm, AutoComplete, Alert } from "antd";
 import { UserOutlined, ShopOutlined, EditOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import { getValidToken } from "../../api/getValidToken";
 import { getCustomers } from "../../api/getCustomers";
@@ -59,10 +59,28 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
     const [vehicles, setVehicles] = useState([]);
 
     const initialOrgForm = {
-        companyName: "", taxId: "", email: "", phone: "", alternatePhone: "",
-        contactName: "", // Renamed from individualName
-        addressLine1: "", postalCode: "", country: "USA", notes: "",
-        contacts: [] // Added contacts array
+        // Organization-level fields
+        companyName: "",
+        taxId: "",
+        orgEmail: "",
+        orgPhone: "",
+        orgAlternatePhone: "",
+        orgAddressLine1: "",
+        orgAddressLine2: "",
+        orgCity: "",
+        orgState: "",
+        orgPostalCode: "",
+        orgCountry: "USA",
+        notes: "",
+
+        // Contact-level fields (for current selected contact)
+        contactName: "",
+        contactEmail: "",
+        contactPhone: "",
+        contactJobTitle: "",
+
+        // Contacts array (all contacts for this organization)
+        contacts: []
     };
     const [orgFormData, setOrgFormData] = useState(initialOrgForm);
 
@@ -90,7 +108,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
     const isOrgDirty = React.useMemo(() => {
         if (!lastSavedOrgData) return false;
-        const fields = ["companyName", "taxId", "email", "phone", "individualName", "addressLine1", "city", "state", "postalCode"];
+        const fields = ["companyName", "taxId", "orgEmail", "orgPhone", "orgAlternatePhone", "orgAddressLine1", "orgAddressLine2", "orgCity", "orgState", "orgPostalCode", "orgCountry", "contactName", "contactEmail", "contactPhone", "contactJobTitle"];
         return fields.some(key => (orgFormData[key] || "") !== (lastSavedOrgData[key] || ""));
     }, [orgFormData, lastSavedOrgData]);
 
@@ -230,6 +248,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
             setFormData(prev => ({
                 ...prev,
                 organizationId: null,
+                organizationContactId: null, // Reset contact ID
                 isTaxExempt: false
             }));
             setOrgFormData(initialOrgForm);
@@ -244,7 +263,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
     const handleOrganizationSelect = async (val) => {
         if (!val) {
-            setFormData(prev => ({ ...prev, organizationId: null, organizationName: "", isTaxExempt: false }));
+            setFormData(prev => ({ ...prev, organizationId: null, organizationName: "", organizationContactId: null, isTaxExempt: false }));
             setOrgFormData(initialOrgForm);
             return;
         }
@@ -257,20 +276,32 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                 ...prev,
                 organizationId: val,
                 organizationName: orgDetails.companyName || "",
+                organizationContactId: null, // Reset contact ID on org change
                 isTaxExempt: orgDetails.taxExempt === true
             }));
 
             const newOrgData = {
+                // Organization-level fields
                 companyName: orgDetails.companyName || "",
                 taxId: orgDetails.taxId || "",
-                email: orgDetails.email || "",
-                phone: orgDetails.phone || "",
-                alternatePhone: orgDetails.alternatePhone || "",
-                contactName: orgDetails.contactName || "",
-                addressLine1: orgDetails.addressLine1 || "",
-                postalCode: orgDetails.postalCode || "",
-                country: orgDetails.country || "USA",
+                orgEmail: orgDetails.email || "",
+                orgPhone: orgDetails.phone || "",
+                orgAlternatePhone: orgDetails.alternatePhone || "",
+                orgAddressLine1: orgDetails.addressLine1 || "",
+                orgAddressLine2: orgDetails.addressLine2 || "",
+                orgCity: orgDetails.city || "",
+                orgState: orgDetails.state || "",
+                orgPostalCode: orgDetails.postalCode || "",
+                orgCountry: orgDetails.country || "USA",
                 notes: orgDetails.notes || "",
+
+                // Contact-level fields (populate with first contact or contactName if available)
+                contactName: orgDetails.contactName || "",
+                contactEmail: "",
+                contactPhone: "",
+                contactJobTitle: "",
+
+                // Contacts array
                 contacts: orgDetails.contacts || []
             };
             setOrgFormData(newOrgData);
@@ -378,12 +409,20 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
     const handleOrgFormChange = (e) => {
         const { name, value } = e.target;
         let finalValue = value;
-        if (name === 'phone' || name === 'alternatePhone') finalValue = formatPhoneNumber(value);
+
+        // Format phone numbers
+        if (name === 'orgPhone' || name === 'orgAlternatePhone' || name === 'contactPhone') {
+            finalValue = formatPhoneNumber(value);
+        }
+
         setOrgFormData(prev => ({ ...prev, [name]: finalValue }));
 
-        // Always sync email and phone to formData for validation
-        if (name === 'email' || name === 'phone') {
-            setFormData(prev => ({ ...prev, [name]: finalValue }));
+        // Sync organization email and phone to formData for validation
+        if (name === 'orgEmail') {
+            setFormData(prev => ({ ...prev, email: finalValue }));
+        }
+        if (name === 'orgPhone') {
+            setFormData(prev => ({ ...prev, phone: finalValue }));
         }
 
         // Sync specific fields to main formData if in NEW mode
@@ -508,10 +547,32 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
         } catch (error) {
             console.error("Error updating customer:", error);
             if (!silent) {
+                // Parse validation errors from API response
+                let errorMessage = "Failed to update customer. Please try again.";
+                let errorDescription = null;
+
+                if (error.response && error.response.data) {
+                    const errorData = error.response.data;
+
+                    // Check if there are validation details
+                    if (errorData.details && typeof errorData.details === 'object') {
+                        // Build a formatted error message from validation details
+                        const validationErrors = Object.entries(errorData.details)
+                            .map(([field, message]) => `• ${field}: ${message}`)
+                            .join('\n');
+
+                        errorMessage = errorData.message || "Validation Failed";
+                        errorDescription = validationErrors;
+                    } else if (errorData.message) {
+                        errorMessage = errorData.message;
+                    }
+                }
+
                 notification.error({
-                    message: "Update Failed",
-                    description: "Failed to update customer. Please try again.",
-                    placement: "topRight"
+                    message: errorMessage,
+                    description: errorDescription,
+                    placement: "topRight",
+                    duration: 6
                 });
             }
         } finally {
@@ -523,16 +584,21 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
     // --- Contact Selection Handler ---
     const handleContactSelect = (value) => {
-        const selectedContact = orgFormData.contacts?.find(c => c.contactName === value);
+        const selectedContact = orgFormData.contacts?.find(c => (c.name === value || c.contactName === value));
         if (selectedContact) {
             setOrgFormData(prev => ({
                 ...prev,
-                contactName: selectedContact.contactName || "",
-                email: selectedContact.email || prev.email,
-                phone: selectedContact.phone || prev.phone,
-                alternatePhone: selectedContact.alternatePhone || prev.alternatePhone
+                contactName: selectedContact.name || selectedContact.contactName || "",
+                contactEmail: selectedContact.email || "",
+                contactPhone: selectedContact.phone || "",
+                contactJobTitle: selectedContact.jobTitle || ""
             }));
-            // Optional: Show notification or visual feedback
+
+            // Set the contact ID in formData
+            setFormData(prev => ({
+                ...prev,
+                organizationContactId: selectedContact.id || selectedContact.contactId
+            }));
         }
     };
 
@@ -545,10 +611,10 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
 
         // Validate required fields
-        if (!orgFormData.phone || orgFormData.phone.trim() === "") {
+        if (!orgFormData.orgPhone || orgFormData.orgPhone.trim() === "") {
             notification.error({
                 message: "Validation Error",
-                description: "Phone number is required.",
+                description: "Organization phone number is required.",
                 placement: "topRight"
             });
             return;
@@ -566,36 +632,43 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
         try {
             setSavingOrg(true);
 
-            const currentContact = {
-                name: orgFormData.contactName, // Use 'name' for contacts array
-                contactName: orgFormData.contactName, // Keep contactName for compatibility if needed/used elsewhere
-                email: orgFormData.email,
-                phone: orgFormData.phone,
-                alternatePhone: orgFormData.alternatePhone || ""
-            };
+            // Build current contact object if contact name is provided
+            const currentContact = orgFormData.contactName ? {
+                name: orgFormData.contactName,
+                email: orgFormData.contactEmail || "",
+                phone: orgFormData.contactPhone || "",
+                jobTitle: orgFormData.contactJobTitle || ""
+            } : null;
 
             let updatedContacts = [...(orgFormData.contacts || [])];
-            // Check against 'name' or 'contactName'
-            const existingContactIndex = updatedContacts.findIndex(c => (c.name || c.contactName) === currentContact.contactName);
 
-            if (existingContactIndex >= 0) {
-                // Update existing contact
-                updatedContacts[existingContactIndex] = { ...updatedContacts[existingContactIndex], ...currentContact };
-            } else if (currentContact.contactName) {
-                // Add new contact
-                updatedContacts.push(currentContact);
+            if (currentContact) {
+                // Check if contact already exists
+                const existingContactIndex = updatedContacts.findIndex(c => (c.name || c.contactName) === currentContact.name);
+
+                if (existingContactIndex >= 0) {
+                    // Update existing contact
+                    updatedContacts[existingContactIndex] = { ...updatedContacts[existingContactIndex], ...currentContact };
+                } else {
+                    // Add new contact
+                    updatedContacts.push(currentContact);
+                }
             }
 
+            // Build organization payload according to new mapping
             const orgPayload = {
                 organizationId: formData.organizationId,
                 companyName: orgFormData.companyName,
                 taxId: orgFormData.taxId || "",
-                email: orgFormData.email || "",
-                phone: orgFormData.phone,
-                alternatePhone: orgFormData.alternatePhone || "",
-                addressLine1: orgFormData.addressLine1 || "",
-                postalCode: orgFormData.postalCode || "",
-                country: orgFormData.country || "USA",
+                email: orgFormData.orgEmail || "",
+                phone: orgFormData.orgPhone,
+                alternatePhone: orgFormData.orgAlternatePhone || "",
+                addressLine1: orgFormData.orgAddressLine1 || "",
+                addressLine2: orgFormData.orgAddressLine2 || "",
+                city: orgFormData.orgCity || "",
+                state: orgFormData.orgState || "",
+                postalCode: orgFormData.orgPostalCode || "",
+                country: orgFormData.orgCountry || "USA",
                 contactName: orgFormData.contactName || "",
                 taxExempt: formData.isTaxExempt || false,
                 notes: orgFormData.notes || "",
@@ -626,10 +699,32 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
         } catch (error) {
             console.error("Error updating organization:", error);
             if (!silent) {
+                // Parse validation errors from API response
+                let errorMessage = "Failed to update organization. Please try again.";
+                let errorDescription = null;
+
+                if (error.response && error.response.data) {
+                    const errorData = error.response.data;
+
+                    // Check if there are validation details
+                    if (errorData.details && typeof errorData.details === 'object') {
+                        // Build a formatted error message from validation details
+                        const validationErrors = Object.entries(errorData.details)
+                            .map(([field, message]) => `• ${field}: ${message}`)
+                            .join('\n');
+
+                        errorMessage = errorData.message || "Validation Failed";
+                        errorDescription = validationErrors;
+                    } else if (errorData.message) {
+                        errorMessage = errorData.message;
+                    }
+                }
+
                 notification.error({
-                    message: "Update Failed",
-                    description: "Failed to update organization. Please try again.",
-                    placement: "topRight"
+                    message: errorMessage,
+                    description: errorDescription,
+                    placement: "topRight",
+                    duration: 6 // Show for longer since there might be multiple errors
                 });
             }
         } finally {
@@ -646,7 +741,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
         // Validation: Check at least one contact field is filled
         if (clientType === "BUSINESS") {
             // Check Organization contact - Phone is Mandatory
-            const phone = orgFormData.phone || "";
+            const phone = orgFormData.orgPhone || "";
             const hasPhone = phone.trim().length > 0;
 
             if (!hasPhone) {
@@ -851,85 +946,119 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                 </div>
                             </div>
 
-                            <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                                <FormInput label="Company Name" name="companyName" value={orgFormData.companyName} onChange={handleOrgFormChange} required />
-                                <FormInput label="Tax ID" name="taxId" value={orgFormData.taxId} onChange={handleOrgFormChange} />
-                                <FormInput label="Email" name="email" value={orgFormData.email} onChange={handleOrgFormChange} />
-                                <FormInput label="Phone" name="phone" value={orgFormData.phone} onChange={handleOrgFormChange} required />
+                            <div className="p-4">
+                                {/* ORGANIZATION INFORMATION SECTION */}
+                                <div className="mb-6">
+                                    <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wide mb-3 pb-2 border-b border-gray-200">
+                                        Organization Information
+                                    </h4>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                        <FormInput label="Company Name" name="companyName" value={orgFormData.companyName} onChange={handleOrgFormChange} required />
+                                        <FormInput label="Tax ID" name="taxId" value={orgFormData.taxId} onChange={handleOrgFormChange} />
+                                        <FormInput label="Organization Email" name="orgEmail" value={orgFormData.orgEmail} onChange={handleOrgFormChange} />
+                                        <FormInput label="Organization Phone" name="orgPhone" value={orgFormData.orgPhone} onChange={handleOrgFormChange} required />
 
-                                <div className="col-span-1">
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Contact Name</label>
-                                    <AutoComplete
-                                        className="w-full"
-                                        value={orgFormData.contactName}
-                                        onChange={(val) => handleOrgFormChange({ target: { name: 'contactName', value: val } })}
-                                        onSelect={(val) => {
-                                            if (val === "NEW_CONTACT_TRIGGER") {
-                                                setOrgFormData(prev => ({
-                                                    ...prev,
-                                                    contactName: "",
-                                                    email: "",
-                                                    phone: "",
-                                                    alternatePhone: ""
-                                                }));
-                                            } else {
-                                                // Find by 'name' or 'contactName'
-                                                const selected = orgFormData.contacts.find(c => (c.name === val || c.contactName === val));
-                                                if (selected) {
-                                                    setOrgFormData(prev => ({
-                                                        ...prev,
-                                                        contactName: selected.name || selected.contactName,
-                                                        email: selected.email || prev.email,
-                                                        phone: selected.phone || prev.phone,
-                                                        alternatePhone: selected.alternatePhone || prev.alternatePhone
-                                                    }));
-                                                }
-                                            }
-                                        }}
-                                        options={[
-                                            ...(orgFormData.contacts || []).map(c => ({ value: c.name || c.contactName, label: c.name || c.contactName })),
-                                            { value: "NEW_CONTACT_TRIGGER", label: <span className="text-violet-600 font-medium">+ Add New Contact</span> }
-                                        ]}
-                                        placeholder="Contact Person"
-                                        filterOption={(inputValue, option) => {
-                                            if (option.value === "NEW_CONTACT_TRIGGER") {
-                                                return true;
-                                            }
-                                            return option.label &&
-                                                typeof option.label === 'string' &&
-                                                option.label.toUpperCase().includes(inputValue.toUpperCase());
-                                        }}
-                                    />
+                                        <FormInput label="Alternate Phone" name="orgAlternatePhone" value={orgFormData.orgAlternatePhone} onChange={handleOrgFormChange} />
+                                        <FormInput label="Address Line 1" name="orgAddressLine1" value={orgFormData.orgAddressLine1} onChange={handleOrgFormChange} />
+                                        <FormInput label="Address Line 2" name="orgAddressLine2" value={orgFormData.orgAddressLine2} onChange={handleOrgFormChange} />
+                                        <FormInput label="City" name="orgCity" value={orgFormData.orgCity} onChange={handleOrgFormChange} />
+
+                                        <FormSelect label="State" name="orgState" value={orgFormData.orgState} onChange={handleOrgFormChange} options={US_STATES} />
+                                        <FormInput label="Zip Code" name="orgPostalCode" value={orgFormData.orgPostalCode} onChange={handleOrgFormChange} />
+                                        <FormSelect label="Country" name="orgCountry" value={orgFormData.orgCountry} onChange={handleOrgFormChange} options={COUNTRIES} />
+
+                                        {/* Tax Exempt Switch */}
+                                        <div className="flex flex-col justify-end pb-1">
+                                            <div className="flex items-center gap-2 border border-gray-200 rounded px-3 py-1.5 bg-gray-50 h-[38px]">
+                                                <span className="text-sm font-medium text-slate-700">Tax Status:</span>
+                                                <Switch
+                                                    size="small"
+                                                    checked={formData.isTaxExempt}
+                                                    onChange={(checked) => {
+                                                        setFormData(prev => ({ ...prev, isTaxExempt: checked }));
+                                                        // Auto-save tax status change if existing org
+                                                        if (formData.organizationId && orgMode === "EXISTING") {
+                                                            updateOrganizationTaxExempt(formData.organizationId, checked)
+                                                                .then(() => {
+                                                                    notification.success({ message: "Tax Status Updated", description: checked ? "Organization is now Tax Exempt" : "Organization is now Taxable" });
+                                                                })
+                                                                .catch((err) => {
+                                                                    console.error(err);
+                                                                    notification.error({ message: "Update Failed", description: "Could not update tax status." });
+                                                                });
+                                                        }
+                                                    }}
+                                                />
+                                                <span className={`text-sm font-medium ${formData.isTaxExempt ? "text-violet-600" : "text-slate-500"}`}>
+                                                    {formData.isTaxExempt ? "Tax Exempt" : "Taxable"}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <FormInput label="Address Line 1" name="addressLine1" value={orgFormData.addressLine1} onChange={handleOrgFormChange} />
-                                <FormInput label="Zip Code" name="postalCode" value={orgFormData.postalCode} onChange={handleOrgFormChange} />
+                                {/* CONTACT PERSON SECTION */}
+                                <div>
+                                    <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wide mb-3 pb-2 border-b border-gray-200">
+                                        Contact Person
+                                    </h4>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                        <div className="col-span-1">
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Contact Name</label>
+                                            <AutoComplete
+                                                className="w-full"
+                                                value={orgFormData.contactName}
+                                                onChange={(val) => handleOrgFormChange({ target: { name: 'contactName', value: val } })}
+                                                onSelect={(val) => {
+                                                    if (val === "NEW_CONTACT_TRIGGER") {
+                                                        // Generate new UUID for new contact
+                                                        const newContactId = crypto.randomUUID();
 
-                                {/* Tax Exempt Switch in Form Body */}
-                                <div className="flex flex-col justify-end pb-1">
-                                    <div className="flex items-center gap-2 border border-gray-200 rounded px-3 py-1.5 bg-gray-50 h-[38px]"> {/* Match input height approx */}
-                                        <span className="text-sm font-medium text-slate-700">Tax Status:</span>
-                                        <Switch
-                                            size="small"
-                                            checked={formData.isTaxExempt}
-                                            onChange={(checked) => {
-                                                setFormData(prev => ({ ...prev, isTaxExempt: checked }));
-                                                // Auto-save tax status change if existing org
-                                                if (formData.organizationId && orgMode === "EXISTING") {
-                                                    updateOrganizationTaxExempt(formData.organizationId, checked)
-                                                        .then(() => {
-                                                            notification.success({ message: "Tax Status Updated", description: checked ? "Organization is now Tax Exempt" : "Organization is now Taxable" });
-                                                        })
-                                                        .catch((err) => {
-                                                            console.error(err);
-                                                            notification.error({ message: "Update Failed", description: "Could not update tax status." });
-                                                        });
-                                                }
-                                            }}
-                                        />
-                                        <span className={`text-sm font-medium ${formData.isTaxExempt ? "text-violet-600" : "text-slate-500"}`}>
-                                            {formData.isTaxExempt ? "Tax Exempt" : "Taxable"}
-                                        </span>
+                                                        setOrgFormData(prev => ({
+                                                            ...prev,
+                                                            contactName: "",
+                                                            contactEmail: "",
+                                                            contactPhone: "",
+                                                            contactJobTitle: ""
+                                                        }));
+
+                                                        // Set the new contact ID
+                                                        setFormData(prev => ({
+                                                            ...prev,
+                                                            organizationContactId: newContactId,
+                                                            // Prepare new contact details for saving
+                                                            newContactDetails: {
+                                                                id: newContactId,
+                                                                name: "",
+                                                                email: "",
+                                                                phone: "",
+                                                                jobTitle: ""
+                                                            }
+                                                        }));
+                                                    } else {
+                                                        // Use the handleContactSelect function
+                                                        handleContactSelect(val);
+                                                    }
+                                                }}
+                                                options={[
+                                                    ...(orgFormData.contacts || []).map(c => ({ value: c.name || c.contactName, label: c.name || c.contactName })),
+                                                    { value: "NEW_CONTACT_TRIGGER", label: <span className="text-violet-600 font-medium">+ Add New Contact</span> }
+                                                ]}
+                                                placeholder="Select or add contact"
+                                                filterOption={(inputValue, option) => {
+                                                    if (option.value === "NEW_CONTACT_TRIGGER") {
+                                                        return true;
+                                                    }
+                                                    return option.label &&
+                                                        typeof option.label === 'string' &&
+                                                        option.label.toUpperCase().includes(inputValue.toUpperCase());
+                                                }}
+                                            />
+                                        </div>
+
+                                        <FormInput label="Contact Email" name="contactEmail" value={orgFormData.contactEmail} onChange={handleOrgFormChange} />
+                                        <FormInput label="Contact Phone" name="contactPhone" value={orgFormData.contactPhone} onChange={handleOrgFormChange} />
+                                        <FormInput label="Job Title" name="contactJobTitle" value={orgFormData.contactJobTitle} onChange={handleOrgFormChange} />
                                     </div>
                                 </div>
                             </div>
