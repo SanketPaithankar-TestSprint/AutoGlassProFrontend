@@ -140,6 +140,7 @@ const SearchByRoot = () => {
     organizationName: "",
     taxId: "",
     isTaxExempt: false,
+    vehModifierId: null, // Added for vehicle modifier ID tracking
   };
 
   // Lifted Customer State
@@ -301,7 +302,8 @@ const SearchByRoot = () => {
         bodyType: vehicle?.bodyType || "",
         licensePlateNumber: vehicle?.licensePlateNumber || "",
         vin: vehicle?.vin || "",
-        vehicleNotes: vehicle?.notes || ""
+        vehicleNotes: vehicle?.notes || "",
+        vehModifierId: vehicle?.vehModifierId || null // Ensure vehModifierId is mapped
       };
       setCustomerData(prev => ({ ...prev, ...newCustomerData }));
 
@@ -322,7 +324,7 @@ const SearchByRoot = () => {
           makeId: vehicle.makeId,
           makeModelId: vehicle.modelId, // SearchByYMM expects makeModelId
           bodyStyleId: vehicle.bodyStyleId,
-          vehModifierId: null // Typically null unless specified
+          vehModifierId: vehicle.vechModifierId || vehicle.vehModifierId || null // Map modifier ID
         });
 
         // Use existing vehicleId and modelId if available to avoid redundant API calls
@@ -350,6 +352,10 @@ const SearchByRoot = () => {
             type: item.itemType === 'PART' ? 'Part' : (item.itemType === 'LABOR' ? 'Labor' : (item.itemType === 'ADAS' ? 'ADAS' : 'Service')),
             nagsId: item.nagsGlassId || "",
             oemId: "",
+            // Map missing fields from backend item
+            prefixCd: item.prefixCd || null,
+            posCd: item.posCd || null,
+            sideCd: item.sideCd || null,
             description: item.partDescription || "",
             adasCode: item.itemType === 'ADAS' && item.partDescription ? item.partDescription.replace('ADAS Recalibration - ', '') : null,
             manufacturer: "",
@@ -580,6 +586,7 @@ const SearchByRoot = () => {
       modelId: make_model_id || prev.modelId,
       bodyStyleId: body_style_id || prev.bodyStyleId,
       vehId: veh_id || prev.vehId,
+      vehModifierId: veh_modifier_id || prev.vehModifierId, // Store modifier ID
     }));
   };
 
@@ -602,6 +609,7 @@ const SearchByRoot = () => {
       modelId: info.makeModelId || prev.modelId,
       bodyStyleId: info.bodyStyleId || prev.bodyStyleId,
       vehId: info.veh_id || info.vehId || prev.vehId,
+      vehModifierId: info.vehModifierId || prev.vehModifierId, // Store modifier ID
     }));
   };
 
@@ -618,11 +626,12 @@ const SearchByRoot = () => {
 
     if (!alreadyAdded) {
       addPart({ glass, part, glassInfo, id: uniqueId });
-      // Add to Quote Items directly and WAIT for it to complete
-      await processAndAddPart({ glass, part, glassInfo });
+      // Add to Quote Items - NO AWAIT so kit modal can show immediately
+      // Vendor pricing will fetch in background and update the part when ready
+      processAndAddPart({ glass, part, glassInfo });
     }
 
-    // Check if part has kit options
+    // Check if part has kit options - show modal immediately without waiting for vendor pricing
     if (part.kit && Array.isArray(part.kit) && part.kit.length > 0) {
       console.log('[SearchByRoot] Part has kit options:', part.kit);
       const partId = uniqueId; // ENSURE THIS MATCHES THE ID USED IN processAndAddPart
@@ -745,36 +754,10 @@ const SearchByRoot = () => {
     const hasNewFormat = p => p.nags_id && p.list_price !== undefined;
     const isNewFormat = hasNewFormat(part);
 
+    // Prepare initial pricing from NAGS data or fallback
     let listPrice, netPrice, description, labor, manufacturer, ta;
 
-    // Fetch Vendor Pricing
-    const userId = localStorage.getItem('userId') || 2;
-    let vendorPrice = null;
-    const nagsListPrice = part.list_price || 0;
-
-    if (userId && nagsId) {
-      try {
-        let partNumber = part.feature_span ? `${nagsId} ${part.feature_span}`.trim() : nagsId;
-        partNumber = partNumber.replace(/N$/, '');
-
-        // Use QueryClient to fetch with cache
-        vendorPrice = await queryClient.fetchQuery({
-          queryKey: ['pilkingtonPrice', userId, partNumber],
-          queryFn: () => getPilkingtonPrice(userId, partNumber),
-          staleTime: 1000 * 60 * 60
-        });
-
-      } catch (err) { console.error("Failed to fetch vendor price", err); }
-    }
-
-    if (vendorPrice) {
-      netPrice = parseFloat(vendorPrice.UnitPrice) || 0;
-      listPrice = nagsListPrice || parseFloat(vendorPrice.ListPrice) || netPrice;
-      description = vendorPrice.Description || part.part_description || "Glass Part";
-      labor = part.labor || 0;
-      ta = part.feature_span || "";
-      manufacturer = "Pilkington";
-    } else if (isNewFormat) {
+    if (isNewFormat) {
       listPrice = part.list_price || 0;
       netPrice = part.list_price || 0;
       labor = part.labor || 0;
@@ -782,7 +765,7 @@ const SearchByRoot = () => {
       description = part.part_description || "Glass Part";
       manufacturer = "";
     } else {
-      // Old format fallback
+      // Old format fallback - try to get glass info
       let rawInfo = glassInfo;
       if (!rawInfo && nagsId) {
         try {
@@ -809,7 +792,7 @@ const SearchByRoot = () => {
 
     const newItems = [];
 
-
+    // Add part immediately with initial pricing
     const partItem = {
       type: "Part", id: uniqueId,
       prefixCd: getPrefixCd(glass), posCd: getPosCd(glass), sideCd: getSideCd(glass),
@@ -819,13 +802,8 @@ const SearchByRoot = () => {
       listPrice: listPrice,
       unitPrice: netPrice, amount: netPrice,
       isManual: false,
-      // Attach vendor data for display in QuotePanel
-      vendorData: vendorPrice ? {
-        industryCode: vendorPrice.IndustryCode,
-        availability: vendorPrice.AvailabilityToPromise,
-        leadTime: vendorPrice.LeadTimeFormatted || vendorPrice.LeadTime,
-        manufacturer: "Pilkington"
-      } : null
+      vendorData: null, // Will be updated when vendor pricing arrives
+      isLoadingVendorPrice: true // Flag to show loading indicator
     };
     newItems.push(partItem);
 
@@ -840,7 +818,72 @@ const SearchByRoot = () => {
       });
     }
 
+    // Add items to quote immediately
     setQuoteItems(prev => [...prev, ...newItems]);
+
+    // Fetch Vendor Pricing in background and update when ready
+    const userId = localStorage.getItem('userId') || 2;
+    const nagsListPrice = part.list_price || 0;
+
+    if (userId && nagsId) {
+      try {
+        let partNumber = part.feature_span ? `${nagsId} ${part.feature_span}`.trim() : nagsId;
+        partNumber = partNumber.replace(/N$/, '');
+
+        // Use QueryClient to fetch with cache
+        const vendorPrice = await queryClient.fetchQuery({
+          queryKey: ['pilkingtonPrice', userId, partNumber],
+          queryFn: () => getPilkingtonPrice(userId, partNumber),
+          staleTime: 1000 * 60 * 60
+        });
+
+        if (vendorPrice) {
+          // Update the part with vendor pricing
+          const vendorNetPrice = parseFloat(vendorPrice.UnitPrice) || netPrice;
+          const vendorListPrice = nagsListPrice || parseFloat(vendorPrice.ListPrice) || vendorNetPrice;
+          const vendorDescription = vendorPrice.Description || description;
+
+          setQuoteItems(prev => prev.map(item => {
+            if (item.id === uniqueId) {
+              return {
+                ...item,
+                unitPrice: vendorNetPrice,
+                amount: vendorNetPrice,
+                listPrice: vendorListPrice,
+                description: vendorDescription,
+                manufacturer: "Pilkington",
+                isLoadingVendorPrice: false, // Remove loading flag
+                vendorData: {
+                  industryCode: vendorPrice.IndustryCode,
+                  availability: vendorPrice.AvailabilityToPromise,
+                  leadTime: vendorPrice.LeadTimeFormatted || vendorPrice.LeadTime,
+                  manufacturer: "Pilkington"
+                }
+              };
+            }
+            return item;
+          }));
+          console.log(`[SearchByRoot] Updated part ${uniqueId} with vendor pricing`);
+        } else {
+          // No vendor price found, just remove loading flag
+          setQuoteItems(prev => prev.map(item => {
+            if (item.id === uniqueId) {
+              return { ...item, isLoadingVendorPrice: false };
+            }
+            return item;
+          }));
+        }
+      } catch (err) {
+        console.error("[SearchByRoot] Failed to fetch vendor price (part already added with fallback)", err);
+        // Remove loading flag even on error
+        setQuoteItems(prev => prev.map(item => {
+          if (item.id === uniqueId) {
+            return { ...item, isLoadingVendorPrice: false };
+          }
+          return item;
+        }));
+      }
+    }
   };
 
 

@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import { useQuoteStore } from "../../store";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { Modal, Input, Button, message, notification, Dropdown, Select, InputNumber } from "antd";
-import { DownOutlined, UnorderedListOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import { DownOutlined, UnorderedListOutlined, DeleteOutlined, PlusOutlined, LoadingOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { createCompositeServiceDocument } from "../../api/createCompositeServiceDocument";
 import { updateCompositeServiceDocument } from "../../api/updateCompositeServiceDocument";
@@ -1230,6 +1230,10 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                         itemType: 'PART', // Uppercase as per request example
                         // Standard fields
                         nagsGlassId: it.nagsId || "",
+                        // Pass through glass codes
+                        prefixCd: it.prefixCd || null,
+                        posCd: it.posCd || null,
+                        sideCd: it.sideCd || null,
                         // Optional/Extra fields
                         partDescription: it.description || "",
                         partPrice: Number(it.amount) || 0, // Using amount as the partPrice
@@ -1272,6 +1276,10 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                 serviceDocumentItems.push({
                     partId: manualIt.originalPartId || null,
                     itemType: manualIt.type === 'Service' ? 'SERVICE' : (manualIt.type === 'ADAS' ? 'ADAS' : (isLabor ? 'LABOR' : 'PART')),
+                    // Ensure glass codes are passed even for manual labor if available
+                    prefixCd: manualIt.prefixCd || null,
+                    posCd: manualIt.posCd || null,
+                    sideCd: manualIt.sideCd || null,
                     partDescription: manualIt.description,
                     partPrice: Number(manualIt.amount) || 0,
                     quantity: 1,
@@ -1369,7 +1377,8 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                 makeId: customerData.makeId || null,
                 modelId: customerData.modelId || null,
                 bodyStyleId: customerData.bodyStyleId || null,
-                masterVehId: customerData.vehId || null
+                masterVehId: customerData.vehId || null,
+                vechModifierId: customerData.vehModifierId || null // Added as per requirement
             };
 
             const attachmentMetadata = attachments.map(att => ({
@@ -1383,12 +1392,29 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                 ? (schedulingData?.serviceAddress || '')
                 : `${customerData.addressLine1 || ''}, ${customerData.city || ''}, ${customerData.state || ''} ${customerData.postalCode || ''}`;
             console.log("data:", schedulingData);
+            // Extract claim number for root level
+            const rootClaimNumber = (includeInsurance && insuranceData?.claimNumber) ? insuranceData.claimNumber : null;
+
+            // Helper to ensure YYYY-MM-DD format
+            const toISODate = (val) => {
+                if (!val) return null;
+                // If it matches MM/DD/YYYY
+                if (/^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
+                    const [m, d, y] = val.split('/');
+                    return `${y}-${m}-${d}`;
+                }
+                // If it contains T (ISO string), split it
+                if (val.includes('T')) return val.split('T')[0];
+                return val;
+            };
+
             const compositePayload = {
                 documentType: currentDocType.replace(" ", "_").toUpperCase(),
                 documentDate: new Date().toISOString(),
+                insuranceClaimNumber: rootClaimNumber,
                 scheduledDate: schedulingData?.scheduledDate || null,
                 estimatedCompletion: schedulingData?.estimatedCompletion || null,
-                dueDate: schedulingData?.dueDate || null,
+                dueDate: toISODate(schedulingData?.dueDate),
                 paymentTerms: schedulingData?.paymentTerms || "Due upon receipt",
                 technicianId: schedulingData?.assignedEmployeeId || schedulingData?.employeeId || null,
                 employeeId: schedulingData?.assignedEmployeeId || schedulingData?.employeeId || null,
@@ -1402,7 +1428,10 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                 customer: customerPayload,
                 organization: organizationPayload, // Add Organization Object
                 vehicle: vehiclePayload,
-                insurance: includeInsurance ? insuranceData : null,
+                insurance: includeInsurance ? {
+                    ...insuranceData,
+                    incidentDate: toISODate(insuranceData?.incidentDate)
+                } : null,
                 items: serviceDocumentItems,
                 attachments: attachmentMetadata,
                 // Combine Existing Payments (History) + New Payment (Form)
@@ -2070,12 +2099,19 @@ ${shopName}`;
                                             />
                                         </td>
                                         <td className="px-1 sm:px-2 py-1 text-right align-middle">
-                                            <CurrencyInput
-                                                value={it.amount}
-                                                onChange={(val) => updateItem(it.id, "amount", val)}
-                                                className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-right outline-none bg-transparent text-slate-900 font-bold transition-all text-sm"
-                                                placeholder="$0.00"
-                                            />
+                                            {it.isLoadingVendorPrice ? (
+                                                <div className="flex items-center justify-end gap-2 h-7">
+                                                    <LoadingOutlined className="text-violet-600" style={{ fontSize: '14px' }} />
+                                                    <span className="text-xs text-slate-500">Fetching...</span>
+                                                </div>
+                                            ) : (
+                                                <CurrencyInput
+                                                    value={it.amount}
+                                                    onChange={(val) => updateItem(it.id, "amount", val)}
+                                                    className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-right outline-none bg-transparent text-slate-900 font-bold transition-all text-sm"
+                                                    placeholder="$0.00"
+                                                />
+                                            )}
                                         </td>
                                         {showDeleteButton && (
                                             <td className="px-1 py-0.5 text-center align-middle" rowSpan={rowSpan}>

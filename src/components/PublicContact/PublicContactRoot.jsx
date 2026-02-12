@@ -16,6 +16,7 @@ import './PublicContact.css';
 
 // Import Assets
 import carPreview from '../../assets/car_preview.png';
+import windshieldSensorGuide from '../../assets/windshield_sensor_guide.png';
 import { GLASS_OVERLAYS } from './const/imageConfig';
 // Memoized Map component to prevent re-renders
 const MapEmbed = React.memo(({ html }) => (
@@ -827,32 +828,66 @@ const PublicContactRoot = () => {
                         </div>
                     </div>
 
-                    {/* Card 2: Glass Reference - Takes ~50% height */}
+                    {/* Card 2: Glass Reference / Windshield Sensor Guide */}
                     <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm text-center flex-shrink-0 flex-1 min-h-0 flex flex-col items-center justify-center overflow-hidden relative group">
-                        {/* Fixed size container on md and lg screens, responsive on smaller screens */}
-                        <div
-                            className="relative flex items-center justify-center flex-shrink-0 w-full md:w-80 lg:w-96"
-                            style={{
-                                aspectRatio: '3/4',
-                                position: 'relative',
-                            }}
-                        >
-                            <img
-                                src={carPreview}
-                                alt="Car Glass Reference"
-                                className="w-full h-full object-contain drop-shadow-lg"
-                                style={{ position: 'absolute', top: 0, left: 0 }}
-                            />
-                            {GLASS_OVERLAYS.map((overlay) => (
+                        {formData.serviceType === 'Windshield Replacement' ? (
+                            /* Windshield Sensor Guide */
+                            <div className="windshield-sensor-guide animate-fadeIn">
+                                <div className="windshield-sensor-header">
+                                    <div className="windshield-sensor-icon" style={{ backgroundColor: `${themeColor}15`, color: themeColor }}>
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                        </svg>
+                                    </div>
+                                    <h3 className="windshield-sensor-title">Help Us Identify Your Windshield Sensors</h3>
+                                </div>
+                                <p className="windshield-sensor-message">
+                                    Please take a photo of your windshield from the <strong>front of your vehicle</strong>. This helps us identify installed sensors
+                                    (Rain Sensor, ADAS Camera, Lane Departure Warning, etc.) and ensure the correct replacement glass is ordered for your car.
+                                </p>
+                                <div className="windshield-sensor-image-wrapper">
+                                    <img
+                                        src={windshieldSensorGuide}
+                                        alt="Windshield sensor locations reference"
+                                        className="windshield-sensor-image"
+                                    />
+                                </div>
+                                <div className="windshield-sensor-tip">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                    <span>If you are not sure about sensors, take a whole windshield picture from outside and focus on the center of the windshield.</span>
+                                </div>
+                            </div>
+                        ) : (
+                            /* Default: Car Glass Reference Diagram */
+                            <div
+                                className="relative flex items-center justify-center flex-shrink-0 w-full md:w-80 lg:w-96"
+                                style={{
+                                    aspectRatio: '3/4',
+                                    position: 'relative',
+                                }}
+                            >
                                 <img
-                                    key={overlay.id}
-                                    src={overlay.src}
-                                    alt={overlay.alt}
-                                    className={overlay.className}
-                                    style={overlay.style}
+                                    src={carPreview}
+                                    alt="Car Glass Reference"
+                                    className="w-full h-full object-contain drop-shadow-lg"
+                                    style={{ position: 'absolute', top: 0, left: 0 }}
                                 />
-                            ))}
-                        </div>
+                                {GLASS_OVERLAYS.map((overlay) => (
+                                    <img
+                                        key={overlay.id}
+                                        src={overlay.src}
+                                        alt={overlay.alt}
+                                        className={overlay.className}
+                                        style={overlay.style}
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
 
