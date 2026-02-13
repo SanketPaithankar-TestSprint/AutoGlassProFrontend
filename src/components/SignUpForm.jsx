@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import urls from '../config';
 import {
     Form,
     Input,
@@ -7,8 +6,6 @@ import {
     Button,
     Row,
     Col,
-    Alert,
-    notification,
     Space
 } from 'antd';
 import {
@@ -16,7 +13,6 @@ import {
     MailOutlined,
     PhoneOutlined
 } from '@ant-design/icons';
-import axios from 'axios';
 import { COUNTRIES, getStatesOrProvinces } from '../const/locations';
 
 // Reusable style for form items
@@ -89,69 +85,55 @@ const customInputStyle = `
   }
 `;
 
+const formatPhoneNumber = (value) => {
+    if (!value) return '';
+    const cleaned = value.replace(/\D/g, '');
+    const match = cleaned.match(/^(\d{0,3})(\d{0,3})(\d{0,4})$/);
+    if (!match) return value;
+    const [, area, prefix, line] = match;
+    if (!area) return '';
+    if (!prefix) return `(${area}`;
+    if (!line) return `(${area})${prefix}`;
+    return `(${area})${prefix}-${line}`;
+};
+
+const validatePhoneNumber = (value) => {
+    const cleaned = value.replace(/\D/g, '');
+    if (cleaned.length !== 10) {
+        return Promise.reject(new Error('Phone number must be 10 digits!'));
+    }
+    return Promise.resolve();
+};
+
 const SignUpForm = ({ onSuccess, onCancel }) => {
     const [form] = Form.useForm();
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
     const [selectedCountry, setSelectedCountry] = useState('USA');
 
     const [availableStates, setAvailableStates] = useState(getStatesOrProvinces('USA'));
 
 
-    const onFinish = async (values) => {
-        setLoading(true);
-        setError(null);
+    const onFinish = (values) => {
+        // Prepare user data for SetPasswordForm
+        const userData = {
+            businessName: values.businessName,
+            ownerName: values.ownerName,
+            email: values.email,
+            phone: values.phone,
+            alternatePhone: values.alternatePhone,
+            addressLine1: values.addressLine1,
+            addressLine2: values.addressLine2,
+            city: Array.isArray(values.city) ? values.city[0] : values.city,
+            state: values.state,
+            postalCode: values.postalCode,
+            country: values.country,
+            businessLicenseNumber: values.businessLicenseNumber,
+            userType: values.userType,
+            ein: values.ein
+        };
 
-        try {
-            const payload = {
-                businessName: values.businessName,
-                ownerName: values.ownerName,
-                email: values.email,
-                phone: values.phone,
-                alternatePhone: values.alternatePhone,
-                addressLine1: values.addressLine1,
-                addressLine2: values.addressLine2,
-                city: Array.isArray(values.city) ? values.city[0] : values.city,
-                state: values.state,
-                postalCode: values.postalCode,
-                country: values.country,
-                businessLicenseNumber: values.businessLicenseNumber,
-                userType: values.userType,
-                ein: values.ein
-            };
-
-            // Use javaApiUrl from config.js
-            const response = await axios.post(`${urls.javaApiUrl}/auth/register`, payload);
-            if (response.data?.success) {
-                notification.success({
-                    message: 'Registration Successful!',
-                    description: response.data.message || 'Your account has been created.',
-                    duration: 4
-                });
-                setError(null);
-                if (onSuccess) {
-                    onSuccess(response.data);
-                }
-            } else {
-                setError(response.data?.message || 'Registration failed.');
-                notification.error({
-                    message: 'Registration Failed',
-                    description: response.data?.message || 'Registration failed.',
-                    duration: 5
-                });
-            }
-        } catch (err) {
-            const errorMessage = err.response?.data?.message ||
-                err.response?.data?.error ||
-                'Registration failed. Please try again.';
-            setError(errorMessage);
-            notification.error({
-                message: 'Registration Failed',
-                description: errorMessage,
-                duration: 5
-            });
-        } finally {
-            setLoading(false);
+        // Pass data to parent for SetPasswordForm
+        if (onSuccess) {
+            onSuccess(userData);
         }
     };
 
@@ -169,17 +151,6 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
 
     return (
         <div className="md:mx-4 lg:mx-6" style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: '10px' }}>
-            {error && (
-                <Alert
-                    message="Registration Error"
-                    description={error}
-                    type="error"
-                    showIcon
-                    closable
-                    onClose={() => setError(null)}
-                    style={{ marginBottom: '20px', borderRadius: '8px' }}
-                />
-            )}
             <style>{customInputStyle}</style>
 
             <Form
@@ -199,7 +170,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             rules={[{ required: true, message: 'Please input business name!' }]}
                             style={formItemStyle}
                         >
-                            <Input placeholder="APAI" className="custom-api-input" />
+                            <Input className="custom-api-input" />
                         </Form.Item>
                     </Col>
                     <Col xs={24} sm={12}>
@@ -209,7 +180,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             rules={[{ required: true, message: 'Please input contact name!' }]}
                             style={formItemStyle}
                         >
-                            <Input prefix={<UserOutlined style={{ color: '#a0aec0' }} />} placeholder="John Doe" className="custom-api-input" />
+                            <Input prefix={<UserOutlined style={{ color: '#a0aec0' }} />} className="custom-api-input" />
                         </Form.Item>
                     </Col>
                 </Row>
@@ -225,7 +196,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             ]}
                             style={formItemStyle}
                         >
-                            <Input prefix={<MailOutlined style={{ color: '#a0aec0' }} />} placeholder="john@example.com" className="custom-api-input" />
+                            <Input prefix={<MailOutlined style={{ color: '#a0aec0' }} />} className="custom-api-input" />
                         </Form.Item>
                     </Col>
                     <Col xs={24} sm={12}>
@@ -235,7 +206,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             rules={[{ required: true, message: 'Please input business license number!' }]}
                             style={formItemStyle}
                         >
-                            <Input placeholder="BLN-123456" className="custom-api-input" />
+                            <Input className="custom-api-input" />
                         </Form.Item>
                     </Col>
                 </Row>
@@ -245,19 +216,44 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                         <Form.Item
                             name="phone"
                             label="Phone"
-                            rules={[{ required: true, message: 'Please input phone number!' }]}
+                            rules={[
+                                { required: true, message: 'Please input phone number!' },
+                                { validator: (_, value) => validatePhoneNumber(value || '') }
+                            ]}
                             style={formItemStyle}
                         >
-                            <Input prefix={<PhoneOutlined style={{ color: '#a0aec0' }} />} placeholder="123-456-7890" className="custom-api-input" />
+                            <Input 
+                                prefix={<PhoneOutlined style={{ color: '#a0aec0' }} />} 
+                                className="custom-api-input" 
+                                maxLength="14"
+                                onChange={(e) => {
+                                    const formatted = formatPhoneNumber(e.target.value);
+                                    form.setFieldsValue({ phone: formatted });
+                                }}
+                            />
                         </Form.Item>
                     </Col>
                     <Col xs={24} sm={12}>
                         <Form.Item
                             name="alternatePhone"
                             label="Alternate Phone"
+                            rules={[
+                                { validator: (_, value) => {
+                                    if (!value) return Promise.resolve();
+                                    return validatePhoneNumber(value);
+                                }}
+                            ]}
                             style={formItemStyle}
                         >
-                            <Input prefix={<PhoneOutlined style={{ color: '#a0aec0' }} />} placeholder="098-765-4321" className="custom-api-input" />
+                            <Input 
+                                prefix={<PhoneOutlined style={{ color: '#a0aec0' }} />} 
+                                className="custom-api-input"
+                                maxLength="14"
+                                onChange={(e) => {
+                                    const formatted = formatPhoneNumber(e.target.value);
+                                    form.setFieldsValue({ alternatePhone: formatted });
+                                }}
+                            />
                         </Form.Item>
                     </Col>
                 </Row>
@@ -268,7 +264,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                     rules={[{ required: true, message: 'Please input address!' }]}
                     style={formItemStyle}
                 >
-                    <Input placeholder="123 Main St" className="custom-api-input" />
+                    <Input className="custom-api-input" />
                 </Form.Item>
 
                 <Form.Item
@@ -276,7 +272,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                     label="Address Line 2"
                     style={formItemStyle}
                 >
-                    <Input placeholder="Suite 100" className="custom-api-input" />
+                    <Input className="custom-api-input" />
                 </Form.Item>
 
                 <Row gutter={16}>
@@ -287,7 +283,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             rules={[{ required: true, message: 'Please enter or select city!' }]}
                             style={formItemStyle}
                         >
-                            <Input placeholder="Enter city name" className="custom-api-input" />
+                            <Input className="custom-api-input" />
                         </Form.Item>
                     </Col>
                     <Col xs={24} sm={12}>
@@ -298,7 +294,6 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             style={formItemStyle}
                         >
                             <Select
-                                placeholder={`Select ${selectedCountry === 'Canada' ? 'province' : 'state'}`}
                                 onChange={handleStateChange}
                                 showSearch
                                 optionFilterProp="label"
@@ -324,7 +319,6 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             style={formItemStyle}
                         >
                             <Select
-                                placeholder="Select country"
                                 onChange={handleCountryChange}
                                 showSearch
                                 optionFilterProp="label"
@@ -345,7 +339,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             rules={[{ required: true, message: 'Please input zip code!' }]}
                             style={formItemStyle}
                         >
-                            <Input placeholder="10001" className="custom-api-input" />
+                            <Input className="custom-api-input" />
                         </Form.Item>
                     </Col>
                 </Row>
@@ -356,34 +350,19 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                     rules={[{ required: true, message: 'Please select user type!' }]}
                     style={formItemStyle}
                 >
-                    <Select placeholder="Select user type" className="custom-api-input">
+                    <Select className="custom-api-input">
                         <Select.Option value="SHOP_OWNER">Shop Owner</Select.Option>
-                        <Select.Option value="REMOTE_WORKER">Remote Worker</Select.Option>
+                        <Select.Option value="REMOTE_WORKER">Mobile Technician</Select.Option>
                     </Select>
                 </Form.Item>
-
-                <Row gutter={16}>
-                    <Col xs={24} sm={12}>
-                        <Form.Item
-                            name="ein"
-                            label="EIN"
-                            rules={[{ required: true, message: 'Please input EIN!' }]}
-                            style={formItemStyle}
-                        >
-                            <Input placeholder="12-3456789" className="custom-api-input" />
-                        </Form.Item>
-                    </Col>
-                </Row>
-
                 <Form.Item style={{ marginBottom: 0, marginTop: '24px' }}>
                     <Space style={{ width: '100%', justifyContent: 'center' }}>
-                        <Button onClick={onCancel} disabled={loading}>
+                        <Button onClick={onCancel}>
                             Cancel
                         </Button>
                         <Button
                             type="primary"
                             htmlType="submit"
-                            loading={loading}
                             style={{
                                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                                 border: 'none',
@@ -394,7 +373,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                                 boxShadow: '0 4px 14px 0 rgba(118, 75, 162, 0.39)'
                             }}
                         >
-                            {loading ? 'Creating Account...' : 'Create Account'}
+                            Continue
                         </Button>
                     </Space>
                 </Form.Item>

@@ -213,7 +213,7 @@ function AppContent() {
           </Content>
         </Layout>
       )}
-      <Chatbot />
+    {/*  <Chatbot />*/}
     </Layout >
   );
 }

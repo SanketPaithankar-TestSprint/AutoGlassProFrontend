@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Typography, Button, Spin, Avatar } from 'antd';
-import { ArrowLeftOutlined, ArrowRightOutlined, UserOutlined, CalendarOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { Typography, Button, Spin } from 'antd';
+import { ArrowLeftOutlined, ArrowRightOutlined, CalendarOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { motion } from 'framer-motion';
 import { getBlogBySlug, getBlogs } from '../../api/getBlogs';
 
@@ -112,12 +112,6 @@ const BlogPostPage = () => {
 
                     <div className="flex flex-wrap items-center gap-6 text-sm text-slate-500 border-b border-slate-100 pb-6 mb-6">
                         <div className="flex items-center gap-2">
-                            <span className="flex-shrink-0">
-                                <Avatar icon={<UserOutlined />} className="bg-violet-100 text-violet-600 flex items-center justify-center" />
-                            </span>
-                            <span className="font-medium">Admin</span>
-                        </div>
-                        <div className="flex items-center gap-2">
                             <CalendarOutlined className="text-slate-400" />
                             <span>{formattedDate}</span>
                         </div>
@@ -135,7 +129,7 @@ const BlogPostPage = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
-                    className="prose prose-lg prose-slate max-w-none 
+                    className="prose prose-lg prose-slate max-w-none bg-white p-8 rounded-xl
                         prose-headings:font-bold prose-headings:text-slate-900 prose-headings:font-outfit
                         prose-p:text-slate-600 prose-p:leading-relaxed
                         prose-a:text-violet-600 hover:prose-a:text-violet-700 

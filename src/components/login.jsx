@@ -140,12 +140,24 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
                 <Form.Item
                     name="email"
                     label="Email or Username"
-                    rules={[{ required: true, message: 'Please input your email or username!' }]}
+                    rules={[
+                        { required: true, message: 'Please input your email or username!' },
+                        {
+                            validator: (_, value) => {
+                                if (!value) return Promise.resolve();
+                                const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+                                const isUsername = /^[a-zA-Z0-9_]{3,}$/.test(value);
+                                if (isEmail || isUsername || value.length >= 3) {
+                                    return Promise.resolve();
+                                }
+                                return Promise.reject(new Error('Please enter a valid email or username'));
+                            }
+                        }
+                    ]}
                     style={formItemStyle}
                 >
                     <Input
                         prefix={<UserOutlined style={{ color: '#a0aec0' }} />}
-                        placeholder="Email or Username"
                         className="custom-api-input"
                     />
                 </Form.Item>
@@ -158,12 +170,11 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
                 >
                     <Input.Password
                         prefix={<LockOutlined style={{ color: '#a0aec0' }} />}
-                        placeholder="Password"
                         className="custom-api-input"
                     />
                 </Form.Item>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
                     <Form.Item name="remember" valuePropName="checked" noStyle>
                         <Checkbox>Remember me</Checkbox>
                     </Form.Item>
