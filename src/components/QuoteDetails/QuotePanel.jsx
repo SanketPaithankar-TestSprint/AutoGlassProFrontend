@@ -506,7 +506,7 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
 
         if (type === "ADAS") {
             actualType = "ADAS"; // Distinct type for UI logic
-            description = "ADAS Recalibration"; // Default, to be selected from dropdown
+            description = ""; // Default, to be selected from dropdown
             isAdas = true;
         } else if (type === "Service") {
             actualType = "Service";
@@ -1800,7 +1800,7 @@ ${shopName}`;
             if (it.id === id) {
                 return {
                     ...it,
-                    description: `ADAS Recalibration - ${calibrationCode}`,
+                    description: calibrationCode,
                     unitPrice: price,
                     amount: (Number(it.qty) || 0) * price,
                     adasCode: calibrationCode

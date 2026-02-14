@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Form, Input, Button, Card, ColorPicker, message, Spin, TimePicker, Switch, Row, Col } from "antd";
+import { Form, Input, Button, Card, ColorPicker, message, Spin, TimePicker, Switch, Row, Col, Radio } from "antd";
 import dayjs from "dayjs";
 import { SaveOutlined, ReloadOutlined } from "@ant-design/icons";
 import { createOrUpdateUserSlug, getUserSlugByUserId } from "../../api/userSlugInfo";
@@ -24,25 +24,20 @@ const SlugConfig = () => {
                 const openHours = data.openHoursJson || {};
                 const formattedOpenHours = {};
 
-                let standardTime = null;
-
                 ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].forEach(day => {
                     const dayData = openHours[day] || {};
-                    formattedOpenHours[`${day}_closed`] = dayData.closed;
 
-                    // Capture the first valid time found to use as standard time
-                    if (!standardTime && !dayData.closed && dayData.intervals && dayData.intervals.length > 0) {
-                        standardTime = [
-                            dayjs(dayData.intervals[0].from, "HH:mm"),
-                            dayjs(dayData.intervals[0].to, "HH:mm")
+                    if (dayData.closed || !dayData.intervals || dayData.intervals.length === 0) {
+                        formattedOpenHours[`${day}_status`] = 'closed';
+                    } else {
+                        formattedOpenHours[`${day}_status`] = 'open';
+                        const interval = dayData.intervals[0];
+                        formattedOpenHours[`${day}_time`] = [
+                            dayjs(interval.from, "HH:mm"),
+                            dayjs(interval.to, "HH:mm")
                         ];
                     }
                 });
-
-                // Default standard time if none found
-                if (!standardTime) {
-                    standardTime = [dayjs("09:00", "HH:mm"), dayjs("17:00", "HH:mm")];
-                }
 
                 form.setFieldsValue({
                     slug: data.slug,
@@ -55,7 +50,6 @@ const SlugConfig = () => {
                     phone: data.phone,
                     alternatePhone: data.alternatePhone,
                     maps: data.maps,
-                    standard_time: standardTime,
                     ...formattedOpenHours
                 });
                 // Update localStorage if changed
@@ -92,21 +86,23 @@ const SlugConfig = () => {
             const bgColorHex = typeof values.backgroundColorHex === 'string' ? values.backgroundColorHex : values.backgroundColorHex.toHexString();
 
             const openHoursJson = {};
-            const standardTime = values.standard_time;
 
             ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].forEach(day => {
-                const isClosed = values[`${day}_closed`];
-                if (isClosed) {
+                const status = values[`${day}_status`];
+                const timeRange = values[`${day}_time`];
+
+                if (status === 'closed') {
                     openHoursJson[day] = { closed: true };
                 } else {
-                    if (standardTime && standardTime.length === 2) {
+                    if (timeRange && timeRange.length === 2) {
                         openHoursJson[day] = {
                             intervals: [{
-                                from: standardTime[0].format("HH:mm"),
-                                to: standardTime[1].format("HH:mm")
+                                from: timeRange[0].format("HH:mm"),
+                                to: timeRange[1].format("HH:mm")
                             }]
                         };
                     } else {
+                        // Fallback or skip if open but no time selected (though validation should catch this)
                         openHoursJson[day] = {
                             intervals: [{ from: "09:00", to: "17:00" }]
                         };
@@ -226,37 +222,59 @@ const SlugConfig = () => {
                         </div>
 
                         <div className="col-span-1 md:col-span-2">
-                            <Form.Item
-                                label="Standard Business Hours"
-                                name="standard_time"
-                                tooltip="These hours will apply to all open days."
-                                rules={[{ required: true, message: 'Please select standard business hours' }]}
-                            >
-                                <TimePicker.RangePicker format="h:mm A" minuteStep={15} use12Hours />
-                            </Form.Item>
-
+                            {/* Individual Days Configuration */}
                             {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(day => (
-                                <Row key={day} gutter={16} align="middle" className="mb-2">
-                                    <Col span={4} className="capitalize font-medium text-gray-700">
-                                        {day}
-                                    </Col>
-                                    <Col span={4}>
-                                        <Form.Item name={`${day}_closed`} valuePropName="checked" noStyle>
-                                            <Switch checkedChildren="Closed" unCheckedChildren="Open" />
+                                <div key={day} className="mb-4 pb-4 border-b border-gray-50 last:border-0 last:pb-0">
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                                        <div className="w-24 font-medium text-gray-700 capitalize shrink-0">
+                                            {day}
+                                        </div>
+
+                                        <Form.Item name={`${day}_status`} initialValue="open" className="mb-0 shrink-0">
+                                            <Radio.Group buttonStyle="solid">
+                                                <Radio.Button
+                                                    value="open"
+                                                    style={{
+                                                        backgroundColor: form.getFieldValue(`${day}_status`) === 'open' ? '#e6f7ff' : '#fff',
+                                                        borderColor: form.getFieldValue(`${day}_status`) === 'open' ? '#1890ff' : '#d9d9d9',
+                                                        color: form.getFieldValue(`${day}_status`) === 'open' ? '#1890ff' : 'rgba(0, 0, 0, 0.85)',
+                                                    }}
+                                                >
+                                                    Open
+                                                </Radio.Button>
+                                                <Radio.Button
+                                                    value="closed"
+                                                    style={{
+                                                        backgroundColor: form.getFieldValue(`${day}_status`) === 'closed' ? '#fff1f0' : '#fff',
+                                                        borderColor: form.getFieldValue(`${day}_status`) === 'closed' ? '#ff4d4f' : '#d9d9d9',
+                                                        color: form.getFieldValue(`${day}_status`) === 'closed' ? '#ff4d4f' : 'rgba(0, 0, 0, 0.85)',
+                                                    }}
+                                                >
+                                                    Closed
+                                                </Radio.Button>
+                                            </Radio.Group>
                                         </Form.Item>
-                                    </Col>
-                                    <Col span={16}>
+
                                         <Form.Item
                                             noStyle
-                                            shouldUpdate={(prev, curr) => prev[`${day}_closed`] !== curr[`${day}_closed`]}
+                                            shouldUpdate={(prev, curr) => prev[`${day}_status`] !== curr[`${day}_status`]}
                                         >
                                             {({ getFieldValue }) => {
-                                                const closed = getFieldValue(`${day}_closed`);
-                                                return closed ? <span className="text-gray-400 italic text-sm">Closed</span> : <span className="text-green-600 text-sm">Open (Standard Hours)</span>;
+                                                return getFieldValue(`${day}_status`) === 'open' ? (
+                                                    <Form.Item
+                                                        name={`${day}_time`}
+                                                        className="mb-0 flex-1"
+                                                        initialValue={[dayjs("09:00", "HH:mm"), dayjs("17:00", "HH:mm")]}
+                                                    >
+                                                        <TimePicker.RangePicker format="h:mm A" minuteStep={15} use12Hours className="w-full sm:w-auto" />
+                                                    </Form.Item>
+                                                ) : (
+                                                    <div className="text-gray-400 italic text-sm flex-1">Shop is closed on this day</div>
+                                                );
                                             }}
                                         </Form.Item>
-                                    </Col>
-                                </Row>
+                                    </div>
+                                </div>
                             ))}
                         </div>
 

@@ -361,7 +361,7 @@ const SearchByRoot = () => {
             posCd: item.posCd || null,
             sideCd: item.sideCd || null,
             description: item.partDescription || "",
-            adasCode: item.itemType === 'ADAS' && item.partDescription ? item.partDescription.replace('ADAS Recalibration - ', '') : null,
+            adasCode: item.itemType === 'ADAS' && item.partDescription ? item.partDescription : null,
             manufacturer: "",
             qty: item.quantity || 1,
             unitPrice: item.partPrice || 0,
@@ -930,7 +930,23 @@ const SearchByRoot = () => {
       setVehicleInfo({});
       setVinData(null);
       setModelId(null);
-      setVehId(null); // Added this to clear the model view correctly
+      setVehId(null);
+      setPreSelectedGlassCodes([]);
+      setAiContactFormId(null);
+
+      // Reset Scheduling Data
+      setSchedulingData({
+        scheduledDate: null,
+        estimatedCompletion: null,
+        dueDate: new Date().toISOString().split('T')[0],
+        paymentTerms: "Due upon receipt",
+        assignedEmployeeId: null,
+        employeeId: null,
+        customPaymentTerms: "",
+        serviceLocation: "IN_SHOP",
+        serviceAddress: "",
+        tasks: []
+      });
 
       // 5. UI Resets
       setResetKey(prev => prev + 1); // Force remount of search components
