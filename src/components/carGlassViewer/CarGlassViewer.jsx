@@ -22,7 +22,7 @@ export default function CarGlassViewer({
   preSelectedGlassCodes = [], // New prop: array of glass codes to auto-select
 }) {
   // 1) Glass catalog (left column)
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!!modelId);
   const [glassData, setGlassData] = useState([]);
   const [glassGroups, setGlassGroups] = useState({});
   const [error, setError] = useState(null);
@@ -535,6 +535,10 @@ export default function CarGlassViewer({
       </div>
     );
   };
+
+  if (!modelId) {
+    return <div className="h-full w-full bg-transparent" />;
+  }
 
   if (loading) {
     return (
