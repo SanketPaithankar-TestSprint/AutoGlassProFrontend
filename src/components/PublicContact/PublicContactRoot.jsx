@@ -45,6 +45,76 @@ const formatPhoneNumber = (phoneNumber) => {
     return phoneNumber;
 };
 
+const formatTime = (timeStr) => {
+    if (!timeStr) return '';
+    const [hour, min] = timeStr.split(':');
+    let h = parseInt(hour, 10);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return `${h}:${min} ${ampm}`;
+};
+
+const formatOpeningHours = (openHours) => {
+    if (!openHours) return null;
+
+    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    const shortDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+    const formattedDays = days.map((day, index) => {
+        const data = openHours[day];
+        if (!data || !data.intervals || data.intervals.length === 0) {
+            return { day: shortDays[index], isOpen: false };
+        }
+        const interval = data.intervals[0];
+        return {
+            day: shortDays[index],
+            isOpen: true,
+            time: `${formatTime(interval.from)} – ${formatTime(interval.to)}`
+        };
+    });
+
+    const groups = [];
+    let currentGroup = null;
+
+    formattedDays.forEach((item) => {
+        if (!currentGroup) {
+            currentGroup = { start: item.day, end: item.day, time: item.time, isOpen: item.isOpen };
+        } else {
+            if (item.isOpen === currentGroup.isOpen && item.time === currentGroup.time) {
+                currentGroup.end = item.day;
+            } else {
+                groups.push(currentGroup);
+                currentGroup = { start: item.day, end: item.day, time: item.time, isOpen: item.isOpen };
+            }
+        }
+    });
+    if (currentGroup) groups.push(currentGroup);
+
+    return (
+        <div className="flex flex-col gap-0.5">
+            {groups.map((group, idx) => {
+                const dayRange = group.start === group.end ? group.start : `${group.start}-${group.end}`;
+                if (!group.isOpen) {
+                    // Skip closed days if preferred, or show them. 
+                    // User example: "Sat: ... (Sun: Closed)" implies showing closed if part of a list, 
+                    // but usually separately if monolithic.
+                    // For now, let's render grouped closed days as "Closed"
+                    return (
+                        <div key={idx} className="text-sm font-medium text-slate-800">
+                            {dayRange}: <span className="text-slate-500 font-normal">Closed</span>
+                        </div>
+                    );
+                }
+                return (
+                    <div key={idx} className="text-sm font-medium text-slate-800">
+                        {dayRange}: <span className="text-slate-600 font-normal">{group.time}</span>
+                    </div>
+                );
+            })}
+        </div>
+    );
+};
+
 
 
 const PublicContactRoot = () => {
@@ -193,7 +263,8 @@ const PublicContactRoot = () => {
                         alternatePhone: response.data.alternate_phone,
                         maps: response.data.maps,
                         latitude: response.data.latitude,
-                        longitude: response.data.longitude
+                        longitude: response.data.longitude,
+                        openHours: response.data.open_hours_json
                     });
                 } else {
                     setIsValidSlug(false);
@@ -778,6 +849,19 @@ const PublicContactRoot = () => {
                                                 <a href={`tel:${businessInfo.phone}`} className="text-base font-semibold text-slate-800 hover:text-blue-600 transition-colors block">
                                                     {formatPhoneNumber(businessInfo.phone)}
                                                 </a>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Hours Row */}
+                                    {businessInfo?.openHours && (
+                                        <div className="flex items-start gap-4">
+                                            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${themeColor}10`, color: themeColor }}>
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                            </div>
+                                            <div className="flex-1 min-w-0 pt-1">
+                                                <p className="text-xs font-medium text-slate-500 mb-0.5">Hours</p>
+                                                {formatOpeningHours(businessInfo.openHours)}
                                             </div>
                                         </div>
                                     )}
