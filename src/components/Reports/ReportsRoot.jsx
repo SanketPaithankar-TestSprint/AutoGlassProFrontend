@@ -119,32 +119,33 @@ const ReportsRoot = () => {
     }, [pdfUrl]);
 
     return (
-        <div className="min-h-full bg-gradient-to-br from-slate-50 via-white to-violet-50 p-3 pt-5 md:p-6">
+        <div className="min-h-full bg-gradient-to-br from-slate-50 via-white to-violet-50 p-3 sm:p-4 md:p-6">
             <div className="max-w-[1200px] mx-auto">
                 {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-xl font-bold text-slate-900 mb-2">
+                <div className="mb-4 sm:mb-6 md:mb-8">
+                    <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 mb-1 sm:mb-2">
                         Sales Reports
                     </h1>
-                    <p className="text-slate-500">Generate and download sales breakdown reports</p>
+                    <p className="text-xs sm:text-sm text-slate-500">Generate and download sales breakdown reports</p>
                 </div>
 
                 {/* Controls Card */}
-                <div className="mb-6 bg-white shadow-md rounded-2xl overflow-hidden p-3 md:p-4 max-w-fit">
-                    <div className="flex flex-col md:flex-row gap-4 items-end">
+                <div className="mb-4 sm:mb-6 bg-white shadow-md rounded-xl sm:rounded-2xl overflow-hidden p-3 sm:p-4">
+                    <div className="flex flex-col gap-3 sm:gap-4">
                         {/* Document Type Filter */}
-                        <div>
-                            <label className="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">
+                        <div className="w-full">
+                            <label className="block text-[10px] sm:text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">
                                 Document Type
                             </label>
                             <Select
                                 mode="multiple"
                                 value={selectedDocTypes}
                                 onChange={setSelectedDocTypes}
-                                style={{ width: 220 }}
+                                style={{ width: '100%' }}
                                 placeholder="Select Doc Type"
                                 maxTagCount="responsive"
-                                className="h-8"
+                                className="w-full"
+                                getPopupContainer={(trigger) => trigger.parentElement}
                             >
                                 <Option value={0}>Invoice</Option>
                                 <Option value={1}>Work Order</Option>
@@ -152,61 +153,65 @@ const ReportsRoot = () => {
                             </Select>
                         </div>
 
-                        {/* Date Range Pickers - Separate for independent navigation */}
-                        <div>
-                            <label className="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">
-                                From Date
-                            </label>
-                            <DatePicker
-                                value={dateRange ? dateRange[0] : null}
-                                onChange={(date) => {
-                                    if (date) {
-                                        setDateRange([date, dateRange ? dateRange[1] : dayjs()]);
-                                    }
-                                }}
-                                format="MM/DD/YYYY"
-                                size="middle"
-                                style={{ borderRadius: '10px', width: '140px' }}
-                                allowClear={false}
-                                disabledDate={(current) => {
-                                    // Disable dates after the "To" date
-                                    return dateRange && dateRange[1] && current && current.isAfter(dateRange[1], 'day');
-                                }}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">
-                                To Date
-                            </label>
-                            <DatePicker
-                                value={dateRange ? dateRange[1] : null}
-                                onChange={(date) => {
-                                    if (date) {
-                                        setDateRange([dateRange ? dateRange[0] : dayjs().subtract(1, 'month'), date]);
-                                    }
-                                }}
-                                format="MM/DD/YYYY"
-                                size="middle"
-                                style={{ borderRadius: '10px', width: '140px' }}
-                                allowClear={false}
-                                disabledDate={(current) => {
-                                    // Disable dates before the "From" date
-                                    return dateRange && dateRange[0] && current && current.isBefore(dateRange[0], 'day');
-                                }}
-                            />
+                        {/* Date Range Pickers */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label className="block text-[10px] sm:text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">
+                                    From Date
+                                </label>
+                                <DatePicker
+                                    value={dateRange ? dateRange[0] : null}
+                                    onChange={(date) => {
+                                        if (date) {
+                                            setDateRange([date, dateRange ? dateRange[1] : dayjs()]);
+                                        }
+                                    }}
+                                    format="MM/DD/YYYY"
+                                    size="middle"
+                                    className="w-full rounded-lg"
+                                    allowClear={false}
+                                    getPopupContainer={(trigger) => trigger.parentElement}
+                                    disabledDate={(current) => {
+                                        // Disable dates after the "To" date
+                                        return dateRange && dateRange[1] && current && current.isAfter(dateRange[1], 'day');
+                                    }}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] sm:text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">
+                                    To Date
+                                </label>
+                                <DatePicker
+                                    value={dateRange ? dateRange[1] : null}
+                                    onChange={(date) => {
+                                        if (date) {
+                                            setDateRange([dateRange ? dateRange[0] : dayjs().subtract(1, 'month'), date]);
+                                        }
+                                    }}
+                                    format="MM/DD/YYYY"
+                                    size="middle"
+                                    className="w-full rounded-lg"
+                                    allowClear={false}
+                                    getPopupContainer={(trigger) => trigger.parentElement}
+                                    disabledDate={(current) => {
+                                        // Disable dates before the "From" date
+                                        return dateRange && dateRange[0] && current && current.isBefore(dateRange[0], 'day');
+                                    }}
+                                />
+                            </div>
                         </div>
 
                         {/* Action Buttons */}
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                             <Button
                                 type="primary"
                                 size="middle"
                                 icon={<SearchOutlined />}
                                 onClick={handleGenerateReport}
                                 loading={loading}
-                                className="h-9 rounded-lg bg-gradient-to-r from-violet-600 to-purple-600 border-0 shadow-md hover:shadow-lg transition-all duration-300 text-sm px-6"
+                                className="w-full sm:flex-1 h-9 sm:h-10 rounded-lg bg-gradient-to-r from-violet-600 to-purple-600 border-0 shadow-md hover:shadow-lg transition-all duration-300 text-xs sm:text-sm"
                             >
-                                Generate
+                                Generate Report
                             </Button>
 
                             <Button
@@ -214,9 +219,9 @@ const ReportsRoot = () => {
                                 icon={<DownloadOutlined />}
                                 onClick={handleDownload}
                                 disabled={!pdfBlob}
-                                className="h-9 rounded-lg border-violet-300 text-violet-600 hover:bg-violet-50 hover:border-violet-400 transition-all duration-300 text-sm px-6"
+                                className="w-full sm:flex-1 h-9 sm:h-10 rounded-lg border-violet-300 text-violet-600 hover:bg-violet-50 hover:border-violet-400 transition-all duration-300 text-xs sm:text-sm"
                             >
-                                Download
+                                Download PDF
                             </Button>
                         </div>
                     </div>
@@ -224,29 +229,29 @@ const ReportsRoot = () => {
 
                 {/* PDF Viewer */}
                 <Card
-                    className="shadow-md border-0 rounded-2xl overflow-hidden"
+                    className="shadow-md border-0 rounded-xl sm:rounded-2xl overflow-hidden"
                     styles={{ body: { padding: 0 } }}
                 >
                     {loading ? (
-                        <div className="flex flex-col items-center justify-center py-20">
+                        <div className="flex flex-col items-center justify-center py-12 sm:py-16 md:py-20">
                             <Spin size="large" />
-                            <p className="mt-4 text-slate-500">Generating report...</p>
+                            <p className="mt-4 text-xs sm:text-sm text-slate-500">Generating report...</p>
                         </div>
                     ) : pdfUrl ? (
-                        <div className="w-full" style={{ height: 'calc(100vh - 340px)', minHeight: '500px' }}>
+                        <div className="w-full" style={{ height: 'calc(100vh - 280px)', minHeight: '400px' }}>
                             <iframe
                                 src={pdfUrl}
                                 title="Sales Report PDF"
                                 className="w-full h-full border-0"
-                                style={{ borderRadius: '0 0 16px 16px' }}
+                                style={{ borderRadius: '0 0 12px 12px' }}
                             />
                         </div>
                     ) : (
-                        <div className="flex flex-col items-center justify-center py-20">
+                        <div className="flex flex-col items-center justify-center py-12 sm:py-16 md:py-20">
                             <Empty
                                 image={Empty.PRESENTED_IMAGE_SIMPLE}
                                 description={
-                                    <span className="text-slate-400">
+                                    <span className="text-slate-400 text-xs sm:text-sm px-4 text-center block">
                                         Select a date range and click "Generate Report" to view the sales breakdown
                                     </span>
                                 }

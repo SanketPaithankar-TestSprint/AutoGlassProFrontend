@@ -13,33 +13,33 @@ const QuoteConversionCard = ({ data }) => {
     const { quotes_created, invoices_count, conversion_rate } = data;
 
     return (
-        <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 p-5 h-full flex flex-col"
+        <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 p-4 sm:p-5 lg:p-6 h-full flex flex-col overflow-hidden"
             style={{ boxShadow: '0 4px 24px -4px rgba(0, 0, 0, 0.06)' }}>
-            <h3 className="text-base font-bold text-slate-700 mb-3">Quote Conversion</h3>
+            <h3 className="text-sm sm:text-base font-bold text-slate-700 mb-3 sm:mb-4">Quote Conversion</h3>
 
-            <div className="flex-1 flex flex-col justify-center space-y-4">
+            <div className="flex-1 flex flex-col justify-center space-y-3 sm:space-y-4">
                 {/* Conversion Rate - Main Metric */}
-                <div className="text-center p-5 bg-gradient-to-br from-indigo-50/80 to-violet-50/80 rounded-xl border border-indigo-100/50">
+                <div className="text-center p-4 sm:p-5 bg-gradient-to-br from-indigo-50/80 to-violet-50/80 rounded-xl border border-indigo-100/50">
                     <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Conversion Rate</p>
-                    <p className="text-3xl font-extrabold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">{conversion_rate.toFixed(1)}%</p>
-                    <p className="text-xs text-slate-400 mt-1">Quote to Invoice</p>
+                    <p className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">{conversion_rate.toFixed(1)}%</p>
+                    <p className="text-[10px] sm:text-xs text-slate-400 mt-1">Quote to Invoice</p>
                 </div>
 
                 {/* Breakdown Stats */}
-                <div className="grid grid-cols-2 gap-3">
-                    <div className="text-center p-3 bg-slate-50/80 rounded-xl border border-slate-100/50">
-                        <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Quotes Created</p>
-                        <p className="text-xl font-bold text-slate-700">{quotes_created}</p>
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                    <div className="text-center p-2.5 sm:p-3 bg-slate-50/80 rounded-xl border border-slate-100/50">
+                        <p className="text-[9px] sm:text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Quotes Created</p>
+                        <p className="text-lg sm:text-xl font-bold text-slate-700">{quotes_created}</p>
                     </div>
-                    <div className="text-center p-3 bg-slate-50/80 rounded-xl border border-slate-100/50">
-                        <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Invoices</p>
-                        <p className="text-xl font-bold text-slate-700">{invoices_count}</p>
+                    <div className="text-center p-2.5 sm:p-3 bg-slate-50/80 rounded-xl border border-slate-100/50">
+                        <p className="text-[9px] sm:text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Invoices</p>
+                        <p className="text-lg sm:text-xl font-bold text-slate-700">{invoices_count}</p>
                     </div>
                 </div>
 
                 {/* Visual Progress Bar */}
                 <div>
-                    <div className="flex justify-between text-xs text-slate-400 mb-1.5">
+                    <div className="flex justify-between text-[10px] sm:text-xs text-slate-400 mb-1.5">
                         <span>Progress</span>
                         <span className="font-medium text-slate-500">{invoices_count} of {quotes_created}</span>
                     </div>
@@ -56,3 +56,4 @@ const QuoteConversionCard = ({ data }) => {
 };
 
 export default QuoteConversionCard;
+

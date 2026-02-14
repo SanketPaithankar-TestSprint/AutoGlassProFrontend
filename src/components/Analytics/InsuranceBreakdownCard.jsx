@@ -55,12 +55,12 @@ const InsuranceBreakdownCard = ({ data }) => {
     };
 
     return (
-        <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 p-5 h-full flex flex-col"
+        <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 p-4 sm:p-5 lg:p-6 h-full flex flex-col overflow-hidden"
             style={{ boxShadow: '0 4px 24px -4px rgba(0, 0, 0, 0.06)' }}>
-            <h3 className="text-base font-bold text-slate-700 mb-3">Insurance vs Cash</h3>
+            <h3 className="text-sm sm:text-base font-bold text-slate-700 mb-3 sm:mb-4">Insurance vs Cash</h3>
 
-            <div className="flex items-center justify-center mb-3">
-                <div className="relative w-36 h-36">
+            <div className="flex items-center justify-center mb-3 sm:mb-4">
+                <div className="relative w-32 h-32 sm:w-36 sm:h-36">
                     <Doughnut data={chartData} options={options} />
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
                         <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Total Jobs</p>
@@ -69,18 +69,18 @@ const InsuranceBreakdownCard = ({ data }) => {
                 </div>
             </div>
 
-            <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-violet-50 rounded-lg flex items-center justify-center">
+            <div className="space-y-2 sm:space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <div className="w-8 h-8 bg-violet-50 rounded-lg flex items-center justify-center flex-shrink-0">
                             <FileText className="w-4 h-4 text-violet-600" />
                         </div>
-                        <div>
-                            <p className="text-sm text-slate-500">Insurance</p>
-                            <p className="text-xs text-slate-400">${insurance_revenue.toLocaleString()}</p>
+                        <div className="min-w-0 flex-1">
+                            <p className="text-xs sm:text-sm text-slate-500 truncate">Insurance</p>
+                            <p className="text-[10px] sm:text-xs text-slate-400 truncate">${insurance_revenue.toLocaleString()}</p>
                         </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right flex-shrink-0">
                         <span className="text-sm font-semibold text-slate-700">{insurance_jobs}</span>
                         <span className="text-xs text-slate-400 ml-1">
                             ({totalJobs > 0 ? ((insurance_jobs / totalJobs) * 100).toFixed(1) : 0}%)
@@ -88,17 +88,17 @@ const InsuranceBreakdownCard = ({ data }) => {
                     </div>
                 </div>
 
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-emerald-50 rounded-lg flex items-center justify-center">
+                <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <div className="w-8 h-8 bg-emerald-50 rounded-lg flex items-center justify-center flex-shrink-0">
                             <CreditCard className="w-4 h-4 text-emerald-600" />
                         </div>
-                        <div>
-                            <p className="text-sm text-slate-500">Cash</p>
-                            <p className="text-xs text-slate-400">${cash_revenue.toLocaleString()}</p>
+                        <div className="min-w-0 flex-1">
+                            <p className="text-xs sm:text-sm text-slate-500 truncate">Cash</p>
+                            <p className="text-[10px] sm:text-xs text-slate-400 truncate">${cash_revenue.toLocaleString()}</p>
                         </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right flex-shrink-0">
                         <span className="text-sm font-semibold text-slate-700">{cash_jobs}</span>
                         <span className="text-xs text-slate-400 ml-1">
                             ({totalJobs > 0 ? ((cash_jobs / totalJobs) * 100).toFixed(1) : 0}%)
@@ -111,3 +111,4 @@ const InsuranceBreakdownCard = ({ data }) => {
 };
 
 export default InsuranceBreakdownCard;
+

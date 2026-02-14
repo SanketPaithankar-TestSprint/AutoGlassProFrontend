@@ -97,23 +97,24 @@ const AnalyticsRoot = () => {
     }
 
     return (
-        <div className="min-h-screen p-4 md:p-8" style={{ background: 'linear-gradient(135deg, #f0f4ff 0%, #faf5ff 50%, #f0fdf4 100%)' }}>
-            <div className="max-w-[1600px] mx-auto space-y-8">
+        <div className="min-h-screen p-3 sm:p-4 md:p-6 lg:p-8" style={{ background: 'linear-gradient(135deg, #f0f4ff 0%, #faf5ff 50%, #f0fdf4 100%)' }}>
+            <div className="max-w-[1600px] mx-auto space-y-4 sm:space-y-6 lg:space-y-8">
                 {/* Header */}
-                <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
                     <div>
-                        <h1 className="text-3xl font-extrabold bg-gradient-to-r from-slate-800 via-blue-800 to-violet-800 bg-clip-text text-transparent">
+                        <h1 className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-slate-800 via-blue-800 to-violet-800 bg-clip-text text-transparent">
                             Dashboard
                         </h1>
-                        <p className="text-slate-500 mt-1 text-sm">Comprehensive business analytics and insights</p>
+                        <p className="text-slate-500 mt-1 text-xs sm:text-sm">Comprehensive business analytics and insights</p>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                         <Select
                             value={filterType}
-                            style={{ width: 150 }}
+                            style={{ width: '100%', minWidth: 150 }}
                             onChange={(value) => setFilterType(value)}
-                            className="rounded-lg"
+                            className="rounded-lg w-full sm:w-auto"
+                            getPopupContainer={(trigger) => trigger.parentElement}
                         >
                             <Option value="all_time">All Time</Option>
                             <Option value="last_week">Last Week</Option>
@@ -123,11 +124,24 @@ const AnalyticsRoot = () => {
                         </Select>
 
                         {filterType === 'custom' && (
-                            <RangePicker
-                                value={customRange}
-                                onChange={(dates) => setCustomRange(dates)}
-                                className="rounded-lg"
-                            />
+                            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                                <DatePicker
+                                    placeholder="Start Date"
+                                    value={customRange?.[0]}
+                                    onChange={(date) => setCustomRange([date, customRange?.[1]])}
+                                    className="rounded-lg w-full sm:w-auto"
+                                    getPopupContainer={(trigger) => trigger.parentElement}
+                                    format="MMM DD, YYYY"
+                                />
+                                <DatePicker
+                                    placeholder="End Date"
+                                    value={customRange?.[1]}
+                                    onChange={(date) => setCustomRange([customRange?.[0], date])}
+                                    className="rounded-lg w-full sm:w-auto"
+                                    getPopupContainer={(trigger) => trigger.parentElement}
+                                    format="MMM DD, YYYY"
+                                />
+                            </div>
                         )}
                     </div>
                 </header>
@@ -137,15 +151,15 @@ const AnalyticsRoot = () => {
 
                 {/* Financial Section */}
                 <section>
-                    <div className="flex items-center gap-2 mb-4">
-                        <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></div>
-                        <h2 className="text-lg font-bold text-slate-700">Financial Overview</h2>
+                    <div className="flex items-center gap-2 mb-3 md:mb-4">
+                        <div className="w-1 h-5 sm:h-6 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></div>
+                        <h2 className="text-base sm:text-lg font-bold text-slate-700">Financial Overview</h2>
                     </div>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div className="lg:col-span-2 h-[400px]">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+                        <div className="lg:col-span-2 h-[300px] sm:h-[350px] lg:h-[400px]">
                             <RevenueTrendChart data={data?.revenue_trend} />
                         </div>
-                        <div className="h-[400px]">
+                        <div className="h-[300px] sm:h-[350px] lg:h-[400px]">
                             <IncomeBreakdownCard data={data?.income_breakdown} />
                         </div>
                     </div>
@@ -153,18 +167,18 @@ const AnalyticsRoot = () => {
 
                 {/* Job Analysis Section */}
                 <section>
-                    <div className="flex items-center gap-2 mb-4">
-                        <div className="w-1 h-6 bg-gradient-to-b from-emerald-500 to-teal-600 rounded-full"></div>
-                        <h2 className="text-lg font-bold text-slate-700">Job Analysis</h2>
+                    <div className="flex items-center gap-2 mb-3 md:mb-4">
+                        <div className="w-1 h-5 sm:h-6 bg-gradient-to-b from-emerald-500 to-teal-600 rounded-full"></div>
+                        <h2 className="text-base sm:text-lg font-bold text-slate-700">Job Analysis</h2>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div className="h-[400px]">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                        <div className="h-[300px] sm:h-[350px] lg:h-[400px]">
                             <QuoteConversionCard data={data?.quote_analysis} />
                         </div>
-                        <div className="h-[400px]">
+                        <div className="h-[300px] sm:h-[350px] lg:h-[400px]">
                             <JobStatusChart data={data?.job_status_distribution} />
                         </div>
-                        <div className="h-[400px]">
+                        <div className="h-[300px] sm:h-[350px] lg:h-[400px]">
                             <ServiceLocationCard data={data?.service_location_breakdown} />
                         </div>
                     </div>
@@ -172,15 +186,15 @@ const AnalyticsRoot = () => {
 
                 {/* Operational Insights */}
                 <section>
-                    <div className="flex items-center gap-2 mb-4">
-                        <div className="w-1 h-6 bg-gradient-to-b from-violet-500 to-purple-600 rounded-full"></div>
-                        <h2 className="text-lg font-bold text-slate-700">Operational Insights</h2>
+                    <div className="flex items-center gap-2 mb-3 md:mb-4">
+                        <div className="w-1 h-5 sm:h-6 bg-gradient-to-b from-violet-500 to-purple-600 rounded-full"></div>
+                        <h2 className="text-base sm:text-lg font-bold text-slate-700">Operational Insights</h2>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="h-[400px]">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                        <div className="h-[300px] sm:h-[350px] lg:h-[400px]">
                             <InsuranceBreakdownCard data={data?.insurance_breakdown} />
                         </div>
-                        <div className="h-[400px]">
+                        <div className="h-[300px] sm:h-[350px] lg:h-[400px]">
                             <ArAgingChart data={data?.ar_aging} />
                         </div>
                     </div>
@@ -188,18 +202,18 @@ const AnalyticsRoot = () => {
 
                 {/* Product Analysis */}
                 <section>
-                    <div className="flex items-center gap-2 mb-4">
-                        <div className="w-1 h-6 bg-gradient-to-b from-amber-500 to-orange-600 rounded-full"></div>
-                        <h2 className="text-lg font-bold text-slate-700">Product Analysis</h2>
+                    <div className="flex items-center gap-2 mb-3 md:mb-4">
+                        <div className="w-1 h-5 sm:h-6 bg-gradient-to-b from-amber-500 to-orange-600 rounded-full"></div>
+                        <h2 className="text-base sm:text-lg font-bold text-slate-700">Product Analysis</h2>
                     </div>
-                    <div className="h-[400px]">
+                    <div className="h-[300px] sm:h-[350px] lg:h-[400px]">
                         <GlassTypeChart data={data?.glass_type_breakdown} />
                     </div>
                 </section>
 
                 {/* Recent Activity */}
                 <section>
-                    <div className="h-[500px]">
+                    <div className="h-[400px] sm:h-[450px] lg:h-[500px]">
                         <RecentActivityTable data={data?.recent_activity} />
                     </div>
                 </section>

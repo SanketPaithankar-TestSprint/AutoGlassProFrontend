@@ -66,6 +66,14 @@ const RevenueTrendChart = ({ data }) => {
     const options = {
         responsive: true,
         maintainAspectRatio: false,
+        layout: {
+            padding: {
+                left: 5,
+                right: 10,
+                top: 10,
+                bottom: 20
+            }
+        },
         plugins: {
             legend: { display: false },
             tooltip: {
@@ -109,16 +117,20 @@ const RevenueTrendChart = ({ data }) => {
                 grid: { display: false },
                 ticks: {
                     color: '#94a3b8',
-                    font: { size: 11 },
+                    font: { size: 10 },
                     maxRotation: 0,
                     minRotation: 0,
-                    autoSkip: false,
+                    autoSkip: true,
+                    autoSkipPadding: 10,
+                    maxTicksLimit: 15,
                     callback: function (value, index) {
                         const dateStr = this.getLabelForValue(value);
                         const d = dayjs(dateStr);
+                        // Show month name on first day of month
                         if (d.date() === 1) {
                             return d.format('MMM');
                         }
+                        // Show day number for other days
                         return d.format('D');
                     }
                 },
@@ -133,19 +145,19 @@ const RevenueTrendChart = ({ data }) => {
     };
 
     return (
-        <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 p-6 h-full flex flex-col"
+        <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 p-4 sm:p-5 lg:p-6 h-full flex flex-col overflow-hidden"
             style={{ boxShadow: '0 4px 24px -4px rgba(0, 0, 0, 0.06)' }}>
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 gap-2">
                 <div>
-                    <h3 className="text-base font-bold text-slate-700">Revenue Trend</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">Daily cash collection overview</p>
+                    <h3 className="text-sm sm:text-base font-bold text-slate-700">Revenue Trend</h3>
+                    <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">Daily cash collection overview</p>
                 </div>
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 rounded-lg">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 rounded-lg self-start sm:self-auto">
                     <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
                     <span className="text-xs font-medium text-indigo-600">Revenue</span>
                 </div>
             </div>
-            <div className="flex-1 min-h-[280px]">
+            <div className="flex-1 min-h-[200px] sm:min-h-[250px]">
                 <Line data={chartData} options={options} />
             </div>
         </div>
@@ -153,3 +165,4 @@ const RevenueTrendChart = ({ data }) => {
 };
 
 export default RevenueTrendChart;
+

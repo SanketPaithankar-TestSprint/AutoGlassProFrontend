@@ -56,6 +56,14 @@ const GlassTypeChart = ({ data }) => {
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
+        layout: {
+            padding: {
+                left: 0,
+                right: 10,
+                top: 5,
+                bottom: 5
+            }
+        },
         plugins: {
             legend: { display: false },
             tooltip: {
@@ -97,16 +105,16 @@ const GlassTypeChart = ({ data }) => {
     const total = data.reduce((sum, item) => sum + item.count, 0);
 
     return (
-        <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 p-6 h-full flex flex-col"
+        <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 p-4 sm:p-5 lg:p-6 h-full flex flex-col overflow-hidden"
             style={{ boxShadow: '0 4px 24px -4px rgba(0, 0, 0, 0.06)' }}>
-            <div className="mb-4">
-                <h3 className="text-base font-bold text-slate-700">Glass Type Breakdown</h3>
-                <p className="text-xs text-slate-400 mt-0.5">
+            <div className="mb-3 sm:mb-4">
+                <h3 className="text-sm sm:text-base font-bold text-slate-700">Glass Type Breakdown</h3>
+                <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">
                     Total Parts Installed: <span className="font-semibold text-slate-600">{total}</span>
                 </p>
             </div>
 
-            <div className="flex-1 min-h-[250px]">
+            <div className="flex-1 min-h-[200px] sm:min-h-[250px]">
                 <Bar data={chartData} options={options} />
             </div>
         </div>
@@ -114,3 +122,4 @@ const GlassTypeChart = ({ data }) => {
 };
 
 export default GlassTypeChart;
+

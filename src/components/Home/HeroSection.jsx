@@ -13,87 +13,109 @@ const HeroSection = () => {
 
   return (
     <section
-      className="relative bg-transparent text-slate-900 py-0 flex justify-center min-h-screen items-center"
+      className="relative bg-transparent text-slate-900 py-0 flex justify-center items-center"
+      style={{ minHeight: 'calc(var(--vh, 1vh) * 100)' }}
     >
 
 
       {/* Content */}
-      <div className="relative max-w-7xl mx-auto py-24 lg:py-32 px-6 grid lg:grid-cols-12 gap-12 items-center pt-20 lg:pt-32">
+      <div className="relative max-w-7xl mx-auto py-8 md:py-24 lg:py-32 px-3 sm:px-4 md:px-6 grid lg:grid-cols-12 gap-6 md:gap-12 items-center pt-4 md:pt-20 lg:pt-32 w-full">
         {/* Left Column: Content */}
-        <div className="text-center lg:text-left lg:col-span-5">
+        <div className="text-center lg:text-left lg:col-span-5 w-full">
           {/* Logo */}
-          <div
-            className="flex justify-center lg:justify-start mb-6"
-            style={{ animation: 'fadeInUp 0.6s ease-out 0s both' }}
+          <motion.div
+            className="flex justify-center lg:justify-start mb-3 sm:mb-4 md:mb-6"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
           >
-            <Logo className="w-32 md:w-40 h-auto" />
-          </div>
+            <Logo className="w-24 xs:w-28 sm:w-32 md:w-36 lg:w-40 h-auto" />
+          </motion.div>
 
           {/* Tagline */}
-          <h1
-            className="text-3xl md:text-4xl lg:text-5xl font-extrabold mb-6 leading-tight"
+          <motion.h1
+            className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold mb-3 sm:mb-4 md:mb-6 leading-tight px-2 sm:px-0"
             style={{
               color: '#7E5CFE',
-              animation: 'fadeInUp 0.6s ease-out 0.1s both'
             }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
           >
-            The Smartest Way to Run Your Auto Glass Business.
-          </h1>
+            The Smartest Way to Run Your Auto  Glass Business.
+          </motion.h1>
 
           {/* Subheading */}
-          <p
-            className="text-base md:text-lg text-slate-600 mb-8 max-w-2xl mx-auto lg:mx-0"
-            style={{ animation: 'fadeInUp 0.6s ease-out 0.3s both' }}
+          <motion.p
+            className="text-xs xs:text-sm sm:text-base md:text-lg text-slate-600 mb-5 sm:mb-6 md:mb-8 max-w-2xl mx-auto lg:mx-0 px-2 sm:px-0 leading-relaxed"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
           >
             Generate Instant, 100% Accurate Quotes through NAGS data, Streamline Field
             Service, and Manage Every Invoice—All in One Platform.
-          </p>
+          </motion.p>
 
           {/* CTA Buttons */}
-          <div
-            className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4"
-            style={{ animation: 'fadeInUp 0.6s ease-out 0.4s both' }}
+          <motion.div
+            className="flex flex-col xs:flex-row justify-center lg:justify-start gap-2 sm:gap-3 md:gap-4 w-full sm:max-w-sm lg:max-w-none mx-auto lg:mx-0"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <Button
-              type="primary"
-              size="large"
-              className="!text-white !rounded-full !px-6 !h-11 !text-base shadow-lg transition-transform duration-200 hover:scale-105"
-              style={{
-                backgroundColor: '#7E5CFE',
-                borderColor: '#7E5CFE',
-                boxShadow: '0 4px 14px 0 rgba(126, 92, 254, 0.39)'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#6b47e8';
-                e.currentTarget.style.borderColor = '#6b47e8';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#7E5CFE';
-                e.currentTarget.style.borderColor = '#7E5CFE';
-              }}
-              onClick={() => {
-                navigate('/auth', { state: { mode: 'signup' } });
-              }}
+            <motion.div
+              className="flex-1"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
-              Start Your Free Trial
-            </Button>
+              <Button
+                type="primary"
+                className="w-full !text-white !rounded-full !px-4 sm:!px-6 md:!px-6 !h-10 sm:!h-11 md:!h-11 !text-xs sm:!text-sm md:!text-base shadow-lg transition-all duration-200"
+                style={{
+                  backgroundColor: '#7E5CFE',
+                  borderColor: '#7E5CFE',
+                  boxShadow: '0 4px 14px 0 rgba(126, 92, 254, 0.39)',
+                  border: 'none'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#6b47e8';
+                  e.currentTarget.style.borderColor = '#6b47e8';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#7E5CFE';
+                  e.currentTarget.style.borderColor = '#7E5CFE';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+                onClick={() => {
+                  navigate('/auth', { state: { mode: 'signup' } });
+                }}
+              >
+                <span className="font-medium">Start Free Trial</span>
+              </Button>
+            </motion.div>
 
-            <Button
-              size="large"
-              className="!bg-white !border-slate-200 !text-slate-700 !rounded-full !px-6 !h-11 !text-base shadow-sm hover:shadow-md transition-transform duration-200 hover:scale-105"
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = '#7E5CFE';
-                e.currentTarget.style.color = '#7E5CFE';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = '#e2e8f0'; // slate-200
-                e.currentTarget.style.color = '#334155'; // slate-700
-              }}
-              onClick={() => setIsVideoOpen(true)}
+            <motion.div
+              className="flex-1"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
-              Watch a Demo
-            </Button>
-          </div>
+              <Button
+                className="w-full !bg-transparent !border-violet-600 !text-violet-600 hover:!bg-violet-100 !rounded-full !px-4 sm:!px-6 md:!px-6 !h-10 sm:!h-11 md:!h-11 !text-xs sm:!text-sm md:!text-base shadow-sm hover:shadow-md transition-all duration-200"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+                onClick={() => setIsVideoOpen(true)}
+              >
+                <span className="font-medium">Watch a Demo</span>
+              </Button>
+            </motion.div>
+          </motion.div>
         </div>
 
         {/* Right Column: Image */}
@@ -103,6 +125,7 @@ const HeroSection = () => {
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-[100px] pointer-events-none"
             style={{
               background: 'linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)',
+              willChange: 'transform, opacity'
             }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.4 }}
@@ -119,9 +142,7 @@ const HeroSection = () => {
             <motion.img
               src={BrowserMockup}
               alt="AutoGlassPro Dashboard Mockup"
-              className="w-full h-auto object-contain drop-shadow-2xl relative z-10 transform hover:scale-[1.02] transition-transform duration-500 rounded-2xl"
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              className="w-full h-auto object-contain drop-shadow-2xl relative z-10 rounded-2xl"
             />
           </motion.div>
         </div>

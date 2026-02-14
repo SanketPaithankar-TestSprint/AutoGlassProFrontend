@@ -3,7 +3,6 @@ import { Select, Slider, DatePicker, Collapse, Button, Tag, InputNumber, Space, 
 import { FilterOutlined, ClearOutlined, CalendarOutlined, DollarOutlined, FileOutlined, CheckCircleOutlined, WarningOutlined } from '@ant-design/icons';
 import { getStatusOptions, getDocumentTypeOptions, getDateRangeOptions } from './helpers/utils';
 
-const { RangePicker } = DatePicker;
 const { Panel } = Collapse;
 
 const SidebarFilters = ({
@@ -67,9 +66,9 @@ const SidebarFilters = ({
                     )}
                 </div>
                 {activeFilterCount > 0 && (
-                    <Button 
-                        type="text" 
-                        size="small" 
+                    <Button
+                        type="text"
+                        size="small"
                         icon={<ClearOutlined />}
                         onClick={onClearAll}
                         className="text-slate-500 hover:text-violet-600"
@@ -165,20 +164,47 @@ const SidebarFilters = ({
                             options={dateRangeOptions}
                             allowClear
                         />
-                        
+
                         {dateRangeFilter === 'custom' && (
-                            <RangePicker
-                                style={{ width: '100%' }}
-                                value={customDateRange}
-                                onChange={handleCustomDateChange}
-                                format="YYYY-MM-DD"
-                            />
+                            <div className="space-y-2">
+                                <div>
+                                    <label className="block text-xs font-medium text-slate-600 mb-1">Start Date</label>
+                                    <DatePicker
+                                        style={{ width: '100%' }}
+                                        value={customDateRange?.[0]}
+                                        onChange={(date) => {
+                                            const newRange = [date, customDateRange?.[1] || null];
+                                            handleCustomDateChange(newRange);
+                                        }}
+                                        format="YYYY-MM-DD"
+                                        placeholder="Select start date"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-slate-600 mb-1">End Date</label>
+                                    <DatePicker
+                                        style={{ width: '100%' }}
+                                        value={customDateRange?.[1]}
+                                        onChange={(date) => {
+                                            const newRange = [customDateRange?.[0] || null, date];
+                                            handleCustomDateChange(newRange);
+                                        }}
+                                        format="YYYY-MM-DD"
+                                        placeholder="Select end date"
+                                        disabledDate={(current) => {
+                                            // Disable dates before start date
+                                            if (!customDateRange?.[0]) return false;
+                                            return current && current < customDateRange[0].startOf('day');
+                                        }}
+                                    />
+                                </div>
+                            </div>
                         )}
                     </div>
                 </Panel>
 
                 {/* Amount Range Filter */}
-              {/*  <Panel
+                {/*  <Panel
                     header={
                         <div className="flex items-center gap-2">
                             <DollarOutlined className="text-slate-400" />

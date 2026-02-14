@@ -207,7 +207,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
               aria-label="Open navigation"
               icon={<MenuOutlined />}
               onClick={() => setDrawerOpen(true)}
-              className="!flex lg:!hidden !items-center !justify-center !h-9 !w-9 !rounded-full !text-slate-700 !bg-slate-100 hover:!bg-slate-200 !border border-slate-200 shadow-sm focus:!outline-none focus:!ring-0 focus:!shadow-none"
+              className="!flex lg:!hidden !items-center !justify-center !h-9 !w-9 !rounded-full !text-slate-700 !bg-white hover:!bg-slate-100 !border border-slate-200 shadow-sm focus:!outline-none focus:!ring-0 focus:!shadow-none"
             />
           </div>
         )}

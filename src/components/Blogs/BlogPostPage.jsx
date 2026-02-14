@@ -26,6 +26,10 @@ const BlogPostPage = () => {
                     getBlogs()
                 ]);
 
+                console.log('Blog Post Data:', postData);
+                console.log('Raw Content:', postData?.content);
+                console.log('Content Type:', typeof postData?.content);
+
                 setPost(postData);
 
                 // Filter out current post for related section
@@ -69,6 +73,8 @@ const BlogPostPage = () => {
             </div>
         );
     }
+
+    console.log('Rendering post with content:', post.content);
 
     // Format date
     const formattedDate = new Date(post.createdAt || Date.now()).toLocaleDateString('en-US', {
@@ -129,17 +135,13 @@ const BlogPostPage = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
-                    className="prose prose-lg prose-slate max-w-none bg-white p-8 rounded-xl
-                        prose-headings:font-bold prose-headings:text-slate-900 prose-headings:font-outfit
-                        prose-p:text-slate-600 prose-p:leading-relaxed
-                        prose-a:text-violet-600 hover:prose-a:text-violet-700 
-                        prose-img:rounded-xl prose-img:shadow-md
-                        prose-strong:text-slate-800
-                        prose-blockquote:border-l-4 prose-blockquote:border-violet-500 prose-blockquote:bg-violet-50 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:italic
-                        mb-16"
+                    className="max-w-none bg-white p-8 rounded-xl mb-16"
                 >
                     {/* Render HTML content safely */}
-                    <div dangerouslySetInnerHTML={{ __html: post.content }} />
+                    <div 
+                        className="text-slate-600 leading-relaxed [&_a]:text-violet-600 [&_a:hover]:text-violet-700 [&_a]:underline [&_h1]:text-3xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-4 [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:mt-6 [&_h2]:mb-3 [&_h3]:text-xl [&_h3]:font-bold [&_h3]:mt-4 [&_h3]:mb-2 [&_p]:mb-4 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-4 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-4 [&_li]:mb-2 [&_strong]:font-semibold [&_em]:italic [&_code]:bg-slate-100 [&_code]:px-2 [&_code]:py-1 [&_code]:rounded [&_pre]:bg-slate-900 [&_pre]:text-slate-100 [&_pre]:p-4 [&_pre]:rounded-lg [&_blockquote]:border-l-4 [&_blockquote]:border-violet-500 [&_blockquote]:bg-violet-50 [&_blockquote]:py-2 [&_blockquote]:px-4 [&_blockquote]:rounded-r-lg [&_blockquote]:italic [&_img]:rounded-lg [&_img]:shadow-md [&_img]:max-w-full [&_img]:h-auto"
+                        dangerouslySetInnerHTML={{ __html: post.content }} 
+                    />
                 </motion.div>
 
                 {/* Related Posts Section */}

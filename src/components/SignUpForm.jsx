@@ -128,7 +128,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
             country: values.country,
             businessLicenseNumber: values.businessLicenseNumber,
             userType: values.userType,
-            ein: values.ein
+            ein: null
         };
 
         // Pass data to parent for SetPasswordForm
@@ -222,9 +222,9 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             ]}
                             style={formItemStyle}
                         >
-                            <Input 
-                                prefix={<PhoneOutlined style={{ color: '#a0aec0' }} />} 
-                                className="custom-api-input" 
+                            <Input
+                                prefix={<PhoneOutlined style={{ color: '#a0aec0' }} />}
+                                className="custom-api-input"
                                 maxLength="14"
                                 onChange={(e) => {
                                     const formatted = formatPhoneNumber(e.target.value);
@@ -238,15 +238,17 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             name="alternatePhone"
                             label="Alternate Phone"
                             rules={[
-                                { validator: (_, value) => {
-                                    if (!value) return Promise.resolve();
-                                    return validatePhoneNumber(value);
-                                }}
+                                {
+                                    validator: (_, value) => {
+                                        if (!value) return Promise.resolve();
+                                        return validatePhoneNumber(value);
+                                    }
+                                }
                             ]}
                             style={formItemStyle}
                         >
-                            <Input 
-                                prefix={<PhoneOutlined style={{ color: '#a0aec0' }} />} 
+                            <Input
+                                prefix={<PhoneOutlined style={{ color: '#a0aec0' }} />}
                                 className="custom-api-input"
                                 maxLength="14"
                                 onChange={(e) => {

@@ -1951,7 +1951,7 @@ ${shopName}`;
 
             {/* Header / Metadata */}
             <div className="bg-white shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg mb-3 sm:mb-4">
-                <div className="border border-slate-100 bg-white rounded-sm max-h-[350px] sm:max-h-[400px] overflow-x-auto overflow-y-auto" data-quote-details-table>
+                <div className="border border-slate-100 bg-white rounded-lg max-h-[350px] sm:max-h-[400px] overflow-x-auto overflow-y-auto" data-quote-details-table>
                     <table className="min-w-full divide-y divide-slate-100">
                         <thead className="bg-slate-50 sticky top-0 z-10">
                             <tr className="text-left text-sm sm:text-base font-bold text-slate-700 tracking-tight">

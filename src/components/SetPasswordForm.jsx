@@ -188,7 +188,7 @@ const SetPasswordForm = ({ userData, onSuccess, onCancel }) => {
                     label="Confirm Password"
                     rules={[
                         { required: true, message: 'Please confirm your password!' },
-                        { 
+                        {
                             validator: (_, value) => {
                                 if (!value || form.getFieldValue('password') === value) {
                                     return Promise.resolve();

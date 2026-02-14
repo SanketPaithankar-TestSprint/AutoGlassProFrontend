@@ -22,7 +22,6 @@ const FormInput = ({ label, name, value, onChange, onBlur, required = false, typ
             required={required}
             type={type}
             className="border border-gray-200 rounded px-2 py-1 text-sm focus:ring-1 focus:ring-violet-500 focus:border-violet-500 focus:outline-none transition-all w-full"
-            placeholder={label}
             {...props}
         />
     </div>
@@ -61,7 +60,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
     const initialOrgForm = {
         companyName: "", taxId: "", email: "", phone: "", alternatePhone: "",
         contactName: "",
-        addressLine1: "", postalCode: "", country: "USA", notes: "",
+        addressLine1: "", city: "", state: "", postalCode: "", country: "USA", notes: "",
         contacts: []
     };
     const [orgFormData, setOrgFormData] = useState(initialOrgForm);
@@ -92,7 +91,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
         if (!lastSavedOrgData) return false;
         const fields = [
             "companyName", "taxId", "email", "phone", "alternatePhone",
-            "addressLine1", "postalCode", "country", "notes",
+            "addressLine1", "city", "state", "postalCode", "country", "notes",
             "contactName"
         ];
         return fields.some(key => (orgFormData[key] || "") !== (lastSavedOrgData[key] || ""));
@@ -631,6 +630,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                 phone: orgFormData.phone,
                 alternatePhone: orgFormData.alternatePhone || "",
                 addressLine1: orgFormData.addressLine1 || "",
+                city: orgFormData.city || "",
+                state: orgFormData.state || "",
                 postalCode: orgFormData.postalCode || "",
                 country: orgFormData.country || "USA",
                 contactName: orgFormData.contactName || "",
@@ -895,11 +896,13 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                 {/* Organization Details - First Rows */}
                                 <FormInput label="Company Name" name="companyName" value={orgFormData.companyName} onChange={handleOrgFormChange} required />
                                 <FormInput label="Tax ID" name="taxId" value={orgFormData.taxId} onChange={handleOrgFormChange} />
-                                <FormInput label="Organization Email" name="email" value={orgFormData.email} onChange={handleOrgFormChange} />
-                                <FormInput label="Organization Phone" name="phone" value={orgFormData.phone} onChange={handleOrgFormChange} required />
+                                <FormInput label="Email" name="email" value={orgFormData.email} onChange={handleOrgFormChange} />
+                                <FormInput label="Phone" name="phone" value={orgFormData.phone} onChange={handleOrgFormChange} required />
 
                                 <FormInput label="Address Line 1" name="addressLine1" value={orgFormData.addressLine1} onChange={handleOrgFormChange} />
-                                <FormInput label="Organization Zip Code" name="postalCode" value={orgFormData.postalCode} onChange={handleOrgFormChange} />
+                                <FormInput label="City" name="city" value={orgFormData.city} onChange={handleOrgFormChange} />
+                                <FormSelect label="State" name="state" value={orgFormData.state} onChange={handleOrgFormChange} options={US_STATES} />
+                                <FormInput label="Zip Code" name="postalCode" value={orgFormData.postalCode} onChange={handleOrgFormChange} />
 
                                 {/* Contact Person Details - Last Rows */}
                                 <div className="col-span-1">
@@ -966,9 +969,9 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
 
                                 {/* Tax Exempt Switch in Form Body */}
-                                <div className="flex flex-col justify-end pb-1">
-                                    <div className="flex items-center gap-2 border border-gray-200 rounded px-3 py-1.5 bg-gray-50 h-[38px]"> {/* Match input height approx */}
-                                        <span className="text-sm font-medium text-slate-700">Tax Status:</span>
+                                <div className="flex flex-col justify-end pb-1 col-span-full sm:col-span-1">
+                                    <div className="flex items-center gap-2 h-[38px]">
+                                        <span className="text-xs sm:text-sm font-medium text-slate-700 whitespace-nowrap">Tax Status:</span>
                                         <Switch
                                             size="small"
                                             checked={formData.isTaxExempt}
@@ -987,7 +990,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                                 }
                                             }}
                                         />
-                                        <span className={`text-sm font-medium ${formData.isTaxExempt ? "text-violet-600" : "text-slate-500"}`}>
+                                        <span className={`text-xs sm:text-sm font-medium whitespace-nowrap ${formData.isTaxExempt ? "text-violet-600" : "text-slate-500"}`}>
                                             {formData.isTaxExempt ? "Tax Exempt" : "Taxable"}
                                         </span>
                                     </div>

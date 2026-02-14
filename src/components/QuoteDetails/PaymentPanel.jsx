@@ -118,21 +118,28 @@ export default function PaymentPanel({ paymentData, setPaymentData, existingPaym
 
     return (
         <div className="h-full flex flex-col gap-4">
-            {/* Payment Summary - MOVED TO TOP */}
-            <div className="bg-slate-50 border border-slate-200 rounded-md p-4 flex flex-col md:flex-row justify-between items-center gap-4">
-                <div className="flex flex-col items-center md:items-start">
-                    <span className="text-xs text-slate-500 uppercase font-bold tracking-wider">Total Amount</span>
-                    <span className="text-lg font-bold text-slate-900">{formatCurrency(totalAmount)}</span>
-                </div>
-                <div className="flex flex-col items-center md:items-start">
-                    <span className="text-xs text-slate-500 uppercase font-bold tracking-wider">Total Paid</span>
-                    <span className="text-lg font-bold text-emerald-600">{formatCurrency(totalPaid)}</span>
-                </div>
-                <div className="flex flex-col items-center md:items-end bg-white px-6 py-2 rounded-lg border border-slate-200 shadow-sm">
-                    <span className="text-xs text-slate-500 uppercase font-bold tracking-wider">Balance Due</span>
-                    <span className={`text-xl font-extrabold ${balanceDue > 0 ? 'text-amber-600' : 'text-slate-400'}`}>
-                        {formatCurrency(balanceDue)}
-                    </span>
+            {/* Payment Summary - All in one row */}
+            <div className="bg-slate-50 border border-slate-200 rounded-md p-3 sm:p-4">
+                <div className="flex justify-between items-center gap-2 sm:gap-4">
+                    {/* Total Amount */}
+                    <div className="flex flex-col items-start flex-1">
+                        <span className="text-[10px] sm:text-xs text-slate-500 uppercase font-bold tracking-wider">Total</span>
+                        <span className="text-sm sm:text-lg font-bold text-slate-900">{formatCurrency(totalAmount)}</span>
+                    </div>
+
+                    {/* Total Paid */}
+                    <div className="flex flex-col items-center flex-1">
+                        <span className="text-[10px] sm:text-xs text-slate-500 uppercase font-bold tracking-wider">Paid</span>
+                        <span className="text-sm sm:text-lg font-bold text-emerald-600">{formatCurrency(totalPaid)}</span>
+                    </div>
+
+                    {/* Balance Due */}
+                    <div className="flex flex-col items-end flex-1">
+                        <span className="text-[10px] sm:text-xs text-slate-500 uppercase font-bold tracking-wider">Balance</span>
+                        <span className={`text-sm sm:text-xl font-extrabold ${balanceDue > 0 ? 'text-amber-600' : 'text-slate-400'}`}>
+                            {formatCurrency(balanceDue)}
+                        </span>
+                    </div>
                 </div>
             </div>
 

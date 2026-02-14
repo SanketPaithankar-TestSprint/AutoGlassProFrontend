@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Select } from "antd";
 import CustomerPanel from "./CustomerPanel";
 import QuotePanel from "./QuotePanel";
 import PaymentPanel from "./PaymentPanel";
@@ -9,10 +10,15 @@ import JobSchedulingPanel from "./JobSchedulingPanel";
 import { getEmployees } from "../../api/getEmployees";
 import { getValidToken } from "../../api/getValidToken";
 
+const { Option } = Select;
+
 export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel, onPanelSwitch, invoiceItems, setInvoiceItems }) {
     // Internal state fallback if not controlled
     const [internalPanel, setInternalPanel] = useState("customer");
     const [canShowQuotePanel, setCanShowQuotePanel] = useState(true);
+
+    // Document Type State
+    const [documentType, setDocumentType] = useState("QUOTE");
 
     // Determine which panel is active (controlled vs uncontrolled)
     const panel = activePanel !== undefined ? activePanel : internalPanel;
@@ -23,6 +29,20 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
             onPanelSwitch(newPanel);
         } else {
             setInternalPanel(newPanel);
+        }
+    };
+
+    // Get dynamic tab name based on document type
+    const getDocumentTabName = () => {
+        switch (documentType) {
+            case "QUOTE":
+                return "Quote Information";
+            case "INVOICE":
+                return "Invoice Information";
+            case "WORK_ORDER":
+                return "Work Order Information";
+            default:
+                return "Quote Information";
         }
     };
 
@@ -228,33 +248,49 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
     }, [parts]);
     return (
         <div className="text-slate-900 min-h-screen">
-            <div className="flex justify-start gap-4 mb-2">
+            {/* Document Type Dropdown - Always visible at top */}
+            <div className="flex items-center justify-between gap-2 mb-3 pb-3 border-b border-gray-200">
+                <label className="text-sm font-semibold text-slate-700">Document Type:</label>
+                <Select
+                    value={documentType}
+                    onChange={setDocumentType}
+                    style={{ width: 160 }}
+                    className="text-sm"
+                >
+                    <Option value="QUOTE">Quote</Option>
+                    <Option value="INVOICE">Invoice</Option>
+                    <Option value="WORK_ORDER">Work Order</Option>
+                </Select>
+            </div>
+
+            {/* Tabs Navigation */}
+            <div className="flex flex-wrap justify-start gap-2 sm:gap-3 mb-4">
                 <button
-                    className={`px-4 py-2 rounded-md font-semibold border transition-all duration-150 ${panel === 'customer' ? 'border-violet-500 text-violet-700 bg-white shadow-sm' : 'border-transparent text-slate-500 bg-slate-50 hover:bg-slate-100'}`}
+                    className={`px-3 sm:px-4 py-2 rounded-md font-semibold border transition-all duration-150 text-sm ${panel === 'customer' ? 'border-violet-500 text-violet-700 bg-white shadow-sm' : 'border-transparent text-slate-500 bg-slate-50 hover:bg-slate-100'}`}
                     onClick={() => handlePanelSwitch('customer')}
                 >
                     Customer Information
                 </button>
                 <button
-                    className={`px-4 py-2 rounded-md font-semibold border transition-all duration-150 ${panel === 'quote' ? 'border-violet-500 text-violet-700 bg-white' : 'border-transparent text-slate-500 bg-slate-50 hover:bg-slate-100'}`}
+                    className={`px-3 sm:px-4 py-2 rounded-md font-semibold border transition-all duration-150 text-sm ${panel === 'quote' ? 'border-violet-500 text-violet-700 bg-white' : 'border-transparent text-slate-500 bg-slate-50 hover:bg-slate-100'}`}
                     onClick={() => handlePanelSwitch('quote')}
                 >
-                    Quote Information
+                    {getDocumentTabName()}
                 </button>
                 <button
-                    className={`px-4 py-2 rounded-md font-semibold border transition-all duration-150 ${panel === 'attachments' ? 'border-violet-500 text-violet-700 bg-white' : 'border-transparent text-slate-500 bg-slate-50 hover:bg-slate-100'}`}
+                    className={`px-3 sm:px-4 py-2 rounded-md font-semibold border transition-all duration-150 text-sm ${panel === 'attachments' ? 'border-violet-500 text-violet-700 bg-white' : 'border-transparent text-slate-500 bg-slate-50 hover:bg-slate-100'}`}
                     onClick={() => handlePanelSwitch('attachments')}
                 >
                     Attachments
                 </button>
                 <button
-                    className={`px-4 py-2 rounded-md font-semibold border transition-all duration-150 ${panel === 'payment' ? 'border-violet-500 text-violet-700 bg-white' : 'border-transparent text-slate-500 bg-slate-50 hover:bg-slate-100'}`}
+                    className={`px-3 sm:px-4 py-2 rounded-md font-semibold border transition-all duration-150 text-sm ${panel === 'payment' ? 'border-violet-500 text-violet-700 bg-white' : 'border-transparent text-slate-500 bg-slate-50 hover:bg-slate-100'}`}
                     onClick={() => handlePanelSwitch('payment')}
                 >
                     Payment
                 </button>
                 <button
-                    className={`px-4 py-2 rounded-md font-semibold border transition-all duration-150 ${panel === 'scheduling' ? 'border-violet-500 text-violet-700 bg-white' : 'border-transparent text-slate-500 bg-slate-50 hover:bg-slate-100'}`}
+                    className={`px-3 sm:px-4 py-2 rounded-md font-semibold border transition-all duration-150 text-sm ${panel === 'scheduling' ? 'border-violet-500 text-violet-700 bg-white' : 'border-transparent text-slate-500 bg-slate-50 hover:bg-slate-100'}`}
                     onClick={() => handlePanelSwitch('scheduling')}
                 >
                     Appointment

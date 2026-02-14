@@ -16,65 +16,135 @@ import {
     BarChartOutlined,
     CheckCircleFilled
 } from '@ant-design/icons';
-import { motion } from 'framer-motion';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
 import VideoModal from '../VideoModal/VideoModal';
 
-// Intersection Observer Hook for scroll animations
-const useIntersectionObserver = (options = {}) => {
-    const [isIntersecting, setIsIntersecting] = useState(false);
-    const targetRef = useRef(null);
+gsap.registerPlugin(ScrollTrigger);
 
-    useEffect(() => {
-        const observer = new IntersectionObserver(([entry]) => {
-            if (entry.isIntersecting) {
-                setIsIntersecting(true);
-                observer.unobserve(entry.target);
+// Basic Fade-Up Animation for Headers
+const AnimatedSection = ({ children, delay = 0, className = "" }) => {
+    const el = useRef(null);
+
+    useGSAP(() => {
+        gsap.fromTo(el.current,
+            {
+                opacity: 0,
+                y: 30
+            },
+            {
+                opacity: 1,
+                y: 0,
+                duration: 0.8,
+                ease: "power2.out",
+                delay: typeof delay === 'string' ? parseFloat(delay) : delay,
+                scrollTrigger: {
+                    trigger: el.current,
+                    start: "top 85%",
+                    toggleActions: "play none none reverse"
+                }
             }
-        }, options);
-
-        if (targetRef.current) {
-            observer.observe(targetRef.current);
-        }
-
-        return () => {
-            if (targetRef.current) {
-                observer.unobserve(targetRef.current);
-            }
-        };
-    }, [options]);
-
-    return [targetRef, isIntersecting];
-};
-
-const AnimatedSection = ({ children, delay = "0s", className = "" }) => {
-    const [ref, isVisible] = useIntersectionObserver({ threshold: 0.1 });
+        );
+    }, { scope: el });
 
     return (
-        <div
-            ref={ref}
-            className={`${className}`}
-            style={{
-                opacity: isVisible ? 1 : 0,
-                transform: isVisible ? 'translateY(0)' : 'translateY(40px)',
-                transition: `all 0.8s cubic-bezier(0.17, 0.55, 0.55, 1) ${delay}`
-            }}
-        >
+        <div ref={el} className={className}>
+            {children}
+        </div>
+    );
+};
+// Staggered Reveal Section
+const StaggeredSection = ({ children, delay = 0, className = "" }) => {
+    const el = useRef(null);
+
+    useGSAP(() => {
+        gsap.fromTo(el.current.children,
+            {
+                opacity: 0,
+                y: 30
+            },
+            {
+                opacity: 1,
+                y: 0,
+                duration: 0.6,
+                stagger: 0.1,
+                ease: "power2.out",
+                scrollTrigger: {
+                    trigger: el.current,
+                    start: "top 80%",
+                    toggleActions: "play none none reverse"
+                }
+            }
+        );
+    }, { scope: el });
+
+    return (
+        <div ref={el} className={className}>
             {children}
         </div>
     );
 };
 
-const FeatureBlock = ({ icon, title, description }) => (
-    <div className="flex gap-4 items-start p-5 bg-slate-50 rounded-2xl border border-slate-100 hover:shadow-md transition-shadow h-full">
-        <div className="flex-shrink-0 mt-1 text-2xl text-violet-600">
-            {icon}
+// 3D Tilt Feature Block
+const FeatureBlock = ({ icon, title, description }) => {
+    const cardRef = useRef(null);
+
+    // Hover animation context
+    const { contextSafe } = useGSAP({ scope: cardRef });
+
+    const onEnter = contextSafe(() => {
+        gsap.to(cardRef.current, {
+            y: -5,
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+            borderColor: '#ddd6fe', // violet-200
+            scale: 1,
+            duration: 0.3,
+            ease: "power2.out"
+        });
+        // Animate icon pop
+        gsap.to(cardRef.current.querySelector('.feature-icon'), {
+            scale: 1.1,
+            rotate: 3,
+            duration: 0.4,
+            ease: "back.out(1.7)"
+        });
+    });
+
+    const onLeave = contextSafe(() => {
+        gsap.to(cardRef.current, {
+            y: 0,
+            boxShadow: 'none',
+            borderColor: '#f1f5f9', // slate-100
+            scale: 1,
+            duration: 0.3,
+            ease: "power2.out"
+        });
+        // Reset icon
+        gsap.to(cardRef.current.querySelector('.feature-icon'), {
+            scale: 1,
+            rotate: 0,
+            duration: 0.3,
+        });
+    });
+
+    return (
+        <div
+            ref={cardRef}
+            onMouseEnter={onEnter}
+            onMouseLeave={onLeave}
+            className="flex gap-4 items-start p-6 bg-white/80 backdrop-blur-md rounded-2xl border border-slate-100 h-full cursor-default will-change-transform"
+        >
+            <div className="feature-icon flex-shrink-0 mt-1 text-3xl text-violet-600 bg-violet-50 p-3 rounded-xl">
+                {icon}
+            </div>
+            <div>
+                <h4 className="text-xl font-bold text-slate-900 mb-2 font-outfit">{title}</h4>
+                <p className="text-sm text-slate-600 leading-relaxed font-medium">{description}</p>
+            </div>
         </div>
-        <div>
-            <h4 className="text-lg font-bold text-slate-900 mb-1 font-outfit">{title}</h4>
-            <p className="text-sm text-slate-600 leading-relaxed">{description}</p>
-        </div>
-    </div>
-);
+    );
+};
 
 const FeaturesPage = () => {
     const navigate = useNavigate();
@@ -177,44 +247,17 @@ const FeaturesPage = () => {
     };
 
     return (
-        <div className="bg-transparent min-h-screen pb-20 relative overflow-hidden">
-            {/* Global Gradient Background */}
-            <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-                <motion.div
-                    className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] min-w-[500px] min-h-[500px] rounded-full blur-[120px] opacity-20"
-                    style={{ background: 'linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)' }}
-                    animate={{
-                        scale: [1, 1.1, 1],
-                        opacity: [0.15, 0.25, 0.15],
-                    }}
-                    transition={{
-                        duration: 8,
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                    }}
-                />
-                <motion.div
-                    className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] min-w-[500px] min-h-[500px] rounded-full blur-[120px] opacity-20"
-                    style={{ background: 'linear-gradient(135deg, #00A8E4 0%, #7E5CFE 100%)' }}
-                    animate={{
-                        scale: [1, 1.2, 1],
-                        opacity: [0.15, 0.25, 0.15],
-                    }}
-                    transition={{
-                        duration: 10,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                        delay: 1
-                    }}
-                />
-            </div>
+        <div className="bg-white min-h-screen pb-20 relative overflow-hidden font-sans text-slate-900">
+            {/* Optimized Gradient Background (Same as Pricing Page) */}
+            <div
+                className="fixed inset-0 z-0 pointer-events-none opacity-20"
+                style={{ background: 'linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)' }}
+            />
+
             {/* Page Header */}
-            <div className="relative pt-10 pb-16 px-6 md:px-12 lg:px-20 border-b border-transparent">
+            <div className="relative pt-10 pb-16 px-6 md:px-12 lg:px-20 border-b border-transparent z-10">
                 <AnimatedSection>
                     <div className="max-w-4xl mx-auto text-center">
-                        <span className="inline-block py-1 px-3 rounded-full bg-violet-100 text-violet-700 text-xs font-bold tracking-wide uppercase mb-3">
-                            Platform Features
-                        </span>
                         <h1 className="text-3xl md:text-5xl font-bold mb-4 font-outfit text-slate-900 leading-tight">
                             Everything You Need to Run Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-fuchsia-600">Auto Glass Business</span>
                         </h1>
@@ -225,42 +268,42 @@ const FeaturesPage = () => {
                 </AnimatedSection>
             </div>
 
-            <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-12 space-y-32">
+            <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-12 space-y-32">
                 {sections.map((section, idx) => (
                     <div key={idx} className="scroll-mt-24" id={section.category.toLowerCase().replace(/\s+/g, '-')}>
                         <AnimatedSection>
-                            <div className="mb-8">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className={`h-1 w-8 rounded-full bg-gradient-to-r ${section.color}`}></div>
-                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">{section.category}</span>
+                            <div className="mb-12 text-center md:text-left">
+                                <div className="flex items-center gap-3 mb-4 justify-center md:justify-start">
+                                    <div className={`h-1.5 w-12 rounded-full bg-gradient-to-r ${section.color}`}></div>
+                                    <span className="text-sm font-bold uppercase tracking-widest text-slate-500">{section.category}</span>
                                 </div>
-                                <h2 className="text-2xl md:text-4xl font-bold mb-3 font-outfit text-slate-900">
+                                <h2 className="text-3xl md:text-5xl font-extrabold mb-4 font-outfit text-slate-900">
                                     {section.title}
                                 </h2>
-                                <p className="text-lg md:text-xl text-slate-600 max-w-4xl leading-relaxed">
+                                <p className="text-lg md:text-xl text-slate-500 max-w-3xl leading-relaxed mx-auto md:mx-0">
                                     {section.subHeadline}
                                 </p>
                             </div>
                         </AnimatedSection>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {/* Use StaggeredSection for the grid items */}
+                        <StaggeredSection className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             {section.features.map((feature, fIdx) => (
-                                <AnimatedSection key={fIdx} delay={`${fIdx * 0.1}s`} className="h-full">
-                                    <FeatureBlock
-                                        icon={feature.icon}
-                                        title={feature.title}
-                                        description={feature.desc}
-                                    />
-                                </AnimatedSection>
+                                <FeatureBlock
+                                    key={fIdx}
+                                    icon={feature.icon}
+                                    title={feature.title}
+                                    description={feature.desc}
+                                />
                             ))}
-                        </div>
+                        </StaggeredSection>
                     </div>
                 ))}
             </div>
 
             {/* FAQ Section */}
             <AnimatedSection>
-                <div className="max-w-4xl mx-auto mt-24 px-5">
+                <div className="relative z-10 max-w-4xl mx-auto mt-24 px-5">
                     <div className="text-center mb-12">
                         <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3">Frequently Asked Questions</h2>
                         <p className="text-slate-600">Find answers to common questions about APAI features and functionality</p>
@@ -330,8 +373,8 @@ const FeaturesPage = () => {
             </AnimatedSection>
 
             <AnimatedSection>
-                <div className='flex items-center justify-center'>
-                    <div className="max-w-4xl mx-5 mt-24 bg-violet-50 rounded-3xl py-12 px-6 md:px-12 text-center relative overflow-hidden border border-violet-100">
+                <div className='relative z-10 flex items-center justify-center'>
+                    <div className="max-w-4xl mx-5 mt-24 bg-violet-50 rounded-3xl py-12 px-6 md:px-12 text-center relative overflow-hidden border border-violet-100 shadow-xl shadow-violet-100/50">
                         <div className="absolute top-0 left-0 w-full h-full opacity-5 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
                         <div className="relative z-10">
                             <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4 font-outfit">

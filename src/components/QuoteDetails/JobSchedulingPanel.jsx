@@ -99,7 +99,6 @@ const JobSchedulingPanel = ({
                                 value={status}
                                 style={{ width: '100%' }}
                                 onChange={handleStatusChange}
-                                placeholder="Select Status"
                             >
                                 {STATUS_OPTIONS.map(option => (
                                     <Option key={option.value} value={option.value}>
@@ -164,7 +163,6 @@ const JobSchedulingPanel = ({
                         <Select
                             value={schedulingData.assignedEmployeeId || schedulingData.employeeId}
                             style={{ width: '100%' }}
-                            placeholder="Select technician"
                             allowClear
                             onChange={(val) => {
                                 handleChange('assignedEmployeeId', val);
@@ -194,7 +192,6 @@ const JobSchedulingPanel = ({
                         <TextArea
                             value={schedulingData.serviceAddress || ''}
                             onChange={(e) => handleChange('serviceAddress', e.target.value)}
-                            placeholder={isServiceAddressRequired ? "Enter address..." : "Not required for Shop"}
                             rows={1}
                             style={{ width: '100%', resize: 'none' }}
                             disabled={!isServiceAddressRequired}
