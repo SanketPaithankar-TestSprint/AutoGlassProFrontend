@@ -12,8 +12,10 @@ import urls from '../config';
 export async function createOrUpdateUserSlug(token, {
     slug,
     themeColor,
+    backgroundColorHex,
     businessName,
     tagline,
+    openHoursJson,
     name,
     address,
     phone,
@@ -31,8 +33,10 @@ export async function createOrUpdateUserSlug(token, {
         body: JSON.stringify({
             slug,
             themeColor,
+            backgroundColorHex,
             businessName,
             tagline,
+            openHoursJson,
             name,
             address,
             phone,
