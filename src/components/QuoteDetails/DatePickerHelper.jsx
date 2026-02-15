@@ -122,8 +122,8 @@ const DatePickerHelper = ({ value, onChange }) => {
     const calendarContent = (
         <div className="w-full max-w-sm font-sans mx-auto">
             {/* Header */}
-            <div className="flex items-center justify-between p-4 pb-2">
-                <h2 className="text-lg font-bold text-slate-800 m-0">
+            <div className="flex items-center justify-between p-2 sm:p-4 sm:pb-2 pb-1">
+                <h2 className="text-base sm:text-lg font-bold text-slate-800 m-0">
                     {viewDate.format('MMM YYYY')}
                 </h2>
                 <div className="flex gap-1">
@@ -131,28 +131,30 @@ const DatePickerHelper = ({ value, onChange }) => {
                         type="text"
                         shape="circle"
                         icon={<LeftOutlined />}
+                        size="small"
                         onClick={prevMonth}
                     />
                     <Button
                         type="text"
                         shape="circle"
                         icon={<RightOutlined />}
+                        size="small"
                         onClick={nextMonth}
                     />
                 </div>
             </div>
 
             {/* Calendar Grid */}
-            <div className="px-4 pb-4">
-                <div className="grid grid-cols-7 mb-2">
+            <div className="px-2 sm:px-4 pb-2 sm:pb-4">
+                <div className="grid grid-cols-7 mb-1 sm:mb-2">
                     {DAYS.map(day => (
-                        <div key={day} className="text-center text-xs font-medium text-slate-500 py-1">
+                        <div key={day} className="text-center text-xs font-medium text-slate-500 py-0.5 sm:py-1">
                             {day}
                         </div>
                     ))}
                 </div>
 
-                <div className="grid grid-cols-7 gap-y-2">
+                <div className="grid grid-cols-7 gap-y-1 sm:gap-y-2">
                     {calendarDays.map((day, idx) => {
                         if (!day) return <div key={`empty-${idx}`} />;
 
@@ -165,7 +167,7 @@ const DatePickerHelper = ({ value, onChange }) => {
                                 <button
                                     onClick={() => handleDateClick(day)}
                                     className={`
-                                        w-8 h-8 flex items-center justify-center rounded-full text-sm transition-all
+                                        w-6 sm:w-8 h-6 sm:h-8 flex items-center justify-center rounded-full text-xs sm:text-sm transition-all
                                         ${isSelected
                                             ? 'bg-blue-600 text-white shadow-md shadow-blue-200 font-semibold'
                                             : isToday
@@ -182,87 +184,36 @@ const DatePickerHelper = ({ value, onChange }) => {
                 </div>
             </div>
 
-            <div className="px-4 py-3 border-t border-slate-100 bg-slate-50/50">
+            <div className="px-2 sm:px-4 py-2 sm:py-3 border-t border-slate-100 bg-slate-50/50">
                 {/* Presets */}
-                <div className="flex gap-3 mb-4">
+                <div className="flex gap-2 sm:gap-3 mb-3 sm:mb-4">
                     <button
                         onClick={setToday}
-                        className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-200 rounded-lg text-base font-medium text-slate-700 hover:border-blue-500 hover:text-blue-600 transition-colors shadow-sm"
+                        className="flex-1 flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-3 bg-white border border-slate-200 rounded-lg text-xs sm:text-base font-medium text-slate-700 hover:border-blue-500 hover:text-blue-600 transition-colors shadow-sm"
                     >
-                        <CalendarOutlined />
-                        Today
+                        <CalendarOutlined className="text-xs sm:text-base" />
+                        <span className="hidden sm:inline">Today</span>
                     </button>
                     <button
                         onClick={setTomorrow}
-                        className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-200 rounded-lg text-base font-medium text-slate-700 hover:border-blue-500 hover:text-blue-600 transition-colors shadow-sm"
+                        className="flex-1 flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-3 bg-white border border-slate-200 rounded-lg text-xs sm:text-base font-medium text-slate-700 hover:border-blue-500 hover:text-blue-600 transition-colors shadow-sm"
                     >
-                        <RightOutlined className="text-sm" />
-                        Tmrw
+                        <RightOutlined className="text-xs" />
+                        <span className="hidden sm:inline">Tmrw</span>
                     </button>
                     <button
                         onClick={setNextWeek}
-                        className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-200 rounded-lg text-base font-medium text-slate-700 hover:border-blue-500 hover:text-blue-600 transition-colors shadow-sm"
+                        className="flex-1 flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-3 bg-white border border-slate-200 rounded-lg text-xs sm:text-base font-medium text-slate-700 hover:border-blue-500 hover:text-blue-600 transition-colors shadow-sm"
                     >
-                        <ClockCircleOutlined />
-                        Week
+                        <ClockCircleOutlined className="text-xs sm:text-base" />
+                        <span className="hidden sm:inline">Week</span>
                     </button>
                 </div>
 
-                {/* Time Picker */}
-                <div className="flex items-center justify-between bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
-                    <div className="flex items-center gap-2 text-slate-600">
-                        <FieldTimeOutlined className="text-xl" />
-                        <span className="text-base font-medium">Time</span>
-                    </div>
-
-                    <div className="flex items-center gap-1">
-                        {/* Hour 1-12 */}
-                        <Select
-                            variant="borderless"
-                            value={selectedDate ? (selectedDate.hour() % 12 || 12) : 9}
-                            onChange={(val) => handleTimeChange('hour', val)}
-                            className="w-20 text-right font-bold text-2xl h-10 flex items-center"
-                            popupMatchSelectWidth={false}
-                            disabled={!selectedDate}
-                            options={Array.from({ length: 12 }, (_, i) => ({
-                                value: i + 1,
-                                label: (i + 1).toString().padStart(2, '0')
-                            }))}
-                        />
-                        <span className="text-slate-400 font-bold text-xl">:</span>
-                        {/* Minute */}
-                        <Select
-                            variant="borderless"
-                            value={selectedDate ? selectedDate.minute() : 0}
-                            onChange={(val) => handleTimeChange('minute', val)}
-                            className="w-20 text-center font-bold text-2xl h-10 flex items-center"
-                            popupMatchSelectWidth={false}
-                            disabled={!selectedDate}
-                            options={[0, 15, 30, 45].map(m => ({
-                                value: m,
-                                label: m.toString().padStart(2, '0')
-                            }))}
-                        />
-                        {/* AM/PM */}
-                        <Select
-                            variant="borderless"
-                            value={selectedDate ? (selectedDate.hour() >= 12 ? 'PM' : 'AM') : 'AM'}
-                            onChange={(val) => handleTimeChange('ampm', val)}
-                            className="w-24 font-bold text-2xl text-blue-600 h-10 flex items-center"
-                            popupMatchSelectWidth={false}
-                            disabled={!selectedDate}
-                            options={[
-                                { value: 'AM', label: 'AM' },
-                                { value: 'PM', label: 'PM' }
-                            ]}
-                        />
-                    </div>
-                </div>
-
                 {selectedDate && (
-                    <div className="mt-3 text-center">
-                        <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
-                            {selectedDate.format('dddd, MMM D • hh:mm A')}
+                    <div className="mt-2 sm:mt-3 text-center">
+                        <span className="inline-block px-2 sm:px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
+                            {selectedDate.format('dddd, MMM D')}
                         </span>
                     </div>
                 )}
@@ -281,11 +232,13 @@ const DatePickerHelper = ({ value, onChange }) => {
         >
             <Input
                 readOnly
-                value={selectedDate ? selectedDate.format('MM/DD/YYYY hh:mm A') : ''}
-                placeholder="Select date and time"
+                value={selectedDate ? selectedDate.format('MM/DD/YYYY') : ''}
+                placeholder="Select date"
                 prefix={<CalendarOutlined className="text-slate-400" />}
                 className="cursor-pointer hover:border-blue-400 focus:border-blue-500"
                 onClick={() => setOpen(true)}
+                onFocus={(e) => e.target.blur()}
+                style={{ caretColor: 'transparent' }}
             />
         </Popover>
     );

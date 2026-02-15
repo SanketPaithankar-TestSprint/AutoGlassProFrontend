@@ -377,6 +377,12 @@ const ScheduleRoot = () => {
                                 documents={filteredDocuments}
                                 viewMode={viewMode}
                                 onDocumentClick={handleDocumentClick}
+                                onConversionSuccess={async () => {
+                                    // Small delay to ensure DB has updated
+                                    await new Promise(resolve => setTimeout(resolve, 500));
+                                    // Refetch the document list from server
+                                    await refetchSchedule();
+                                }}
                             />
                         )}
                     </div>

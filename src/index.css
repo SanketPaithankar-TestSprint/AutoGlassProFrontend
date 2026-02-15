@@ -253,4 +253,38 @@ input[type=number] {
   .ant-select-dropdown .ant-select-item-option-content {
     font-size: 16px !important;
   }
+  
+  /* Additional mobile font scaling */
+  .ant-col {
+    font-size: 0.875rem;
+  }
+  
+  .ant-descriptions-item-label {
+    font-size: 0.8rem;
+  }
+  
+  .ant-descriptions-item-content {
+    font-size: 0.85rem;
+  }
+  
+  .ant-tabs-tab {
+    font-size: 0.85rem;
+  }
+  
+  .ant-badge-count {
+    font-size: 0.7rem;
+    padding: 0 4px;
+  }
+  
+  .ant-tag {
+    font-size: 0.75rem;
+  }
+  
+  .ant-alert {
+    font-size: 0.85rem;
+  }
+  
+  .ant-message {
+    font-size: 0.85rem;
+  }
 }

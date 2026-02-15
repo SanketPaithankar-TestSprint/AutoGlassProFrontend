@@ -75,7 +75,7 @@ const JobSchedulingPanel = ({
     const isServiceAddressRequired = schedulingData.serviceLocation === 'MOBILE' || schedulingData.serviceLocation === 'CUSTOMER_LOCATION';
 
     return (
-        <div className="">
+        <div className="w-full">
             <Card
                 title={
                     <span className="flex items-center gap-2">
@@ -84,21 +84,24 @@ const JobSchedulingPanel = ({
                     </span>
                 }
                 className="shadow-sm"
+                bodyStyle={{ overflow: 'auto', padding: '1.25rem' }}
             >
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 pr-2">
                     {/* Status Dropdown - Only visible if documentNumber exists */}
                     {documentNumber && status && (
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">
+                            <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
                                 <span className="flex items-center gap-1">
                                     <CheckCircleOutlined />
-                                    Service Document Status
+                                    <span className="hidden sm:inline">Service Document Status</span>
+                                    <span className="sm:hidden">Status</span>
                                 </span>
                             </label>
                             <Select
                                 value={status}
                                 style={{ width: '100%' }}
                                 onChange={handleStatusChange}
+                                size="small"
                             >
                                 {STATUS_OPTIONS.map(option => (
                                     <Option key={option.value} value={option.value}>
@@ -116,17 +119,18 @@ const JobSchedulingPanel = ({
 
                     {/* Service Location */}
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">
+                        <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
                             Service Location <span className="text-red-500">*</span>
                         </label>
                         <Select
                             value={schedulingData.serviceLocation || 'IN_SHOP'}
                             style={{ width: '100%' }}
                             onChange={(val) => handleChange('serviceLocation', val)}
+                            size="small"
                         >
                             {SERVICE_LOCATION_OPTIONS.map(option => (
                                 <Option key={option.value} value={option.value}>
-                                    <span className="flex items-center gap-2">
+                                    <span className="flex items-center gap-2 text-xs sm:text-sm">
                                         {option.icon}
                                         {option.label}
                                     </span>
@@ -140,7 +144,7 @@ const JobSchedulingPanel = ({
 
                     {/* Scheduled Date */}
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">
+                        <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
                             Scheduled Date & Time <span className="text-red-500">*</span>
                         </label>
                         <DatePickerHelper
@@ -154,10 +158,11 @@ const JobSchedulingPanel = ({
 
                     {/* Employee Assignment */}
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">
+                        <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
                             <span className="flex items-center gap-1">
                                 <UserOutlined />
-                                Assigned Technician
+                                <span className="hidden sm:inline">Assigned Technician</span>
+                                <span className="sm:hidden">Technician</span>
                             </span>
                         </label>
                         <Select
@@ -169,6 +174,7 @@ const JobSchedulingPanel = ({
                                 handleChange('employeeId', val);
                             }}
                             loading={loadingEmployees}
+                            size="small"
                         >
                             {employees.map(emp => (
                                 <Option key={emp.employeeId} value={emp.employeeId}>
@@ -183,21 +189,24 @@ const JobSchedulingPanel = ({
 
                     {/* Service Address - Always shown, disabled if not required */}
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">
+                        <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
                             <span className="flex items-center gap-1">
                                 <EnvironmentOutlined />
-                                Service Address {isServiceAddressRequired && <span className="text-red-500">*</span>}
+                                <span className="hidden sm:inline">Service Address</span>
+                                <span className="sm:hidden">Address</span>
+                                {isServiceAddressRequired && <span className="text-red-500">*</span>}
                             </span>
                         </label>
                         <TextArea
                             value={schedulingData.serviceAddress || ''}
                             onChange={(e) => handleChange('serviceAddress', e.target.value)}
                             rows={1}
-                            style={{ width: '100%', resize: 'none' }}
+                            style={{ width: '100%', resize: 'none', fontSize: '0.875rem' }}
                             disabled={!isServiceAddressRequired}
                             className={!isServiceAddressRequired ? 'bg-slate-50' : ''}
+                            size="small"
                         />
-                        <p className="text-xs text-slate-500 mt-1 text-nowrap overflow-hidden text-ellipsis">
+                        <p className="text-xs text-slate-500 mt-1 break-words">
                             {isServiceAddressRequired
                                 ? 'Address for service'
                                 : 'Default: Shop Location'}

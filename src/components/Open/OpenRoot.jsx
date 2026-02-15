@@ -22,6 +22,9 @@ import {
     mergeSearchResults
 } from './helpers/utils';
 
+
+
+
 const OpenRoot = () => {
     const navigate = useNavigate();
     const { message, notification } = App.useApp();
@@ -37,9 +40,15 @@ const OpenRoot = () => {
     const [totalElements, setTotalElements] = useState(0);
 
     // View states
-    const [viewMode, setViewMode] = useState('grid');
+    const [viewMode, setViewMode] = useState(window.innerWidth < 1024 ? 'list' : 'grid');
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
     const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+
+    useEffect(() => {
+        if (isMobile) {
+            setViewMode('list');
+        }
+    }, [isMobile]);
 
     // Filter states
     const [searchTerm, setSearchTerm] = useState('');
@@ -381,10 +390,12 @@ const OpenRoot = () => {
                     sidebarOpen={sidebarOpen}
                     isSearchingApi={isSearchingApi}
                     searchSource={searchSource}
+                    isMobile={isMobile}
                 />
 
                 {/* Main Content */}
                 <div className="p-6">
+
                     {/* Results count */}
                     <div className="mb-4 text-sm text-slate-600">
                         Showing {filteredDocuments.length} of {documents.length} documents
@@ -399,13 +410,11 @@ const OpenRoot = () => {
                                 <div className="flex items-center gap-3 flex-1 min-w-0">
                                     <span className="w-[16px]"></span>
                                     <span className="font-semibold text-slate-600 text-xs uppercase tracking-wide w-[110px]">Doc #</span>
-                                    <span className="font-semibold text-slate-600 text-xs uppercase tracking-wide w-[80px] text-center">Type</span>
                                     <span className="font-semibold text-slate-600 text-xs uppercase tracking-wide w-[160px]">Customer</span>
                                 </div>
                                 {/* Right side header */}
                                 <div className="flex items-center gap-4 flex-shrink-0">
                                     <span className="font-semibold text-slate-600 text-xs uppercase tracking-wide w-[130px]">Vehicle</span>
-                                    <span className="font-semibold text-slate-600 text-xs uppercase tracking-wide w-[100px]">Date</span>
                                     <span className="font-semibold text-slate-600 text-xs uppercase tracking-wide w-[90px] text-right">Total</span>
                                     <span className="font-semibold text-slate-600 text-xs uppercase tracking-wide w-[90px] text-right">Balance</span>
                                     <span className="w-[32px]"></span>

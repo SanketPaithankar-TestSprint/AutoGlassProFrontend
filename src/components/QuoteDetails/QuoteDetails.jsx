@@ -264,8 +264,8 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
             </div>
 
             {/* Tabs Navigation */}
-            <div className="flex flex-wrap justify-start gap-2 sm:gap-3 mb-4">
-                <button
+            <div className="flex flex-wrap justify-start gap-2 sm:gap-3 !mb-41">
+0                <button
                     className={`px-3 sm:px-4 py-2 rounded-md font-semibold border transition-all duration-150 text-sm ${panel === 'customer' ? 'border-violet-500 text-violet-700 bg-white shadow-sm' : 'border-transparent text-slate-500 bg-slate-50 hover:bg-slate-100'}`}
                     onClick={() => handlePanelSwitch('customer')}
                 >

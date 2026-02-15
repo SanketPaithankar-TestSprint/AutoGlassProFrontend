@@ -5,6 +5,97 @@
   text-align: left; /* Changed to left as typical for full apps, center was default template */
 }
 
+/* Mobile font scaling - reduce font sizes proportionally for mobile screens */
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+  
+  body {
+    font-size: 13px;
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+  }
+  
+  h2 {
+    font-size: 1.25rem;
+  }
+  
+  h3 {
+    font-size: 1.1rem;
+  }
+  
+  h4 {
+    font-size: 0.95rem;
+  }
+  
+  h5 {
+    font-size: 0.9rem;
+  }
+  
+  h6 {
+    font-size: 0.85rem;
+  }
+  
+  p {
+    font-size: 0.9rem;
+  }
+  
+  /* Ant Design component scaling */
+  .ant-btn {
+    font-size: 0.875rem;
+  }
+  
+  .ant-input,
+  .ant-input-number,
+  .ant-select-selector {
+    font-size: 0.875rem;
+  }
+  
+  .ant-table {
+    font-size: 0.8rem;
+  }
+  
+  .ant-table-cell {
+    padding: 8px 4px !important;
+  }
+  
+  .ant-modal-title {
+    font-size: 1.1rem;
+  }
+  
+  .ant-modal-body {
+    font-size: 0.875rem;
+  }
+  
+  .ant-form-item-label > label {
+    font-size: 0.875rem;
+  }
+  
+  /* Utility text sizes */
+  .text-xs {
+    font-size: 0.7rem;
+  }
+  
+  .text-sm {
+    font-size: 0.8rem;
+  }
+  
+  .text-base {
+    font-size: 0.9rem;
+  }
+  
+  .text-lg {
+    font-size: 1rem;
+  }
+  
+  .text-xl {
+    font-size: 1.1rem;
+  }
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -39,4 +130,16 @@
 
 .read-the-docs {
   color: #888;
+}
+/* Global Delete Icon Styling - Red and Transparent */
+.anticon-delete,
+.ant-btn:has(.anticon-delete) {
+  color: #ef4444 !important;
+  background-color: transparent !important;
+  border: none !important;
+}
+
+.anticon-delete:hover,
+.ant-btn:has(.anticon-delete):hover {
+  color: #991b1b !important;
 }

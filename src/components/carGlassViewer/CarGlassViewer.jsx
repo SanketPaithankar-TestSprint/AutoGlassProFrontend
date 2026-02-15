@@ -22,12 +22,14 @@ export default function CarGlassViewer({
   preSelectedGlassCodes = [], // New prop: array of glass codes to auto-select
 }) {
   // 1) Glass catalog (left column)
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Don't show loading on initial mount
+  const [initialLoadDone, setInitialLoadDone] = useState(false); // Track if initial glass types load is done
   const [glassData, setGlassData] = useState([]);
   const [glassGroups, setGlassGroups] = useState({});
   const [error, setError] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
 
   const triggerRef = useRef(null);
   const [dropdownCoords, setDropdownCoords] = useState({ top: 0, left: 0 });
@@ -48,6 +50,17 @@ export default function CarGlassViewer({
   // Active viewing state (master-detail pattern)
   const [selectedGlassCodes, setSelectedGlassCodes] = useState([]); // Array of strings (codes)
   const [loadedPartsMap, setLoadedPartsMap] = useState({}); // { [code]: { loading, error, data } }
+
+  // Helper to handle image load with minimum display time
+  const handleImageLoad = () => {
+    setTimeout(() => {
+      setImageLoading(false);
+    }, 300); // Show loader for at least 300ms
+  };
+
+  const handleImageError = () => {
+    setImageLoading(false);
+  };
 
   // 3) Selected parts + extra info (bottom)
   const [selectedParts, setSelectedParts] = useState([]); // Array of { glass, part, glassInfo }
@@ -134,7 +147,7 @@ export default function CarGlassViewer({
 
     const fetchGlassTypes = async () => {
       try {
-        setLoading(true);
+        // Don't show loading spinner on initial load - do it silently
         setError(null);
 
         // Build URL with veh_id and make_model_id parameters
@@ -194,12 +207,12 @@ export default function CarGlassViewer({
 
         setGlassData(allGlassTypes);
         setGlassGroups(newGroups);
+        setInitialLoadDone(true); // Mark initial load as complete
 
       } catch (err) {
         console.error(err);
         setError(err.message || "Failed to fetch glass data");
-      } finally {
-        setLoading(false);
+        setInitialLoadDone(true); // Mark as done even on error
       }
     };
 
@@ -536,7 +549,8 @@ export default function CarGlassViewer({
     );
   };
 
-  if (loading) {
+  // Only show loading if glass data failed to load
+  if (error && !initialLoadDone) {
     return (
       <div className="flex justify-center items-center h-full bg-slate-50 border border-slate-200">
         <div className="text-center">
@@ -568,21 +582,31 @@ export default function CarGlassViewer({
             {/* ... inside CarGlassViewer component ... */}
 
             {/* Custom Mega Menu Trigger */}
-            <div
-              ref={triggerRef}
-              className="w-full border border-slate-300 rounded px-3 py-2 bg-white cursor-pointer flex items-center justify-between hover:border-violet-500 transition-colors"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              <span className="text-sm text-slate-700 truncate">
-                {selectedGlassCodes.length > 0
-                  ? selectedGlassCodes.map(c => getFormattedLabel(c)).join(", ")
-                  : "Select Glass Type"
-                }
-              </span>
-              <svg className={`w-4 h-4 text-slate-400 transition-transform ${isMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
+            {(() => {
+              const isAnyLoading = selectedGlassCodes.some(code => loadedPartsMap[code]?.loading);
+              return (
+                <div
+                  ref={triggerRef}
+                  className="w-full border border-slate-300 rounded px-3 py-2 bg-white cursor-pointer flex items-center justify-between hover:border-violet-500 transition-colors"
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                >
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    {isAnyLoading && (
+                      <div className="w-4 h-4 border-2 border-violet-500 border-t-transparent rounded-full animate-spin shrink-0" />
+                    )}
+                    <span className="text-sm text-slate-700 truncate">
+                      {selectedGlassCodes.length > 0
+                        ? selectedGlassCodes.map(c => getFormattedLabel(c)).join(", ")
+                        : "Select Glass Type"
+                      }
+                    </span>
+                  </div>
+                  <svg className={`w-4 h-4 text-slate-400 transition-transform ${isMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              );
+            })()}
 
             {/* Mega Menu Overlay (Portal) */}
             {isMenuOpen && ReactDOM.createPortal(
@@ -667,14 +691,24 @@ export default function CarGlassViewer({
               <>
                 <div
                   className="flex flex-col items-center w-full mt-4 relative z-1 cursor-pointer hover:opacity-80 transition-opacity"
-                  onClick={() => setImageModalOpen(true)}
+                  onClick={() => {
+                    setImageModalOpen(true);
+                    setImageLoading(true);
+                  }}
                   title="Click to enlarge"
                 >
-                  <div className="relative w-full h-48 flex items-center justify-center">
+                  <div className="relative w-full h-48 flex items-center justify-center bg-slate-50">
+                    {imageLoading && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-slate-100 rounded z-10">
+                        <div className="w-8 h-8 border-3 border-violet-500 border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    )}
                     <img
                       src={imageSrc}
                       alt="Vehicle Graphic"
                       className="max-w-full max-h-full w-auto h-auto object-contain"
+                      onLoad={handleImageLoad}
+                      onError={handleImageError}
                     />
                   </div>
                 </div>
@@ -688,11 +722,18 @@ export default function CarGlassViewer({
                   bodyStyle={{ padding: 0 }}
                   destroyOnClose
                 >
-                  <div className="p-4 flex items-center justify-center bg-white rounded-lg">
+                  <div className="p-4 flex items-center justify-center bg-white rounded-lg relative min-h-[400px]">
+                    {imageLoading && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-slate-100 rounded z-10">
+                        <div className="w-8 h-8 border-3 border-violet-500 border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    )}
                     <img
                       src={imageSrc}
                       alt="Vehicle Graphic Large"
                       className="max-w-full max-h-[80vh] w-auto h-auto object-contain"
+                      onLoad={handleImageLoad}
+                      onError={handleImageError}
                     />
                   </div>
                 </Modal>

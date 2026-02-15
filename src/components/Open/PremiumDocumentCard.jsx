@@ -10,7 +10,7 @@ const PremiumDocumentCard = ({
     isListMode = false,
 }) => {
     const { documentNumber, documentType, status, customerName, vehicleInfo, totalAmount, createdAt, balanceDue } = doc;
-    
+
     const docIsOverdue = isOverdue(doc);
     const daysOverdue = getDaysOverdue(doc);
 
@@ -21,19 +21,19 @@ const PremiumDocumentCard = ({
         if (docIsOverdue) {
             return '#F97316'; // orange
         }
-        
+
         const statusLower = status?.toLowerCase();
-        
+
         // Completed or Paid = green
         if (statusLower === 'completed' || statusLower === 'paid') {
             return '#22C55E'; // green
         }
-        
+
         // Cancelled = red
         if (statusLower === 'cancelled') {
             return '#EF4444'; // red
         }
-        
+
         // Everything else (pending, in_progress, etc.) = yellow (not completed)
         return '#FBBF24'; // yellow
     };
@@ -153,10 +153,7 @@ const PremiumDocumentCard = ({
                             <CarOutlined className="text-slate-400 flex-shrink-0" />
                             <span className="text-slate-600 text-sm truncate">{vehicleInfo}</span>
                         </div>
-                        <div className="flex items-center gap-2 w-[100px]">
-                            <CalendarOutlined className="text-slate-400 flex-shrink-0" />
-                            <span className="text-slate-600 text-sm whitespace-nowrap">{formatDate(createdAt)}</span>
-                        </div>
+
                         <span className="font-bold text-slate-900 text-sm w-[90px] text-right">
                             {formatCurrency(totalAmount)}
                         </span>

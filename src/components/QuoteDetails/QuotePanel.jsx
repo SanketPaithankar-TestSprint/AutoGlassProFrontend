@@ -1951,7 +1951,8 @@ ${shopName}`;
 
             {/* Header / Metadata */}
             <div className="bg-white shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg mb-3 sm:mb-4">
-                <div className="border border-slate-100 bg-white rounded-lg max-h-[350px] sm:max-h-[400px] overflow-x-auto overflow-y-auto" data-quote-details-table>
+                {/* Desktop Table View (md and up) */}
+                <div className="border border-slate-100 bg-white rounded-lg max-h-[350px] sm:max-h-[400px] overflow-x-auto overflow-y-auto hidden md:block" data-quote-details-table>
                     <table className="min-w-full divide-y divide-slate-100">
                         <thead className="bg-slate-50 sticky top-0 z-10">
                             <tr className="text-left text-sm sm:text-base font-bold text-slate-700 tracking-tight">
@@ -2148,7 +2149,7 @@ ${shopName}`;
                                         </td>
                                         {showDeleteButton && (
                                             <td className="px-1 py-0.5 text-center align-middle" rowSpan={rowSpan}>
-                                                <button type="button" onClick={() => handleDeleteItem(it.id)} className="text-slate-400 hover:text-red-500 transition-colors p-1 rounded hover:bg-red-50" title="Remove Item">
+                                                <button type="button" onClick={() => handleDeleteItem(it.id)} className="text-red-500 hover:text-red-700 transition-colors p-1 rounded hover:bg-red-50" title="Remove Item">
                                                     <DeleteOutlined style={{ fontSize: '14px' }} />
                                                 </button>
                                             </td>
@@ -2170,6 +2171,260 @@ ${shopName}`;
                             ))}
                         </tbody>
                     </table>
+                </div>
+
+                {/* Mobile Card View (below md) */}
+                <div className="md:hidden space-y-3 p-2 mt-4">
+                    {items.length > 0 ? (
+                        items.map((it) => {
+                            // Determine border color based on item type
+                            const getBorderColor = (type) => {
+                                switch (type) {
+                                    case 'Part':
+                                        return 'border-l-4 border-l-blue-500'; // Blue for Parts/Windshields
+                                    case 'Labor':
+                                        return 'border-l-4 border-l-green-500'; // Green for Labor
+                                    case 'Kit':
+                                        return 'border-l-4 border-l-yellow-500'; // Yellow for Kits
+                                    case 'ADAS':
+                                        return 'border-l-4 border-l-purple-500'; // Purple for ADAS
+                                    case 'Service':
+                                        return 'border-l-4 border-l-orange-500'; // Orange for Service
+                                    default:
+                                        return 'border-l-4 border-l-slate-300';
+                                }
+                            };
+
+                            const getTypeColor = (type) => {
+                                switch (type) {
+                                    case 'Labor':
+                                        return 'bg-green-100 text-green-700';
+                                    case 'Kit':
+                                        return 'bg-yellow-100 text-yellow-700';
+                                    case 'ADAS':
+                                        return 'bg-purple-100 text-purple-700';
+                                    case 'Service':
+                                        return 'bg-orange-100 text-orange-700';
+                                    default:
+                                        return 'bg-blue-100 text-blue-700';
+                                }
+                            };
+
+                            const serviceOptionsWithCustom = [...SERVICE_OPTIONS];
+                            if (it.type === 'Service' && it.description && !SERVICE_OPTIONS.some(opt => opt.label === it.description)) {
+                                serviceOptionsWithCustom.push({ label: it.description, value: "__custom__" });
+                            }
+                            const serviceSelectValue = it.type === 'Service'
+                                ? (it.serviceType
+                                    || SERVICE_OPTIONS.find(opt => opt.label === it.description)?.value
+                                    || (serviceOptionsWithCustom.some(opt => opt.value === "__custom__") ? "__custom__" : null))
+                                : null;
+
+                            const laborOptionsWithCustom = [...LABOR_OPTIONS];
+                            if (it.type === 'Labor' && it.description && !LABOR_OPTIONS.some(opt => opt.label === it.description)) {
+                                laborOptionsWithCustom.push({ label: it.description, value: "__custom__" });
+                            }
+                            const laborSelectValue = it.type === 'Labor'
+                                ? (it.laborType
+                                    || LABOR_OPTIONS.find(opt => opt.label === it.description)?.value
+                                    || (laborOptionsWithCustom.some(opt => opt.value === "__custom__") ? "__custom__" : null))
+                                : null;
+
+                            return (
+                                <div 
+                                    key={it.id} 
+                                    className={`bg-white border border-slate-200 ${getBorderColor(it.type)} rounded-lg shadow-sm hover:shadow-md transition-all duration-300 max-h-[800px] overflow-hidden`}
+                                >
+                                    {/* ========== HEADER & IDENTIFIERS ========== */}
+                                    
+                                    {/* Top Row: Badge + Delete */}
+                                    <div className="flex items-center justify-between gap-2 px-3 py-2 bg-slate-50/50 border-b border-slate-100">
+                                        <span className={`text-xs font-bold px-2.5 py-1.5 rounded-full whitespace-nowrap ${getTypeColor(it.type)}`}>
+                                            {it.type === 'Labor' ? 'LABOR' : it.type === 'ADAS' ? 'ADAS' : it.type === 'Kit' ? 'KIT' : it.type === 'Service' ? 'SERVICE' : 'PART'}
+                                        </span>
+                                        {!it.id.endsWith('_LABOR') && !it.parentPartId && (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleDeleteItem(it.id)}
+                                                className="h-8 w-8 flex items-center justify-center text-red-500 bg-transparent hover:text-red-700 transition-colors rounded-md"
+                                                title="Remove Item"
+                                            >
+                                                <DeleteOutlined style={{ fontSize: '16px' }} />
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {/* Part Number: Editable Input */}
+                                    <div className="px-3 pt-2 pb-2 border-b border-slate-100">
+                                        <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mb-1">Part Number</p>
+                                        {it.type === 'Part' ? (
+                                            <input
+                                                value={it.nagsId}
+                                                onChange={(e) => {
+                                                    updateItem(it.id, "nagsId", e.target.value);
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        handlePartNoBlur(it.id, e.currentTarget.value);
+                                                        e.currentTarget.blur();
+                                                    }
+                                                }}
+                                                className="w-full h-7 px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-900 font-mono font-bold text-sm break-all"
+                                                placeholder="Part No"
+                                            />
+                                        ) : (
+                                            <input
+                                                type="text"
+                                                value={it.type === 'Labor' ? 'LABOR' : it.type === 'ADAS' ? 'ADAS' : it.type === 'Kit' ? (it.nagsId || 'KIT') : 'SERVICE'}
+                                                readOnly
+                                                className="w-full h-7 px-2 rounded border-none outline-none bg-transparent text-slate-500 font-bold cursor-default text-sm"
+                                            />
+                                        )}
+                                    </div>
+
+                                    {/* ========== CONTENT BODY (Editable) ========== */}
+
+                                    {/* Description (Editable with dropdowns for Service/Labor) */}
+                                    <div className="px-3 py-2 border-b border-slate-100">
+                                        <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mb-1">Description</p>
+                                        {it.type === 'ADAS' ? (
+                                            <Select
+                                                className="w-full text-sm custom-select-borderless"
+                                                size="small"
+                                                bordered={false}
+                                                placeholder="Select Type"
+                                                value={it.adasCode || null}
+                                                onChange={(val) => handleAdasChange(it.id, val)}
+                                                options={ADAS_TYPES.map(type => {
+                                                    return {
+                                                        label: type.code,
+                                                        value: type.code
+                                                    };
+                                                })}
+                                                dropdownMatchSelectWidth={false}
+                                            />
+                                        ) : it.type === 'Service' ? (
+                                            serviceSelectValue === "OTHER" ? (
+                                                <input
+                                                    type="text"
+                                                    value={it.description || ''}
+                                                    onChange={(e) => updateItem(it.id, "description", e.target.value)}
+                                                    placeholder="Enter service details"
+                                                    className="w-full h-7 px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-900 text-sm"
+                                                />
+                                            ) : (
+                                                <Select
+                                                    className="w-full text-sm custom-select-borderless"
+                                                    size="small"
+                                                    bordered={false}
+                                                    placeholder="Select Service"
+                                                    value={serviceSelectValue}
+                                                    onChange={(val) => handleServiceChange(it.id, val)}
+                                                    options={serviceOptionsWithCustom}
+                                                    dropdownMatchSelectWidth={false}
+                                                    optionFilterProp="label"
+                                                    showSearch
+                                                />
+                                            )
+                                        ) : it.type === 'Labor' ? (
+                                            laborSelectValue === "OTHER" ? (
+                                                <input
+                                                    type="text"
+                                                    value={it.description || ''}
+                                                    onChange={(e) => updateItem(it.id, "description", e.target.value)}
+                                                    placeholder="Enter labor details"
+                                                    className="w-full h-7 px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-900 text-sm"
+                                                />
+                                            ) : (
+                                                <Select
+                                                    className="w-full text-sm custom-select-borderless"
+                                                    size="small"
+                                                    bordered={false}
+                                                    placeholder="Select Labor"
+                                                    value={laborSelectValue}
+                                                    onChange={(val) => handleLaborChange(it.id, val)}
+                                                    options={laborOptionsWithCustom}
+                                                    dropdownMatchSelectWidth={false}
+                                                    optionFilterProp="label"
+                                                    showSearch
+                                                />
+                                            )
+                                        ) : (
+                                            <input
+                                                value={it.description || ''}
+                                                onChange={(e) => updateItem(it.id, "description", e.target.value)}
+                                                className="w-full h-7 px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-900 text-sm"
+                                            />
+                                        )}
+                                    </div>
+
+                                    {/* Manufacturer (Editable) */}
+                                    <div className="px-3 py-2 border-b border-slate-100">
+                                        <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mb-1">Manufacturer</p>
+                                        <input
+                                            value={it.manufacturer}
+                                            onChange={(e) => updateItem(it.id, "manufacturer", e.target.value)}
+                                            className="w-full h-7 px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-900 text-sm"
+                                            disabled={!it.isManual && it.type === 'Labor'}
+                                        />
+                                    </div>
+
+                                    {/* ========== DATA GRID & SPACING ========== */}
+
+                                    {/* Hair-line Divider */}
+                                    <div className="h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
+
+                                    {/* 3-Column Grid: Qty/Price/Amount (Editable) */}
+                                    <div className="grid grid-cols-3 gap-1 px-3 py-3 pr-4">
+                                        {/* Qty Column */}
+                                        <div>
+                                            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-1.5">Qty</p>
+                                            <input
+                                                type="number"
+                                                value={it.qty}
+                                                onChange={(e) => updateItem(it.id, "qty", e.target.value)}
+                                                className="w-full h-7 px-1 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-center outline-none bg-transparent text-slate-900 font-bold text-sm"
+                                                disabled={!it.isManual && it.type === 'Labor'}
+                                            />
+                                        </div>
+
+                                        {/* List Price Column */}
+                                        <div className="border-l border-r border-slate-100">
+                                            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-1.5 text-center">List Price</p>
+                                            <CurrencyInput
+                                                value={it.listPrice}
+                                                onChange={(val) => updateItem(it.id, "listPrice", val)}
+                                                className="w-full h-7 px-1 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-center outline-none bg-transparent text-slate-900 font-bold text-sm"
+                                                disabled={!it.isManual && it.type === 'Labor'}
+                                                placeholder="$0.00"
+                                            />
+                                        </div>
+
+                                        {/* Amount Column - Highlighted */}
+                                        <div>
+                                            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-1.5 text-center">Amount</p>
+                                            {it.isLoadingVendorPrice ? (
+                                                <div className="flex items-center justify-center h-7">
+                                                    <LoadingOutlined style={{ fontSize: '14px' }} className="text-violet-600" />
+                                                </div>
+                                            ) : (
+                                                <CurrencyInput
+                                                    value={it.amount}
+                                                    onChange={(val) => updateItem(it.id, "amount", val)}
+                                                    className="w-full h-7 px-1 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-center outline-none bg-transparent text-violet-700 font-bold text-sm overflow-hidden"
+                                                    placeholder="$0.00"
+                                                />
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    ) : (
+                        <div className="text-center py-8 text-slate-500">
+                            <p className="text-sm">No items added yet</p>
+                        </div>
+                    )}
                 </div>
             </div>
 

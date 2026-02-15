@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Layout, Button, Space, Drawer, Modal, Dropdown } from "antd";
-import { MenuOutlined, UserOutlined, DownOutlined } from "@ant-design/icons";
+import { MenuOutlined, UserOutlined, DownOutlined, PieChartOutlined, TeamOutlined, FormOutlined, CalendarOutlined, FolderOpenOutlined, BarChartOutlined, MessageOutlined, AuditOutlined } from "@ant-design/icons";
 import Logo from "./logo";
 import { getValidToken } from "../api/getValidToken";
 import { Link, useNavigate } from "react-router-dom";
@@ -98,22 +98,23 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
 
 
   const menuItems = [
-    { key: "home", label: "Home", href: "/" },
+    { key: "home", label: "Home", href: "/", icon: null },
     ...(!isAuthed ? [
-      { key: "features", label: "Features", href: "/features" },
-      { key: "pricing", label: "Pricing", href: "/pricing" },
-      { key: "blogs", label: "Blogs", href: "/blogs" },
-      { key: "about", label: "About", href: "/about" },
-      { key: "contact", label: "Contact", href: "/contact" },
+      { key: "features", label: "Features", href: "/features", icon: null },
+      { key: "pricing", label: "Pricing", href: "/pricing", icon: null },
+      { key: "blogs", label: "Blogs", href: "/blogs", icon: null },
+      { key: "about", label: "About", href: "/about", icon: null },
+      { key: "contact", label: "Contact", href: "/contact", icon: null },
     ] : []),
     ...(isAuthed ? [
-      { key: "analytics", label: "Analytics", href: "/analytics" },
-      { key: "customers", label: "Customers", href: "/customers" },
-      { key: "Quote", label: "Quote", href: "/search-by-root" },
-      { key: "schedule", label: "Schedule", href: "/schedule" },
-      { key: "dashboard", label: "Dashboard", href: "/open" },
-      { key: "reports", label: "Reports", href: "/reports" },
-      { key: "service-inquiries", label: "Service Inquiries", href: "/service-contact-form" },
+      { key: "analytics", label: "Analytics", href: "/analytics", icon: <PieChartOutlined /> },
+      { key: "customers", label: "Customers", href: "/customers", icon: <TeamOutlined /> },
+      { key: "Quote", label: "Quote", href: "/search-by-root", icon: <FormOutlined /> },
+      { key: "schedule", label: "Schedule", href: "/schedule", icon: <CalendarOutlined /> },
+      { key: "dashboard", label: "Dashboard", href: "/open", icon: <FolderOpenOutlined /> },
+      { key: "reports", label: "Reports", href: "/reports", icon: <BarChartOutlined /> },
+      { key: "service-inquiries", label: "Service Inquiries", href: "/service-contact-form", icon: <MessageOutlined /> },
+      { key: "employee-attendance", label: "Employee Attendance", href: "/employee-attendance", icon: <AuditOutlined /> },
     ] : []),
   ];
 
@@ -244,14 +245,15 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
         >
           <nav className="p-4 text-slate-700">
             <ul className="space-y-2 pl-0 m-0 list-none">
-              {menuItems.map((item) => (
+              {menuItems.filter(item => item.key !== 'home').map((item) => (
                 <li key={item.key}>
                   <Link
                     to={item.href}
-                    className="block px-4 py-2 rounded-md text-base text-slate-700 hover:text-violet-700 hover:bg-violet-100 outline-none transition-colors duration-150"
+                    className="flex items-center gap-3 px-4 py-2 rounded-md text-base text-slate-700 hover:text-violet-700 hover:bg-violet-100 outline-none transition-colors duration-150"
                     style={{ WebkitTapHighlightColor: "transparent" }}
                     onClick={() => setDrawerOpen(false)}
                   >
+                    {item.icon && <span className="text-lg">{item.icon}</span>}
                     {item.label}
                   </Link>
                 </li>
@@ -334,14 +336,15 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
         >
           <nav className="p-4 text-slate-700">
             <ul className="space-y-2 pl-0 m-0 list-none">
-              {menuItems.map((item) => (
+              {menuItems.filter(item => item.key !== 'home').map((item) => (
                 <li key={item.key}>
                   <Link
                     to={item.href}
-                    className="block px-4 py-2 rounded-md text-base text-slate-700 hover:text-violet-700 hover:bg-violet-100 outline-none transition-colors duration-150"
+                    className="flex items-center gap-3 px-4 py-2 rounded-md text-base text-slate-700 hover:text-violet-700 hover:bg-violet-100 outline-none transition-colors duration-150"
                     style={{ WebkitTapHighlightColor: "transparent" }}
                     onClick={() => setDrawerOpen(false)}
                   >
+                    {item.icon && <span className="text-lg">{item.icon}</span>}
                     {item.label}
                   </Link>
                 </li>
