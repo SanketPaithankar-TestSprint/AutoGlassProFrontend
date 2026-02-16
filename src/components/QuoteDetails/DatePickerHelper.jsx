@@ -185,6 +185,58 @@ const DatePickerHelper = ({ value, onChange }) => {
             </div>
 
             <div className="px-2 sm:px-4 py-2 sm:py-3 border-t border-slate-100 bg-slate-50/50">
+                {/* Time Picker */}
+                {selectedDate && (
+                    <div className="mb-3 sm:mb-4 pb-3 sm:pb-4 border-b border-slate-200">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                            <FieldTimeOutlined className="text-slate-500 text-sm" />
+                            <span className="text-xs sm:text-sm font-semibold text-slate-700">Time</span>
+                        </div>
+                        <div className="flex items-center gap-1 sm:gap-2 mt-2">
+                            {/* Hours (12-hour format) */}
+                            <Select
+                                value={selectedDate.hour() % 12 || 12}
+                                onChange={(val) => handleTimeChange('hour', val)}
+                                style={{ width: '60px' }}
+                                size="small"
+                                className="text-xs"
+                            >
+                                {Array.from({ length: 12 }, (_, i) => (
+                                    <Select.Option key={i + 1} value={i + 1}>
+                                        {String(i + 1).padStart(2, '0')}
+                                    </Select.Option>
+                                ))}
+                            </Select>
+                            <span className="text-slate-500 font-bold">:</span>
+                            {/* Minutes */}
+                            <Select
+                                value={selectedDate.minute()}
+                                onChange={(val) => handleTimeChange('minute', val)}
+                                style={{ width: '60px' }}
+                                size="small"
+                                className="text-xs"
+                            >
+                                {Array.from({ length: 60 }, (_, i) => (
+                                    <Select.Option key={i} value={i}>
+                                        {String(i).padStart(2, '0')}
+                                    </Select.Option>
+                                ))}
+                            </Select>
+                            {/* AM/PM */}
+                            <Select
+                                value={selectedDate.hour() >= 12 ? 'PM' : 'AM'}
+                                onChange={(val) => handleTimeChange('ampm', val)}
+                                style={{ width: '70px' }}
+                                size="small"
+                                className="text-xs font-semibold"
+                            >
+                                <Select.Option value="AM">AM</Select.Option>
+                                <Select.Option value="PM">PM</Select.Option>
+                            </Select>
+                        </div>
+                    </div>
+                )}
+
                 {/* Presets */}
                 <div className="flex gap-2 sm:gap-3 mb-3 sm:mb-4">
                     <button
@@ -213,7 +265,7 @@ const DatePickerHelper = ({ value, onChange }) => {
                 {selectedDate && (
                     <div className="mt-2 sm:mt-3 text-center">
                         <span className="inline-block px-2 sm:px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
-                            {selectedDate.format('dddd, MMM D')}
+                            {selectedDate.format('dddd, MMM D, HH:mm')}
                         </span>
                     </div>
                 )}
@@ -232,8 +284,8 @@ const DatePickerHelper = ({ value, onChange }) => {
         >
             <Input
                 readOnly
-                value={selectedDate ? selectedDate.format('MM/DD/YYYY') : ''}
-                placeholder="Select date"
+                value={selectedDate ? selectedDate.format('MM/DD/YYYY HH:mm') : ''}
+                placeholder="Select date & time"
                 prefix={<CalendarOutlined className="text-slate-400" />}
                 className="cursor-pointer hover:border-blue-400 focus:border-blue-500"
                 onClick={() => setOpen(true)}

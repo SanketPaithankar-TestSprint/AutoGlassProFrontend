@@ -1,6 +1,6 @@
 import React from 'react';
-import { Input, Select, Card } from 'antd';
-import { EnvironmentOutlined, UserOutlined, CalendarOutlined, HomeOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { Input, Select, Card, Button, InputNumber, Space } from 'antd';
+import { EnvironmentOutlined, UserOutlined, CalendarOutlined, HomeOutlined, CheckCircleOutlined, UpOutlined, DownOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import DatePickerHelper from './DatePickerHelper';
 import { updateServiceDocumentStatus } from '../../api/updateServiceDocumentStatus';
@@ -41,6 +41,69 @@ const JobSchedulingPanel = ({
         setSchedulingData(prev => ({
             ...prev,
             [field]: date ? date.toISOString() : null
+        }));
+    };
+
+    // Helper to handle time changes
+    const handleTimeChange = (field, value) => {
+        if (!schedulingData.scheduledDate) return;
+        
+        const currentDate = dayjs(schedulingData.scheduledDate);
+        let newDate = currentDate;
+
+        if (field === 'hour') {
+            newDate = newDate.hour(value);
+        } else if (field === 'minute') {
+            newDate = newDate.minute(value);
+        } else if (field === 'ampm') {
+            const hour = currentDate.hour();
+            if (value === 'PM' && hour < 12) {
+                newDate = newDate.hour(hour + 12);
+            } else if (value === 'AM' && hour >= 12) {
+                newDate = newDate.hour(hour - 12);
+            }
+        }
+
+        setSchedulingData(prev => ({
+            ...prev,
+            scheduledDate: newDate.toISOString()
+        }));
+    };
+
+    // Helper to increment/decrement values
+    const incrementTime = (field) => {
+        if (!schedulingData.scheduledDate) return;
+        
+        const currentDate = dayjs(schedulingData.scheduledDate);
+        let newDate = currentDate;
+
+        if (field === 'hour') {
+            newDate = newDate.add(1, 'hour');
+        } else if (field === 'minute') {
+            newDate = newDate.add(15, 'minute');
+        }
+
+        setSchedulingData(prev => ({
+            ...prev,
+            scheduledDate: newDate.toISOString()
+        }));
+    };
+
+    const decrementTime = (field) => {
+        if (!schedulingData.scheduledDate) return;
+        
+        const currentDate = dayjs(schedulingData.scheduledDate);
+        let newDate = currentDate;
+
+        if (field === 'hour') {
+            newDate = newDate.subtract(1, 'hour');
+        } else if (field === 'minute') {
+            newDate = newDate.subtract(15, 'minute');
+        }
+
+        setSchedulingData(prev => ({
+            ...prev,
+            scheduledDate: newDate.toISOString()
         }));
     };
 
@@ -152,7 +215,7 @@ const JobSchedulingPanel = ({
                             onChange={(date) => handleDateChange('scheduledDate', date)}
                         />
                         <p className="text-xs text-slate-500 mt-1">
-                            Job start time
+                            Job start date and time
                         </p>
                     </div>
 

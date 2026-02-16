@@ -159,7 +159,13 @@ const InquiryDetails = ({ inquiryId }) => {
                     {inquiry.customerMessage || '-'}
                 </Descriptions.Item>
                 <Descriptions.Item label="Address">
-                    {inquiry.addressLine1} {inquiry.addressLine2}, {inquiry.city}, {inquiry.state} {inquiry.postalCode}
+                    {[
+                        inquiry?.addressLine1,
+                        inquiry?.addressLine2,
+                        inquiry?.city,
+                        inquiry?.state,
+                        inquiry?.postalCode
+                    ].filter(Boolean).join(', ') || '-'}
                 </Descriptions.Item>
                 <Descriptions.Item label="Created At">
                     {new Date(inquiry.createdAt).toLocaleString()}

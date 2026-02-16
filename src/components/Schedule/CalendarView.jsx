@@ -299,7 +299,7 @@ const DesktopTaskCalendarView = ({ tasks = [], onEdit }) => {
                 onView={setView}
                 date={date}
                 onNavigate={setDate}
-                views={['month', 'week', 'day', 'agenda']}
+                views={['month', 'week', 'day']}
                 popup
             />
         </div>

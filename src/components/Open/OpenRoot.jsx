@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { App, Pagination, List, Empty, Modal, Button, Space } from 'antd';
+import { App, Pagination, List, Empty, Modal, Button, Space, Select } from 'antd';
 import { ExclamationCircleOutlined, WarningOutlined } from '@ant-design/icons';
 import { getValidToken } from '../../api/getValidToken';
 import { getServiceDocuments } from '../../api/getServiceDocuments';
@@ -449,19 +449,44 @@ const OpenRoot = () => {
 
                     {/* Pagination */}
                     {!loading && totalElements > 0 && (
-                        <div className="flex justify-center mt-8">
-                            <Pagination
-                                current={currentPage + 1}
-                                pageSize={pageSize}
-                                total={totalElements}
-                                onChange={(page, size) => {
-                                    setCurrentPage(page - 1);
-                                    setPageSize(size);
-                                }}
-                                showSizeChanger
-                                showTotal={(total, range) => `${range[0]}-${range[1]} of ${total} documents`}
-                                pageSizeOptions={['10', '20', '50', '100']}
-                            />
+                        <div className="mt-8">
+                            {/* Mobile Page Size Selector */}
+                            {isMobile && (
+                                <div className="flex items-center justify-between gap-3 mb-4 px-4 py-3 bg-white rounded-lg border border-slate-200">
+                                    <span className="text-sm font-medium text-slate-600">Items per page:</span>
+                                    <Select
+                                        value={pageSize}
+                                        onChange={(size) => {
+                                            setPageSize(size);
+                                            setCurrentPage(0);
+                                        }}
+                                        options={[
+                                            { label: '10', value: 10 },
+                                            { label: '20', value: 20 },
+                                            { label: '50', value: 50 },
+                                            { label: '100', value: 100 },
+                                        ]}
+                                        className="w-20"
+                                        size="small"
+                                    />
+                                </div>
+                            )}
+
+                            {/* Pagination */}
+                            <div className="flex justify-center">
+                                <Pagination
+                                    current={currentPage + 1}
+                                    pageSize={pageSize}
+                                    total={totalElements}
+                                    onChange={(page, size) => {
+                                        setCurrentPage(page - 1);
+                                        setPageSize(size);
+                                    }}
+                                    showSizeChanger={!isMobile}
+                                    showTotal={(total, range) => `${range[0]}-${range[1]} of ${total} documents`}
+                                    pageSizeOptions={['10', '20', '50', '100']}
+                                />
+                            </div>
                         </div>
                     )}
                 </div>

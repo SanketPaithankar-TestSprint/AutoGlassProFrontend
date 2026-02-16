@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Tabs, Button, Select, Space, message, Spin, DatePicker, Input, Switch, notification } from 'antd';
-import { PlusOutlined, AppstoreOutlined, UnorderedListOutlined, ReloadOutlined, CalendarOutlined, FileTextOutlined, TeamOutlined } from '@ant-design/icons';
+import { PlusOutlined, AppstoreOutlined, UnorderedListOutlined, ReloadOutlined, CalendarOutlined, FileTextOutlined, TeamOutlined, ToolOutlined, CreditCardOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import moment from 'moment';
 import dayjs from 'dayjs';
@@ -259,20 +259,23 @@ const ScheduleRoot = () => {
                     <div className="bg-white border p-1 rounded-lg flex">
                         <Button
                             type={viewMode === 'calendar' ? 'primary' : 'text'}
-                            icon={<span className="material-icons-outlined text-sm"></span>}
+                            icon={<CalendarOutlined />}
                             onClick={() => setViewMode('calendar')}
                             size="small"
                         >
                             Calendar
                         </Button>
-                        <Button
-                            type={viewMode === 'kanban' ? 'primary' : 'text'}
-                            icon={<AppstoreOutlined />}
-                            onClick={() => setViewMode('kanban')}
-                            size="small"
-                        >
-                            Board
-                        </Button>
+                        {/* Board button only shown in Tasks tab, hidden in Schedule tab */}
+                        {activeTab === 'tasks' && (
+                            <Button
+                                type={viewMode === 'kanban' ? 'primary' : 'text'}
+                                icon={<AppstoreOutlined />}
+                                onClick={() => setViewMode('kanban')}
+                                size="small"
+                            >
+                                Board
+                            </Button>
+                        )}
                         <Button
                             type={viewMode === 'table' ? 'primary' : 'text'}
                             icon={<UnorderedListOutlined />}
@@ -297,8 +300,8 @@ const ScheduleRoot = () => {
             {activeTab === 'schedule' ? (
                 <>
                     {/* Schedule Filters */}
-                    <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4 bg-white p-4 rounded-lg shadow-sm border border-slate-100">
-                        <div className="flex flex-col md:flex-row items-center gap-3 flex-1 w-full">
+                    <div className="flex flex-col gap-4 mb-4 bg-white p-4 rounded-lg shadow-sm border border-slate-100">
+                        <div className="flex flex-col md:flex-row items-center gap-3 w-full">
                             <Search
                                 placeholder="Search documents..."
                                 allowClear
@@ -320,7 +323,9 @@ const ScheduleRoot = () => {
                                 placeholder="Start Date"
                                 allowClear={false}
                             />
-                            <div className="flex items-center gap-2">
+                        </div>
+                        <div className="flex flex-row items-center gap-3 justify-between md:justify-end w-full">
+                            <div className="flex items-center gap-2 flex-1 md:flex-none">
                                 <span className="text-sm text-slate-600">Include Past:</span>
                                 <Switch
                                     checked={scheduleIncludePast}
@@ -328,8 +333,6 @@ const ScheduleRoot = () => {
                                     size="small"
                                 />
                             </div>
-                        </div>
-                        <div className="flex gap-2 w-full md:w-auto justify-end">
                             <Button
                                 icon={<ReloadOutlined />}
                                 onClick={() => refetchSchedule()}
@@ -343,24 +346,36 @@ const ScheduleRoot = () => {
                     {/* Schedule Stats */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                         <div className="bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-sm border border-slate-200/60">
-                            <div className="text-2xl font-bold text-violet-600">{filteredDocuments.length}</div>
+                            <div className="flex items-center justify-between mb-2">
+                                <CalendarOutlined className="text-3xl text-violet-400" />
+                                <div className="text-2xl font-bold text-violet-600">{filteredDocuments.length}</div>
+                            </div>
                             <div className="text-sm text-slate-500 font-medium">Total Scheduled</div>
                         </div>
                         <div className="bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-sm border border-slate-200/60">
-                            <div className="text-2xl font-bold text-amber-500">
-                                {filteredDocuments.filter(d => d.status === 'QUOTE').length}
+                            <div className="flex items-center justify-between mb-2">
+                                <FileTextOutlined className="text-3xl text-amber-400" />
+                                <div className="text-2xl font-bold text-amber-500">
+                                    {filteredDocuments.filter(d => d.documentType === 'QUOTE').length}
+                                </div>
                             </div>
                             <div className="text-sm text-slate-500 font-medium">Quotes</div>
                         </div>
                         <div className="bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-sm border border-slate-200/60">
-                            <div className="text-2xl font-bold text-orange-500">
-                                {filteredDocuments.filter(d => d.status === 'WORK_ORDER').length}
+                            <div className="flex items-center justify-between mb-2">
+                                <ToolOutlined className="text-3xl text-orange-400" />
+                                <div className="text-2xl font-bold text-orange-500">
+                                    {filteredDocuments.filter(d => d.documentType === 'WORK_ORDER').length}
+                                </div>
                             </div>
                             <div className="text-sm text-slate-500 font-medium">Work Orders</div>
                         </div>
                         <div className="bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-sm border border-slate-200/60">
-                            <div className="text-2xl font-bold text-emerald-500">
-                                {filteredDocuments.filter(d => d.status === 'INVOICE').length}
+                            <div className="flex items-center justify-between mb-2">
+                                <CreditCardOutlined className="text-3xl text-emerald-400" />
+                                <div className="text-2xl font-bold text-emerald-500">
+                                    {filteredDocuments.filter(d => d.documentType === 'INVOICE').length}
+                                </div>
                             </div>
                             <div className="text-sm text-slate-500 font-medium">Invoices</div>
                         </div>

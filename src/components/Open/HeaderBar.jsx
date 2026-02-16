@@ -39,77 +39,75 @@ const HeaderBar = ({
     return (
         <div className="bg-white border-b border-slate-200 px-6 py-6">
             {/* Title Section */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-                <div>
-                    <h1 className="text-xl font-bold text-slate-900">
-                        Dashboard
-                    </h1>
-                    <p className="text-slate-500 mt-1">
-                        Manage and track your service documents
-                    </p>
+            <div className="mb-6">
+                <h1 className="text-xl font-bold text-slate-900">
+                    Dashboard
+                </h1>
+                <p className="text-slate-500 mt-1">
+                    Manage and track your service documents
+                </p>
+            </div>
+
+            {/* Controls Section - Below Title */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                    {/* View Mode Toggle - Hide on mobile */}
+                    {!isMobile && (
+                        <Segmented
+                            value={viewMode}
+                            onChange={setViewMode}
+                            options={[
+                                {
+                                    label: 'Grid',
+                                    value: 'grid',
+                                    icon: <AppstoreOutlined />,
+                                },
+                                {
+                                    label: 'List',
+                                    value: 'list',
+                                    icon: <UnorderedListOutlined />,
+                                },
+                            ]}
+                            className="flex-shrink-0"
+                        />
+                    )}
+
+                    {/* Filter Toggle Button */}
+                    <Button
+                        icon={<FilterOutlined />}
+                        onClick={onOpenFilters}
+                    >
+                        {sidebarOpen ? 'Hide Filters' : 'Show Filters'}
+                    </Button>
                 </div>
 
-                {/* Controls Section */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                    <div className="flex items-center gap-3 w-full sm:w-auto">
-                        {/* View Mode Toggle - Hide on mobile */}
-                        {!isMobile && (
-                            <Segmented
-                                value={viewMode}
-                                onChange={setViewMode}
-                                options={[
-                                    {
-                                        label: 'Grid',
-                                        value: 'grid',
-                                        icon: <AppstoreOutlined />,
-                                    },
-                                    {
-                                        label: 'List',
-                                        value: 'list',
-                                        icon: <UnorderedListOutlined />,
-                                    },
-                                ]}
-                                className="flex-shrink-0"
-                            />
-                        )}
-
-                        {/* Filter Toggle Button */}
-                        <Button
-                            icon={<FilterOutlined />}
-                            onClick={onOpenFilters}
-                        >
-                            {sidebarOpen ? 'Hide Filters' : 'Show Filters'}
-                        </Button>
-                    </div>
-
-                    {/* Search Input */}
-                    <div className="flex-1 w-full sm:max-w-md">
-                        <div className="relative">
-                            <Input
-                                size="large"
-                                placeholder="Search by Document #, Customer, or Vehicle..."
-                                prefix={
-                                    isSearchingApi
-                                        ? <Spin indicator={<LoadingOutlined style={{ fontSize: 16 }} spin />} />
-                                        : <SearchOutlined className="text-slate-400" />
-                                }
-                                suffix={
-                                    searchTerm && searchTerm.length >= 3 && (
-                                        <Tag
-                                            color={searchSource === 'api' ? 'blue' : searchSource === 'mixed' ? 'purple' : 'default'}
-                                            icon={searchSource === 'api' || searchSource === 'mixed' ? <CloudServerOutlined /> : <DatabaseOutlined />}
-                                            className="mr-0"
-                                        >
-                                            {searchSource === 'api' ? 'Server' : searchSource === 'mixed' ? 'Mixed' : 'Local'}
-                                        </Tag>
-                                    )
-                                }
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="rounded-lg"
-                                allowClear
-                            />
-                        </div>
+                {/* Search Input */}
+                <div className="flex-1 w-full sm:max-w-md">
+                    <div className="relative">
+                        <Input
+                            size="large"
+                            placeholder="Search by Document #, Customer, or Vehicle..."
+                            prefix={
+                                isSearchingApi
+                                    ? <Spin indicator={<LoadingOutlined style={{ fontSize: 16 }} spin />} />
+                                    : <SearchOutlined className="text-slate-400" />
+                            }
+                            suffix={
+                                searchTerm && searchTerm.length >= 3 && (
+                                    <Tag
+                                        color={searchSource === 'api' ? 'blue' : searchSource === 'mixed' ? 'purple' : 'default'}
+                                        icon={searchSource === 'api' || searchSource === 'mixed' ? <CloudServerOutlined /> : <DatabaseOutlined />}
+                                        className="mr-0"
+                                    >
+                                        {searchSource === 'api' ? 'Server' : searchSource === 'mixed' ? 'Mixed' : 'Local'}
+                                    </Tag>
+                                )
+                            }
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="rounded-lg"
+                            allowClear
+                        />
                     </div>
                 </div>
             </div>
