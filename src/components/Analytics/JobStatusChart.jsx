@@ -14,14 +14,10 @@ const JobStatusChart = ({ data }) => {
         );
     }
 
-    const statusNames = {
-        0: 'Draft',
-        1: 'Pending',
-        2: 'Scheduled',
-        3: 'In Progress',
-        4: 'On Hold',
-        5: 'Cancelled',
-        6: 'Completed',
+    const documentTypeNames = {
+        0: 'Invoice',
+        1: 'Work Order',
+        2: 'Quote',
     };
 
     const statusColors = [
@@ -37,7 +33,7 @@ const JobStatusChart = ({ data }) => {
     const total = data.reduce((sum, item) => sum + item.count, 0);
 
     const chartData = {
-        labels: data.map(item => statusNames[item.status] || `Status ${item.status}`),
+        labels: data.map(item => documentTypeNames[item.document_type] || `Type ${item.document_type}`),
         datasets: [
             {
                 data: data.map(item => item.count),
@@ -93,7 +89,7 @@ const JobStatusChart = ({ data }) => {
                                 style={{ backgroundColor: statusColors[index % statusColors.length] }}
                             ></div>
                             <span className="text-sm text-slate-500">
-                                {statusNames[item.status] || `Status ${item.status}`}
+                                {documentTypeNames[item.document_type] || `Type ${item.document_type}`}
                             </span>
                         </div>
                         <div className="text-right">

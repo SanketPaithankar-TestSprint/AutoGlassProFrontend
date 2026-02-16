@@ -11,14 +11,10 @@ const RecentActivityTable = ({ data }) => {
         );
     }
 
-    const statusNames = {
-        0: { label: 'Draft', color: 'bg-slate-100 text-slate-600 border border-slate-200' },
-        1: { label: 'Pending', color: 'bg-amber-50 text-amber-700 border border-amber-200' },
-        2: { label: 'Scheduled', color: 'bg-indigo-50 text-indigo-700 border border-indigo-200' },
-        3: { label: 'In Progress', color: 'bg-violet-50 text-violet-700 border border-violet-200' },
-        4: { label: 'On Hold', color: 'bg-orange-50 text-orange-700 border border-orange-200' },
-        5: { label: 'Cancelled', color: 'bg-red-50 text-red-700 border border-red-200' },
-        6: { label: 'Completed', color: 'bg-emerald-50 text-emerald-700 border border-emerald-200' },
+    const documentTypeNames = {
+        0: { label: 'Invoice', color: 'bg-emerald-50 text-emerald-700 border border-emerald-200' },
+        1: { label: 'Work Order', color: 'bg-indigo-50 text-indigo-700 border border-indigo-200' },
+        2: { label: 'Quote', color: 'bg-amber-50 text-amber-700 border border-amber-200' },
     };
 
     return (
@@ -33,7 +29,7 @@ const RecentActivityTable = ({ data }) => {
             <div className="flex-1 overflow-auto lg:hidden">
                 <div className="p-3 sm:p-4 space-y-3">
                     {data.map((activity, index) => {
-                        const status = statusNames[activity.status] || { label: 'Unknown', color: 'bg-gray-100 text-gray-600 border border-gray-200' };
+                        const status = documentTypeNames[activity.document_type] || { label: 'Unknown', color: 'bg-gray-100 text-gray-600 border border-gray-200' };
 
                         return (
                             <div
@@ -84,7 +80,7 @@ const RecentActivityTable = ({ data }) => {
                     </thead>
                     <tbody className="divide-y divide-slate-100/60">
                         {data.map((activity, index) => {
-                            const status = statusNames[activity.status] || { label: 'Unknown', color: 'bg-gray-100 text-gray-600 border border-gray-200' };
+                            const status = documentTypeNames[activity.document_type] || { label: 'Unknown', color: 'bg-gray-100 text-gray-600 border border-gray-200' };
 
                             return (
                                 <tr key={index} className="hover:bg-indigo-50/30 transition-colors duration-200">
