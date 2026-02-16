@@ -3,14 +3,11 @@ import { Button, theme } from "antd";
 import { useLocation, useNavigate } from "react-router-dom";
 import Login from "./login";
 import SignUpForm from "./SignUpForm";
-import SetPasswordForm from "./SetPasswordForm";
 import Logo from "./logo";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 
 const AuthPage = () => {
     const [isSignUpMode, setIsSignUpMode] = useState(false);
-    const [showPasswordForm, setShowPasswordForm] = useState(false);
-    const [signUpData, setSignUpData] = useState(null);
     const location = useLocation();
     const navigate = useNavigate();
     const { token } = theme.useToken();
@@ -25,23 +22,11 @@ const AuthPage = () => {
         navigate("/search-by-root");
     };
 
-    const handleSignUpSuccess = (userData) => {
-        // Receive data from SignUpForm and show SetPasswordForm
-        setSignUpData(userData);
-        setShowPasswordForm(true);
-    };
-
-    const handlePasswordFormSuccess = (response) => {
-        // Registration successful, show login
-        setShowPasswordForm(false);
-        setSignUpData(null);
-        setIsSignUpMode(false);
-    };
-
-    const handlePasswordFormCancel = () => {
-        // Go back to signup form
-        setShowPasswordForm(false);
-        setSignUpData(null);
+    const handleSignUpSuccess = (response) => {
+        // Registration successful
+        // could auto-login or just show success message (which is handled in SignUpForm now)
+        // If we want to switch back to login mode after a timeout or button click
+        // setIsSignUpMode(false);
     };
 
     return (
@@ -65,34 +50,13 @@ const AuthPage = () => {
                     {/* SIGN UP FORM CONTAINER (Left Position - 60% Width) */}
                     <div
                         className={`absolute top-0 left-0 h-full w-[60%] transition-all duration-700 ease-in-out
-                    ${(isSignUpMode && !showPasswordForm) ? 'opacity-100 z-10 translate-x-0' : 'opacity-0 z-0 translate-x-[20%]'}`}
+                    ${(isSignUpMode) ? 'opacity-100 z-10 translate-x-0' : 'opacity-0 z-0 translate-x-[20%]'}`}
                     >
                         <div className="h-full flex flex-col items-center justify-center p-8 bg-transparent">
                             <div className="w-full h-full overflow-y-auto custom-scrollbar flex flex-col items-center">
                                 <div className="w-full max-w-xl pb-8">
                                     <h1 className="text-3xl md:text-4xl font-extrabold mb-4 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent text-center mt-8 tracking-tight">Join Us</h1>
                                     <SignUpForm onSuccess={handleSignUpSuccess} onCancel={() => setIsSignUpMode(false)} />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* SET PASSWORD FORM CONTAINER (Left Position - 60% Width) */}
-                    <div
-                        className={`absolute top-0 left-0 h-full w-[60%] transition-all duration-700 ease-in-out
-                    ${showPasswordForm ? 'opacity-100 z-10 translate-x-0' : 'opacity-0 z-0 translate-x-[20%]'}`}
-                    >
-                        <div className="h-full flex flex-col items-center justify-center p-8 bg-transparent">
-                            <div className="w-full h-full overflow-y-auto custom-scrollbar flex flex-col items-center">
-                                <div className="w-full max-w-xl pb-8">
-                                    <h1 className="text-3xl md:text-4xl font-extrabold mb-4 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent text-center mt-8 tracking-tight">Set Your Password</h1>
-                                    {signUpData && (
-                                        <SetPasswordForm 
-                                            userData={signUpData} 
-                                            onSuccess={handlePasswordFormSuccess} 
-                                            onCancel={handlePasswordFormCancel}
-                                        />
-                                    )}
                                 </div>
                             </div>
                         </div>
@@ -185,17 +149,7 @@ const AuthPage = () => {
                     </div>
 
                     <div className="w-full">
-                        {showPasswordForm ? (
-                            <div className="animate-fade-in">
-                                {signUpData && (
-                                    <SetPasswordForm 
-                                        userData={signUpData} 
-                                        onSuccess={handlePasswordFormSuccess} 
-                                        onCancel={handlePasswordFormCancel}
-                                    />
-                                )}
-                            </div>
-                        ) : isSignUpMode ? (
+                        {isSignUpMode ? (
                             <div className="animate-fade-in">
                                 <SignUpForm onSuccess={handleSignUpSuccess} onCancel={() => setIsSignUpMode(false)} />
                             </div>

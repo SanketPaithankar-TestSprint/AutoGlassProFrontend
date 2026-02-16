@@ -6,13 +6,20 @@ import {
     Button,
     Row,
     Col,
-    Space
+    Space,
+    Upload,
+    notification,
+    Result,
+    Alert
 } from 'antd';
 import {
     UserOutlined,
     MailOutlined,
-    PhoneOutlined
+    PhoneOutlined,
+    UploadOutlined
 } from '@ant-design/icons';
+import axios from 'axios';
+import urls from '../config';
 import { COUNTRIES, getStatesOrProvinces } from '../const/locations';
 
 // Reusable style for form items
@@ -112,28 +119,95 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
     const [availableStates, setAvailableStates] = useState(getStatesOrProvinces('USA'));
 
 
-    const onFinish = (values) => {
-        // Prepare user data for SetPasswordForm
-        const userData = {
-            businessName: values.businessName,
-            ownerName: values.ownerName,
-            email: values.email,
-            phone: values.phone,
-            alternatePhone: values.alternatePhone,
-            addressLine1: values.addressLine1,
-            addressLine2: values.addressLine2,
-            city: Array.isArray(values.city) ? values.city[0] : values.city,
-            state: values.state,
-            postalCode: values.postalCode,
-            country: values.country,
-            businessLicenseNumber: values.businessLicenseNumber,
-            userType: values.userType,
-            ein: null
-        };
+    const [loading, setLoading] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
+    const [error, setError] = useState(null);
 
-        // Pass data to parent for SetPasswordForm
-        if (onSuccess) {
-            onSuccess(userData);
+    // Ref for scrolling to top
+    const formContainerRef = React.useRef(null);
+
+    React.useEffect(() => {
+        if (error && formContainerRef.current) {
+            formContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, [error]);
+
+    const onFinish = async (values) => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const formData = new FormData();
+
+            // Map values to payload
+            const userData = {
+                businessName: values.businessName,
+                ownerName: values.ownerName,
+                email: values.email,
+                phone: values.phone,
+                alternatePhone: values.alternatePhone,
+                addressLine1: values.addressLine1,
+                addressLine2: values.addressLine2,
+                city: Array.isArray(values.city) ? values.city[0] : values.city,
+                state: values.state,
+                postalCode: values.postalCode,
+                country: values.country,
+                businessLicenseNumber: values.businessLicenseNumber,
+                userType: values.userType,
+                businessLicenseDocument: values.businessLicenseDocument,
+                ein: null
+            };
+
+            // Append all user data fields to FormData
+            Object.keys(userData).forEach(key => {
+                if (userData[key] !== null && userData[key] !== undefined) {
+                    // special handling for file
+                    if (key === 'businessLicenseDocument' && userData[key].originFileObj) {
+                        formData.append(key, userData[key].originFileObj);
+                    } else if (key !== 'businessLicenseDocument') {
+                        formData.append(key, userData[key]);
+                    }
+                }
+            });
+
+            // Use javaApiUrl from config.js
+            const response = await axios.post(`${urls.javaApiUrl}/auth/register`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            console.log('Registration Response:', response);
+
+            if (response.data?.success) {
+                setSubmitted(true);
+                if (onSuccess) {
+                    onSuccess(response.data);
+                }
+            } else {
+                console.log('Registration Failed (Logic):', response.data);
+                setError(response.data?.message || 'Registration failed.');
+                notification.error({
+                    message: 'Registration Failed',
+                    description: response.data?.message || 'Registration failed.',
+                    duration: 5
+                });
+            }
+        } catch (err) {
+            console.error('Registration Error (Catch):', err);
+            const errorMessage = err.response?.data?.message ||
+                err.response?.data?.error ||
+                'Registration failed. Please try again.';
+
+            console.log('Setting Error State to:', errorMessage);
+            setError(errorMessage);
+            notification.error({
+                message: 'Registration Failed',
+                description: errorMessage,
+                duration: 5
+            });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -149,9 +223,38 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
         form.setFieldsValue({ city: undefined });
     };
 
+    if (submitted) {
+        return (
+            <div className="flex flex-col items-center justify-center p-8 h-full">
+                <Result
+                    status="success"
+                    title="Registration Successful!"
+                    subTitle="Please check your email to set your password and activate your account."
+                    extra={[
+                        <Button type="primary" key="login" onClick={onCancel}>
+                            Back to Login
+                        </Button>,
+                    ]}
+                />
+            </div>
+        );
+    }
+
     return (
-        <div className="md:mx-4 lg:mx-6" style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: '10px' }}>
+        <div ref={formContainerRef} className="md:mx-4 lg:mx-6" style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: '10px' }}>
             <style>{customInputStyle}</style>
+
+            {error && (
+                <Alert
+                    message="Registration Failed"
+                    description={error}
+                    type="error"
+                    showIcon
+                    closable
+                    onClose={() => setError(null)}
+                    style={{ marginBottom: 16 }}
+                />
+            )}
 
             <Form
                 form={form}
@@ -199,6 +302,8 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             <Input prefix={<MailOutlined style={{ color: '#a0aec0' }} />} className="custom-api-input" />
                         </Form.Item>
                     </Col>
+                </Row>
+                <Row gutter={16}>
                     <Col xs={24} sm={12}>
                         <Form.Item
                             name="businessLicenseNumber"
@@ -207,6 +312,28 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             style={formItemStyle}
                         >
                             <Input className="custom-api-input" />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24} sm={12}>
+                        <Form.Item
+                            name="businessLicenseDocument"
+                            label="Business License Document"
+                            valuePropName="file"
+                            getValueFromEvent={(e) => {
+                                if (Array.isArray(e)) {
+                                    return e;
+                                }
+                                return e?.file;
+                            }}
+                            style={formItemStyle}
+                        >
+                            <Upload
+                                beforeUpload={() => false}
+                                maxCount={1}
+                                accept=".pdf,.png,.jpg,.jpeg"
+                            >
+                                <Button icon={<UploadOutlined />}>Click to Upload</Button>
+                            </Upload>
                         </Form.Item>
                     </Col>
                 </Row>
@@ -374,6 +501,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                                 borderRadius: '12px',
                                 boxShadow: '0 4px 14px 0 rgba(118, 75, 162, 0.39)'
                             }}
+                            loading={loading}
                         >
                             Continue
                         </Button>

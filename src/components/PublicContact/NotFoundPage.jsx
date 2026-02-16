@@ -13,9 +13,6 @@ const NotFoundPage = () => {
             <p className="not-found-subtitle">
                 The business page you're looking for doesn't exist or may have been removed.
             </p>
-            <a href="/" className="not-found-link">
-                ← Return to Home
-            </a>
         </div>
     );
 };
