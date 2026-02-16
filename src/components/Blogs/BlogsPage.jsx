@@ -6,6 +6,8 @@ import { motion } from 'framer-motion';
 import { getBlogs } from '../../api/getBlogs';
 import defaultCover from '../../assets/defaultcoverimg.png';
 
+const CDN_BASE_URL = 'https://d3uhxzbj1embbx.cloudfront.net';
+
 const { Content } = Layout;
 const { Title, Paragraph, Text } = Typography;
 
@@ -33,7 +35,7 @@ const BlogCard = ({ post }) => {
                 className="md:w-1/2 relative overflow-hidden h-64 md:h-auto"
             >
                 <img
-                    src={post.coverImageUrl || defaultCover}
+                    src={post.coverImageUrl ? `${CDN_BASE_URL}/${post.coverImageUrl}` : defaultCover}
                     alt={post.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
