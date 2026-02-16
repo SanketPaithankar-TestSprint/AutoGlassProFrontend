@@ -141,6 +141,7 @@ const PublicContactRoot = () => {
         phone: '',
         location: '',
         vin: '',
+        licensePlateNumber: '',
         year: '',
         make: '',
         model: '',
@@ -385,7 +386,7 @@ const PublicContactRoot = () => {
                 vehicleYear: formData.year ? parseInt(formData.year, 10) : 0,
                 vehicleMake: formData.make,
                 vehicleModel: formData.model,
-                licensePlateNumber: "", // Not captured
+                licensePlateNumber: formData.licensePlateNumber,
                 serviceType: [formData.serviceType], // API expects array
                 servicePreference: formData.servicePreference === 'Mobile service' ? 'MOBILE' : 'IN_SHOP',
                 windshieldFeatures: formData.windshieldFeatures,
@@ -450,6 +451,7 @@ const PublicContactRoot = () => {
             phone: '',
             location: '',
             vin: '',
+            licensePlateNumber: '',
             year: '',
             make: '',
             model: '',
@@ -566,17 +568,22 @@ const PublicContactRoot = () => {
                                     </div>
                                 </div>
 
-                                {/* VIN with Lookup */}
-                                <div className="flex gap-2 items-end">
-                                    <div className="flex-1">
-                                        <label className="premium-label">VIN</label>
-                                        <input type="text" name="vin" value={formData.vin} onChange={handleInputChange} placeholder="Enter 17-character VIN" className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
+                                {/* License Plate & VIN Row */}
+                               
+                                    <div>
+                                        <label className="premium-label">License Plate</label>
+                                        <input type="text" name="licensePlateNumber" value={formData.licensePlateNumber} onChange={handleInputChange} placeholder="LCS-PLT" className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
                                     </div>
-                                    <button type="button" onClick={handleVinLookup} disabled={vinLoading || !formData.vin} className="h-9 px-5 text-xs font-medium border rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-sm" style={{ borderColor: themeColor, color: themeColor, backgroundColor: 'white' }}>
-                                        {vinLoading ? '...' : 'Lookup'}
-                                    </button>
-                                </div>
-
+                                    <div className="flex gap-2 items-end">
+                                        <div className="flex-1">
+                                            <label className="premium-label">VIN</label>
+                                            <input type="text" name="vin" value={formData.vin} onChange={handleInputChange} placeholder="Enter 17-character VIN" className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
+                                        </div>
+                                        <button type="button" onClick={handleVinLookup} disabled={vinLoading || !formData.vin} className="h-9 px-3 text-xs font-medium border rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-sm" style={{ borderColor: themeColor, color: themeColor, backgroundColor: 'white' }}>
+                                            {vinLoading ? '...' : 'Lookup'}
+                                        </button>
+                                    </div>
+                               
                                 {/* Year, Make, Model Row */}
                                 <div className="grid grid-cols-3 gap-2">
                                     <div>
