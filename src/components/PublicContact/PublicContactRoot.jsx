@@ -534,7 +534,12 @@ const PublicContactRoot = () => {
                     background: `linear-gradient(135deg, ${themeColor}26 0%, #ffffff 50%, ${themeColor}12 100%)`
                 }}
             >
-                <CustomerChatWidget themeColor={themeColor} businessName={businessInfo?.businessName} />
+                <CustomerChatWidget
+                    themeColor={themeColor}
+                    businessName={businessInfo?.businessName}
+                    customerName={formData.name}
+                    customerEmail={formData.email}
+                />
 
                 {/* Full Width Container */}
                 <div className="flex flex-col lg:flex-row w-full h-full max-w-7xl mx-auto items-stretch px-4 md:px-8 lg:px-12 py-4 lg:py-6 gap-6 lg:gap-8">

@@ -3,17 +3,16 @@ import { useChat } from '../../context/ChatContext';
 import { Input, Button, Badge, Avatar } from 'antd';
 import { MessageOutlined, CloseOutlined, SendOutlined, UserOutlined, ShopOutlined } from '@ant-design/icons';
 import moment from 'moment';
-import { v4 as uuidv4 } from 'uuid';
 
-const CustomerChatWidget = ({ themeColor, businessName }) => {
+const CustomerChatWidget = ({ themeColor, businessName, customerName, customerEmail }) => {
     const {
-        socket,
         connectionStatus,
         conversations,
         sendMessage,
+        sendCustomerMessage,
         activeConversationId,
         setActiveConversationId,
-        loadHistory
+        visitorId
     } = useChat();
 
     const [isOpen, setIsOpen] = useState(false);
@@ -21,40 +20,57 @@ const CustomerChatWidget = ({ themeColor, businessName }) => {
     const messagesEndRef = useRef(null);
     const [hasUnread, setHasUnread] = useState(false);
 
-    // Initial Conversation Setup
+    // Local state for visitor info, prioritized from props, then localStorage
+    const [visitorInfo, setVisitorInfo] = useState({
+        name: localStorage.getItem('visitorName') || '',
+        email: localStorage.getItem('visitorEmail') || ''
+    });
+
+    const [isFormSubmitted, setIsFormSubmitted] = useState(false);
+
+    // Update local state if props change (user typing in form)
     useEffect(() => {
-        // For customer, we might want to generate a conversation ID or let the backend/socket handle it.
-        // The blueprint says:
-        // Client -> Server: { action: "sendMessage", conversationId: "conv-1", ... }
-        // So the Frontend determines the conversation ID initially? 
-        // Or if we don't have one, we generate one.
-        // Usually, for anonymous / guest users, we can store a random ID in localStorage.
-
-        let storedConvId = localStorage.getItem('customerConversationId');
-        if (!storedConvId) {
-            storedConvId = `conv-${uuidv4().substring(0, 8)}`;
-            localStorage.setItem('customerConversationId', storedConvId);
+        if (customerName || customerEmail) {
+            setVisitorInfo(prev => ({
+                name: customerName || prev.name,
+                email: customerEmail || prev.email
+            }));
+            setIsFormSubmitted(true);
+        } else {
+            // Check localStorage
+            const storedName = localStorage.getItem('visitorName');
+            const storedEmail = localStorage.getItem('visitorEmail');
+            if (storedName && storedEmail) {
+                setVisitorInfo({
+                    name: storedName,
+                    email: storedEmail
+                });
+                setIsFormSubmitted(true);
+            }
         }
+    }, [customerName, customerEmail]);
 
-        if (connectionStatus === 'connected') {
-            setActiveConversationId(storedConvId);
-            // Attempt to load history if we have an ID
-            // The chat context `loadHistory` implementation sends `getHistory` action.
-            loadHistory(storedConvId);
-        }
+    // Get current conversation
+    // For customer, there's usually only one relevant conversation in the map, 
+    // or we need to find it by visitorId. 
+    // ChatContext handles one conversation per visitorId effectively for now.
+    // We'll use the first one in the list or the one matching activeConversationId.
+    // If activeConversationId is null, we might not have a conversation yet (Backend hasn't created it).
+    // In that case, we show empty state, and sending a message will create it.
 
-    }, [connectionStatus, setActiveConversationId, loadHistory]);
+    // Fallback: finding conversation by visitorId if possible or just taking object values[0]
+    const conversation = activeConversationId
+        ? conversations[activeConversationId]
+        : Object.values(conversations)[0];
 
-    // Current Conversation Data
-    const conversation = activeConversationId ? conversations[activeConversationId] : null;
     const messages = conversation?.messages || [];
 
-    // Scroll to bottom
+    // Auto-scroll to bottom
     useEffect(() => {
-        if (isOpen) {
+        if (isOpen && isFormSubmitted) {
             messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
         }
-    }, [messages, isOpen]);
+    }, [messages, isOpen, isFormSubmitted]);
 
     // Check for unread when closed
     useEffect(() => {
@@ -62,15 +78,64 @@ const CustomerChatWidget = ({ themeColor, businessName }) => {
             setHasUnread(true);
         } else if (isOpen) {
             setHasUnread(false);
-            // Reset unread count in context if we had a method, 
-            // but `markAsRead` in context sets unreadCount to 0 for the active conversation.
-            // We just need to call it when opening.
         }
     }, [conversation?.unreadCount, isOpen]);
 
+    // Auto-set active conversation if we receive one and none is active
+    useEffect(() => {
+        if (!activeConversationId && conversation) {
+            setActiveConversationId(conversation.id);
+        }
+    }, [conversation, activeConversationId, setActiveConversationId]);
+
+    const handleFormSubmit = (e) => {
+        e.preventDefault(); // In case it's a form
+        if (visitorInfo.name && visitorInfo.email) {
+            localStorage.setItem('visitorName', visitorInfo.name);
+            localStorage.setItem('visitorEmail', visitorInfo.email);
+            setIsFormSubmitted(true);
+        }
+    };
+
     const handleSend = () => {
-        if (!inputText.trim() || !activeConversationId) return;
-        sendMessage(activeConversationId, inputText);
+        if (!inputText.trim()) return;
+
+        // If no messages yet, this is the First Message -> Send with details
+        if (messages.length === 0) {
+            const nameToSend = visitorInfo.name || "Visitor";
+            const emailToSend = visitorInfo.email || "no-email@test.com"; // Fallback if absolutely nothing provided
+
+            // Save to localStorage for future sessions - redundant but safe
+            if (visitorInfo.name) localStorage.setItem('visitorName', visitorInfo.name);
+            if (visitorInfo.email) localStorage.setItem('visitorEmail', visitorInfo.email);
+
+            sendCustomerMessage(inputText, nameToSend, emailToSend);
+        } else {
+            // Subsequent messages
+            // We need conversationId. If we have 'conversation' object, use its ID.
+            // If we don't have a conversation object yet (e.g. optimistic update hasn't happened or backend hasn't replied to first msg),
+            // technically we main need to wait or allow optimistic creation.
+            // But 'sendCustomerMessage' handles the "no conversation yet" case by sending visitorId.
+            // 'sendMessage' also handles visitorId case in ChatContext if isPublic is true.
+            // So actually `sendMessage` in Context (lines 222-245) handles isPublic -> uses visitorId.
+            // But `sendCustomerMessage` adds name/email.
+
+            // So: Always proper to use `sendMessage` if we are just chatting.
+            // BUT for the very first one we want to ensure name/email are attached.
+
+            if (conversation && conversation.id) {
+                sendMessage(conversation.id, inputText);
+            } else {
+                // Fallback if we somehow have messages but no ID (shouldn't happen) or just strict fallback
+                // Use sendCustomerMessage again to be safe? 
+                // Actually `sendMessage` in context handles `isPublic` by using `visitorId` and standard payload.
+                // So we can use `sendMessage(null, inputText)` if we want context to handle it?
+                // No, context `sendMessage` takes `conversationId`.
+                // If isPublic, context ignores conversationId and uses visitorId.
+                sendMessage(null, inputText);
+            }
+        }
+
         setInputText('');
     };
 
@@ -113,82 +178,126 @@ const CustomerChatWidget = ({ themeColor, businessName }) => {
                         />
                     </div>
 
-                    {/* Messages Area */}
-                    <div className="flex-1 overflow-y-auto p-4 bg-slate-50 space-y-4 custom-scrollbar">
-                        {messages.length === 0 ? (
-                            <div className="h-full flex flex-col items-center justify-center text-slate-400 text-center px-4">
-                                <MessageOutlined className="text-4xl mb-3 opacity-30" />
-                                <p className="text-sm">Hi! How can we help you with your auto glass needs today?</p>
+                    {!isFormSubmitted ? (
+                        // ONBOARDING FORM
+                        <div className="flex-1 p-6 flex flex-col justify-center bg-slate-50">
+                            <div className="text-center mb-6">
+                                <h4 className="text-lg font-bold text-slate-700 mb-2">Welcome!</h4>
+                                <p className="text-sm text-slate-500">Please enter your details to start chatting with us.</p>
                             </div>
-                        ) : (
-                            messages.map((msg, idx) => {
-                                // SenderType 'SHOP' means incoming for us
-                                // Use case-insensitive check for robustness
-                                const isShop = msg.senderType?.toUpperCase() === 'SHOP';
-                                const isSystem = msg.senderType?.toUpperCase() === 'SYSTEM';
-
-                                return (
-                                    <div
-                                        key={idx}
-                                        className={`flex w-full ${isShop ? 'justify-start' : 'justify-end'} mb-2`}
-                                    >
-                                        {isShop && (
-                                            <Avatar
-                                                size="small"
-                                                icon={<ShopOutlined />}
-                                                className="mr-2 mt-1 shrink-0"
-                                                style={{ backgroundColor: themeColor || '#7E5CFE' }}
-                                            />
-                                        )}
-                                        <div
-                                            className={`
-                                                max-w-[75%] px-4 py-2.5 rounded-2xl text-sm shadow-sm break-words
-                                                ${isShop
-                                                    ? 'bg-slate-100 text-slate-800 rounded-tl-none border border-slate-200'
-                                                    : 'text-white rounded-tr-none'
-                                                }
-                                            `}
-                                            style={!isShop ? { backgroundColor: themeColor || '#7E5CFE' } : {}}
-                                        >
-                                            <p className="m-0 leading-snug">{msg.message}</p>
-                                            <div
-                                                className={`text-[10px] mt-1 text-right opacity-70 ${isShop ? 'text-slate-500' : 'text-white'
-                                                    }`}
-                                            >
-                                                {moment(msg.timestamp).format('HH:mm')}
-                                            </div>
-                                        </div>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-xs font-semibold text-slate-500 mb-1">Name</label>
+                                    <Input
+                                        placeholder="Your Name"
+                                        value={visitorInfo.name}
+                                        onChange={(e) => setVisitorInfo(prev => ({ ...prev, name: e.target.value }))}
+                                        prefix={<UserOutlined className="text-slate-400" />}
+                                        className="rounded-lg py-2"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-slate-500 mb-1">Email</label>
+                                    <Input
+                                        placeholder="your@email.com"
+                                        value={visitorInfo.email}
+                                        onChange={(e) => setVisitorInfo(prev => ({ ...prev, email: e.target.value }))}
+                                        prefix={<MessageOutlined className="text-slate-400" />}
+                                        className="rounded-lg py-2"
+                                    />
+                                </div>
+                                <Button
+                                    type="primary"
+                                    block
+                                    onClick={handleFormSubmit}
+                                    style={{ backgroundColor: themeColor || '#7E5CFE' }}
+                                    className="h-10 rounded-lg font-semibold mt-2"
+                                    disabled={!visitorInfo.name || !visitorInfo.email}
+                                >
+                                    Start Chat
+                                </Button>
+                            </div>
+                        </div>
+                    ) : (
+                        // CHAT INTERFACE
+                        <>
+                            {/* Messages Area */}
+                            <div className="flex-1 overflow-y-auto p-4 bg-slate-50 space-y-4 custom-scrollbar">
+                                {messages.length === 0 ? (
+                                    <div className="h-full flex flex-col items-center justify-center text-slate-400 text-center px-4">
+                                        <MessageOutlined className="text-4xl mb-3 opacity-30" />
+                                        <p className="text-sm">Hi {visitorInfo.name}! How can we help you with your auto glass needs today?</p>
                                     </div>
-                                );
-                            })
-                        )}
-                        <div ref={messagesEndRef} />
-                    </div>
+                                ) : (
+                                    messages.map((msg, idx) => {
+                                        // SenderType 'SHOP' means incoming for us
+                                        // Use case-insensitive check for robustness
+                                        const isShop = msg.senderType?.toUpperCase() === 'SHOP';
 
-                    {/* Input Area */}
-                    <div className="p-3 bg-white border-t border-slate-100">
-                        <div className="flex items-center gap-2">
-                            <Input
-                                placeholder="Type a message..."
-                                value={inputText}
-                                onChange={e => setInputText(e.target.value)}
-                                onPressEnter={handleSend}
-                                disabled={connectionStatus !== 'connected'}
-                                className="rounded-full bg-slate-50 border-slate-200 hover:bg-white focus:bg-white"
-                            />
-                            <Button
-                                type="primary"
-                                shape="circle"
-                                icon={<SendOutlined />}
-                                onClick={handleSend}
-                                disabled={connectionStatus !== 'connected' || !inputText.trim()}
-                                style={{ backgroundColor: themeColor || '#7E5CFE' }}
-                            />
-                        </div>
-                        <div className="text-center mt-2">
-                            <span className="text-[10px] text-slate-400">Powered by AutoPane</span>
-                        </div>
-                    </div>
+                                        return (
+                                            <div
+                                                key={idx}
+                                                className={`flex w-full ${isShop ? 'justify-start' : 'justify-end'} mb-2`}
+                                            >
+                                                {isShop && (
+                                                    <Avatar
+                                                        size="small"
+                                                        icon={<ShopOutlined />}
+                                                        className="mr-2 mt-1 shrink-0"
+                                                        style={{ backgroundColor: themeColor || '#7E5CFE' }}
+                                                    />
+                                                )}
+                                                <div
+                                                    className={`
+                                                        max-w-[75%] px-4 py-2.5 rounded-2xl text-sm shadow-sm break-words
+                                                        ${isShop
+                                                            ? 'bg-slate-100 text-slate-800 rounded-tl-none border border-slate-200'
+                                                            : 'text-white rounded-tr-none'
+                                                        }
+                                                    `}
+                                                    style={!isShop ? { backgroundColor: themeColor || '#7E5CFE' } : {}}
+                                                >
+                                                    <p className="m-0 leading-snug">{msg.message}</p>
+                                                    <div
+                                                        className={`text-[10px] mt-1 text-right opacity-70 ${isShop ? 'text-slate-500' : 'text-white'
+                                                            }`}
+                                                    >
+                                                        {moment(msg.timestamp).format('HH:mm')}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                )}
+                                <div ref={messagesEndRef} />
+                            </div>
+
+                            {/* Input Area */}
+                            <div className="p-3 bg-white border-t border-slate-100">
+                                <div className="flex items-center gap-2">
+                                    <Input
+                                        placeholder="Type a message..."
+                                        value={inputText}
+                                        onChange={e => setInputText(e.target.value)}
+                                        onPressEnter={handleSend}
+                                        disabled={connectionStatus !== 'connected'}
+                                        className="rounded-full bg-slate-50 border-slate-200 hover:bg-white focus:bg-white"
+                                    />
+                                    <Button
+                                        type="primary"
+                                        shape="circle"
+                                        icon={<SendOutlined />}
+                                        onClick={handleSend}
+                                        disabled={connectionStatus !== 'connected' || !inputText.trim()}
+                                        style={{ backgroundColor: themeColor || '#7E5CFE' }}
+                                    />
+                                </div>
+                                <div className="text-center mt-2">
+                                    <span className="text-[10px] text-slate-400">Powered by AutoPane</span>
+                                </div>
+                            </div>
+                        </>
+                    )}
                 </div>
             )}
 

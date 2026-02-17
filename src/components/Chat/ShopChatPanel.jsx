@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useChat } from '../../context/ChatContext';
 import { Input, Button, List, Avatar, Badge, Empty, Spin } from 'antd';
-import { SendOutlined, UserOutlined } from '@ant-design/icons';
+import { SendOutlined, UserOutlined, DeleteOutlined } from '@ant-design/icons';
 import moment from 'moment';
 
 const ShopChatPanel = () => {
@@ -11,7 +11,8 @@ const ShopChatPanel = () => {
         setActiveConversationId,
         sendMessage,
         connectionStatus,
-        markAsRead
+        markAsRead,
+        deleteConversation
     } = useChat();
 
     const [inputText, setInputText] = useState('');
@@ -118,6 +119,16 @@ const ShopChatPanel = () => {
                                     </p>
                                 </div>
                             </div>
+                            <Button
+                                type="text"
+                                danger
+                                icon={<DeleteOutlined />}
+                                onClick={() => {
+                                    if (window.confirm('Are you sure you want to delete this conversation?')) {
+                                        deleteConversation(activeConversationId);
+                                    }
+                                }}
+                            />
                         </div>
 
                         {/* Messages */}
@@ -146,7 +157,7 @@ const ShopChatPanel = () => {
                                 })
                             ) : (
                                 <div className="h-full flex flex-col items-center justify-center text-slate-400">
-                                    <p>No messages yet taking.</p>
+                                    <p>No messages yet.</p>
                                     <p className="text-xs">Start the conversation!</p>
                                 </div>
                             )}

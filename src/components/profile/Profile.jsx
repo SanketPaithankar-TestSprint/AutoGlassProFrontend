@@ -2,10 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getProfile } from "../../api/getProfile";
 import { getCustomers } from "../../api/getCustomers";
-import { getEmployees } from "../../api/getEmployees";
-import { createCustomer } from "../../api/createCustomer";
-import { updateCustomer } from "../../api/updateCustomer";
-import { createEmployee } from "../../api/createEmployee";
 import { updateProfile } from "../../api/updateProfile";
 import { saveUserLogo } from "../../api/saveUserLogo";
 import { getValidToken } from "../../api/getValidToken";
@@ -21,6 +17,7 @@ import DistributorCredentials from "./DistributorCredentials";
 import UserKitPricePage from "./UserKitPricePage";
 import UserAdasPricePage from "./UserAdasPricePage";
 import SpecialInstructions from "./SpecialInstructions";
+import Shops from "./Shops";
 import SlugConfig from "../SlugConfig/SlugConfig";
 import { COUNTRIES, getStatesOrProvinces, getCities } from "../../const/locations";
 
@@ -30,12 +27,10 @@ const Profile = () => {
 
     // Modals state
     const [isCustomerModalVisible, setIsCustomerModalVisible] = useState(false);
-    const [isEmployeeModalVisible, setIsEmployeeModalVisible] = useState(false);
     const [isEditProfileModalVisible, setIsEditProfileModalVisible] = useState(false);
     const [editingCustomer, setEditingCustomer] = useState(null);
 
     const [form] = Form.useForm();
-    const [employeeForm] = Form.useForm();
     const [profileForm] = Form.useForm();
     const token = getValidToken();
 
@@ -62,32 +57,6 @@ const Profile = () => {
 
 
 
-    const { data: employees = [], isLoading: loadingEmployees } = useQuery({
-        queryKey: ['employees'],
-        queryFn: async () => {
-            // Check localStorage cache first
-            const cached = localStorage.getItem("agp_employees");
-            if (cached) {
-                try {
-                    const parsed = JSON.parse(cached);
-                    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-                } catch (e) {
-                    console.error("Failed to parse cached employees", e);
-                }
-            }
-
-            if (!token) throw new Error("No token found. Please login.");
-            const res = await getEmployees(token);
-            const data = Array.isArray(res) ? res : [];
-            localStorage.setItem("agp_employees", JSON.stringify(data));
-            return data;
-        },
-        enabled: activeTab === 'employees', // Only fetch when tab is active
-        staleTime: 1000 * 60 * 30 // Cache for 30 minutes
-    });
-    useEffect(() => {
-
-    }, [employees]);
     // Logo State
     const [logoUrl, setLogoUrl] = useState(localStorage.getItem('userLogo'));
     const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -152,38 +121,6 @@ const Profile = () => {
 
 
 
-    // Employee Handlers
-    const handleAddEmployee = () => {
-        employeeForm.resetFields();
-        setIsEmployeeModalVisible(true);
-    };
-
-    const handleSaveEmployee = async () => {
-        try {
-            const values = await employeeForm.validateFields();
-            setSaving(true);
-
-            if (!token) throw new Error("No token found");
-            if (!profile?.userId) throw new Error("User ID not found");
-
-            const payload = {
-                ...values,
-                userId: profile.userId
-            };
-
-            await createEmployee(token, payload);
-            notification.success({ message: "Employee created successfully" });
-
-            setIsEmployeeModalVisible(false);
-            localStorage.removeItem("agp_employees");
-            queryClient.invalidateQueries({ queryKey: ['employees'] });
-        } catch (err) {
-            console.error(err);
-            notification.error({ message: "Failed to create employee", description: err.message });
-        } finally {
-            setSaving(false);
-        }
-    };
 
 
 
@@ -469,6 +406,7 @@ const Profile = () => {
 
 
 
+<<<<<<< Updated upstream
     const renderEmployeesContent = () => {
         if (loadingEmployees) return <div className="text-center py-12 text-lg text-gray-500 animate-pulse">Loading employees...</div>;
 
@@ -574,6 +512,59 @@ const Profile = () => {
                         {renderMenuItem('userAdasPrice', 'ADAS Pricing', <ScanOutlined />)}
                         {renderMenuItem('specialInstructions', 'Special Instructions', <FileTextOutlined />)}
                         {renderMenuItem('slugConfig', 'Contact Form Config', <KeyOutlined />)}
+=======
+
+    return (
+        <div className={`flex flex-col md:flex-row ${isMobile ? 'h-auto' : 'h-screen'} bg-gray-50/50`}>
+            {/* Mobile Menu Grid */}
+            {isMobile && (
+                <div className="w-full bg-white border-b border-gray-200 p-4">
+                    <div className="grid grid-cols-3 gap-2">
+                        {[
+                            { id: 'profile', label: 'Profile', icon: <UserOutlined /> },
+                            { id: 'shops', label: 'Shops', icon: <ShopOutlined /> },
+                            { id: 'distributorCredentials', label: 'Distributor', icon: <KeyOutlined /> },
+                            { id: 'laborRate', label: 'Labor Rate', icon: <CalculatorOutlined /> },
+                            { id: 'taxRates', label: 'Tax Rates', icon: <PercentageOutlined /> },
+                            { id: 'smtp', label: 'Email', icon: <MailOutlined /> },
+                            { id: 'userKitPrice', label: 'Kit Price', icon: <GiftOutlined /> },
+                            { id: 'userAdasPrice', label: 'ADAS', icon: <CameraOutlined /> },
+                            { id: 'slugConfig', label: 'Form Config', icon: <LinkOutlined /> },
+                        ].map(item => {
+                            const isActive = activeTab === item.id;
+                            return (
+                                <button
+                                    key={item.id}
+                                    onClick={() => setActiveTab(item.id)}
+                                    className={`flex flex-col items-center justify-center p-3 rounded-lg transition-all duration-200 text-center ${isActive ? 'bg-violet-600 text-white shadow-md' : 'bg-gray-50 text-gray-600 hover:bg-violet-50 hover:text-violet-600'}`}
+                                >
+                                    <span className="text-lg mb-1">{item.icon}</span>
+                                    <span className="text-xs font-semibold leading-tight">{item.label}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+
+            {/* Desktop Sidebar */}
+            {!isMobile && (
+                <div className="w-64 bg-white border-r border-gray-200 flex-shrink-0 md:h-[calc(100vh-64px)] overflow-y-auto">
+                    <div className="p-6">
+                        <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Menu</h2>
+                        <div className="space-y-2">
+                            {renderMenuItem('profile', 'Profile', <UserOutlined />)}
+                            {renderMenuItem('shops', 'Shops', <ShopOutlined />)}
+                            {renderMenuItem('distributorCredentials', 'Distributor Credentials', <KeyOutlined />)}
+                            {renderMenuItem('laborRate', 'Labor Rate', <CalculatorOutlined />)}
+                            {renderMenuItem('taxRates', 'Tax Rates', <PercentageOutlined />)}
+                            {renderMenuItem('smtp', 'Email (SMTP)', <MailOutlined />)}
+                            {renderMenuItem('userKitPrice', 'User Kit Price', <GiftOutlined />)}
+                            {renderMenuItem('userAdasPrice', 'ADAS Pricing', <CameraOutlined />)}
+                            {renderMenuItem('specialInstructions', 'Special Instructions', <FileTextOutlined />)}
+                            {renderMenuItem('slugConfig', 'Contact Form Config', <LinkOutlined />)}
+                        </div>
+>>>>>>> Stashed changes
                     </div>
                 </div>
             </div>
@@ -582,6 +573,7 @@ const Profile = () => {
             <div className="flex-1 overflow-y-auto p-4 md:p-8 md:h-[calc(100vh-64px)]">
                 <div className="max-w-4xl mx-auto">
                     {activeTab === 'profile' && renderProfileContent()}
+<<<<<<< Updated upstream
 
                     {activeTab === 'employees' && renderEmployeesContent()}
                     {activeTab === 'distributorCredentials' && <DistributorCredentials />}
@@ -592,6 +584,17 @@ const Profile = () => {
                     {activeTab === 'userAdasPrice' && <UserAdasPricePage />}
                     {activeTab === 'specialInstructions' && <SpecialInstructions />}
                     {activeTab === 'slugConfig' && <SlugConfig />}
+=======
+                    {activeTab === 'shops' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><Shops userProfile={profile} /></div>}
+                    {activeTab === 'distributorCredentials' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><DistributorCredentials /></div>}
+                    {activeTab === 'laborRate' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><LaborRateConfiguration /></div>}
+                    {activeTab === 'taxRates' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><TaxRateConfiguration /></div>}
+                    {activeTab === 'smtp' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><SmtpConfiguration /></div>}
+                    {activeTab === 'userKitPrice' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><UserKitPricePage /></div>}
+                    {activeTab === 'userAdasPrice' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><UserAdasPricePage /></div>}
+                    {activeTab === 'specialInstructions' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><SpecialInstructions /></div>}
+                    {activeTab === 'slugConfig' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><SlugConfig /></div>}
+>>>>>>> Stashed changes
                 </div>
             </div>
         </div>
