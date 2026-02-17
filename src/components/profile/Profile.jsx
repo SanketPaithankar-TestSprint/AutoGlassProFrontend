@@ -289,20 +289,19 @@ const Profile = () => {
                     </div>
 
                     {/* Logo Section */}
-                    <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} items-center gap-6 mb-8 p-4 bg-gray-50 rounded-xl border border-gray-100`}>
+                    <div className="flex flex-row items-center gap-4 md:gap-6 mb-6 md:mb-8 p-3 md:p-4 bg-gray-50 rounded-xl border border-gray-100">
                         <div className="relative">
                             <Avatar
-                                size={80}
+                                size={isMobile ? 60 : 80}
                                 src={logoUrl}
                                 icon={<ShopOutlined />}
                                 className="bg-violet-100 text-violet-600 border-2 border-white shadow-md"
                             />
                         </div>
-                        <div className={isMobile ? 'w-full' : 'flex-1'}>
+                        <div className="flex-1">
                             <h3 className="text-sm font-bold text-gray-900 mb-1">Shop Logo</h3>
-                            <p className="text-xs text-gray-500 mb-3">
+                            <p className="text-xs text-gray-500 mb-2 md:mb-3 leading-tight">
                                 Upload a logo for your shop.
-                                Max size: 2MB.
                             </p>
                             <ImgCrop rotationSlider showReset aspect={1} modalWidth={isMobile ? 300 : 600}>
                                 <Upload
@@ -314,7 +313,7 @@ const Profile = () => {
                                         icon={uploadingLogo ? <ThunderboltOutlined spin /> : <UploadOutlined />}
                                         disabled={uploadingLogo}
                                         size="small"
-                                        className={`bg-white ${isMobile ? 'w-full' : ''}`}
+                                        className="bg-white"
                                     >
                                         {uploadingLogo ? "Uploading..." : "Change Logo"}
                                     </Button>
@@ -323,7 +322,7 @@ const Profile = () => {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-2 gap-4 md:gap-6">
                         <div className="space-y-1">
                             <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Business Name</span>
                             <p className="text-gray-900 font-semibold text-lg">{profile.businessName || "-"}</p>
@@ -355,7 +354,7 @@ const Profile = () => {
                     <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
                         <PhoneOutlined className="text-violet-500" /> Contact Information
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-2 gap-4 md:gap-6">
                         <div className="space-y-1">
                             <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Email</span>
                             <p className="text-gray-900 font-medium">{profile.email || "-"}</p>

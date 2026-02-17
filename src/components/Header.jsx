@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { MdSupportAgent } from "react-icons/md";
 import { Layout, Button, Space, Drawer, Modal, Dropdown } from "antd";
 import { MenuOutlined, UserOutlined, DownOutlined, PieChartOutlined, TeamOutlined, FormOutlined, CalendarOutlined, FolderOpenOutlined, BarChartOutlined, MessageOutlined, AuditOutlined } from "@ant-design/icons";
 import Logo from "./logo";
@@ -115,6 +116,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
       { key: "reports", label: "Reports", href: "/reports", icon: <BarChartOutlined /> },
       { key: "service-inquiries", label: "Service Inquiries", href: "/service-contact-form", icon: <MessageOutlined /> },
       { key: "employee-attendance", label: "Employee Attendance", href: "/employee-attendance", icon: <AuditOutlined /> },
+      { key: "live-chat", label: "Live Chat", href: "/chat", icon: <MdSupportAgent className="text-xl" /> },
     ] : []),
   ];
 

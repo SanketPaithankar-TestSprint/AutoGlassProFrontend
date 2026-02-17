@@ -1,8 +1,10 @@
 // src/components/PublicContact/PublicContactRoot.jsx
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Select, Upload, Button } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
+import { UploadOutlined, PhoneOutlined, MailOutlined, EnvironmentOutlined, ClockCircleOutlined, CheckCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { useParams } from 'react-router-dom';
+import clsx from 'clsx';
 import { validateSlug, submitContactForm, createServiceInquiry, decodeVin, fetchVehicleMakes, fetchVehicleModels } from '../../api/publicContactForm';
 import { clearSessionId, generateSessionId } from '../../utils/sessionUtils';
 
@@ -17,16 +19,15 @@ import CustomerChatWidget from './CustomerChatWidget';
 import './PublicContact.css';
 
 // Import Assets
-import carPreview from '../../assets/car_preview.png';
+import carPreview from '../../assets/ContactFormCar.png';
 import windshieldSensorGuide from '../../assets/windshield_sensor_guide.png';
 import { GLASS_OVERLAYS } from './const/imageConfig';
+
+// Utility for classNames
+function cn(...inputs) {
+  return clsx(inputs);
+}
 // Memoized Map component to prevent re-renders
-const MapEmbed = React.memo(({ html }) => (
-    <div
-        className="w-full h-full [&>iframe]:w-full [&>iframe]:h-full [&>iframe]:border-0"
-        dangerouslySetInnerHTML={{ __html: html }}
-    />
-));
 
 const formatPhoneNumber = (phoneNumber) => {
     if (!phoneNumber) return '';
@@ -62,57 +63,29 @@ const formatOpeningHours = (openHours) => {
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
     const shortDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-    const formattedDays = days.map((day, index) => {
+    const dayElements = days.map((day, index) => {
         const data = openHours[day];
+        const dayLabel = shortDays[index];
+        
         if (!data || !data.intervals || data.intervals.length === 0) {
-            return { day: shortDays[index], isOpen: false };
+            return (
+                <div key={day} className="text-xs">
+                    <span className="text-gray-600 font-medium">{dayLabel}:</span> <span className="text-gray-400">Closed</span>
+                </div>
+            );
         }
+        
         const interval = data.intervals[0];
-        return {
-            day: shortDays[index],
-            isOpen: true,
-            time: `${formatTime(interval.from)} – ${formatTime(interval.to)}`
-        };
+        return (
+            <div key={day} className="text-xs">
+                <span className="text-gray-600 font-medium">{dayLabel}:</span> <span className="text-gray-700">{formatTime(interval.from)} – {formatTime(interval.to)}</span>
+            </div>
+        );
     });
-
-    const groups = [];
-    let currentGroup = null;
-
-    formattedDays.forEach((item) => {
-        if (!currentGroup) {
-            currentGroup = { start: item.day, end: item.day, time: item.time, isOpen: item.isOpen };
-        } else {
-            if (item.isOpen === currentGroup.isOpen && item.time === currentGroup.time) {
-                currentGroup.end = item.day;
-            } else {
-                groups.push(currentGroup);
-                currentGroup = { start: item.day, end: item.day, time: item.time, isOpen: item.isOpen };
-            }
-        }
-    });
-    if (currentGroup) groups.push(currentGroup);
 
     return (
-        <div className="flex flex-col gap-0.5">
-            {groups.map((group, idx) => {
-                const dayRange = group.start === group.end ? group.start : `${group.start}-${group.end}`;
-                if (!group.isOpen) {
-                    // Skip closed days if preferred, or show them. 
-                    // User example: "Sat: ... (Sun: Closed)" implies showing closed if part of a list, 
-                    // but usually separately if monolithic.
-                    // For now, let's render grouped closed days as "Closed"
-                    return (
-                        <div key={idx} className="text-sm font-medium text-slate-800">
-                            {dayRange}: <span className="text-slate-500 font-normal">Closed</span>
-                        </div>
-                    );
-                }
-                return (
-                    <div key={idx} className="text-sm font-medium text-slate-800">
-                        {dayRange}: <span className="text-slate-600 font-normal">{group.time}</span>
-                    </div>
-                );
-            })}
+        <div className="grid grid-cols-3 gap-x-4 gap-y-0.5">
+            {dayElements}
         </div>
     );
 };
@@ -136,6 +109,7 @@ const PublicContactRoot = () => {
     const [vinLoading, setVinLoading] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [showNote, setShowNote] = useState(false);
+    const [useVinDecoding, setUseVinDecoding] = useState(false);
     const [fileList, setFileList] = useState([]);
     const [formData, setFormData] = useState({
         name: '',
@@ -528,468 +502,768 @@ const PublicContactRoot = () => {
     return (
         <ChatProvider isPublic={true} publicUserId={userId}>
             <div
-                className="min-h-screen lg:h-screen flex flex-col relative lg:overflow-hidden"
+                className="bg-white text-gray-900 font-sans selection:bg-yellow-200 h-screen w-full overflow-hidden flex flex-col"
                 style={{
                     '--theme-color': themeColor,
-                    background: `linear-gradient(135deg, ${themeColor}26 0%, #ffffff 50%, ${themeColor}12 100%)`
                 }}
             >
-                <CustomerChatWidget themeColor={themeColor} businessName={businessInfo?.businessName} />
-
-                {/* Full Width Container */}
-                <div className="flex flex-col lg:flex-row w-full h-full max-w-7xl mx-auto items-stretch px-4 md:px-8 lg:px-12 py-4 lg:py-6 gap-6 lg:gap-8">
-
-                    {/* Left Column - Form Section */}
-                    <div className="w-full lg:w-5/12 order-2 lg:order-1 flex flex-col min-h-0 lg:h-full pr-2 py-2">
-                        <div className="flex-1 overflow-y-auto custom-scrollbar">
-                            <div className="premium-form-card rounded-2xl p-8 w-full min-h-full h-auto">
-                                <div className="text-center mb-6">
-                                    <h3 className="text-xl font-bold text-slate-800 mb-1">Get a Quote</h3>
-                                    <p className="text-sm text-slate-500">Fill the form below and we will get back to you shortly</p>
-                                </div>
-
-                                <form className="space-y-4" onSubmit={handleSubmit}>
-                                    {/* Name & Email Row */}
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <label className="premium-label">Full Name <span className="text-red-500">*</span></label>
-                                            <input type="text" name="name" value={formData.name} onChange={handleInputChange} placeholder="Full Name" required className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
-                                        </div>
-                                        <div>
-                                            <label className="premium-label">Email <span className="text-red-500">*</span></label>
-                                            <input type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="email@address.com" required className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
-                                        </div>
-                                    </div>
-
-                                    {/* Phone & Location Row */}
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <label className="premium-label">Phone <span className="text-red-500">*</span></label>
-                                            <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} placeholder="(555) 555-5555" required className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
-                                        </div>
-                                        <div>
-                                            <label className="premium-label">Location {!isMobile && <span className="text-red-500">*</span>}</label>
-                                            <input type="text" name="location" value={formData.location} onChange={handleInputChange} placeholder="City, State" required={!isMobile} className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
-                                        </div>
-                                    </div>
-
-                                    {/* License Plate & VIN Row */}
-
-                                    <div>
-                                        <label className="premium-label">License Plate</label>
-                                        <input type="text" name="licensePlateNumber" value={formData.licensePlateNumber} onChange={handleInputChange} placeholder="LCS-PLT" className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
-                                    </div>
-                                    <div className="flex gap-2 items-end">
-                                        <div className="flex-1">
-                                            <label className="premium-label">VIN</label>
-                                            <input type="text" name="vin" value={formData.vin} onChange={handleInputChange} placeholder="Enter 17-character VIN" className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
-                                        </div>
-                                        <button type="button" onClick={handleVinLookup} disabled={vinLoading || !formData.vin} className="h-9 px-3 text-xs font-medium border rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-sm" style={{ borderColor: themeColor, color: themeColor, backgroundColor: 'white' }}>
-                                            {vinLoading ? '...' : 'Lookup'}
-                                        </button>
-                                    </div>
-
-                                    {/* Year, Make, Model Row */}
-                                    <div className="grid grid-cols-3 gap-2">
-                                        <div>
-                                            <label className="premium-label">Year</label>
-                                            <Select
-                                                showSearch
-                                                placeholder="Select"
-                                                optionFilterProp="children"
-                                                value={formData.year || undefined}
-                                                onChange={(value) => setFormData(prev => ({ ...prev, year: value }))}
-                                                filterOption={(input, option) =>
-                                                    (option?.children ?? '').toString().toLowerCase().includes(input.toLowerCase())
-                                                }
-                                                className="w-full"
-                                                style={{ height: '36px' }}
-                                                dropdownStyle={{ zIndex: 9999 }}
-                                            >
-                                                {yearOptions.map(year => (
-                                                    <Select.Option key={year} value={year}>{year}</Select.Option>
-                                                ))}
-                                            </Select>
-                                        </div>
-                                        <div>
-                                            <label className="premium-label">Make</label>
-                                            <Select
-                                                showSearch
-                                                placeholder="Select"
-                                                optionFilterProp="children"
-                                                value={formData.make || undefined}
-                                                onChange={(value) => setFormData(prev => ({ ...prev, make: value, model: '' }))}
-                                                filterOption={(input, option) =>
-                                                    (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
-                                                }
-                                                className="w-full"
-                                                style={{ height: '36px' }}
-                                                dropdownStyle={{ zIndex: 9999 }}
-                                            >
-                                                {makeOptions.map((make) => (
-                                                    <Select.Option key={make.Make_ID} value={make.Make_Name}>{make.Make_Name}</Select.Option>
-                                                ))}
-                                            </Select>
-                                        </div>
-                                        <div>
-                                            <label className="premium-label">Model</label>
-                                            <Select
-                                                showSearch
-                                                placeholder="Select"
-                                                optionFilterProp="children"
-                                                value={formData.model || undefined}
-                                                onChange={(value) => setFormData(prev => ({ ...prev, model: value }))}
-                                                disabled={!formData.make}
-                                                filterOption={(input, option) =>
-                                                    (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
-                                                }
-                                                className="w-full"
-                                                style={{ height: '36px' }}
-                                                dropdownStyle={{ zIndex: 9999 }}
-                                            >
-                                                {modelOptions.map((model) => (
-                                                    <Select.Option key={model.Model_ID} value={model.Model_Name}>{model.Model_Name}</Select.Option>
-                                                ))}
-                                            </Select>
-                                        </div>
-                                    </div>
-
-                                    {/* Service Type */}
-                                    <div>
-                                        <label className="premium-label">Service Type <span className="text-red-500">*</span></label>
-                                        <select name="serviceType" value={formData.serviceType} onChange={handleInputChange} required className="w-full h-9 px-3 text-sm rounded-lg premium-select">
-                                            <option value="">Select service type</option>
-                                            {serviceTypeOptions.map((opt, idx) => (<option key={idx} value={opt}>{opt}</option>))}
-                                        </select>
-                                    </div>
-
-                                    {/* Conditional Service Options */}
-                                    {formData.serviceType === 'Windshield Replacement' && (
-                                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 animate-fadeIn">
-                                            <p className="text-xs font-medium text-slate-600 mb-2">Features <span className="text-red-500">*</span></p>
-                                            <div className="grid grid-cols-2 gap-1.5">
-                                                {windshieldFeatureOptions.map((feature, idx) => (
-                                                    <label key={idx} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer py-1">
-                                                        <input type="checkbox" name="windshieldFeatures" value={feature} checked={(formData.windshieldFeatures || []).includes(feature)} onChange={handleCheckboxChange} className="w-3.5 h-3.5 rounded" style={{ accentColor: themeColor }} />
-                                                        {feature}
-                                                    </label>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                    {formData.serviceType === 'Window Rolling Issue' && (
-                                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 animate-fadeIn">
-                                            <p className="text-xs font-medium text-slate-600 mb-2">Location <span className="text-red-500">*</span></p>
-                                            <div className="grid grid-cols-2 gap-1.5">
-                                                {windowRollingOptions.map((option, idx) => (
-                                                    <label key={idx} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer py-1">
-                                                        <input type="radio" name="windowRollingLocation" value={option} checked={formData.windowRollingLocation === option} onChange={handleInputChange} required className="w-3.5 h-3.5" style={{ accentColor: themeColor }} />
-                                                        {option}
-                                                    </label>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                    {formData.serviceType === 'Vent Glass Replacement' && (
-                                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 animate-fadeIn">
-                                            <p className="text-xs font-medium text-slate-600 mb-2">Location <span className="text-red-500">*</span></p>
-                                            <div className="grid grid-cols-2 gap-1.5">
-                                                {ventGlassOptions.map((option, idx) => (
-                                                    <label key={idx} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer py-1">
-                                                        <input type="radio" name="ventGlassLocation" value={option} checked={formData.ventGlassLocation === option} onChange={handleInputChange} required className="w-3.5 h-3.5" style={{ accentColor: themeColor }} />
-                                                        {option}
-                                                    </label>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                    {formData.serviceType === 'Door Glass Replacement' && (
-                                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 animate-fadeIn">
-                                            <p className="text-xs font-medium text-slate-600 mb-2">Location <span className="text-red-500">*</span></p>
-                                            <div className="grid grid-cols-2 gap-1.5">
-                                                {doorGlassOptions.map((option, idx) => (
-                                                    <label key={idx} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer py-1">
-                                                        <input type="radio" name="doorGlassLocation" value={option} checked={formData.doorGlassLocation === option} onChange={handleInputChange} required className="w-3.5 h-3.5" style={{ accentColor: themeColor }} />
-                                                        {option}
-                                                    </label>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                    {formData.serviceType === 'Quarter Glass Replacement' && (
-                                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 animate-fadeIn">
-                                            <p className="text-xs font-medium text-slate-600 mb-2">Location <span className="text-red-500">*</span></p>
-                                            <div className="grid grid-cols-2 gap-1.5">
-                                                {quarterGlassOptions.map((option, idx) => (
-                                                    <label key={idx} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer py-1">
-                                                        <input type="radio" name="quarterGlassLocation" value={option} checked={formData.quarterGlassLocation === option} onChange={handleInputChange} required className="w-3.5 h-3.5" style={{ accentColor: themeColor }} />
-                                                        {option}
-                                                    </label>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Service Preference */}
-                                    <div className="flex items-center gap-6 py-2">
-                                        <p className="text-xs font-medium text-slate-600">Service <span className="text-red-500">*</span></p>
-                                        <div className="flex gap-4">
-                                            <label className="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
-                                                <input type="radio" name="servicePreference" value="In-shop service" checked={formData.servicePreference === 'In-shop service'} onChange={handleInputChange} required className="w-3.5 h-3.5" style={{ accentColor: themeColor }} />
-                                                In-shop
-                                            </label>
-                                            <label className="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
-                                                <input type="radio" name="servicePreference" value="Mobile service" checked={formData.servicePreference === 'Mobile service'} onChange={handleInputChange} required className="w-3.5 h-3.5" style={{ accentColor: themeColor }} />
-                                                Mobile
-                                            </label>
-                                        </div>
-                                    </div>
-
-                                    {isMobile && (
-                                        <div className="animate-fadeIn space-y-3 pt-2">
-                                            <div>
-                                                <label className="premium-label">Street Address <span className="text-red-500">*</span></label>
-                                                <input type="text" name="street" value={formData.street} onChange={handleInputChange} placeholder="123 Main St" required className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-3">
-                                                <div>
-                                                    <label className="premium-label">City <span className="text-red-500">*</span></label>
-                                                    <input type="text" name="city" value={formData.city} onChange={handleInputChange} placeholder="San Jose" required className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
-                                                </div>
-                                                <div>
-                                                    <label className="premium-label">Zip Code <span className="text-red-500">*</span></label>
-                                                    <input type="text" name="zipcode" value={formData.zipcode} onChange={handleInputChange} placeholder="95112" required className="w-full h-9 px-3 text-sm rounded-lg premium-input" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Customer Notes Toggle */}
-                                    <div>
-                                        <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer mb-2">
-                                            <input
-                                                type="checkbox"
-                                                checked={showNote}
-                                                onChange={(e) => {
-                                                    setShowNote(e.target.checked);
-                                                    if (!e.target.checked) {
-                                                        setFormData(prev => ({ ...prev, message: '' }));
-                                                    }
-                                                }}
-                                                className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300"
-                                                style={{ accentColor: themeColor }}
-                                            />
-                                            <span>Add Details/Notes</span>
-                                        </label>
-
-                                        {showNote && (
-                                            <div className="animate-fadeIn">
-                                                <textarea
-                                                    name="message"
-                                                    value={formData.message}
-                                                    onChange={handleInputChange}
-                                                    placeholder="Any additional details..."
-                                                    className="w-full px-3 py-2 text-sm rounded-lg premium-input h-24 resize-none"
-                                                />
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* File Upload */}
-                                    <div>
-                                        <label className="premium-label">Upload Image (Optional)</label>
-                                        <Upload
-                                            beforeUpload={() => false}
-                                            fileList={fileList}
-                                            onChange={({ fileList }) => setFileList(fileList)}
-                                            accept="image/*"
-                                        >
-                                            <Button icon={<UploadOutlined />}>Click to Upload</Button>
-                                        </Upload>
-                                    </div>
-
-                                    {/* Submit Button */}
-                                    <div className="flex justify-center mt-4">
-                                        <button type="submit" disabled={formLoading} className="premium-btn h-10 text-sm font-semibold text-white rounded-lg disabled:opacity-60 disabled:cursor-not-allowed px-8" style={{ background: `linear-gradient(135deg, ${themeColor} 0%, ${themeColor}cc 100%)` }}>
-                                            {formLoading ? (<span className="flex items-center justify-center gap-2"><span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>Sending...</span>) : 'Submit Request'}
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
+                {/* Main Content - Strictly Single Page on Desktop */}
+                <main className="flex-1 w-full max-w-7xl mx-auto flex flex-col md:flex-row h-full overflow-y-auto md:overflow-hidden">
+                    
+                    {/* MOBILE ONLY: Top Design (Glass Reference) */}
+                    <div className="md:hidden w-full h-64 shrink-0 relative group overflow-hidden border-b border-gray-200">
+                        <GlassReference 
+                            serviceType={formData.serviceType} 
+                            carPreview={carPreview}
+                            windshieldSensorGuide={windshieldSensorGuide}
+                        />
                     </div>
 
-                    {/* Right Column - Info & Glass Reference */}
-                    <div className="w-full lg:w-7/12 order-1 lg:order-2 flex flex-col gap-4 lg:h-full lg:overflow-hidden pt-2 pb-2">
-
-                        {/* Card 1: Shop Info & Map Combined */}
-                        {/* Card 1: Shop Info & Map Combined */}
-                        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col overflow-hidden shrink-0 flex-1 min-h-0">
-                            {/* Main Content Area - Responsive Flex */}
-                            <div className="flex flex-col md:flex-row flex-1 min-h-0 overflow-hidden">
-
-                                {/* Info Column */}
-                                <div className="flex flex-col w-full md:w-3/5 min-h-0 overflow-hidden">
-                                    {/* Header Section */}
-                                    <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex-shrink-0">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm" style={{ backgroundColor: 'white', color: themeColor }}>
-                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <h2 className="text-lg font-bold text-slate-800 truncate leading-tight">{businessInfo?.businessName || "Our Location"}</h2>
-                                                {businessInfo?.tagline && (
-                                                    <p className="text-xs text-slate-500 truncate mt-0.5">{businessInfo.tagline}</p>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Contact Info - Scrollable */}
-                                    <div className="p-6 flex flex-col gap-4 overflow-y-auto flex-1 custom-scrollbar">
-
-                                        {/* Phone Row */}
-                                        {businessInfo?.phone && (
-                                            <div className="flex items-start gap-4 group">
-                                                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors" style={{ backgroundColor: `${themeColor}10`, color: themeColor }}>
-                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                                                </div>
-                                                <div className="flex-1 min-w-0 pt-1">
-                                                    <p className="text-xs font-medium text-slate-500 mb-0.5">Phone</p>
-                                                    <a href={`tel:${businessInfo.phone}`} className="text-base font-semibold text-slate-800 hover:text-blue-600 transition-colors block">
-                                                        {formatPhoneNumber(businessInfo.phone)}
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Hours Row */}
-                                        {businessInfo?.openHours && (
-                                            <div className="flex items-start gap-4">
-                                                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${themeColor}10`, color: themeColor }}>
-                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                                                </div>
-                                                <div className="flex-1 min-w-0 pt-1">
-                                                    <p className="text-xs font-medium text-slate-500 mb-0.5">Hours</p>
-                                                    {formatOpeningHours(businessInfo.openHours)}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Address Row */}
-                                        {businessInfo?.address && (
-                                            <div className="flex items-start gap-4">
-                                                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${themeColor}10`, color: themeColor }}>
-                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                                                </div>
-                                                <div className="flex-1 min-w-0 pt-1">
-                                                    <p className="text-xs font-medium text-slate-500 mb-0.5">Address</p>
-                                                    <a
-                                                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(businessInfo.address)}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-sm font-medium text-slate-800 leading-snug hover:text-blue-600 transition-colors block"
-                                                    >
-                                                        {businessInfo.address}
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Email Row */}
-                                        {businessInfo?.email && (
-                                            <div className="flex items-start gap-4 group">
-                                                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors" style={{ backgroundColor: `${themeColor}10`, color: themeColor }}>
-                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                                                </div>
-                                                <div className="flex-1 min-w-0 pt-1">
-                                                    <p className="text-xs font-medium text-slate-500 mb-0.5">Email</p>
-                                                    <a href={`mailto:${businessInfo.email}`} className="text-sm font-medium text-slate-800 hover:text-blue-600 transition-colors block truncate">
-                                                        {businessInfo.email}
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Map Column */}
-                                {businessInfo?.maps && (
-                                    <div className="relative w-full h-48 md:w-2/5 md:h-auto border-t md:border-t-0 md:border-l border-slate-100 bg-slate-50">
-                                        <MapEmbed html={businessInfo.maps} />
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Card 2: Glass Reference / Windshield Sensor Guide */}
-                        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm text-center flex-shrink-0 flex-1 min-h-0 flex flex-col items-center justify-center overflow-hidden relative group">
-                            {formData.serviceType === 'Windshield Replacement' ? (
-                                /* Windshield Sensor Guide */
-                                <div className="windshield-sensor-guide animate-fadeIn">
-                                    <div className="windshield-sensor-header">
-                                        <div className="windshield-sensor-icon" style={{ backgroundColor: `${themeColor}15`, color: themeColor }}>
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <circle cx="12" cy="12" r="10"></circle>
-                                                <line x1="12" y1="16" x2="12" y2="12"></line>
-                                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                                            </svg>
-                                        </div>
-                                        <h3 className="windshield-sensor-title">Help Us Identify Your Windshield Sensors</h3>
-                                    </div>
-                                    <p className="windshield-sensor-message">
-                                        Please take a photo of your windshield from the <strong>front of your vehicle</strong>. This helps us identify installed sensors
-                                        (Rain Sensor, ADAS Camera, Lane Departure Warning, etc.) and ensure the correct replacement glass is ordered for your car.
-                                    </p>
-                                    <div className="windshield-sensor-image-wrapper">
-                                        <img
-                                            src={windshieldSensorGuide}
-                                            alt="Windshield sensor locations reference"
-                                            className="windshield-sensor-image"
-                                        />
-                                    </div>
-                                    <div className="windshield-sensor-tip">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                            <circle cx="12" cy="12" r="3"></circle>
-                                        </svg>
-                                        <span>If you are not sure about sensors, take a whole windshield picture from outside and focus on the center of the windshield.</span>
-                                    </div>
-                                </div>
-                            ) : (
-                                /* Default: Car Glass Reference Diagram */
-                                <div
-                                    className="relative flex items-center justify-center flex-shrink-0 w-full md:w-80 lg:w-96"
-                                    style={{
-                                        aspectRatio: '3/4',
-                                        position: 'relative',
-                                    }}
-                                >
-                                    <img
-                                        src={carPreview}
-                                        alt="Car Glass Reference"
-                                        className="w-full h-full object-contain drop-shadow-lg"
-                                        style={{ position: 'absolute', top: 0, left: 0 }}
+                    {/* Form Area */}
+                    <div className="w-full md:w-[60%] h-auto md:h-full md:overflow-y-auto custom-scrollbar relative bg-gray-50 flex-shrink-0">
+                        <div className="p-4 md:p-6 lg:p-8 min-h-full">
+                            <AnimatePresence mode="wait">
+                                {isSubmitted ? (
+                                    <SuccessScreen 
+                                        key="success" 
+                                        onReset={handleNewMessage}
+                                        businessName={businessInfo?.businessName}
+                                        themeColor={themeColor}
                                     />
-                                    {GLASS_OVERLAYS.map((overlay) => (
-                                        <img
-                                            key={overlay.id}
-                                            src={overlay.src}
-                                            alt={overlay.alt}
-                                            className={overlay.className}
-                                            style={overlay.style}
-                                        />
-                                    ))}
-                                </div>
-                            )}
+                                ) : (
+                                    <motion.div 
+                                        key="form"
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: 20 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <div className="max-w-2xl mx-auto">
+                                            <div className="space-y-2 mb-4">
+                                                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                                    <span className="w-8 h-1 bg-yellow-500 rounded-full block" style={{ backgroundColor: themeColor }}></span>
+                                                    Request a Quote
+                                                </h2>
+                                                <p className="text-gray-500 text-xs">Fill out the form below and we'll get back to you within 30 minutes during business hours.</p>
+                                            </div>
+
+                                            <form onSubmit={handleSubmit} className="space-y-3">
+                                                {/* Service Type Dropdown */}
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Service Type <span className="text-red-500">*</span></label>
+                                                    <select 
+                                                        name="serviceType" 
+                                                        value={formData.serviceType} 
+                                                        onChange={handleInputChange} 
+                                                        required 
+                                                        className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
+                                                    >
+                                                        <option value="">Select service type</option>
+                                                        {serviceTypeOptions.map((opt, idx) => (<option key={idx} value={opt}>{opt}</option>))}
+                                                    </select>
+                                                </div>
+
+                                                {/* Windshield Features - Show right after service type selection */}
+                                                {formData.serviceType === 'Windshield Replacement' && (
+                                                    <motion.div 
+                                                        initial={{ opacity: 0, y: -10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2"
+                                                    >
+                                                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Features <span className="text-red-500">*</span></p>
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            {windshieldFeatureOptions.map((feature) => (
+                                                                <label key={feature} className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
+                                                                    <input 
+                                                                        type="checkbox" 
+                                                                        value={feature}
+                                                                        checked={(formData.windshieldFeatures || []).includes(feature)}
+                                                                        onChange={handleCheckboxChange}
+                                                                        className="w-3.5 h-3.5 rounded"
+                                                                        style={{ accentColor: themeColor }}
+                                                                    />
+                                                                    {feature}
+                                                                </label>
+                                                            ))}
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+
+                                                {/* Window Rolling Location */}
+                                                {formData.serviceType === 'Window Rolling Issue' && (
+                                                    <motion.div 
+                                                        initial={{ opacity: 0, y: -10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2"
+                                                    >
+                                                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Location <span className="text-red-500">*</span></p>
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            {windowRollingOptions.map((option) => (
+                                                                <label key={option} className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
+                                                                    <input 
+                                                                        type="radio" 
+                                                                        name="windowRollingLocation"
+                                                                        value={option}
+                                                                        checked={formData.windowRollingLocation === option}
+                                                                        onChange={handleInputChange}
+                                                                        required
+                                                                        className="w-3.5 h-3.5"
+                                                                        style={{ accentColor: themeColor }}
+                                                                    />
+                                                                    {option}
+                                                                </label>
+                                                            ))}
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+
+                                                {/* Vent Glass Location */}
+                                                {formData.serviceType === 'Vent Glass Replacement' && (
+                                                    <motion.div 
+                                                        initial={{ opacity: 0, y: -10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2"
+                                                    >
+                                                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Location <span className="text-red-500">*</span></p>
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            {ventGlassOptions.map((option) => (
+                                                                <label key={option} className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
+                                                                    <input 
+                                                                        type="radio" 
+                                                                        name="ventGlassLocation"
+                                                                        value={option}
+                                                                        checked={formData.ventGlassLocation === option}
+                                                                        onChange={handleInputChange}
+                                                                        required
+                                                                        className="w-3.5 h-3.5"
+                                                                        style={{ accentColor: themeColor }}
+                                                                    />
+                                                                    {option}
+                                                                </label>
+                                                            ))}
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+
+                                                {/* Door Glass Location */}
+                                                {formData.serviceType === 'Door Glass Replacement' && (
+                                                    <motion.div 
+                                                        initial={{ opacity: 0, y: -10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2"
+                                                    >
+                                                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Location <span className="text-red-500">*</span></p>
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            {doorGlassOptions.map((option) => (
+                                                                <label key={option} className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
+                                                                    <input 
+                                                                        type="radio" 
+                                                                        name="doorGlassLocation"
+                                                                        value={option}
+                                                                        checked={formData.doorGlassLocation === option}
+                                                                        onChange={handleInputChange}
+                                                                        required
+                                                                        className="w-3.5 h-3.5"
+                                                                        style={{ accentColor: themeColor }}
+                                                                    />
+                                                                    {option}
+                                                                </label>
+                                                            ))}
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+
+                                                {/* Quarter Glass Location */}
+                                                {formData.serviceType === 'Quarter Glass Replacement' && (
+                                                    <motion.div 
+                                                        initial={{ opacity: 0, y: -10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2"
+                                                    >
+                                                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Location <span className="text-red-500">*</span></p>
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            {quarterGlassOptions.map((option) => (
+                                                                <label key={option} className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
+                                                                    <input 
+                                                                        type="radio" 
+                                                                        name="quarterGlassLocation"
+                                                                        value={option}
+                                                                        checked={formData.quarterGlassLocation === option}
+                                                                        onChange={handleInputChange}
+                                                                        required
+                                                                        className="w-3.5 h-3.5"
+                                                                        style={{ accentColor: themeColor }}
+                                                                    />
+                                                                    {option}
+                                                                </label>
+                                                            ))}
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+
+                                                {/* License Plate */}
+                                                {formData.serviceType && (
+                                                    <motion.div 
+                                                        initial={{ opacity: 0, y: -10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        className="space-y-2"
+                                                    >
+                                                        <label className="text-xs font-medium text-gray-600">License Plate (Optional)</label>
+                                                        <input 
+                                                            type="text"
+                                                            name="licensePlateNumber"
+                                                            value={formData.licensePlateNumber}
+                                                            onChange={handleInputChange}
+                                                            placeholder="License Plate" 
+                                                            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
+                                                        />
+                                                    </motion.div>
+                                                )}
+
+                                                {/* VIN Decoding Section */}
+                                                {formData.serviceType && (
+                                                    <motion.div 
+                                                        initial={{ opacity: 0, y: -10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2"
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <label className="flex items-center gap-2 cursor-pointer flex-1">
+                                                                <input 
+                                                                    type="checkbox" 
+                                                                    checked={useVinDecoding}
+                                                                    onChange={(e) => setUseVinDecoding(e.target.checked)}
+                                                                    className="w-4 h-4 rounded"
+                                                                />
+                                                                <span className="text-sm font-medium text-gray-700">Search by VIN</span>
+                                                            </label>
+                                                        </div>
+
+                                                        {useVinDecoding ? (
+                                                            <div className="space-y-2">
+                                                                <label className="text-xs font-medium text-gray-600">VIN (17 characters)</label>
+                                                                <div className="flex gap-2 items-end">
+                                                                    <input 
+                                                                        type="text"
+                                                                        name="vin"
+                                                                        value={formData.vin}
+                                                                        onChange={handleInputChange}
+                                                                        placeholder="Enter VIN" 
+                                                                        className="flex-1 bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
+                                                                    />
+                                                                    <button 
+                                                                        type="button" 
+                                                                        onClick={handleVinLookup} 
+                                                                        disabled={vinLoading || !formData.vin}
+                                                                        className="h-10 px-3 text-xs font-medium border rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-sm"
+                                                                        style={{ 
+                                                                            borderColor: themeColor, 
+                                                                            color: themeColor, 
+                                                                            backgroundColor: 'white' 
+                                                                        }}
+                                                                    >
+                                                                        {vinLoading ? '...' : 'Decode'}
+                                                                    </button>
+                                                                </div>
+
+                                                                {/* Display Decoded Vehicle Info */}
+                                                                {(formData.year || formData.make || formData.model) && (
+                                                                    <motion.div
+                                                                        initial={{ opacity: 0, y: -5 }}
+                                                                        animate={{ opacity: 1, y: 0 }}
+                                                                        className="p-2 bg-blue-50 border border-blue-100 rounded-lg"
+                                                                    >
+                                                                        <div className="text-xs text-gray-700 space-y-1">
+                                                                            {formData.year && <div><span className="font-medium text-gray-600">Year:</span> {formData.year}</div>}
+                                                                            {formData.make && <div><span className="font-medium text-gray-600">Make:</span> {formData.make}</div>}
+                                                                            {formData.model && <div><span className="font-medium text-gray-600">Model:</span> {formData.model}</div>}
+                                                                        </div>
+                                                                    </motion.div>
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <div className="grid grid-cols-3 gap-2">
+                                                                <Select
+                                                                    showSearch
+                                                                    placeholder="Year"
+                                                                    value={formData.year || undefined}
+                                                                    onChange={(value) => setFormData(prev => ({ ...prev, year: value }))}
+                                                                    filterOption={(input, option) =>
+                                                                        (option?.children ?? '').toString().toLowerCase().includes(input.toLowerCase())
+                                                                    }
+                                                                    className="w-full"
+                                                                    style={{ height: '40px' }}
+                                                                    dropdownStyle={{ zIndex: 9999 }}
+                                                                >
+                                                                    {yearOptions.map(year => (
+                                                                        <Select.Option key={year} value={year}>{year}</Select.Option>
+                                                                    ))}
+                                                                </Select>
+                                                                <Select
+                                                                    showSearch
+                                                                    placeholder="Make"
+                                                                    value={formData.make || undefined}
+                                                                    onChange={(value) => setFormData(prev => ({ ...prev, make: value, model: '' }))}
+                                                                    filterOption={(input, option) =>
+                                                                        (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+                                                                    }
+                                                                    className="w-full"
+                                                                    style={{ height: '40px' }}
+                                                                    dropdownStyle={{ zIndex: 9999 }}
+                                                                >
+                                                                    {makeOptions.map((make) => (
+                                                                        <Select.Option key={make.Make_ID} value={make.Make_Name}>{make.Make_Name}</Select.Option>
+                                                                    ))}
+                                                                </Select>
+                                                                <Select
+                                                                    showSearch
+                                                                    placeholder="Model"
+                                                                    value={formData.model || undefined}
+                                                                    onChange={(value) => setFormData(prev => ({ ...prev, model: value }))}
+                                                                    disabled={!formData.make}
+                                                                    filterOption={(input, option) =>
+                                                                        (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+                                                                    }
+                                                                    className="w-full"
+                                                                    style={{ height: '40px' }}
+                                                                    dropdownStyle={{ zIndex: 9999 }}
+                                                                >
+                                                                    {modelOptions.map((model) => (
+                                                                        <Select.Option key={model.Model_ID} value={model.Model_Name}>{model.Model_Name}</Select.Option>
+                                                                    ))}
+                                                                </Select>
+                                                            </div>
+                                                        )}
+                                                    </motion.div>
+                                                )}
+
+                                                {/* Your Information - 2x2 Grid */}
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Your Information <span className="text-red-500">*</span></label>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        <input 
+                                                            type="text"
+                                                            name="name"
+                                                            value={formData.name}
+                                                            onChange={handleInputChange}
+                                                            placeholder="Full Name" 
+                                                            required
+                                                            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
+                                                        />
+                                                        <input 
+                                                            type="tel"
+                                                            name="phone"
+                                                            value={formData.phone}
+                                                            onChange={handleInputChange}
+                                                            placeholder="Phone Number" 
+                                                            required
+                                                            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
+                                                        />
+                                                        <input 
+                                                            type="email"
+                                                            name="email"
+                                                            value={formData.email}
+                                                            onChange={handleInputChange}
+                                                            placeholder="Email Address" 
+                                                            required
+                                                            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
+                                                        />
+                                                        <input 
+                                                            type="text"
+                                                            name="location"
+                                                            value={formData.location}
+                                                            onChange={handleInputChange}
+                                                            placeholder="City, State" 
+                                                            required={!isMobile}
+                                                            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                {/* Service Preference */}
+                                                <div>
+                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">Service Preference <span className="text-red-500">*</span></label>
+                                                    <div className="flex gap-4">
+                                                        <label className="flex items-center gap-2 cursor-pointer">
+                                                            <input 
+                                                                type="radio" 
+                                                                name="servicePreference" 
+                                                                value="In-shop service"
+                                                                checked={formData.servicePreference === 'In-shop service'}
+                                                                onChange={handleInputChange}
+                                                                required
+                                                                className="w-4 h-4"
+                                                                style={{ accentColor: themeColor }}
+                                                            />
+                                                            <span className="text-sm text-gray-700">In-shop</span>
+                                                        </label>
+                                                        <label className="flex items-center gap-2 cursor-pointer">
+                                                            <input 
+                                                                type="radio" 
+                                                                name="servicePreference" 
+                                                                value="Mobile service"
+                                                                checked={formData.servicePreference === 'Mobile service'}
+                                                                onChange={handleInputChange}
+                                                                required
+                                                                className="w-4 h-4"
+                                                                style={{ accentColor: themeColor }}
+                                                            />
+                                                            <span className="text-sm text-gray-700">Mobile</span>
+                                                        </label>
+                                                    </div>
+                                                </div>
+
+                                                {/* Mobile Service Address Fields */}
+                                                {isMobile && (
+                                                    <motion.div 
+                                                        initial={{ opacity: 0, y: -10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        className="space-y-3"
+                                                    >
+                                                        <div>
+                                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">Address <span className="text-red-500">*</span></label>
+                                                            <input 
+                                                                type="text"
+                                                                name="street"
+                                                                value={formData.street}
+                                                                onChange={handleInputChange}
+                                                                placeholder="Street Address" 
+                                                                required
+                                                                className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
+                                                            />
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-3">
+                                                            <input 
+                                                                type="text"
+                                                                name="city"
+                                                                value={formData.city}
+                                                                onChange={handleInputChange}
+                                                                placeholder="City" 
+                                                                required
+                                                                className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
+                                                            />
+                                                            <input 
+                                                                type="text"
+                                                                name="zipcode"
+                                                                value={formData.zipcode}
+                                                                onChange={handleInputChange}
+                                                                placeholder="Zip Code" 
+                                                                required
+                                                                className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
+                                                            />
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+
+
+                                                {/* Additional Details */}
+                                                <div className="space-y-3">
+                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Additional Details</label>
+                                                    <textarea 
+                                                        name="message"
+                                                        value={formData.message}
+                                                        onChange={handleInputChange}
+                                                        placeholder="Describe any additional details (optional)..." 
+                                                        rows={3}
+                                                        className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm resize-none"
+                                                    />
+                                                </div>
+
+                                                {/* File Upload */}
+                                                <div className="space-y-3">
+                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Upload Image (Optional)</label>
+                                                    <Upload
+                                                        beforeUpload={() => false}
+                                                        fileList={fileList}
+                                                        onChange={({ fileList }) => setFileList(fileList)}
+                                                        accept="image/*"
+                                                    >
+                                                        <Button icon={<UploadOutlined />} className="w-full">Click to Upload</Button>
+                                                    </Upload>
+                                                </div>
+
+                                                {/* Submit Button */}
+                                                <button 
+                                                    disabled={formLoading}
+                                                    type="submit"
+                                                    className="w-full bg-yellow-500 hover:bg-yellow-400 text-white font-bold py-4 rounded-lg shadow-lg transition-all transform hover:scale-[1.01] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
+                                                    style={{ 
+                                                        backgroundColor: themeColor,
+                                                        boxShadow: `0 10px 25px -5px ${themeColor}33`
+                                                    }}
+                                                >
+                                                    {formLoading ? (
+                                                        <>
+                                                            <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                            Sending...
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            Get Quote <span className="opacity-75">&rarr;</span>
+                                                        </>
+                                                    )}
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                     </div>
 
-                </div >
-            </div >
+                    {/* MOBILE ONLY: Bottom Info + Map */}
+                    <div className="md:hidden w-full bg-white border-t border-gray-200">
+                        <div className="border-b border-gray-200">
+                            <ShopInfo 
+                                businessInfo={businessInfo} 
+                                themeColor={themeColor}
+                                className="h-auto py-6"
+                            />
+                        </div>
+                        {businessInfo?.maps && (
+                            <div className="h-64">
+                                <MapEmbed html={businessInfo.maps} />
+                            </div>
+                        )}
+                    </div>
+
+                    {/* DESKTOP ONLY: Right Column: Info/Map/Visuals */}
+                    <div className="hidden md:flex w-[40%] bg-white border-l border-gray-200 flex-col h-full shadow-lg z-10 flex-shrink-0">
+                        
+                        {/* Top: Glass Reference (30%) */}
+                        <div className="h-[30%] shrink-0 relative group overflow-hidden">
+                            <GlassReference 
+                                serviceType={formData.serviceType}
+                                carPreview={carPreview}
+                                windshieldSensorGuide={windshieldSensorGuide}
+                            />
+                        </div>
+
+                        {/* Middle: Shop Info (Flex-1) */}
+                        <div className="flex-1 bg-white border-t border-b border-gray-200 relative p-0 overflow-hidden">
+                            <ShopInfo 
+                                businessInfo={businessInfo} 
+                                themeColor={themeColor}
+                                className="h-full"
+                            />
+                        </div>
+
+                        {/* Bottom: Map (30%) */}
+                        {businessInfo?.maps && (
+                            <div className="h-[30%] shrink-0">
+                                <MapEmbed html={businessInfo.maps} />
+                            </div>
+                        )}
+                    </div>
+                </main>
+
+                <CustomerChatWidget themeColor={themeColor} businessName={businessInfo?.businessName} />
+                
+                <style>{`
+                    .custom-scrollbar::-webkit-scrollbar {
+                        width: 6px;
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-track {
+                        background: #f9fafb; 
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-thumb {
+                        background: #cbd5e1; 
+                        border-radius: 3px;
+                    }
+                    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                        background: #94a3b8; 
+                    }
+                `}</style>
+            </div>
         </ChatProvider>
     );
 };
+
+// Glass Reference Component
+const GlassReference = ({ serviceType, carPreview, windshieldSensorGuide }) => {
+    const [showTooltip, setShowTooltip] = useState(false);
+    const isSensorService = serviceType === 'Windshield Replacement';
+    
+    return (
+        <div className="relative w-full h-full overflow-hidden bg-gray-100 flex flex-col group">
+            {/* Info Icon with Tooltip */}
+            <div className="absolute top-4 left-4 z-10 flex items-center">
+                <div 
+                    className="relative"
+                    onMouseEnter={() => setShowTooltip(true)}
+                    onMouseLeave={() => setShowTooltip(false)}
+                >
+                    <InfoCircleOutlined className="text-xl text-gray-600 cursor-help hover:text-gray-900 transition-colors" />
+                    
+                    {/* Tooltip */}
+                    {showTooltip && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="absolute left-8 top-0 bg-gray-900 text-white px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap shadow-lg pointer-events-none"
+                        >
+                            {isSensorService ? 'Sensor Guide' : 'Glass Diagram'}
+                            <div className="absolute right-full top-2 w-2 h-2 bg-gray-900 transform rotate-45"></div>
+                        </motion.div>
+                    )}
+                </div>
+            </div>
+            <div className="flex-1 relative flex items-center justify-center overflow-hidden">
+                {isSensorService ? (
+                    <motion.img 
+                        key="sensor"
+                        src={windshieldSensorGuide}
+                        alt="Sensor Guide"
+                        initial={{ opacity: 0, scale: 1.05 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="w-full h-full object-cover"
+                    />
+                ) : (
+                    <motion.img 
+                        key="diagram"
+                        src={carPreview}
+                        alt="Glass Diagram"
+                        initial={{ opacity: 0, scale: 1.05 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="w-full h-full object-cover"
+                    />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent pointer-events-none" />
+            </div>
+        </div>
+    );
+};
+
+// Map Component
+const MapEmbed = React.memo(({ html }) => (
+    <div
+        className="w-full h-full [&>iframe]:w-full [&>iframe]:h-full [&>iframe]:border-0"
+        dangerouslySetInnerHTML={{ __html: html }}
+    />
+));
+
+// Shop Info Component
+const ShopInfo = ({ businessInfo, themeColor, className }) => {
+    return (
+        <div className={cn("flex flex-col bg-white text-gray-600", className)}>
+            <div className="shrink-0 px-6 pt-4 pb-2">
+                <h3 className="text-gray-900 font-bold text-lg mb-1">
+                    {businessInfo?.businessName}
+                </h3>
+                {businessInfo?.tagline && (
+                    <p className="text-gray-500 text-xs">
+                        {businessInfo?.tagline}
+                    </p>
+                )}
+            </div>
+            
+            <div className="text-sm flex-1 flex flex-col justify-start px-6 pb-4 overflow-hidden">
+                {/* Call Us and Address - Side by Side */}
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                    {businessInfo?.phone && (
+                        <div className="flex gap-2 items-start">
+                            <PhoneOutlined className="mt-0.5 flex-shrink-0 text-base" style={{ color: themeColor }} />
+                            <div className="min-w-0">
+                                <p className="text-gray-900 font-medium leading-tight text-xs">Call Us</p>
+                                <a href={`tel:${businessInfo.phone}`} className="hover:opacity-75 transition-opacity leading-tight text-xs break-all">
+                                    {formatPhoneNumber(businessInfo.phone)}
+                                </a>
+                                <p className="text-[9px] text-gray-400 mt-0.5">24/7 Support</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {businessInfo?.address && (
+                        <div className="flex gap-2 items-start">
+                            <EnvironmentOutlined className="mt-0.5 flex-shrink-0 text-base" style={{ color: themeColor }} />
+                            <div className="min-w-0">
+                                <p className="text-gray-900 font-medium leading-tight text-xs">Address</p>
+                                <a 
+                                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(businessInfo.address)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="hover:opacity-75 transition-opacity leading-tight text-xs break-words"
+                                >
+                                    {businessInfo.address}
+                                </a>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {businessInfo?.email && (
+                    <div className="flex gap-2 items-start mb-3">
+                        <MailOutlined className="text-gray-400 mt-0.5 flex-shrink-0 text-base" />
+                        <div className="min-w-0">
+                            <p className="text-gray-900 font-medium leading-tight text-xs">Email</p>
+                            <a href={`mailto:${businessInfo.email}`} className="hover:opacity-75 transition-opacity leading-tight text-xs break-all">
+                                {businessInfo.email}
+                            </a>
+                        </div>
+                    </div>
+                )}
+                
+                {businessInfo?.openHours && (
+                    <div className="border-t border-gray-100 pt-2">
+                        <h4 className="text-gray-900 font-bold text-xs mb-1.5 flex items-center gap-2 flex-shrink-0">
+                            <ClockCircleOutlined style={{ color: themeColor }} /> Hours
+                        </h4>
+                        <div className="text-xs text-gray-600 flex-shrink-0">
+                            {formatOpeningHours(businessInfo.openHours)}
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+// Success Screen Component
+const SuccessScreen = ({ onReset, businessName, themeColor }) => (
+    <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="h-full flex flex-col items-center justify-center text-center p-8 space-y-6 max-w-md mx-auto"
+    >
+        <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: `${themeColor}15` }}>
+            <CheckCircleOutlined className="text-3xl" style={{ color: themeColor }} />
+        </div>
+        <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Request Received!</h2>
+            <p className="text-gray-600 text-sm">
+                Thanks for contacting {businessName}. We have received your details and a technician will contact you shortly.
+            </p>
+        </div>
+        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 w-full shadow-sm">
+            <h4 className="text-gray-900 text-sm font-bold mb-3">Next Steps:</h4>
+            <ul className="text-left text-xs text-gray-600 space-y-2">
+                <li className="flex gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: themeColor }} />
+                    Review estimate via email
+                </li>
+                <li className="flex gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: themeColor }} />
+                    Confirm appointment time
+                </li>
+                <li className="flex gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: themeColor }} />
+                    Prepare vehicle for service
+                </li>
+            </ul>
+        </div>
+        <button 
+            onClick={onReset}
+            className="font-medium text-sm transition-colors hover:opacity-75"
+            style={{ color: themeColor }}
+        >
+            Submit another request
+        </button>
+    </motion.div>
+);
 
 export default PublicContactRoot;
 

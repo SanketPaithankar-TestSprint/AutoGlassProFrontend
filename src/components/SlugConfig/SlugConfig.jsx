@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Form, Input, Button, Card, ColorPicker, message, Spin, TimePicker, Switch, Row, Col, Radio } from "antd";
+import { Form, Input, Button, Card, ColorPicker, message, Spin, TimePicker, Switch, Row, Col, Radio, Tooltip } from "antd";
 import dayjs from "dayjs";
-import { SaveOutlined, ReloadOutlined } from "@ant-design/icons";
+import { SaveOutlined, ReloadOutlined, CheckOutlined, CloseOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import { createOrUpdateUserSlug, getUserSlugByUserId } from "../../api/userSlugInfo";
 import { getValidToken } from "../../api/getValidToken";
 
@@ -155,7 +155,7 @@ const SlugConfig = () => {
                     onClick={fetchSlugInfo}
                     loading={fetching}
                 >
-                    Refresh
+                    <span className="hidden sm:inline">Refresh</span>
                 </Button>
             }
         >
@@ -201,21 +201,29 @@ const SlugConfig = () => {
                             <Input placeholder="e.g. Best Glass in Town" />
                         </Form.Item>
 
-                        <Form.Item
-                            label="Theme Color"
-                            name="themeColor"
-                            tooltip="Primary color for your public pages."
-                        >
-                            <ColorPicker showText />
-                        </Form.Item>
+                        <div className="flex items-center justify-between border border-gray-100 rounded-lg p-3 bg-white hover:border-violet-100 transition-colors">
+                            <div className="flex items-center gap-2">
+                                <span className="text-gray-600">Theme Color</span>
+                                <Tooltip title="Primary color for your public pages.">
+                                    <InfoCircleOutlined className="text-gray-300 text-xs" />
+                                </Tooltip>
+                            </div>
+                            <Form.Item name="themeColor" noStyle>
+                                <ColorPicker showText size="small" />
+                            </Form.Item>
+                        </div>
 
-                        <Form.Item
-                            label="Background Color"
-                            name="backgroundColorHex"
-                            tooltip="Background color for your public pages."
-                        >
-                            <ColorPicker showText />
-                        </Form.Item>
+                        <div className="flex items-center justify-between border border-gray-100 rounded-lg p-3 bg-white hover:border-violet-100 transition-colors">
+                            <div className="flex items-center gap-2">
+                                <span className="text-gray-600">Background Color</span>
+                                <Tooltip title="Background color for your public pages.">
+                                    <InfoCircleOutlined className="text-gray-300 text-xs" />
+                                </Tooltip>
+                            </div>
+                            <Form.Item name="backgroundColorHex" noStyle>
+                                <ColorPicker showText size="small" />
+                            </Form.Item>
+                        </div>
 
                         <div className="col-span-1 md:col-span-2 border-t pt-4 mt-2">
                             <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Opening Hours</h3>
@@ -224,56 +232,60 @@ const SlugConfig = () => {
                         <div className="col-span-1 md:col-span-2">
                             {/* Individual Days Configuration */}
                             {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(day => (
-                                <div key={day} className="mb-4 pb-4 border-b border-gray-50 last:border-0 last:pb-0">
-                                    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                                        <div className="w-24 font-medium text-gray-700 capitalize shrink-0">
-                                            {day}
+                                <div key={day} className="flex flex-nowrap items-center justify-between gap-2 h-12 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-all px-1">
+                                    <div className="flex flex-nowrap items-center gap-3 shrink-0">
+                                        <div className="w-8 font-bold text-gray-400 uppercase text-[10px] tracking-wider">
+                                            {day.substring(0, 3)}
                                         </div>
 
-                                        <Form.Item name={`${day}_status`} initialValue="open" className="mb-0 shrink-0">
-                                            <Radio.Group buttonStyle="solid">
-                                                <Radio.Button
-                                                    value="open"
-                                                    style={{
-                                                        backgroundColor: form.getFieldValue(`${day}_status`) === 'open' ? '#e6f7ff' : '#fff',
-                                                        borderColor: form.getFieldValue(`${day}_status`) === 'open' ? '#1890ff' : '#d9d9d9',
-                                                        color: form.getFieldValue(`${day}_status`) === 'open' ? '#1890ff' : 'rgba(0, 0, 0, 0.85)',
-                                                    }}
-                                                >
-                                                    Open
-                                                </Radio.Button>
-                                                <Radio.Button
-                                                    value="closed"
-                                                    style={{
-                                                        backgroundColor: form.getFieldValue(`${day}_status`) === 'closed' ? '#fff1f0' : '#fff',
-                                                        borderColor: form.getFieldValue(`${day}_status`) === 'closed' ? '#ff4d4f' : '#d9d9d9',
-                                                        color: form.getFieldValue(`${day}_status`) === 'closed' ? '#ff4d4f' : 'rgba(0, 0, 0, 0.85)',
-                                                    }}
-                                                >
-                                                    Closed
-                                                </Radio.Button>
-                                            </Radio.Group>
-                                        </Form.Item>
-
                                         <Form.Item
-                                            noStyle
-                                            shouldUpdate={(prev, curr) => prev[`${day}_status`] !== curr[`${day}_status`]}
+                                            name={`${day}_status`}
+                                            initialValue="open"
+                                            className="mb-0 leading-none flex items-center"
+                                            valuePropName="checked"
+                                            getValueProps={(value) => ({ checked: value === 'open' })}
+                                            normalize={(value) => (value ? 'open' : 'closed')}
                                         >
-                                            {({ getFieldValue }) => {
-                                                return getFieldValue(`${day}_status`) === 'open' ? (
-                                                    <Form.Item
-                                                        name={`${day}_time`}
-                                                        className="mb-0 flex-1"
-                                                        initialValue={[dayjs("09:00", "HH:mm"), dayjs("17:00", "HH:mm")]}
-                                                    >
-                                                        <TimePicker.RangePicker format="h:mm A" minuteStep={15} use12Hours className="w-full sm:w-auto" />
-                                                    </Form.Item>
-                                                ) : (
-                                                    <div className="text-gray-400 italic text-sm flex-1">Shop is closed on this day</div>
-                                                );
-                                            }}
+                                            <Switch
+                                                size="small"
+                                                className="bg-gray-200"
+                                                checkedChildren={<span className="text-[10px] font-bold">OPEN</span>}
+                                                unCheckedChildren={<span className="text-[10px] font-bold">CLOSED</span>}
+                                            />
                                         </Form.Item>
                                     </div>
+
+                                    <Form.Item
+                                        noStyle
+                                        shouldUpdate={(prev, curr) => prev[`${day}_status`] !== curr[`${day}_status`]}
+                                    >
+                                        {({ getFieldValue }) => {
+                                            const isOpen = getFieldValue(`${day}_status`) === 'open';
+                                            return isOpen ? (
+                                                <div className="flex-1 flex justify-end min-w-0 animate-fadeIn ml-2">
+                                                    <Form.Item
+                                                        name={`${day}_time`}
+                                                        className="mb-0 flex items-center justify-end w-full"
+                                                        initialValue={[dayjs("09:00", "HH:mm"), dayjs("17:00", "HH:mm")]}
+                                                    >
+                                                        <TimePicker.RangePicker
+                                                            size="small"
+                                                            format="h:mm a"
+                                                            minuteStep={15}
+                                                            use12Hours
+                                                            allowClear={false}
+                                                            suffixIcon={null}
+                                                            bordered={false}
+                                                            className="w-full justify-end bg-transparent hover:bg-white focus:bg-white transition-all rounded px-0 text-xs shadow-none border-none"
+                                                            style={{ maxWidth: '180px', padding: 0 }}
+                                                            inputReadOnly
+                                                            separator={<span className="text-gray-300 mx-1">-</span>}
+                                                        />
+                                                    </Form.Item>
+                                                </div>
+                                            ) : null;
+                                        }}
+                                    </Form.Item>
                                 </div>
                             ))}
                         </div>
@@ -327,13 +339,13 @@ const SlugConfig = () => {
                         </Form.Item>
                     </div>
 
-                    <Form.Item className="mb-0 text-right">
+                    <Form.Item className="mb-0 text-center">
                         <Button
                             type="primary"
                             htmlType="submit"
                             icon={<SaveOutlined />}
                             loading={loading}
-                            className="bg-violet-600 hover:bg-violet-700"
+                            className="bg-violet-600 hover:bg-violet-700 min-w-[200px]"
                         >
                             Save Configuration
                         </Button>

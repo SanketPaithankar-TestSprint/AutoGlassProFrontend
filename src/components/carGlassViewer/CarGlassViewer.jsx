@@ -498,11 +498,17 @@ export default function CarGlassViewer({
                     <div className="flex-1 min-w-0 flex items-start justify-between gap-4">
                       {/* LEFT SIDE: ID & Description */}
                       <div className="flex flex-col gap-1 min-w-0">
-                        <span className={`font-bold text-xs ${isSelected ? "text-blue-900" : "text-slate-800"}`}>
-                          {nagsId || "Unknown ID"}
-                          {part.feature_span ? ` ${part.feature_span}` : (part.glass_info?.ta ? ` ${part.glass_info.ta}` : "")}
-                          {part.qualifiers && part.qualifiers.length > 0 ? ` (${part.qualifiers.join(", ")})` : ""}
-                        </span>
+                        <div className="text-xs">
+                          <span className={`font-bold ${isSelected ? "text-blue-900" : "text-slate-800"}`}>
+                            {nagsId || "Unknown ID"}
+                            {part.feature_span ? ` ${part.feature_span}` : (part.glass_info?.ta ? ` ${part.glass_info.ta}` : "")}
+                          </span>
+                          {part.qualifiers && part.qualifiers.length > 0 && (
+                            <span className={`font-normal ml-1 ${isSelected ? "text-blue-700" : "text-slate-500"}`}>
+                              ({part.qualifiers.join(", ")})
+                            </span>
+                          )}
+                        </div>
                         <p className="text-[10px] text-slate-500 truncate leading-tight">
                           {part.part_description || ""}
                         </p>
