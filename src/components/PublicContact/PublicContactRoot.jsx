@@ -63,29 +63,57 @@ const formatOpeningHours = (openHours) => {
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
     const shortDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-    const dayElements = days.map((day, index) => {
+    const getHoursString = (day) => {
         const data = openHours[day];
-        const dayLabel = shortDays[index];
+        if (!data || !data.intervals || data.intervals.length === 0) return 'Closed';
+        const { from, to } = data.intervals[0];
+        return `${formatTime(from)} – ${formatTime(to)}`;
+    };
 
-        if (!data || !data.intervals || data.intervals.length === 0) {
-            return (
-                <div key={day} className="text-xs">
-                    <span className="text-gray-600 font-medium">{dayLabel}:</span> <span className="text-gray-400">Closed</span>
-                </div>
-            );
+    // Calculate grouped hours
+    const groupedHours = [];
+    if (days.length > 0) {
+        let currentGroup = {
+            startDayIndex: 0,
+            hours: getHoursString(days[0])
+        };
+
+        for (let i = 1; i < days.length; i++) {
+            const hours = getHoursString(days[i]);
+            if (hours === currentGroup.hours) {
+                continue;
+            } else {
+                groupedHours.push({
+                    label: currentGroup.startDayIndex === i - 1
+                        ? `${shortDays[currentGroup.startDayIndex]}`
+                        : `${shortDays[currentGroup.startDayIndex]}-${shortDays[i - 1]}`,
+                    hours: currentGroup.hours
+                });
+                currentGroup = {
+                    startDayIndex: i,
+                    hours: hours
+                };
+            }
         }
-
-        const interval = data.intervals[0];
-        return (
-            <div key={day} className="text-xs">
-                <span className="text-gray-600 font-medium">{dayLabel}:</span> <span className="text-gray-700">{formatTime(interval.from)} – {formatTime(interval.to)}</span>
-            </div>
-        );
-    });
+        // Push the last group
+        groupedHours.push({
+            label: currentGroup.startDayIndex === days.length - 1
+                ? `${shortDays[currentGroup.startDayIndex]}`
+                : `${shortDays[currentGroup.startDayIndex]}-${shortDays[days.length - 1]}`,
+            hours: currentGroup.hours
+        });
+    }
 
     return (
-        <div className="grid grid-cols-3 gap-x-4 gap-y-0.5">
-            {dayElements}
+        <div className="flex flex-col gap-0.5">
+            {groupedHours.map((group, idx) => (
+                <div key={idx} className="flex items-baseline text-[14px] leading-snug">
+                    <span className="font-semibold text-slate-800 min-w-[70px]">{group.label}:</span>
+                    <span className={group.hours === 'Closed' ? 'text-slate-500' : 'text-slate-700'}>
+                        {group.hours}
+                    </span>
+                </div>
+            ))}
         </div>
     );
 };
@@ -1217,12 +1245,18 @@ const ShopInfo = ({ businessInfo, themeColor, className }) => {
                 )}
 
                 {businessInfo?.openHours && (
-                    <div className="border-t border-gray-100 pt-2">
-                        <h4 className="text-gray-900 font-bold text-xs mb-1.5 flex items-center gap-2 flex-shrink-0">
-                            <ClockCircleOutlined style={{ color: themeColor }} /> Hours
-                        </h4>
-                        <div className="text-xs text-gray-600 flex-shrink-0">
-                            {formatOpeningHours(businessInfo.openHours)}
+                    <div className="border-t border-gray-100 pt-4 mt-2">
+                        <div className="flex gap-3">
+                            <div
+                                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                                style={{ backgroundColor: `${themeColor}15` }}
+                            >
+                                <ClockCircleOutlined style={{ color: themeColor, fontSize: '18px' }} />
+                            </div>
+                            <div>
+                                <h4 className="text-slate-500 font-medium text-sm mb-1">Hours</h4>
+                                {formatOpeningHours(businessInfo.openHours)}
+                            </div>
                         </div>
                     </div>
                 )}
