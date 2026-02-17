@@ -19,6 +19,13 @@ const SmtpConfiguration = () => {
     const [form] = Form.useForm();
     const [editingConfig, setEditingConfig] = useState(null);
     const [testingId, setTestingId] = useState(null);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+    React.useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const { data: configs = [], isLoading: loading } = useQuery({
         queryKey: ['smtpConfigs'],
@@ -200,15 +207,108 @@ const SmtpConfiguration = () => {
                 </Button>
             </div>
 
-            <Table
-                dataSource={configs}
-                columns={columns}
-                rowKey="id"
-                loading={loading}
-                pagination={false}
-                bordered
-                size="middle"
-            />
+            {/* Desktop Table View */}
+            {!isMobile && (
+                <Table
+                    dataSource={configs}
+                    columns={columns}
+                    rowKey="id"
+                    loading={loading}
+                    pagination={false}
+                    bordered
+                    size="middle"
+                />
+            )}
+
+            {/* Mobile Card View */}
+            {isMobile && (
+                <div className="space-y-3">
+                    {loading ? (
+                        <div className="text-center py-8 text-gray-500">Loading...</div>
+                    ) : configs.length === 0 ? (
+                        <div className="text-center py-8 text-gray-500">No configurations found</div>
+                    ) : (
+                        configs.map((config) => (
+                            <div key={config.id} className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm">
+                                <div className="flex justify-between items-start mb-3">
+                                    <div>
+                                        <h3 className="text-sm font-bold text-gray-900">{config.fromEmail}</h3>
+                                        <p className="text-xs text-gray-500">{config.host}:{config.port}</p>
+                                    </div>
+                                    {config.isActive && <CheckCircleOutlined className="text-green-600 text-lg" />}
+                                </div>
+                                <div className="space-y-2 text-xs mb-3">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-gray-500">Status:</span>
+                                        <Tag color={config.isActive ? 'green' : 'red'}>
+                                            {config.isActive ? 'Active' : 'Inactive'}
+                                        </Tag>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-gray-500">Host:</span>
+                                        <span className="text-gray-900 font-mono text-xs">{config.host}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-gray-500">Port:</span>
+                                        <span className="text-gray-900 font-bold">{config.port}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-gray-500">Encryption:</span>
+                                        <Tag>{config.encryption || "NONE"}</Tag>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-gray-500">From Email:</span>
+                                        <span className="text-gray-900 font-mono text-xs">{config.fromEmail}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-gray-500">Username:</span>
+                                        <span className="text-gray-900 font-mono text-xs">{config.username}</span>
+                                    </div>
+                                </div>
+                                <div className="flex gap-2 justify-between">
+                                    <Button
+                                        type="text"
+                                        size="small"
+                                        icon={<ThunderboltOutlined />}
+                                        onClick={() => handleTest(config.id)}
+                                        loading={testingId === config.id}
+                                        className="flex-1"
+                                    >
+                                        Test
+                                    </Button>
+                                    <Button
+                                        type="text"
+                                        size="small"
+                                        icon={<EditOutlined />}
+                                        onClick={() => handleEdit(config)}
+                                        className="flex-1"
+                                    >
+                                        Edit
+                                    </Button>
+                                    <Popconfirm
+                                        title="Delete configuration"
+                                        description="Are you sure?"
+                                        onConfirm={() => handleDelete(config.id)}
+                                        okText="Yes"
+                                        cancelText="No"
+                                        okButtonProps={{ danger: true }}
+                                    >
+                                        <Button
+                                            type="text"
+                                            size="small"
+                                            danger
+                                            icon={<DeleteOutlined />}
+                                            className="flex-1"
+                                        >
+                                            Delete
+                                        </Button>
+                                    </Popconfirm>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+            )}
 
             <Modal
                 title={editingConfig ? "Edit SMTP Configuration" : "Add SMTP Configuration"}
@@ -218,7 +318,8 @@ const SmtpConfiguration = () => {
                     form.resetFields();
                 }}
                 onOk={() => form.submit()}
-                width={600}
+                width={isMobile ? '95%' : 600}
+                style={isMobile ? { maxWidth: 'calc(100vw - 20px)' } : {}}
             >
                 <Form
                     form={form}

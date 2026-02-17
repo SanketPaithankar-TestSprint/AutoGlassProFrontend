@@ -15,7 +15,14 @@ const STANDARD_KITS = [
 const UserKitPricePage = () => {
     const [prices, setPrices] = useState({}); // Map of code -> price
     const [updating, setUpdating] = useState({}); // Map of code -> boolean
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const queryClient = useQueryClient();
+
+    React.useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const { data: kitPrices, isLoading: loading } = useQuery({
         queryKey: ['userKitPrices'],
@@ -148,13 +155,62 @@ const UserKitPricePage = () => {
                         </div>
                     </div>
 
-                    <Table
-                        dataSource={tableData}
-                        columns={columns}
-                        pagination={false}
-                        loading={loading}
-                        rowClassName="hover:bg-slate-50"
-                    />
+                    {/* Desktop Table View */}
+                    {!isMobile && (
+                        <Table
+                            dataSource={tableData}
+                            columns={columns}
+                            pagination={false}
+                            loading={loading}
+                            rowClassName="hover:bg-slate-50"
+                        />
+                    )}
+
+                    {/* Mobile Card View */}
+                    {isMobile && (
+                        <div className="space-y-3">
+                            {loading ? (
+                                <div className="text-center py-8 text-gray-500">Loading...</div>
+                            ) : tableData.length === 0 ? (
+                                <div className="text-center py-8 text-gray-500">No kits found</div>
+                            ) : (
+                                tableData.map((kit) => (
+                                    <div key={kit.code} className="bg-slate-50 rounded-lg border border-slate-200 p-3">
+                                        <div className="mb-3">
+                                            <p className="text-sm font-bold text-gray-900">{kit.desc}</p>
+                                        </div>
+                                        <div className="space-y-3">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-gray-600 font-medium">Price:</span>
+                                                <div className="flex items-center gap-2">
+                                                    <Input
+                                                        type="number"
+                                                        size="small"
+                                                        prefix="$"
+                                                        value={prices[kit.code] || ""}
+                                                        onChange={(e) => handlePriceChange(kit.code, e.target.value)}
+                                                        onBlur={() => handleSavePrice(kit.code)}
+                                                        disabled={updating[kit.code]}
+                                                        style={{ width: '100px' }}
+                                                        min={0}
+                                                        step={0.01}
+                                                        placeholder="0.00"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                {prices[kit.code] ? (
+                                                    <Tag color="green">✓ Set - ${prices[kit.code]}</Tag>
+                                                ) : (
+                                                    <Tag color="red">Not Set</Tag>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    )}
                 </div>
             </Card>
         </div>

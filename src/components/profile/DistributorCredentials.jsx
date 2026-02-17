@@ -14,8 +14,15 @@ const DistributorCredentials = () => {
     const [editingCredential, setEditingCredential] = useState(null);
     const [showPasswords, setShowPasswords] = useState({});
     const [saving, setSaving] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
     const [form] = Form.useForm();
+
+    React.useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const { data: credentials = [], isLoading: loading } = useQuery({
         queryKey: ['distributorCredentials'],
@@ -140,42 +147,151 @@ const DistributorCredentials = () => {
                     <p className="text-sm text-gray-400 mt-2">Add credentials to manage your distributor accounts.</p>
                 </div>
             ) : (
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-gray-50 border-b border-gray-100">
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Distributor</th>
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Username</th>
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Password</th>
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Agent ID</th>
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Account Number</th>
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {credentials.map((cred) => (
-                                    <tr key={cred.id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="p-4 text-sm font-medium text-gray-900">
-                                            {cred.distributorName}
-                                        </td>
-                                        <td className="p-4 text-sm text-gray-600 font-mono">
-                                            {cred.usernameMasked || cred.username || "-"}
-                                        </td>
-                                        <td className="p-4 text-sm text-gray-600">
-                                            <div className="flex items-center gap-2">
-                                                {cred.hasPassword ? (
-                                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                        ✓ Set
-                                                    </span>
-                                                ) : (
-                                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                                                        Not Set
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="p-4 text-sm text-gray-600">
+                <>
+                    {/* Desktop Table View */}
+                    {!isMobile && (
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="bg-gray-50 border-b border-gray-100">
+                                            <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Distributor</th>
+                                            <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Username</th>
+                                            <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Password</th>
+                                            <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Agent ID</th>
+                                            <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Account Number</th>
+                                            <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100">
+                                        {credentials.map((cred) => (
+                                            <tr key={cred.id} className="hover:bg-gray-50 transition-colors">
+                                                <td className="p-4 text-sm font-medium text-gray-900">
+                                                    {cred.distributorName}
+                                                </td>
+                                                <td className="p-4 text-sm text-gray-600 font-mono">
+                                                    {cred.usernameMasked || cred.username || "-"}
+                                                </td>
+                                                <td className="p-4 text-sm text-gray-600">
+                                                    <div className="flex items-center gap-2">
+                                                        {cred.hasPassword ? (
+                                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                                ✓ Set
+                                                            </span>
+                                                        ) : (
+                                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                                                Not Set
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="p-4 text-sm text-gray-600">
+                                                    {cred.hasAgentId ? (
+                                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                            ✓ Set
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                                            Not Set
+                                                        </span>
+                                                    )}
+                                                </td>
+                                                <td className="p-4 text-sm text-gray-600">
+                                                    {cred.hasAccountNumber ? (
+                                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                            ✓ Set
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                                            Not Set
+                                                        </span>
+                                                    )}
+                                                </td>
+                                                <td className="p-4 text-sm">
+                                                    <div className="flex items-center gap-2">
+                                                        <Button
+                                                            type="text"
+                                                            icon={<EditOutlined />}
+                                                            onClick={() => handleEdit(cred)}
+                                                            title="Edit credential"
+                                                        />
+                                                        <Popconfirm
+                                                            title="Delete credential"
+                                                            description="Are you sure you want to delete this credential?"
+                                                            onConfirm={() => handleDelete(cred.distributorName)}
+                                                            okText="Yes"
+                                                            cancelText="No"
+                                                            okButtonProps={{ danger: true }}
+                                                        >
+                                                            <Button
+                                                                type="text"
+                                                                danger
+                                                                icon={<DeleteOutlined />}
+                                                                title="Delete credential"
+                                                            />
+                                                        </Popconfirm>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Mobile Card View */}
+                    {isMobile && (
+                        <div className="space-y-3">
+                            {credentials.map((cred) => (
+                                <div key={cred.id} className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                                    <div className="flex justify-between items-start mb-3">
+                                        <h3 className="text-sm font-bold text-gray-900">{cred.distributorName}</h3>
+                                        <div className="flex items-center gap-1">
+                                            <Button
+                                                type="text"
+                                                size="small"
+                                                icon={<EditOutlined />}
+                                                onClick={() => handleEdit(cred)}
+                                                title="Edit credential"
+                                            />
+                                            <Popconfirm
+                                                title="Delete credential"
+                                                description="Are you sure?"
+                                                onConfirm={() => handleDelete(cred.distributorName)}
+                                                okText="Yes"
+                                                cancelText="No"
+                                                okButtonProps={{ danger: true }}
+                                            >
+                                                <Button
+                                                    type="text"
+                                                    size="small"
+                                                    danger
+                                                    icon={<DeleteOutlined />}
+                                                    title="Delete credential"
+                                                />
+                                            </Popconfirm>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2 text-xs">
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-500">Username:</span>
+                                            <span className="text-gray-900 font-mono">{cred.usernameMasked || cred.username || "-"}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-500">Password:</span>
+                                            {cred.hasPassword ? (
+                                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    ✓ Set
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                                    Not Set
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-500">Agent ID:</span>
                                             {cred.hasAgentId ? (
                                                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                                     ✓ Set
@@ -185,8 +301,9 @@ const DistributorCredentials = () => {
                                                     Not Set
                                                 </span>
                                             )}
-                                        </td>
-                                        <td className="p-4 text-sm text-gray-600">
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-500">Account #:</span>
                                             {cred.hasAccountNumber ? (
                                                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                                     ✓ Set
@@ -196,38 +313,13 @@ const DistributorCredentials = () => {
                                                     Not Set
                                                 </span>
                                             )}
-                                        </td>
-                                        <td className="p-4 text-sm">
-                                            <div className="flex items-center gap-2">
-                                                <Button
-                                                    type="text"
-                                                    icon={<EditOutlined />}
-                                                    onClick={() => handleEdit(cred)}
-                                                    title="Edit credential"
-                                                />
-                                                <Popconfirm
-                                                    title="Delete credential"
-                                                    description="Are you sure you want to delete this credential?"
-                                                    onConfirm={() => handleDelete(cred.distributorName)}
-                                                    okText="Yes"
-                                                    cancelText="No"
-                                                    okButtonProps={{ danger: true }}
-                                                >
-                                                    <Button
-                                                        type="text"
-                                                        danger
-                                                        icon={<DeleteOutlined />}
-                                                        title="Delete credential"
-                                                    />
-                                                </Popconfirm>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </>
             )}
 
             <Modal
@@ -245,7 +337,8 @@ const DistributorCredentials = () => {
                 }}
                 confirmLoading={saving}
                 okText={editingCredential ? "Update" : "Create"}
-                width={500}
+                width={isMobile ? '95%' : 500}
+                style={isMobile ? { maxWidth: 'calc(100vw - 20px)' } : {}}
             >
                 <Form form={form} layout="vertical" className="mt-4">
                     <Form.Item
