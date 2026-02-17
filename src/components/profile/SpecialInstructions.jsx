@@ -10,8 +10,15 @@ import { getValidToken } from '../../api/getValidToken';
 const SpecialInstructions = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [exists, setExists] = useState(false); // Track if instructions already exist
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const token = getValidToken();
     const queryClient = useQueryClient();
+
+    React.useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // Initialize from LocalStorage if available
     const [instructions, setInstructions] = useState(() => {
@@ -95,7 +102,7 @@ const SpecialInstructions = () => {
                             value={instructions}
                             onChange={(content) => setInstructions(content)}
                             modules={modules}
-                            className="h-64 mb-12" // mb-12 to account for toolbar and bottom margin
+                            className={`${isMobile ? 'h-40' : 'h-64'} mb-12`}
                         />
                     </div>
                     <div className="flex justify-end pt-8">

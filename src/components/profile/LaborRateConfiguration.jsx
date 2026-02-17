@@ -10,6 +10,13 @@ const LaborRateConfiguration = () => {
     const [editedValue, setEditedValue] = useState('');
     const [saving, setSaving] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+    React.useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         // Load labor rate from localStorage profile data or localStorage GlobalLaborRate
@@ -91,14 +98,14 @@ const LaborRateConfiguration = () => {
                     <div className="bg-gray-50 rounded-xl p-6">
                         {isEditing ? (
                             <div className="space-y-4">
-                                <div className="flex items-center gap-3">
+                                <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} items-start ${isMobile ? '' : 'items-center'} gap-3`}>
                                     <span className="text-2xl font-bold text-gray-600">$</span>
                                     <Input
                                         type="number"
                                         value={editedValue}
                                         onChange={(e) => setEditedValue(e.target.value)}
                                         onPressEnter={handleSave}
-                                        className="text-2xl font-bold w-48"
+                                        className={`text-2xl font-bold ${isMobile ? 'w-full' : 'w-48'}`}
                                         size="large"
                                         autoFocus
                                         min={0}
@@ -113,6 +120,7 @@ const LaborRateConfiguration = () => {
                                         onClick={handleSave}
                                         loading={saving}
                                         size="large"
+                                        className={isMobile ? 'flex-1' : ''}
                                     >
                                         Save
                                     </Button>
@@ -121,13 +129,14 @@ const LaborRateConfiguration = () => {
                                         onClick={handleCancel}
                                         size="large"
                                         disabled={saving}
+                                        className={isMobile ? 'flex-1' : ''}
                                     >
                                         Cancel
                                     </Button>
                                 </div>
                             </div>
                         ) : (
-                            <div className="flex items-center justify-between">
+                            <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} items-start ${isMobile ? 'space-y-4' : 'items-center justify-between'}`}>
                                 <div className="flex items-center gap-2">
                                     <span className="text-4xl font-bold text-green-600">
                                         ${laborRate || "0"}
@@ -139,6 +148,7 @@ const LaborRateConfiguration = () => {
                                     icon={<EditOutlined />}
                                     onClick={handleEdit}
                                     size="large"
+                                    className={isMobile ? 'w-full' : ''}
                                 >
                                     Edit Rate
                                 </Button>
