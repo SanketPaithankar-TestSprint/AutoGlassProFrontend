@@ -38,6 +38,8 @@ import ErrorBoundary from './components/PublicContact/ErrorBoundary';
 const SitemapPage = React.lazy(() => import('./components/Sitemap/SitemapPage.jsx'));
 const BlogsPage = React.lazy(() => import('./components/Blogs/BlogsPage.jsx'));
 const BlogPostPage = React.lazy(() => import('./components/Blogs/BlogPostPage.jsx'));
+const ShopChatPanel = React.lazy(() => import('./components/Chat/ShopChatPanel.jsx'));
+import { ChatProvider } from './context/ChatContext';
 
 
 
@@ -170,6 +172,12 @@ function AppContent() {
                       <Route path="/service-contact-form" element={<ServiceContactFormRoot />} />
                       <Route path="/employee-attendance" element={<EmployeeAttendance />} />
                       <Route path="/sitemap" element={<SitemapPage />} />
+                      <Route path="/sitemap" element={<SitemapPage />} />
+                      <Route path="/chat" element={
+                        <ChatProvider isPublic={false}>
+                          <ShopChatPanel />
+                        </ChatProvider>
+                      } />
                     </Routes >
                   </Suspense >
                 </ErrorBoundary >
@@ -213,7 +221,7 @@ function AppContent() {
           </Content>
         </Layout>
       )}
-    {/*  <Chatbot />*/}
+      {/*  <Chatbot />*/}
     </Layout >
   );
 }

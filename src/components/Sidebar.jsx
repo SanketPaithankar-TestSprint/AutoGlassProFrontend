@@ -217,6 +217,11 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
             label: <Link to="/employee-attendance">Employee Attendance</Link>,
         },
 
+        {
+            key: '/chat',
+            icon: <MessageOutlined />, // Using MessageOutlined here, might conflict if used above. Let's check.
+            label: <Link to="/chat">Live Chat</Link>,
+        },
         // Add other authenticated links here if needed
     ];
 
