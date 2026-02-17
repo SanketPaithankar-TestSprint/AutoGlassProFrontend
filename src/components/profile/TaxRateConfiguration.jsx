@@ -34,7 +34,14 @@ const TaxRateConfiguration = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [editingRate, setEditingRate] = useState(null);
     const [saving, setSaving] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [form] = Form.useForm();
+
+    React.useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const { data: taxRates = [], isLoading: loading, refetch: fetchTaxRates } = useQuery({
         queryKey: ['taxRates'],
@@ -317,14 +324,88 @@ const TaxRateConfiguration = () => {
                         </Button>
                     </Empty>
                 ) : (
-                    <Table
-                        columns={columns}
-                        dataSource={taxRates}
-                        rowKey="taxRateId"
-                        loading={loading}
-                        pagination={false}
-                        size="middle"
-                    />
+                    <>
+                        {/* Desktop Table View */}
+                        {!isMobile && (
+                            <Table
+                                columns={columns}
+                                dataSource={taxRates}
+                                rowKey="taxRateId"
+                                loading={loading}
+                                pagination={false}
+                                size="middle"
+                            />
+                        )}
+
+                        {/* Mobile Card View */}
+                        {isMobile && (
+                            <div className="space-y-3">
+                                {taxRates.map((rate) => (
+                                    <div key={rate.taxRateId} className="bg-gray-50 rounded-lg border border-gray-200 p-3">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div>
+                                                <h3 className="text-sm font-bold text-gray-900">{rate.state}</h3>
+                                                <p className="text-xs text-gray-500">{US_STATES.find(s => s.code === rate.state)?.name}</p>
+                                            </div>
+                                            {rate.isDefault && <StarFilled className="text-yellow-500 text-lg" />}
+                                        </div>
+                                        <div className="space-y-1 text-xs mb-3">
+                                            <div className="flex justify-between">
+                                                <span className="text-gray-500">Tax Rate:</span>
+                                                <span className="font-mono font-bold text-gray-900">{rate.taxRate}%</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-gray-500">Status:</span>
+                                                <Tag color={rate.isActive ? 'green' : 'red'}>
+                                                    {rate.isActive ? 'Active' : 'Inactive'}
+                                                </Tag>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2 justify-between">
+                                            {!rate.isDefault && (
+                                                <Button
+                                                    type="text"
+                                                    size="small"
+                                                    icon={<StarOutlined />}
+                                                    onClick={() => handleSetDefault(rate.taxRateId)}
+                                                    className="flex-1"
+                                                >
+                                                    Set Default
+                                                </Button>
+                                            )}
+                                            <Button
+                                                type="text"
+                                                size="small"
+                                                icon={<EditOutlined />}
+                                                onClick={() => handleEdit(rate)}
+                                                className={!rate.isDefault ? 'flex-1' : 'flex-1'}
+                                            >
+                                                Edit
+                                            </Button>
+                                            <Popconfirm
+                                                title="Delete tax rate"
+                                                description="Are you sure?"
+                                                onConfirm={() => handleDelete(rate.taxRateId)}
+                                                okText="Yes"
+                                                cancelText="No"
+                                                okButtonProps={{ danger: true }}
+                                            >
+                                                <Button
+                                                    type="text"
+                                                    size="small"
+                                                    danger
+                                                    icon={<DeleteOutlined />}
+                                                    className="flex-1"
+                                                >
+                                                    Delete
+                                                </Button>
+                                            </Popconfirm>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </>
                 )}
             </Card>
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { MdSupportAgent } from "react-icons/md";
 import { Layout, Menu, Button, Avatar, Dropdown, Space, Drawer, Badge } from 'antd';
 import {
     HomeOutlined,
@@ -16,7 +17,8 @@ import {
     TeamOutlined,
     FormOutlined,
     MessageOutlined,
-    AuditOutlined
+    AuditOutlined,
+    AudioOutlined
 } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 import Logo from './logo';
@@ -219,7 +221,7 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
 
         {
             key: '/chat',
-            icon: <MessageOutlined />, // Using MessageOutlined here, might conflict if used above. Let's check.
+            icon: <MdSupportAgent style={{ fontSize: '1.2rem' }} />,
             label: <Link to="/chat">Live Chat</Link>,
         },
         // Add other authenticated links here if needed

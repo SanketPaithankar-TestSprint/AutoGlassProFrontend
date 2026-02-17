@@ -23,6 +23,8 @@ import { COUNTRIES, getStatesOrProvinces, getCities } from "../../const/location
 
 const Profile = () => {
     const [activeTab, setActiveTab] = useState('profile');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
     const queryClient = useQueryClient();
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -223,10 +225,10 @@ const Profile = () => {
                     </div>
 
                     {/* Logo Section */}
-                    <div className="flex items-center gap-6 mb-8 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                    <div className="flex flex-row items-center gap-4 md:gap-6 mb-6 md:mb-8 p-3 md:p-4 bg-gray-50 rounded-xl border border-gray-100">
                         <div className="relative">
                             <Avatar
-                                size={80}
+                                size={isMobile ? 60 : 80}
                                 src={logoUrl}
                                 icon={<ShopOutlined />}
                                 className="bg-violet-100 text-violet-600 border-2 border-white shadow-md"
@@ -234,11 +236,10 @@ const Profile = () => {
                         </div>
                         <div className="flex-1">
                             <h3 className="text-sm font-bold text-gray-900 mb-1">Shop Logo</h3>
-                            <p className="text-xs text-gray-500 mb-3">
+                            <p className="text-xs text-gray-500 mb-2 md:mb-3 leading-tight">
                                 Upload a logo for your shop.
-                                Max size: 2MB.
                             </p>
-                            <ImgCrop rotationSlider showReset aspect={1} modalWidth={600}>
+                            <ImgCrop rotationSlider showReset aspect={1} modalWidth={isMobile ? 300 : 600}>
                                 <Upload
                                     customRequest={handleLogoUpload}
                                     showUploadList={false}
@@ -257,7 +258,7 @@ const Profile = () => {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-2 gap-4 md:gap-6">
                         <div className="space-y-1">
                             <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Business Name</span>
                             <p className="text-gray-900 font-semibold text-lg">{profile.businessName || "-"}</p>
@@ -289,7 +290,7 @@ const Profile = () => {
                     <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
                         <PhoneOutlined className="text-violet-500" /> Contact Information
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-2 gap-4 md:gap-6">
                         <div className="space-y-1">
                             <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Email</span>
                             <p className="text-gray-900 font-medium">{profile.email || "-"}</p>
@@ -324,11 +325,12 @@ const Profile = () => {
                     onOk={handleUpdateProfile}
                     onCancel={() => setIsEditProfileModalVisible(false)}
                     confirmLoading={saving}
-                    width={800}
+                    width={isMobile ? '95%' : 800}
+                    style={isMobile ? { maxWidth: 'calc(100vw - 20px)' } : {}}
                 >
                     <Form form={profileForm} layout="vertical">
                         {/* ... Business Info Fields ... */}
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
                             <Form.Item name="businessName" label="Business Name" rules={[{ required: true }]}>
                                 <Input />
                             </Form.Item>
@@ -337,7 +339,7 @@ const Profile = () => {
                             </Form.Item>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
                             <Form.Item name="businessNumber" label="Business License Number">
                                 <Input />
                             </Form.Item>
@@ -346,7 +348,7 @@ const Profile = () => {
                             </Form.Item>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
                             <Form.Item name="email" label="Email" rules={[{ type: 'email', required: true }]}>
                                 <Input />
                             </Form.Item>
@@ -355,7 +357,7 @@ const Profile = () => {
                             </Form.Item>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
                             <Form.Item name="alternatePhone" label="Alternate Phone">
                                 <Input />
                             </Form.Item>
@@ -371,7 +373,7 @@ const Profile = () => {
                             </Form.Item>
 
                             {/* Country First to drive State */}
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
                                 <Form.Item name="country" label="Country">
                                     <Select
                                         showSearch
@@ -386,7 +388,7 @@ const Profile = () => {
                                 </Form.Item>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
                                 <Form.Item name="state" label="State/Province">
                                     <Select
                                         showSearch
@@ -469,8 +471,8 @@ const Profile = () => {
             )}
 
             {/* Main Content */}
-            <div className="flex-1 overflow-y-auto p-4 md:p-8 md:h-[calc(100vh-64px)]">
-                <div className="max-w-4xl mx-auto">
+            <div className={`${isMobile ? 'w-full h-auto' : 'flex-1 md:h-[calc(100vh-64px)]'} overflow-y-auto overflow-x-hidden p-3 md:p-8`}>
+                <div className={`${isMobile ? 'w-full' : 'max-w-4xl'} mx-auto`}>
                     {activeTab === 'profile' && renderProfileContent()}
                     {activeTab === 'shops' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><Shops userProfile={profile} /></div>}
                     {activeTab === 'distributorCredentials' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><DistributorCredentials /></div>}
