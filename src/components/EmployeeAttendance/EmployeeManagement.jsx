@@ -6,9 +6,11 @@ import {
 } from "@ant-design/icons";
 import { getEmployees } from "../../api/getEmployees";
 import { createEmployee } from "../../api/createEmployee";
+
 import { updateEmployee } from "../../api/updateEmployee";
 import { enableEmployeeLogin } from "../../api/enableEmployeeLogin";
 import { getProfile } from "../../api/getProfile";
+import { getAllShops } from "../../api/getAllShops";
 
 const { Option } = Select;
 
@@ -55,6 +57,17 @@ const EmployeeManagement = ({ token, isMobile }) => {
         staleTime: 1000 * 60 * 30 // Cache for 30 minutes
     });
 
+    const { data: shops = [] } = useQuery({
+        queryKey: ['shops'],
+        queryFn: async () => {
+            if (!token) return [];
+            const res = await getAllShops(token);
+            // API returns { success: true, data: [...], ... }
+            return Array.isArray(res?.data) ? res.data : [];
+        },
+        enabled: !!token
+    });
+
     const handleAddEmployee = () => {
         setEditingEmployee(null); // Clear editing state
         employeeForm.resetFields();
@@ -86,11 +99,8 @@ const EmployeeManagement = ({ token, isMobile }) => {
                 notification.success({ message: "Employee updated successfully" });
             } else {
                 // Create new employee
-                if (!profile?.userId) throw new Error("User ID not found");
-
                 const payload = {
-                    ...values,
-                    userId: profile.userId
+                    ...values
                 };
 
                 await createEmployee(token, payload);
@@ -153,6 +163,14 @@ const EmployeeManagement = ({ token, isMobile }) => {
             key: "email",
             render: (email) => (
                 <span className="text-gray-600 font-mono text-sm">{email || "-"}</span>
+            ),
+        },
+        {
+            title: "Shop",
+            dataIndex: "shopName",
+            key: "shopName",
+            render: (shopName) => (
+                <span className="text-gray-600 text-sm">{shopName || "-"}</span>
             ),
         },
         {
@@ -284,6 +302,16 @@ const EmployeeManagement = ({ token, isMobile }) => {
                             <Input />
                         </Form.Item>
                     </div>
+
+                    <Form.Item name="shopId" label="Shop" rules={[{ required: true, message: "Please select a shop" }]}>
+                        <Select placeholder="Select a shop">
+                            {Array.isArray(shops) && shops.length > 0 && shops.map(shop => (
+                                <Select.Option key={shop.shopId} value={shop.shopId}>
+                                    {shop.name}
+                                </Select.Option>
+                            ))}
+                        </Select>
+                    </Form.Item>
                     <Form.Item name="email" label="Email" rules={[{ type: 'email' }]}>
                         <Input />
                     </Form.Item>

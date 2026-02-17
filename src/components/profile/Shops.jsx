@@ -82,9 +82,8 @@ const Shops = ({ userProfile }) => {
                 await updateShop(token, editingShop.id, values);
                 notification.success({ message: "Shop updated successfully" });
             } else {
-                const userId = userProfile?.userId || userProfile?.id;
-                if (!userId) throw new Error("User ID missing");
-                await createShop(token, userId, values);
+                // userId is handled by backend from token
+                await createShop(token, values);
                 notification.success({ message: "Shop created successfully" });
             }
 

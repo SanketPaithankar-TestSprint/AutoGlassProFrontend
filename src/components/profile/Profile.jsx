@@ -5,7 +5,7 @@ import { getCustomers } from "../../api/getCustomers";
 import { updateProfile } from "../../api/updateProfile";
 import { saveUserLogo } from "../../api/saveUserLogo";
 import { getValidToken } from "../../api/getValidToken";
-import { UserOutlined, TeamOutlined, IdcardOutlined, ShopOutlined, PhoneOutlined, EnvironmentOutlined, EditOutlined, PlusOutlined, DollarOutlined, ThunderboltOutlined, PercentageOutlined, KeyOutlined, ScanOutlined, FileTextOutlined, UploadOutlined } from "@ant-design/icons";
+import { UserOutlined, TeamOutlined, IdcardOutlined, ShopOutlined, PhoneOutlined, EnvironmentOutlined, EditOutlined, PlusOutlined, DollarOutlined, ThunderboltOutlined, PercentageOutlined, KeyOutlined, ScanOutlined, FileTextOutlined, UploadOutlined, CalculatorOutlined, MailOutlined, GiftOutlined, CameraOutlined, LinkOutlined } from "@ant-design/icons";
 import { Modal, Form, Input, Select, Button, notification, Upload, Avatar } from "antd";
 import ImgCrop from 'antd-img-crop';
 import imageCompression from 'browser-image-compression';
@@ -24,6 +24,13 @@ import { COUNTRIES, getStatesOrProvinces, getCities } from "../../const/location
 const Profile = () => {
     const [activeTab, setActiveTab] = useState('profile');
     const queryClient = useQueryClient();
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // Modals state
     const [isCustomerModalVisible, setIsCustomerModalVisible] = useState(false);
@@ -406,113 +413,6 @@ const Profile = () => {
 
 
 
-<<<<<<< Updated upstream
-    const renderEmployeesContent = () => {
-        if (loadingEmployees) return <div className="text-center py-12 text-lg text-gray-500 animate-pulse">Loading employees...</div>;
-
-        return (
-            <div className="space-y-6 animate-fadeIn">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-2xl font-bold text-gray-800">Employees</h2>
-                    <button
-                        onClick={handleAddEmployee}
-                        className="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-                    >
-                        <PlusOutlined /> Add Employee
-                    </button>
-                </div>
-                {employees.length === 0 ? (
-                    <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-gray-300">
-                        <IdcardOutlined className="text-4xl text-gray-300 mb-3" />
-                        <p className="text-gray-500">No employees found.</p>
-                    </div>
-                ) : (
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="bg-gray-50 border-b border-gray-100">
-                                        <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Name</th>
-                                        <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Role</th>
-                                        <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Email</th>
-                                        <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100">
-                                    {employees.map((e, i) => (
-                                        <tr key={e.id || i} className="hover:bg-gray-50 transition-colors">
-                                            <td className="p-4 text-sm font-medium text-gray-900">{e.firstName} {e.lastName}</td>
-                                            <td className="p-4 text-sm text-gray-600">{e.role || "-"}</td>
-                                            <td className="p-4 text-sm text-gray-600">{e.email || "-"}</td>
-                                            <td className="p-4 text-sm">
-                                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${e.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                                                    {e.isActive ? 'Active' : 'Inactive'}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                )}
-
-                <Modal
-                    title="Add Employee"
-                    open={isEmployeeModalVisible}
-                    onOk={handleSaveEmployee}
-                    onCancel={() => setIsEmployeeModalVisible(false)}
-                    confirmLoading={saving}
-                >
-                    <Form form={employeeForm} layout="vertical">
-                        <div className="grid grid-cols-2 gap-4">
-                            <Form.Item name="firstName" label="First Name" rules={[{ required: true }]}>
-                                <Input />
-                            </Form.Item>
-                            <Form.Item name="lastName" label="Last Name" rules={[{ required: true }]}>
-                                <Input />
-                            </Form.Item>
-                        </div>
-                        <Form.Item name="email" label="Email" rules={[{ type: 'email' }]}>
-                            <Input />
-                        </Form.Item>
-                        <Form.Item name="phone" label="Phone" rules={[{ required: true }]}>
-                            <Input />
-                        </Form.Item>
-                        <Form.Item name="role" label="Role" rules={[{ required: true }]}>
-                            <Select>
-                                <Select.Option value="technician">Technician</Select.Option>
-                                <Select.Option value="manager">Manager</Select.Option>
-                                <Select.Option value="sales">Sales</Select.Option>
-                                <Select.Option value="csr">CSR</Select.Option>
-                                <Select.Option value="installer">Installer</Select.Option>
-                            </Select>
-                        </Form.Item>
-                    </Form>
-                </Modal>
-            </div>
-        );
-    };
-
-    return (
-        <div className="flex flex-col md:flex-row h-screen bg-gray-50/50">
-            {/* Sidebar */}
-            <div className="w-full md:w-64 bg-white border-r border-gray-200 flex-shrink-0 md:h-[calc(100vh-64px)] overflow-y-auto">
-                <div className="p-6">
-                    <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Menu</h2>
-                    <div className="space-y-2">
-                        {renderMenuItem('profile', 'Profile', <UserOutlined />)}
-
-                        {renderMenuItem('employees', 'Employees', <IdcardOutlined />)}
-                        {renderMenuItem('distributorCredentials', 'Distributor Credentials', <KeyOutlined />)}
-                        {renderMenuItem('laborRate', 'Labor Rate', <DollarOutlined />)}
-                        {renderMenuItem('taxRates', 'Tax Rates', <PercentageOutlined />)}
-                        {renderMenuItem('smtp', 'Email (SMTP)', <ThunderboltOutlined />)}
-                        {renderMenuItem('userKitPrice', 'User Kit Price', <DollarOutlined />)}
-                        {renderMenuItem('userAdasPrice', 'ADAS Pricing', <ScanOutlined />)}
-                        {renderMenuItem('specialInstructions', 'Special Instructions', <FileTextOutlined />)}
-                        {renderMenuItem('slugConfig', 'Contact Form Config', <KeyOutlined />)}
-=======
 
     return (
         <div className={`flex flex-col md:flex-row ${isMobile ? 'h-auto' : 'h-screen'} bg-gray-50/50`}>
@@ -564,27 +464,14 @@ const Profile = () => {
                             {renderMenuItem('specialInstructions', 'Special Instructions', <FileTextOutlined />)}
                             {renderMenuItem('slugConfig', 'Contact Form Config', <LinkOutlined />)}
                         </div>
->>>>>>> Stashed changes
                     </div>
                 </div>
-            </div>
+            )}
 
             {/* Main Content */}
             <div className="flex-1 overflow-y-auto p-4 md:p-8 md:h-[calc(100vh-64px)]">
                 <div className="max-w-4xl mx-auto">
                     {activeTab === 'profile' && renderProfileContent()}
-<<<<<<< Updated upstream
-
-                    {activeTab === 'employees' && renderEmployeesContent()}
-                    {activeTab === 'distributorCredentials' && <DistributorCredentials />}
-                    {activeTab === 'laborRate' && <LaborRateConfiguration />}
-                    {activeTab === 'taxRates' && <TaxRateConfiguration />}
-                    {activeTab === 'smtp' && <SmtpConfiguration />}
-                    {activeTab === 'userKitPrice' && <UserKitPricePage />}
-                    {activeTab === 'userAdasPrice' && <UserAdasPricePage />}
-                    {activeTab === 'specialInstructions' && <SpecialInstructions />}
-                    {activeTab === 'slugConfig' && <SlugConfig />}
-=======
                     {activeTab === 'shops' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><Shops userProfile={profile} /></div>}
                     {activeTab === 'distributorCredentials' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><DistributorCredentials /></div>}
                     {activeTab === 'laborRate' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><LaborRateConfiguration /></div>}
@@ -594,7 +481,6 @@ const Profile = () => {
                     {activeTab === 'userAdasPrice' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><UserAdasPricePage /></div>}
                     {activeTab === 'specialInstructions' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><SpecialInstructions /></div>}
                     {activeTab === 'slugConfig' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><SlugConfig /></div>}
->>>>>>> Stashed changes
                 </div>
             </div>
         </div>

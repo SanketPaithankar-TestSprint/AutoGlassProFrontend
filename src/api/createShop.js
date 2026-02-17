@@ -3,8 +3,8 @@ import urls from "../config";
 
 const AGP_API_URL = urls.javaApiUrl;
 
-export const createShop = async (token, ownerId, shopData) => {
-    const response = await fetch(`${AGP_API_URL}/shops?ownerId=${ownerId}`, {
+export const createShop = async (token, shopData) => {
+    const response = await fetch(`${AGP_API_URL}/shops`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
