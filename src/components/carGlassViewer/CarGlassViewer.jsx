@@ -582,7 +582,7 @@ export default function CarGlassViewer({
         {/* Left column: Diagram & Glass Selection */}
         <div className="flex flex-col items-center justify-start bg-white shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg border-0 pr-0 w-full md:w-1/3 shrink-0 relative z-0">
           <div className="w-full mb-2 relative px-2 pt-2">
-            <label className="block text-sm font-bold  mb-2">Select Glass Type</label>
+            <label className="text-xs !font-semibold block mb-2">Select Glass Type</label>
 
 
             {/* ... inside CarGlassViewer component ... */}

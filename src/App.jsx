@@ -40,6 +40,7 @@ const BlogsPage = React.lazy(() => import('./components/Blogs/BlogsPage.jsx'));
 const BlogPostPage = React.lazy(() => import('./components/Blogs/BlogPostPage.jsx'));
 const ShopChatPanel = React.lazy(() => import('./components/Chat/ShopChatPanel.jsx'));
 import { ChatProvider } from './context/ChatContext';
+const SetPassword = React.lazy(() => import('./components/SetPassword.jsx'));
 
 
 
@@ -105,8 +106,9 @@ function AppContent() {
   // Check if we're on the public contact form page - render standalone without main layout
   const isContactPage = location.pathname.startsWith('/contact/');
   const isServiceView = location.pathname.startsWith('/service-inquiry-view/');
+  const isSetPasswordPage = location.pathname.startsWith('/set-password');
 
-  if (isContactPage || isServiceView) {
+  if (isContactPage || isServiceView || isSetPasswordPage) {
     return (
       <ErrorBoundary>
         <Suspense fallback={
@@ -117,6 +119,7 @@ function AppContent() {
           <Routes>
             {isContactPage && <Route path="/contact/:slug" element={<PublicContactRoot />} />}
             {isServiceView && <Route path="/service-inquiry-view/:id" element={<ServiceInquiryView />} />}
+            {isSetPasswordPage && <Route path="/set-password" element={<SetPassword />} />}
           </Routes>
         </Suspense>
       </ErrorBoundary>

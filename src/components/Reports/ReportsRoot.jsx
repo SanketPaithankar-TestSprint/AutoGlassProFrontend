@@ -119,11 +119,11 @@ const ReportsRoot = () => {
     }, [pdfUrl]);
 
     return (
-        <div className="min-h-full bg-gradient-to-br from-slate-50 via-white to-violet-50 p-3 sm:p-4 md:p-6">
+        <div className="min-h-full bg-slate-100 p-3 sm:p-4 md:p-6">
             <div className="max-w-[1200px] mx-auto">
                 {/* Header */}
                 <div className="mb-4 sm:mb-6 md:mb-8">
-                    <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 mb-1 sm:mb-2">
+                    <h1 className="!text-[30px] sm:text-xl md:text-2xl font-bold text-slate-900 mb-1 sm:mb-2">
                         Sales Reports
                     </h1>
                     <p className="text-xs sm:text-sm text-slate-500">Generate and download sales breakdown reports</p>

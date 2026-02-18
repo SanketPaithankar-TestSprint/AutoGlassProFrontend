@@ -954,7 +954,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                             ...(orgFormData.contacts || []).map(c => ({ value: c.name || c.contactName, label: c.name || c.contactName })),
                                             { value: "NEW_CONTACT_TRIGGER", label: <span className="text-violet-600 font-medium">+ Add New Contact</span> }
                                         ]}
-                                        placeholder="Contact Person"
+                                        placeholder=""
                                         filterOption={(inputValue, option) => {
                                             if (option.value === "NEW_CONTACT_TRIGGER") {
                                                 return true;

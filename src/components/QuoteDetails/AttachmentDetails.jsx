@@ -316,7 +316,7 @@ const AttachmentDetails = ({
             {/* Saved Attachments Section */}
             {savedAttachments && savedAttachments.length > 0 && (
                 <div>
-                    <h3 className="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                    <h3 className="text-xs !font-semibold text-slate-800 uppercase tracking-wide mb-3 flex items-center gap-2">
                         <FileTextOutlined />
                         Saved Attachments ({savedAttachments.length})
                     </h3>
@@ -377,7 +377,7 @@ const AttachmentDetails = ({
 
             {/* Upload Area */}
             <div>
-                <h3 className="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                <h3 className="text-xs !font-semibold text-slate-800 uppercase tracking-wide mb-3 flex items-center gap-2">
                     <UploadOutlined />
                     Upload New Files
                 </h3>
@@ -401,7 +401,7 @@ const AttachmentDetails = ({
             {/* New Files List */}
             {attachments.length > 0 && (
                 <div>
-                    <h3 className="text-sm font-bold text-slate-700 mb-3">
+                    <h3 className="text-xs !font-semibold text-slate-800 uppercase tracking-wide mb-3">
                         New Files to Upload ({attachments.length})
                     </h3>
                     <div className="space-y-2">

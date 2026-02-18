@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     Form,
     Input,
@@ -117,7 +118,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
     const [selectedCountry, setSelectedCountry] = useState('USA');
     const [availableStates, setAvailableStates] = useState(getStatesOrProvinces('USA'));
     const [availableCities, setAvailableCities] = useState([]);
-
+    const navigate = useNavigate();
 
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
@@ -189,7 +190,8 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
             console.log('Registration Response:', response);
 
             if (response.data?.success) {
-                setSubmitted(true);
+                // Redirect to Set Password page with email
+                navigate(`/set-password?email=${encodeURIComponent(values.email)}`);
                 if (onSuccess) {
                     onSuccess(response.data);
                 }

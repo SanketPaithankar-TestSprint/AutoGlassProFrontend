@@ -40,7 +40,7 @@ const HeaderBar = ({
         <div className="bg-white border-b border-slate-200 px-6 py-6">
             {/* Title Section */}
             <div className="mb-6">
-                <h1 className="text-xl font-bold text-slate-900">
+                <h1 className="!text-[30px] font-bold text-slate-900">
                     Dashboard
                 </h1>
                 <p className="text-slate-500 mt-1">

@@ -141,7 +141,7 @@ const JobSchedulingPanel = ({
         <div className="w-full">
             <Card
                 title={
-                    <span className="flex items-center gap-2">
+                    <span className="flex items-center gap-2 text-xs !font-semibold text-slate-800 uppercase tracking-wide">
                         <CalendarOutlined className="text-violet-500" />
                         Appointment
                     </span>

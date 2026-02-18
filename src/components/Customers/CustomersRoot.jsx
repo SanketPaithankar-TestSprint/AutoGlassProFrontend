@@ -442,7 +442,7 @@ const CustomersRoot = () => {
             sidebarOpen={sidebarOpen}
             setSidebarOpen={setSidebarOpen}
         >
-            <div className="min-h-screen bg-slate-50">
+            <div className="min-h-screen bg-slate-100">
                 <CustomerHeaderBar
                     viewMode={viewMode}
                     setViewMode={setViewMode}

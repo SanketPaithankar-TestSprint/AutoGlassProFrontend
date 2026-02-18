@@ -2576,14 +2576,14 @@ ${shopName}`;
                                             <button
                                                 onClick={handleSave}
                                                 disabled={saveLoading}
-                                                className="flex-1 px-3 py-1.5 rounded bg-green-500 text-white text-[11px] font-bold hover:bg-green-600 transition shadow-sm disabled:opacity-50"
+                                                className="flex-1 px-3 py-1.5 rounded !bg-green-500 text-white text-[11px] font-bold !hover:bg-green-600 transition shadow-sm disabled:opacity-50"
                                             >
                                                 {saveLoading ? '...' : 'Save'}
                                             </button>
                                             <button
                                                 onClick={handlePreview}
                                                 disabled={previewLoading}
-                                                className="flex-1 px-3 py-1.5 rounded bg-[#3B82F6] text-white text-[11px] font-medium hover:bg-[#7E5CFE] hover:text-white transition shadow-sm disabled:opacity-50"
+                                                className="flex-1 px-3 py-1.5 rounded !bg-[#3B82F6] text-white text-[11px] font-medium !hover:bg-[#7E5CFE] hover:text-white transition shadow-sm disabled:opacity-50"
                                                 title="Preview PDF"
                                             >
                                                 {previewLoading ? '...' : 'Print'}
@@ -2591,7 +2591,7 @@ ${shopName}`;
                                             <button
                                                 onClick={handleEmail}
                                                 disabled={emailLoading}
-                                                className="flex-1 px-3 py-1.5 rounded bg-[#3B82F6] text-white text-[11px] font-medium hover:bg-[#7E5CFE] hover:text-white transition shadow-sm disabled:opacity-50"
+                                                className="flex-1 px-3 py-1.5 rounded !bg-[#3B82F6] text-white text-[11px] font-medium !hover:bg-[#7E5CFE] hover:text-white transition shadow-sm disabled:opacity-50"
                                                 title="Send via email"
                                             >
                                                 {emailLoading ? '...' : 'Email'}

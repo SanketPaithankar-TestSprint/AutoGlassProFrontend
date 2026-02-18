@@ -9,6 +9,14 @@ import { getValidToken } from "../../api/getValidToken";
 import { ShopOutlined, PlusOutlined, EditOutlined, DeleteOutlined, EnvironmentOutlined, PhoneOutlined, MailOutlined, GlobalOutlined, ReloadOutlined } from "@ant-design/icons";
 import { Modal, Form, Input, Button, notification, Popconfirm, Card, Empty, Tag } from "antd";
 
+const formatPhoneNumber = (value) => {
+    const digits = value.replace(/\D/g, '');
+    if (digits.length === 0) return '';
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+};
+
 const Shops = ({ userProfile }) => {
     const queryClient = useQueryClient();
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -257,15 +265,45 @@ const Shops = ({ userProfile }) => {
                         <Form.Item
                             name="phone"
                             label="Phone"
-                            rules={[{ required: true, message: "Please enter phone number" }]}
+                            rules={[
+                                { required: true, message: "Please enter phone number" },
+                                {
+                                    validator: (_, value) => {
+                                        if (!value) return Promise.resolve();
+                                        const digitsOnly = value.replace(/\D/g, '');
+                                        if (digitsOnly.length >= 10 && digitsOnly.length <= 15) {
+                                            return Promise.resolve();
+                                        }
+                                        return Promise.reject(new Error('Phone must contain at least 10 digits'));
+                                    }
+                                }
+                            ]}
                         >
-                            <Input placeholder="555-0199" size="large" />
+                            <Input
+                                placeholder="(555) 123-4567"
+                                size="large"
+                                onChange={(e) => {
+                                    const formatted = formatPhoneNumber(e.target.value);
+                                    form.setFieldValue('phone', formatted);
+                                }}
+                            />
                         </Form.Item>
 
                         <Form.Item
                             name="email"
                             label="Email"
-                            rules={[{ type: 'email', message: "Invalid email" }]}
+                            rules={[
+                                {
+                                    validator: (_, value) => {
+                                        if (!value) return Promise.resolve();
+                                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                                        if (emailRegex.test(value)) {
+                                            return Promise.resolve();
+                                        }
+                                        return Promise.reject(new Error('Invalid email format'));
+                                    }
+                                }
+                            ]}
                         >
                             <Input placeholder="contact@shop.com" size="large" />
                         </Form.Item>

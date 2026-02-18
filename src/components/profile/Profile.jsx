@@ -226,13 +226,16 @@ const Profile = () => {
 
                     {/* Logo Section */}
                     <div className="flex flex-row items-center gap-4 md:gap-6 mb-6 md:mb-8 p-3 md:p-4 bg-gray-50 rounded-xl border border-gray-100">
-                        <div className="relative">
-                            <Avatar
-                                size={isMobile ? 60 : 80}
-                                src={logoUrl}
-                                icon={<ShopOutlined />}
-                                className="bg-violet-100 text-violet-600 border-2 border-white shadow-md"
-                            />
+                        <div className="relative w-fit">
+                            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-violet-400 to-violet-600 p-1 flex items-center justify-center">
+                                <Avatar
+                                    size={isMobile ? 60 : 80}
+                                    src={logoUrl}
+                                    icon={<ShopOutlined />}
+                                    className="bg-white text-violet-600 border-0"
+                                    style={{ width: '100%', height: '100%' }}
+                                />
+                            </div>
                         </div>
                         <div className="flex-1">
                             <h3 className="text-sm font-bold text-gray-900 mb-1">Shop Logo</h3>
