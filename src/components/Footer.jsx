@@ -167,7 +167,7 @@ const Footer = () => {
               <motion.a href={SOCIAL_LINKS.linkedin} className="hover:scale-110 transition-transform" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" whileHover={{ scale: 1.2 }}>
                 <SiLinkedin size={18} className="sm:w-6 sm:h-6" color="#0A66C2" />
               </motion.a>
-              <motion.a href="https://tiktok.com" className="hover:scale-110 transition-transform" target="_blank" rel="noopener noreferrer" aria-label="TikTok" whileHover={{ scale: 1.2 }}>
+              <motion.a href="tiktok.com/@autopaneai" className="hover:scale-110 transition-transform" target="_blank" rel="noopener noreferrer" aria-label="TikTok" whileHover={{ scale: 1.2 }}>
                 <SiTiktok size={18} className="sm:w-6 sm:h-6" color="#000000" />
               </motion.a>
             </div>
