@@ -12,11 +12,11 @@ const CustomerHeaderBar = ({
 }) => {
 
     return (
-        <div className="bg-white border-b border-slate-200 px-6 py-6">
+        <div className="bg-slate-100 border-b border-slate-200 px-6 py-6">
             {/* Title Section */}
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
                 <div>
-                    <h1 className="text-xl font-bold text-slate-900">
+                    <h1 className="!text-[30px] font-extrabold text-slate-800">
                         Customer Management
                     </h1>
                     <p className="text-slate-500 mt-1">

@@ -218,9 +218,9 @@ const ServiceContactFormRoot = () => {
     };
 
     return (
-        <div className="p-4 md:p-6">
+        <div className="min-h-screen p-4 md:p-6 bg-slate-100">
             <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h1 className="text-xl md:text-2xl font-bold text-slate-900 m-0">Service Inquiries</h1>
+                <h1 className="!text-[30px] md:text-2xl font-bold text-slate-900 m-0">Service Inquiries</h1>
                 <Button
                     icon={<ReloadOutlined />}
                     onClick={fetchInquiries}

@@ -77,7 +77,7 @@ const AnalyticsRoot = () => {
 
     if (isLoading) {
         return (
-            <div className="h-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #f0f4ff 0%, #faf5ff 50%, #f0fdf4 100%)' }}>
+            <div className="h-full flex items-center justify-center bg-slate-100">
                 <Spin size="large" tip="Loading Dashboard..." />
             </div>
         );
@@ -85,7 +85,7 @@ const AnalyticsRoot = () => {
 
     if (error) {
         return (
-            <div className="p-8" style={{ background: 'linear-gradient(135deg, #f0f4ff 0%, #faf5ff 50%, #f0fdf4 100%)' }}>
+            <div className="p-8 bg-slate-100">
                 <Alert
                     message="Error Loading Dashboard"
                     description={error.message || "Failed to fetch analytics data."}
@@ -97,12 +97,12 @@ const AnalyticsRoot = () => {
     }
 
     return (
-        <div className="min-h-screen p-3 sm:p-4 md:p-6 lg:p-8" style={{ background: 'linear-gradient(135deg, #f0f4ff 0%, #faf5ff 50%, #f0fdf4 100%)' }}>
+        <div className="min-h-screen p-3 sm:p-4 md:p-6 lg:p-8 bg-slate-100">
             <div className="max-w-[1600px] mx-auto space-y-4 sm:space-y-6 lg:space-y-8">
                 {/* Header */}
                 <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-slate-800 via-blue-800 to-violet-800 bg-clip-text text-transparent">
+                        <h1 className="!text-[30px] font-extrabold text-slate-800">
                             Dashboard
                         </h1>
                         <p className="text-slate-500 mt-1 text-xs sm:text-sm">Comprehensive business analytics and insights</p>

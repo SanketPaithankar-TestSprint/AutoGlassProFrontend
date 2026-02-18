@@ -146,7 +146,7 @@ export default function PaymentPanel({ paymentData, setPaymentData, existingPaym
             {/* Existing Payments List */}
             {existingPayments.length > 0 && (
                 <div className="bg-white rounded-md border border-gray-200 shadow-sm overflow-hidden">
-                    <h3 className="text-sm font-bold text-gray-800 bg-gray-50 px-4 py-2 border-b">Payment History</h3>
+                    <h3 className="text-xs !font-semibold text-slate-800 uppercase tracking-wide bg-gray-50 px-4 py-2 border-b">Payment History</h3>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left">
                             <thead className="bg-gray-50 text-gray-500 font-semibold border-b">
@@ -279,7 +279,7 @@ export default function PaymentPanel({ paymentData, setPaymentData, existingPaym
             {/* New Payment Entry - FULL WIDTH, REDUCED HEIGHT */}
             <div className="w-full bg-white rounded-md border border-gray-200 shadow-sm p-4 animate-fade-in">
                 <div className="flex justify-between items-center mb-3 border-b pb-2">
-                    <h3 className="text-sm font-bold text-gray-800">Add New Payment</h3>
+                    <h3 className="text-xs !font-semibold text-slate-800 uppercase tracking-wide">Add New Payment</h3>
                     <button
                         onClick={() => updateField('amount', balanceDue)}
                         className="text-xs font-semibold text-violet-600 hover:text-violet-800 underline disabled:opacity-50"

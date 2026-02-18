@@ -286,11 +286,13 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
                     <Dropdown overlay={profileMenu} trigger={['click']} placement="topRight">
                         <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between'} p-2 rounded-lg hover:bg-violet-50 cursor-pointer transition-colors group`}>
                             <div className="flex items-center gap-3">
-                                {userLogo ? (
-                                    <Avatar src={userLogo} className="bg-transparent border border-gray-200" />
-                                ) : (
-                                    <Avatar icon={<UserOutlined />} className="bg-violet-100 text-violet-600" />
-                                )}
+                                <div className="w-10 h-10 rounded-full border-2 border-violet-500 flex items-center justify-center">
+                                    {userLogo ? (
+                                        <Avatar src={userLogo} size={32} className="bg-transparent border-0" />
+                                    ) : (
+                                        <Avatar icon={<UserOutlined />} size={32} className="bg-white text-violet-600" />
+                                    )}
+                                </div>
                                 {!collapsed && (
                                     <div className="flex flex-col min-w-0">
                                         <span className="text-sm font-medium text-slate-700 truncate group-hover:text-violet-700">My Account</span>

@@ -48,7 +48,8 @@ const ShopChatPanel = () => {
     };
 
     return (
-        <div className="flex h-full bg-white rounded-xl shadow-sm overflow-hidden border border-slate-200 m-4">
+        <div className="min-h-screen bg-slate-100 p-4">
+            <div className="flex h-full bg-white rounded-xl shadow-sm overflow-hidden border border-slate-200">
             {/* Sidebar List */}
             <div className="w-1/3 border-r border-slate-200 flex flex-col">
                 <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
@@ -192,6 +193,7 @@ const ShopChatPanel = () => {
                         <p className="text-lg">Select a conversation to start chatting</p>
                     </div>
                 )}
+            </div>
             </div>
         </div>
     );

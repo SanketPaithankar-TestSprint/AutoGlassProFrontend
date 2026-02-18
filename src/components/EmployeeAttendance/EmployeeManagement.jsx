@@ -14,6 +14,14 @@ import { getAllShops } from "../../api/getAllShops";
 
 const { Option } = Select;
 
+const formatPhoneNumber = (value) => {
+    const digits = value.replace(/\D/g, '');
+    if (digits.length === 0) return '';
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+};
+
 const EmployeeManagement = ({ token, isMobile }) => {
     const queryClient = useQueryClient();
     const [isEmployeeModalVisible, setIsEmployeeModalVisible] = useState(false);
@@ -312,11 +320,48 @@ const EmployeeManagement = ({ token, isMobile }) => {
                             ))}
                         </Select>
                     </Form.Item>
-                    <Form.Item name="email" label="Email" rules={[{ type: 'email' }]}>
+                    <Form.Item
+                        name="email"
+                        label="Email"
+                        rules={[
+                            {
+                                validator: (_, value) => {
+                                    if (!value) return Promise.resolve();
+                                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                                    if (emailRegex.test(value)) {
+                                        return Promise.resolve();
+                                    }
+                                    return Promise.reject(new Error('Invalid email format'));
+                                }
+                            }
+                        ]}
+                    >
                         <Input />
                     </Form.Item>
-                    <Form.Item name="phone" label="Phone" rules={[{ required: true }]}>
-                        <Input />
+                    <Form.Item
+                        name="phone"
+                        label="Phone"
+                        rules={[
+                            { required: true, message: "Please enter phone number" },
+                            {
+                                validator: (_, value) => {
+                                    if (!value) return Promise.resolve();
+                                    const digitsOnly = value.replace(/\D/g, '');
+                                    if (digitsOnly.length >= 10 && digitsOnly.length <= 15) {
+                                        return Promise.resolve();
+                                    }
+                                    return Promise.reject(new Error('Phone must contain at least 10 digits'));
+                                }
+                            }
+                        ]}
+                    >
+                        <Input
+                            placeholder="(555) 123-4567"
+                            onChange={(e) => {
+                                const formatted = formatPhoneNumber(e.target.value);
+                                employeeForm.setFieldValue('phone', formatted);
+                            }}
+                        />
                     </Form.Item>
                     <Form.Item name="role" label="Role" rules={[{ required: true }]}>
                         <Select>
