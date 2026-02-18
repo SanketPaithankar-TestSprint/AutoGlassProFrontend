@@ -15,12 +15,12 @@ const useInquiryNotifications = () => {
         const connect = () => {
             const token = getValidToken();
             if (!token) {
-                console.warn('No valid token found for SSE. Retrying in 5s...');
+                // console.warn('No valid token found for SSE. Retrying in 5s...');
                 retryTimeout = setTimeout(connect, 5000);
                 return;
             }
 
-            console.log('Initializing SSE connection for inquiry notifications...');
+            // console.log('Initializing SSE connection for inquiry notifications...');
 
             eventSource = new EventSourcePolyfill(`${urls.javaApiUrl}/v1/notifications/inquiries/stream`, {
                 headers: {
@@ -30,20 +30,19 @@ const useInquiryNotifications = () => {
             });
 
             eventSource.onopen = () => {
-                console.log('SSE connection opened.');
+                // console.log('SSE connection opened.');
             };
 
-            eventSource.onmessage = (event) => {
+            // eslint-disable-next-line no-unused-vars
+            eventSource.onmessage = (_event) => {
                 // Heartbeat or keep-alive
                 // console.log('Received SSE keep-alive/message:', event.data);
             };
 
-
-
             eventSource.addEventListener('NEW_INQUIRY', (event) => {
                 try {
                     const data = JSON.parse(event.data);
-                    console.log('✅ New Inquiry Received:', data);
+                    // console.log('✅ New Inquiry Received:', data);
 
                     // Play chime
                     playNotificationSound();
@@ -60,17 +59,18 @@ const useInquiryNotifications = () => {
                     });
 
                     // Dispatch custom event for components to refresh data
-                    console.log('🔔 Dispatching INQUIRY_RECEIVED event...');
+                    // console.log('🔔 Dispatching INQUIRY_RECEIVED event...');
                     const customEvent = new CustomEvent('INQUIRY_RECEIVED', { detail: data });
                     window.dispatchEvent(customEvent);
-                    console.log('✅ INQUIRY_RECEIVED event dispatched');
-                } catch (error) {
-                    console.error('❌ Error parsing SSE event data:', error);
+                    // console.log('✅ INQUIRY_RECEIVED event dispatched');
+                } catch {
+                    // console.error('❌ Error parsing SSE event data:', error);
                 }
             });
 
-            eventSource.onerror = (error) => {
-                console.error('SSE connection error:', error);
+            // eslint-disable-next-line no-unused-vars
+            eventSource.onerror = (_error) => {
+                // console.error('SSE connection error:', error);
 
                 // Close current connection
                 eventSource.close();
@@ -78,8 +78,8 @@ const useInquiryNotifications = () => {
                 // If 401, token might be expired. Retry allows picking up a new token if available.
                 // If standard network error, browser might handle, but polyfill might need help for full disconnects.
                 // We'll retry with a backoff.
-                const retryTime = (error?.status === 401) ? 5000 : 3000;
-                console.log(`Retrying SSE in ${retryTime}ms...`);
+                const retryTime = 10000; // Retry every 10s to avoid console spam
+                // console.log(`Retrying SSE in ${retryTime}ms...`);
                 retryTimeout = setTimeout(connect, retryTime);
             };
         };
@@ -87,7 +87,7 @@ const useInquiryNotifications = () => {
         connect();
 
         return () => {
-            console.log('Closing SSE connection and cleanup.');
+            // console.log('Closing SSE connection and cleanup.');
             if (eventSource) {
                 eventSource.close();
             }

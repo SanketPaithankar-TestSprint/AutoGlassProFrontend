@@ -146,7 +146,7 @@ function AppContent() {
             />
           )}
 
-          <Layout className={`flex flex-col h-full bg-slate-50 transition-all duration-300 overflow-hidden flex-1 w-full ${isMobile ? 'pt-16' : ''}`}> {/* Add padding top for legacy header spacer if mobile */}
+          <Layout className={`flex flex-col h-full transition-all duration-300 overflow-hidden flex-1 w-full ${isMobile ? 'pt-16' : ''}`}> {/* Add padding top for legacy header spacer if mobile */}
             <Content className="flex-1 flex flex-col overflow-y-auto custom-scrollbar">
               <div className={`flex-1 flex-col flex`}>
                 <ErrorBoundary>

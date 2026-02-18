@@ -481,7 +481,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                 >
                     <Select className="custom-api-input">
                         <Select.Option value="SHOP_OWNER">Shop Owner</Select.Option>
-                        <Select.Option value="REMOTE_WORKER">Mobile Technician</Select.Option>
+                        <Select.Option value="MOBILE_TECHNICIAN">Mobile Technician</Select.Option>
                     </Select>
                 </Form.Item>
                 <Form.Item style={{ marginBottom: 0, marginTop: '24px' }}>

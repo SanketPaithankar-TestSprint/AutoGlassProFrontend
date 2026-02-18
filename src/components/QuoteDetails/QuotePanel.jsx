@@ -1867,7 +1867,7 @@ ${shopName}`;
 
             {/* Glass Selection Modal - shown when multiple glass types are available */}
             <Modal
-                title={<span className="text-[#7E5CFE] font-semibold">Select Glass Type</span>}
+                title={<span className="text-[#7E5CFE] ">Select Glass Type</span>}
                 open={glassSelectionModal.visible}
                 onCancel={handleCloseGlassSelection}
                 footer={null}

@@ -15,7 +15,7 @@ const models = [
     },
     {
         icon: "🚐",
-        title: "Remote Installers",
+        title: "Mobile Installers",
         description: "Work independently or lead a mobile team. Generate quotes on-the-go and manage service delivery.",
         features: [
             "Mobile-responsive design",

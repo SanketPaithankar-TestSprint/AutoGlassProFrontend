@@ -208,7 +208,7 @@ const FeaturesPage = () => {
                 {
                     icon: <TeamOutlined />,
                     title: "Role-Based Access",
-                    desc: "Customize access for every team member, from SHOP_OWNER and Admin to REMOTE_WORKER and Technician, ensuring everyone has the right level of control."
+                    desc: "Customize access for every team member, from SHOP_OWNER and Admin to MOBILE_TECHNICIAN and Technician, ensuring everyone has the right level of control."
                 }
             ]
         },

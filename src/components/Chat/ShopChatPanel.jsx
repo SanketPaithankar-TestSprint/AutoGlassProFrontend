@@ -80,7 +80,7 @@ const ShopChatPanel = () => {
                                             }
                                             title={
                                                 <div className="flex justify-between items-center">
-                                                    <span className={`text-sm ${item.unreadCount > 0 ? 'font-bold text-slate-800' : 'font-medium text-slate-700'}`}>
+                                                    <span className={`text-sm ${item.unreadCount > 0 ? 'font-bold text-slate-500' : 'font-medium text-slate-500'}`}>
                                                         {item.customerName || `Customer ${item.id.substring(0, 6)}...`}
                                                     </span>
                                                     <span className="text-xs text-slate-400">
