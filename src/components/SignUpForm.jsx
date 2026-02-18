@@ -20,7 +20,7 @@ import {
 } from '@ant-design/icons';
 import axios from 'axios';
 import urls from '../config';
-import { COUNTRIES, getStatesOrProvinces } from '../const/locations';
+import { COUNTRIES, getStatesOrProvinces, getCities } from '../const/locations';
 
 // Reusable style for form items
 const formItemStyle = {
@@ -107,7 +107,7 @@ const formatPhoneNumber = (value) => {
 const validatePhoneNumber = (value) => {
     const cleaned = value.replace(/\D/g, '');
     if (cleaned.length !== 10) {
-        return Promise.reject(new Error('Phone number must be 10 digits!'));
+        return Promise.reject(new Error('Phone number must be exactly 10 digits!'));
     }
     return Promise.resolve();
 };
@@ -115,8 +115,8 @@ const validatePhoneNumber = (value) => {
 const SignUpForm = ({ onSuccess, onCancel }) => {
     const [form] = Form.useForm();
     const [selectedCountry, setSelectedCountry] = useState('USA');
-
     const [availableStates, setAvailableStates] = useState(getStatesOrProvinces('USA'));
+    const [availableCities, setAvailableCities] = useState([]);
 
 
     const [loading, setLoading] = useState(false);
@@ -139,6 +139,15 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
         try {
             const formData = new FormData();
 
+            // Determine final city value
+            let finalCity = values.city;
+            if (Array.isArray(values.city)) {
+                finalCity = values.city[0];
+            }
+            if (finalCity === 'Other') {
+                finalCity = values.customCity;
+            }
+
             // Map values to payload
             const userData = {
                 businessName: values.businessName,
@@ -148,7 +157,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                 alternatePhone: values.alternatePhone,
                 addressLine1: values.addressLine1,
                 addressLine2: values.addressLine2,
-                city: Array.isArray(values.city) ? values.city[0] : values.city,
+                city: finalCity,
                 state: values.state,
                 postalCode: values.postalCode,
                 country: values.country,
@@ -213,15 +222,21 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
 
     const handleCountryChange = (value) => {
         setSelectedCountry(value);
-
         setAvailableStates(getStatesOrProvinces(value));
-        form.setFieldsValue({ state: undefined });
+        setAvailableCities([]);
+        form.setFieldsValue({ state: undefined, city: undefined, customCity: undefined });
     };
 
     const handleStateChange = (value) => {
-
-        form.setFieldsValue({ city: undefined });
+        const cities = getCities(selectedCountry, value);
+        // Add "Other" option
+        const citiesWithOther = [...cities, { value: 'Other', label: 'Other' }];
+        setAvailableCities(citiesWithOther);
+        form.setFieldsValue({ city: undefined, customCity: undefined });
     };
+
+    // Watch for city changes to conditionally render custom city input
+    const selectedCity = Form.useWatch('city', form);
 
     if (submitted) {
         return (
@@ -352,7 +367,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             <Input
                                 prefix={<PhoneOutlined style={{ color: '#a0aec0' }} />}
                                 className="custom-api-input"
-                                maxLength="14"
+                                maxLength={14}
                                 onChange={(e) => {
                                     const formatted = formatPhoneNumber(e.target.value);
                                     form.setFieldsValue({ phone: formatted });
@@ -377,7 +392,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             <Input
                                 prefix={<PhoneOutlined style={{ color: '#a0aec0' }} />}
                                 className="custom-api-input"
-                                maxLength="14"
+                                maxLength={14}
                                 onChange={(e) => {
                                     const formatted = formatPhoneNumber(e.target.value);
                                     form.setFieldsValue({ alternatePhone: formatted });
@@ -404,15 +419,28 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                     <Input className="custom-api-input" />
                 </Form.Item>
 
+                {/* Country, State, City, Zip Reordered */}
                 <Row gutter={16}>
                     <Col xs={24} sm={12}>
                         <Form.Item
-                            name="city"
-                            label="City"
-                            rules={[{ required: true, message: 'Please enter or select city!' }]}
+                            name="country"
+                            label="Country"
+                            rules={[{ required: true, message: 'Please select country!' }]}
+                            initialValue="USA"
                             style={formItemStyle}
                         >
-                            <Input className="custom-api-input" />
+                            <Select
+                                onChange={handleCountryChange}
+                                showSearch
+                                optionFilterProp="label"
+                                className="custom-api-input"
+                            >
+                                {COUNTRIES.map(country => (
+                                    <Select.Option key={country.value} value={country.value}>
+                                        {country.label}
+                                    </Select.Option>
+                                ))}
+                            </Select>
                         </Form.Item>
                     </Col>
                     <Col xs={24} sm={12}>
@@ -441,21 +469,20 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                 <Row gutter={16}>
                     <Col xs={24} sm={12}>
                         <Form.Item
-                            name="country"
-                            label="Country"
-                            rules={[{ required: true, message: 'Please select country!' }]}
-                            initialValue="USA"
+                            name="city"
+                            label="City"
+                            rules={[{ required: true, message: 'Please enter or select city!' }]}
                             style={formItemStyle}
                         >
                             <Select
-                                onChange={handleCountryChange}
                                 showSearch
                                 optionFilterProp="label"
                                 className="custom-api-input"
+                                placeholder="Select City"
                             >
-                                {COUNTRIES.map(country => (
-                                    <Select.Option key={country.value} value={country.value}>
-                                        {country.label}
+                                {availableCities.map(city => (
+                                    <Select.Option key={city.value} value={city.value}>
+                                        {city.label}
                                     </Select.Option>
                                 ))}
                             </Select>
@@ -472,6 +499,17 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                         </Form.Item>
                     </Col>
                 </Row>
+
+                {selectedCity === 'Other' && (
+                    <Form.Item
+                        name="customCity"
+                        label="Enter City Name"
+                        rules={[{ required: true, message: 'Please enter your city!' }]}
+                        style={formItemStyle}
+                    >
+                        <Input className="custom-api-input" placeholder="Type your city name" />
+                    </Form.Item>
+                )}
 
                 <Form.Item
                     name="userType"
