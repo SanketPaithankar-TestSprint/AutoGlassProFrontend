@@ -826,7 +826,8 @@ const SearchByRoot = () => {
     setQuoteItems(prev => [...prev, ...newItems]);
 
     // Fetch Vendor Pricing in background and update when ready
-    const userId = localStorage.getItem('userId') || 2;
+    const userId = localStorage.getItem('userId');
+    debugger;
     const nagsListPrice = part.list_price || 0;
 
     if (userId && nagsId) {
