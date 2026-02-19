@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import PageHead from '../PageHead';
 
 const SitemapPage = () => {
     const sitemapSections = [
@@ -25,6 +26,10 @@ const SitemapPage = () => {
 
     return (
         <div className="bg-transparent min-h-screen py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+            <PageHead 
+                title="Sitemap | APAI Auto Glass Management Software" 
+                description="Navigate the APAI website easily. Find links to our shop management features, pricing, blog guides, and support resources for auto glass professionals." 
+            />
             {/* Global Gradient Background */}
             <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
                 <motion.div

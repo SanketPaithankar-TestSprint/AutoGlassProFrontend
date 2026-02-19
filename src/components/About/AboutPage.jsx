@@ -8,6 +8,7 @@ import {
     CheckCircleFilled
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import PageHead from '../PageHead';
 
 // Reusing the AnimatedSection logic for consistent animations
 const useIntersectionObserver = (options = {}) => {
@@ -78,7 +79,6 @@ const AboutPage = () => {
 
     useEffect(() => {
         window.scrollTo(0, 0);
-        document.title = "APAI | About Us";
     }, []);
 
     const founders = [
@@ -137,6 +137,10 @@ const AboutPage = () => {
 
     return (
         <div className="bg-white min-h-screen pt-10 pb-20 relative overflow-hidden">
+            <PageHead 
+                title="About APAI | Empowering Independent Auto Glass Shops" 
+                description="Learn the story behind APAI. We're empowering independent auto glass shops with AI-driven tools to automate workflows, increase profits, and simplify scaling." 
+            />
             {/* Simple static gradient background */}
             <div
                 className="fixed inset-0 z-0 pointer-events-none opacity-20"

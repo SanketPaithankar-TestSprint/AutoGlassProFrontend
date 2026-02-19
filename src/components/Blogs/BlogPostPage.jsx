@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Typography, Button, Spin } from 'antd';
 import { ArrowLeftOutlined, ArrowRightOutlined, CalendarOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { motion } from 'framer-motion';
+import PageHead from '../PageHead';
 import { getBlogBySlug, getBlogs } from '../../api/getBlogs';
 
 import defaultCover from '../../assets/defaultcoverimg.png';
@@ -87,6 +88,10 @@ const BlogPostPage = () => {
 
     return (
         <div className="min-h-screen bg-white pt-20 pb-20 relative overflow-hidden font-sans text-slate-900">
+             <PageHead 
+                title={post.metaTitle || post.title} 
+                description={post.metaDescription || post.excerpt || "Read our latest blog post on Auto Glass Pro."} 
+            />
             {/* Gradient Background */}
             <div
                 className="fixed inset-0 z-0 pointer-events-none opacity-20"
@@ -121,7 +126,7 @@ const BlogPostPage = () => {
                     <div className="flex flex-wrap items-center gap-6 text-sm text-slate-500 border-b border-slate-100 pb-6 mb-6">
                         <div className="flex items-center gap-2">
                             <CalendarOutlined className="text-slate-400" />
-                            <span>{formattedDate}</span>
+                            <span>Uploaded on {formattedDate}</span>
                         </div>
                         {post.readTimeMinutes && (
                             <div className="flex items-center gap-2">

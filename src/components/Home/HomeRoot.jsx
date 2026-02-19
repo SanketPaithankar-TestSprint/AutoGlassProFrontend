@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getValidToken } from "../../api/getValidToken";
+import PageHead from "../PageHead";
 import HeroSection from "./HeroSection";
 import ValuePropSection from "./ValuePropSection";
 import FeaturesSection from "./FeaturesSection";
@@ -23,11 +24,14 @@ const Home = () => {
     }, []);
     useEffect(() => {
         setMounted(true)
-        document.title = "APAI | Home";
     }, [])
 
     return (
         <div className="relative text-slate-900 overflow-hidden bg-slate-50/50" style={{ minHeight: 'calc(var(--vh, 1vh) * 100)' }}>
+            <PageHead 
+                title="APAI | Smart Auto Glass Shop Management Software" 
+                description="Scale your auto glass business with APAI. Automate quoting, invoicing, and NAGS pricing. The all-in-one AI platform built to grow your shop for only $99/mo." 
+            />
             {/* Global Gradient Background */}
             <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
                 <motion.div

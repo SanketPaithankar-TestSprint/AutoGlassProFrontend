@@ -3,6 +3,7 @@ import { Layout, Typography, Button, Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRightOutlined } from '@ant-design/icons';
 import { motion } from 'framer-motion';
+import PageHead from '../PageHead';
 import { getBlogs } from '../../api/getBlogs';
 import defaultCover from '../../assets/defaultcoverimg.png';
 
@@ -53,12 +54,18 @@ const BlogCard = ({ post }) => {
                 <div className="hidden md:block absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-transparent to-white z-10"></div>
 
                 <div className="flex items-center gap-3 mb-3 text-xs font-medium text-slate-400 uppercase tracking-wider relative z-20">
-                    <span>{new Date(post.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                    <span>Uploaded on {new Date(post.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                 </div>
 
                 <h3 className="text-xl md:text-2xl font-bold text-slate-900 mb-4 group-hover:text-violet-600 transition-colors relative z-20 hidden md:block">
                     {post.title}
                 </h3>
+                  
+                {post.excerpt && (
+                    <p className="text-slate-600 mb-4 line-clamp-3 relative z-20 hidden md:block">
+                        {post.excerpt}
+                    </p>
+                )}
 
                 <div className="mt-auto pt-6 flex items-center justify-end border-t border-slate-100">
                     <div className="flex items-center gap-2 text-violet-600 font-medium text-sm hover:gap-3 transition-all">
@@ -93,6 +100,10 @@ const BlogsPage = () => {
 
     return (
         <div className="min-h-screen bg-white p-4 md:p-6 relative overflow-hidden font-sans text-slate-900">
+            <PageHead 
+                title="Auto Glass Business Insights & Guides | APAI Blog" 
+                description="Expert advice for auto glass shop owners. Read our latest guides on scaling your business, and using AI features to increase your shop's profitability." 
+            />
             {/* Gradient Background matching other pages */}
             <div
                 className="fixed inset-0 z-0 pointer-events-none opacity-20"

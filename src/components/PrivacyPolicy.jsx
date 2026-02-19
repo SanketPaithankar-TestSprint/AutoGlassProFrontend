@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react';
 import { Typography, Divider } from 'antd';
 import { SafetyCertificateOutlined } from '@ant-design/icons';
+import PageHead from './PageHead';
 
 const { Title, Text } = Typography;
 
 const PrivacyPolicy = () => {
     useEffect(() => {
         window.scrollTo(0, 0);
-        document.title = "APAI | Privacy Policy";
     }, []);
 
     const sections = [
@@ -70,6 +70,10 @@ const PrivacyPolicy = () => {
 
     return (
         <div className="min-h-screen bg-white pb-20 pt-10 px-6 md:px-12 lg:px-20 relative overflow-hidden">
+            <PageHead 
+                title="Privacy Policy | APAI Auto Glass Management Software" 
+                description="Read the APAI Privacy Policy. Learn how we protect your auto glass shop's data, ensure secure transactions, and maintain your business confidentiality." 
+            />
             {/* Simple static gradient background */}
             <div
                 className="fixed inset-0 z-0 pointer-events-none opacity-20"

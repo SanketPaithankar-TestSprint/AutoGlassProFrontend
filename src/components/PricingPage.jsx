@@ -2,6 +2,7 @@ import React from "react";
 import { Layout, Button, Tooltip } from "antd";
 import { CheckOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
+import PageHead from "./PageHead";
 import { freeTierFeatures, professionalTierFeatures, enterpriseTierFeatures } from "../const/pricingPage";
 
 
@@ -12,6 +13,10 @@ const PricingPage = () => {
 
   return (
     <Layout className="flex-grow bg-white font-sans text-slate-900 flex flex-col justify-center relative overflow-hidden">
+      <PageHead 
+        title="APAI Pricing | Transparent Auto Glass Software for $99/mo" 
+        description="Simple, flat-rate pricing for your auto glass shop. Get full access to VIN decoding, NAGS data, and invoicing for just $99/month. No contracts, no hidden fees." 
+      />
       {/* Gradient Background */}
       <div
         className="fixed inset-0 z-0 pointer-events-none opacity-20"

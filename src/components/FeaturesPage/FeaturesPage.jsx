@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Layout, Button, Collapse } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import PageHead from '../PageHead';
 import {
     FileSearchOutlined,
     FundProjectionScreenOutlined,
@@ -152,7 +153,6 @@ const FeaturesPage = () => {
 
     useEffect(() => {
         window.scrollTo(0, 0);
-        document.title = "APAI | Features";
     }, []);
 
     const sections = [
@@ -248,6 +248,10 @@ const FeaturesPage = () => {
 
     return (
         <div className="bg-white min-h-screen pb-20 relative overflow-hidden font-sans text-slate-900">
+            <PageHead 
+                title="APAI Features | VIN Decode, AI Chat, Quotes & NAGS Data" 
+                description="Discover APAI's powerful features: Instant VIN decoding, AI Chat, professional PDF quotes, and real-time NAGS data. Scale your glass shop for just $99/mo." 
+            />
             {/* Optimized Gradient Background (Same as Pricing Page) */}
             <div
                 className="fixed inset-0 z-0 pointer-events-none opacity-20"
