@@ -41,6 +41,9 @@ const BlogPostPage = React.lazy(() => import('./components/Blogs/BlogPostPage.js
 const ShopChatPanel = React.lazy(() => import('./components/Chat/ShopChatPanel.jsx'));
 import { ChatProvider } from './context/ChatContext';
 const SetPassword = React.lazy(() => import('./components/SetPassword.jsx'));
+import RestrictedAccessModal from './components/RestrictedAccessModal';
+import { useSubscriptionRestriction } from './hooks/useSubscriptionRestriction';
+
 
 
 
@@ -72,6 +75,10 @@ function AppContent() {
 
   // Listen for inquiry notifications
   useInquiryNotifications();
+
+  // Subscription Restriction Check
+  const { showModal } = useSubscriptionRestriction(isAuthed);
+
 
   useEffect(() => {
     const token = getValidToken();
@@ -135,6 +142,9 @@ function AppContent() {
       {shouldUseDashboardLayout && isMobile && (
         <Header onLoginSuccess={handleLoginSuccess} />
       )}
+
+      <RestrictedAccessModal visible={showModal} />
+
 
       {shouldUseDashboardLayout ? (
         // Authenticated Layout

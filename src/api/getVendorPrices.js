@@ -19,7 +19,8 @@ export async function getVendorPrices(userId, partNumber) {
         });
 
         if (!response.ok) {
-            throw new Error(`Error: ${response.status}`);
+            const errorData = await response.json();
+            throw new Error(errorData.detail || `Error: ${response.status}`);
         }
 
         const data = await response.json();
@@ -48,6 +49,10 @@ export async function getPilkingtonPrice(userId, partNumber) {
         return null;
     } catch (error) {
         console.error("Failed to get Pilkington price:", error);
+        // Re-throw if it's the specific credentials error so UI can handle it
+        if (error.message && error.message.includes("No vendor credentials found")) {
+            throw error;
+        }
         return null;
     }
 }

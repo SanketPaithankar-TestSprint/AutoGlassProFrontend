@@ -77,6 +77,9 @@ export function handleLoginSuccess(loginResponse, rememberMe = false) {
             const token = loginResponse.token || (loginResponse.data && loginResponse.data.token);
             if (token) {
                 // Fetch and store user slug
+                localStorage.removeItem('userSlug');
+                localStorage.removeItem('userLogo');
+                localStorage.removeItem('userId');
                 getUserSlugByUserId(token, userData.userId)
                     .then(slugInfo => {
                         if (slugInfo && slugInfo.slug) {

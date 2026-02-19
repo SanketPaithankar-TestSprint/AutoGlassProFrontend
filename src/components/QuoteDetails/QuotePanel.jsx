@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { useQuoteStore } from "../../store";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { Modal, Input, Button, message, notification, Dropdown, Select, InputNumber } from "antd";
@@ -206,6 +206,9 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
         }
     });
 
+    // Ref to debounce vendor warning modal
+    const lastVendorWarningRef = useRef(0);
+
     useEffect(() => {
         const loadProfile = () => {
             try {
@@ -337,6 +340,17 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
                     return { id: item.id, vendorPriceFetched: true }; // Mark as fetched even if failed/null to avoid loop
                 } catch (e) {
                     console.error("Vendor price fetch failed for", item.nagsId, e);
+                    if (e.message && e.message.includes("No vendor credentials found")) {
+                        const now = Date.now();
+                        // Debounce: prevent duplicate alerts within 5 seconds
+                        if (now - lastVendorWarningRef.current > 5000) {
+                            lastVendorWarningRef.current = now;
+                            modal.warning({
+                                title: 'Missing Vendor Credentials',
+                                content: 'No vendor credentials found for Your Account. Please configure credentials first.',
+                            });
+                        }
+                    }
                     return { id: item.id, vendorPriceFetched: true };
                 }
             });
@@ -618,7 +632,8 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
 
     // Apply selected glass and its kit items
     const applySelectedGlass = async (itemId, glassData) => {
-        const userId = localStorage.getItem('userId') || 2; // Fallback to 2 like SearchByRoot
+        const userId = localStorage.getItem('userId');
+        debugger;
         const span = glassData.feature_span || '';
         const fullPartNumber = span ? `${glassData.nags_id} ${span.trim()}` : glassData.nags_id;
 
@@ -866,6 +881,12 @@ const QuotePanelContent = ({ onRemovePart, customerData, printableNote, internal
             }
         } catch (error) {
             console.error("Error fetching vendor price:", error);
+            if (error.message && error.message.includes("No vendor credentials found")) {
+                modal.warning({
+                    title: 'Missing Vendor Credentials',
+                    content: 'No vendor credentials found for Your Account. Please configure Pilkington credentials first.',
+                });
+            }
         }
     };
 
@@ -2227,8 +2248,8 @@ ${shopName}`;
                                 : null;
 
                             return (
-                                <div 
-                                    key={it.id} 
+                                <div
+                                    key={it.id}
                                     className={`bg-white border border-slate-200 ${getBorderColor(it.type)} rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden`}
                                 >
                                     {/* ========== MAIN CONTENT AREA ========== */}

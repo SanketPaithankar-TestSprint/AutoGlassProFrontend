@@ -19,7 +19,7 @@ export async function getProfile(token) {
 
         // Store userId in sessionStorage and laborRate in localStorage for global access
         if (profileData.userId) {
-            sessionStorage.setItem('userId', profileData.userId);
+            localStorage.setItem('userId', profileData.userId); // Updated to localStorage
         }
         if (profileData.laborRate) {
             localStorage.setItem('GlobalLaborRate', profileData.laborRate);
