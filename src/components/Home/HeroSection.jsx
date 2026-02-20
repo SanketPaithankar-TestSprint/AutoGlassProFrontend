@@ -24,7 +24,7 @@ const HeroSection = () => {
         <div className="text-center lg:text-left lg:col-span-5 w-full">
           {/* Logo */}
           <motion.div
-            className="flex justify-center lg:justify-start mb-3 sm:mb-4 md:mb-6"
+            className="flex justify-center lg:justify-center mb-3 sm:mb-4 md:mb-6"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
