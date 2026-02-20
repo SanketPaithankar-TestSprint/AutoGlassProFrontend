@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Spin, Alert, Select, DatePicker } from 'antd';
+import { Alert, Select, DatePicker } from 'antd';
+import Loader from '../Loader';
 import dayjs from 'dayjs';
 import { getAnalyticsDashboard } from '../../api/getAnalyticsDashboard';
 
@@ -19,10 +20,19 @@ import RecentActivityTable from './RecentActivityTable';
 const { RangePicker } = DatePicker;
 const { Option } = Select;
 
+
 const AnalyticsRoot = () => {
-    const userId = sessionStorage.getItem('userId');
+    const [userId, setUserId] = React.useState(null);
+    const [checkingUserId, setCheckingUserId] = React.useState(true);
     const [filterType, setFilterType] = React.useState('all_time');
     const [customRange, setCustomRange] = React.useState(null);
+
+    React.useEffect(() => {
+        // Simulate async userId retrieval (extend here if needed)
+        const id = sessionStorage.getItem('userId');
+        setUserId(id);
+        setCheckingUserId(false);
+    }, []);
 
     // Calculate start and end dates based on filter
     const dateParams = React.useMemo(() => {
@@ -56,6 +66,7 @@ const AnalyticsRoot = () => {
         return { startDate, endDate };
     }, [filterType, customRange]);
 
+
     const { data, isLoading, error } = useQuery({
         queryKey: ['analyticsDashboard', userId, dateParams],
         queryFn: async () => {
@@ -67,18 +78,12 @@ const AnalyticsRoot = () => {
         enabled: !!userId,
     });
 
-    if (!userId) {
-        return (
-            <div className="p-8 flex justify-center">
-                <Alert message="User ID missing. Try refreshing the page or logging in again." type="warning" showIcon />
-            </div>
-        );
-    }
 
-    if (isLoading) {
+    // Show a single loading spinner for all loading states
+    if (checkingUserId || !userId || isLoading) {
         return (
             <div className="h-full flex items-center justify-center bg-slate-100">
-                <Spin size="large" tip="Loading Dashboard..." />
+                <Loader tip="Loading Dashboard..." />
             </div>
         );
     }
