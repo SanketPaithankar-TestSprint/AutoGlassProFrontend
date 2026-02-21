@@ -180,30 +180,6 @@ const JobSchedulingPanel = ({
                         </div>
                     )}
 
-                    {/* Service Location */}
-                    <div>
-                        <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
-                            Service Location <span className="text-red-500">*</span>
-                        </label>
-                        <Select
-                            value={schedulingData.serviceLocation || 'IN_SHOP'}
-                            style={{ width: '100%' }}
-                            onChange={(val) => handleChange('serviceLocation', val)}
-                            size="small"
-                        >
-                            {SERVICE_LOCATION_OPTIONS.map(option => (
-                                <Option key={option.value} value={option.value}>
-                                    <span className="flex items-center gap-2 text-xs sm:text-sm">
-                                        {option.icon}
-                                        {option.label}
-                                    </span>
-                                </Option>
-                            ))}
-                        </Select>
-                        <p className="text-xs text-slate-500 mt-1">
-                            Location type
-                        </p>
-                    </div>
 
                     {/* Scheduled Date */}
                     <div>
