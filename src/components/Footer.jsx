@@ -44,6 +44,7 @@ const Footer = () => {
             <Link to="/contact" className="text-slate-500 hover:text-slate-800 transition-colors tracking-wide text-xs md:text-xs">Contact</Link>
             <Link to="/sitemap" className="text-slate-500 hover:text-slate-800 transition-colors tracking-wide text-xs md:text-xs">Sitemap</Link>
             <Link to="/privacy-policy" className="text-slate-500 hover:text-slate-800 transition-colors tracking-wide text-xs md:text-xs">Privacy</Link>
+            <Link to="/terms-of-service" className="text-slate-500 hover:text-slate-800 transition-colors tracking-wide text-xs md:text-xs">Terms</Link>
           </div>
           {/* Social Media Section */}
           <div className="flex items-center gap-2 sm:gap-3">
@@ -146,6 +147,7 @@ const Footer = () => {
               <li><Link to="/blogs" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Blogs</Link></li>
               <li><Link to="/sitemap" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Sitemap</Link></li>
               <li><Link to="/privacy-policy" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Privacy</Link></li>
+              <li><Link to="/terms-of-service" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Terms of Service</Link></li>
             </ul>
           </Col>
 

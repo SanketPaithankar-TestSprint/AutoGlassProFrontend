@@ -20,15 +20,16 @@ const SitemapPage = () => {
             title: 'Legal & Information',
             links: [
                 { path: '/privacy-policy', title: 'Privacy Policy', description: 'Our privacy policy and data protection' },
+                { path: '/terms-of-service', title: 'Terms of Service', description: 'Terms and conditions for using the APAI platform' },
             ]
         }
     ];
 
     return (
         <div className="bg-transparent min-h-screen py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-            <PageHead 
-                title="Sitemap | APAI Auto Glass Management Software" 
-                description="Navigate the APAI website easily. Find links to our shop management features, pricing, blog guides, and support resources for auto glass professionals." 
+            <PageHead
+                title="Sitemap | APAI Auto Glass Management Software"
+                description="Navigate the APAI website easily. Find links to our shop management features, pricing, blog guides, and support resources for auto glass professionals."
             />
             {/* Global Gradient Background */}
             <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">

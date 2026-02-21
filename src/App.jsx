@@ -33,6 +33,7 @@ const ServiceContactFormRoot = React.lazy(() => import('./components/ServiceCont
 const ServiceInquiryView = React.lazy(() => import('./components/ServiceContactForm/ServiceInquiryView.jsx'));
 const ContactPage = React.lazy(() => import('./components/ContactPage.jsx'));
 const PrivacyPolicy = React.lazy(() => import('./components/PrivacyPolicy.jsx'));
+const TermsOfService = React.lazy(() => import('./components/TermsOfService.jsx'));
 const EmployeeAttendance = React.lazy(() => import('./components/EmployeeAttendance/EmployeeAttendance.jsx'));
 import ErrorBoundary from './components/PublicContact/ErrorBoundary';
 const SitemapPage = React.lazy(() => import('./components/Sitemap/SitemapPage.jsx'));
@@ -135,7 +136,7 @@ function AppContent() {
 
   // Determine if we should show the Dashboard layout (Sidebar + Content) or Public Layout (Header + Content)
   // We force Public Layout for specific pages like Privacy Policy even if logged in
-  const shouldUseDashboardLayout = isAuthed && !location.pathname.startsWith('/privacy-policy');
+  const shouldUseDashboardLayout = isAuthed && !location.pathname.startsWith('/privacy-policy') && !location.pathname.startsWith('/terms-of-service');
 
   return (
     <Layout className={shouldUseDashboardLayout ? "h-screen overflow-hidden" : "min-h-screen overflow-x-hidden"}>
@@ -224,6 +225,7 @@ function AppContent() {
                   <Route path="/pricing" element={<PricingPage />} />
                   <Route path="/auth" element={<AuthRoot />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                  <Route path="/terms-of-service" element={<TermsOfService />} />
                   <Route path="/blogs" element={<BlogsPage />} />
                   <Route path="/blogs/:slug" element={<BlogPostPage />} />
                   <Route path="/sitemap" element={<SitemapPage />} />

@@ -79,18 +79,16 @@ const BlogPostPage = () => {
 
     console.log('Rendering post with content:', post.content);
 
-    // Format date
-    const formattedDate = new Date(post.createdAt || Date.now()).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
+    // Format date — only if createdAt is present
+    const formattedDate = post.createdAt
+        ? new Date(post.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+        : null;
 
     return (
         <div className="min-h-screen bg-white pt-20 pb-20 relative overflow-hidden font-sans text-slate-900">
-             <PageHead 
-                title={post.metaTitle || post.title} 
-                description={post.metaDescription || post.excerpt || "Read our latest blog post on Auto Glass Pro."} 
+            <PageHead
+                title={post.metaTitle || post.title}
+                description={post.metaDescription || post.excerpt || "Read our latest blog post on Auto Glass Pro."}
             />
             {/* Gradient Background */}
             <div
@@ -124,10 +122,12 @@ const BlogPostPage = () => {
                     </h1>
 
                     <div className="flex flex-wrap items-center gap-6 text-sm text-slate-500 border-b border-slate-100 pb-6 mb-6">
-                        <div className="flex items-center gap-2">
-                            <CalendarOutlined className="text-slate-400" />
-                            <span>Uploaded on {formattedDate}</span>
-                        </div>
+                        {formattedDate && (
+                            <div className="flex items-center gap-2">
+                                <CalendarOutlined className="text-slate-400" />
+                                <span>Uploaded on {formattedDate}</span>
+                            </div>
+                        )}
                         {post.readTimeMinutes && (
                             <div className="flex items-center gap-2">
                                 <ClockCircleOutlined className="text-slate-400" />
@@ -175,9 +175,11 @@ const BlogPostPage = () => {
                                         <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
                                     </div>
                                     <div className="p-6 flex flex-col flex-grow">
-                                        <div className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">
-                                            {new Date(relatedPost.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                                        </div>
+                                        {relatedPost.createdAt && (
+                                            <div className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">
+                                                {new Date(relatedPost.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                            </div>
+                                        )}
                                         <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-violet-600 transition-colors line-clamp-2">
                                             {relatedPost.title}
                                         </h3>

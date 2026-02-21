@@ -15,6 +15,10 @@ const { Title, Paragraph, Text } = Typography;
 const BlogCard = ({ post }) => {
     const navigate = useNavigate();
 
+    const formattedDate = post.createdAt
+        ? new Date(post.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+        : null;
+
     const handleCardClick = () => {
         if (post.slug) {
             navigate(`/blogs/${post.slug}`);
@@ -54,13 +58,15 @@ const BlogCard = ({ post }) => {
                 <div className="hidden md:block absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-transparent to-white z-10"></div>
 
                 <div className="flex items-center gap-3 mb-3 text-xs font-medium text-slate-400 uppercase tracking-wider relative z-20">
-                    <span>Uploaded on {new Date(post.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                    {formattedDate && (
+                        <span>Uploaded on {formattedDate}</span>
+                    )}
                 </div>
 
                 <h3 className="text-xl md:text-2xl font-bold text-slate-900 mb-4 group-hover:text-violet-600 transition-colors relative z-20 hidden md:block">
                     {post.title}
                 </h3>
-                  
+
                 {post.excerpt && (
                     <p className="text-slate-600 mb-4 line-clamp-3 relative z-20 hidden md:block">
                         {post.excerpt}
@@ -86,7 +92,10 @@ const BlogsPage = () => {
             try {
                 const data = await getBlogs();
                 if (Array.isArray(data)) {
-                    setBlogs(data);
+                    const sorted = [...data].sort(
+                        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+                    );
+                    setBlogs(sorted);
                 }
             } catch (error) {
                 console.error("Failed to load blogs", error);
@@ -100,9 +109,9 @@ const BlogsPage = () => {
 
     return (
         <div className="min-h-screen bg-white p-4 md:p-6 relative overflow-hidden font-sans text-slate-900">
-            <PageHead 
-                title="Auto Glass Business Insights & Guides | APAI Blog" 
-                description="Expert advice for auto glass shop owners. Read our latest guides on scaling your business, and using AI features to increase your shop's profitability." 
+            <PageHead
+                title="Auto Glass Business Insights & Guides | APAI Blog"
+                description="Expert advice for auto glass shop owners. Read our latest guides on scaling your business, and using AI features to increase your shop's profitability."
             />
             {/* Gradient Background matching other pages */}
             <div

@@ -4,7 +4,7 @@ export const SOCIAL_LINKS = {
   youtube: "https://youtube.com/@autopaneai",
   linkedin: "https://linkedin.com/company/autopaneai",
   x: "https://x.com/autopaneai",
-  tiktok: "https://www.tiktok.com/@autopaneai?is_from_webapp=1&sender_device=pc"
+  tiktok: "https://www.tiktok.com/@autopaneai"
 };
 
 // Sitemap link
