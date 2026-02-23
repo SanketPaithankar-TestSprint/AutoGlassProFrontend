@@ -16,6 +16,7 @@ import ArAgingChart from './ArAgingChart';
 import GlassTypeChart from './GlassTypeChart';
 import QuoteConversionCard from './QuoteConversionCard';
 import RecentActivityTable from './RecentActivityTable';
+import PaymentMethodChart from './PaymentMethodChart';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -195,9 +196,12 @@ const AnalyticsRoot = () => {
                         <div className="w-1 h-5 sm:h-6 bg-gradient-to-b from-violet-500 to-purple-600 rounded-full"></div>
                         <h2 className="text-base sm:text-lg font-bold text-slate-700">Operational Insights</h2>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                         <div className="h-[300px] sm:h-[350px] lg:h-[400px]">
                             <InsuranceBreakdownCard data={data?.insurance_breakdown} />
+                        </div>
+                        <div className="h-[300px] sm:h-[350px] lg:h-[400px]">
+                            <PaymentMethodChart data={data?.payment_method_breakdown} />
                         </div>
                         <div className="h-[300px] sm:h-[350px] lg:h-[400px]">
                             <ArAgingChart data={data?.ar_aging} />
