@@ -23,14 +23,14 @@ const HeroSection = () => {
         {/* Left Column: Content */}
         <div className="text-center lg:text-left lg:col-span-5 w-full">
           {/* Logo */}
-          <motion.div
+          {/* <motion.div
             className="flex justify-center lg:justify-center mb-3 sm:mb-4 md:mb-6"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
             <Logo className="w-24 xs:w-28 sm:w-32 md:w-36 lg:w-40 h-auto" />
-          </motion.div>
+          </motion.div> */}
 
           {/* Tagline */}
           <motion.h1

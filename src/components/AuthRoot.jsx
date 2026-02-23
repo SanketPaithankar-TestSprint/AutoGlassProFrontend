@@ -184,9 +184,6 @@ export default function AuthRoot() {
 
                 {/* MOBILE LAYOUT */}
                 <div className="md:hidden p-6 flex flex-col items-center">
-                    <div className="mb-6">
-                        <Logo />
-                    </div>
 
                     <div className="w-full bg-slate-100 p-1 rounded-lg mb-6 flex">
                         <button

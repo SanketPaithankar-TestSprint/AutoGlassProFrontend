@@ -174,7 +174,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
 
         {/* Right: Buttons / Profile */}
         {!isAuthed ? (
-          <div className=" lg:block ml-auto min-w-0 flex items-center gap-2 sm:gap-4 pr-6">
+          <div className="hidden lg:flex ml-auto min-w-0 items-center gap-2 sm:gap-4 pr-6">
             <Button
               type="text"
               className="!h-9 !px-2 sm:!px-3 !text-slate-700 hover:!text-[#7E5CFE] !bg-transparent hover:!bg-transparent !border-0 focus:!outline-none focus:!ring-0 focus:!shadow-none hover:!shadow-none active:!shadow-none transition-colors duration-300 !text-[1.1rem]"

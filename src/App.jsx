@@ -16,6 +16,7 @@ import ReportsRoot from './components/Reports/ReportsRoot';
 import { getValidToken } from './api/getValidToken';
 import { useProfileDataPrefetch } from './hooks/useProfileDataPrefetch';
 import useInquiryNotifications from './hooks/useInquiryNotifications';
+import useScheduleNotifications from './hooks/useScheduleNotifications';
 import { useAuth } from './context/auth/useAuth';
 import { AuthProvider } from './context/auth/authProvide';
 import { InquiryProvider } from './context/InquiryContext';
@@ -76,6 +77,9 @@ function AppContent() {
 
   // Listen for inquiry notifications
   useInquiryNotifications();
+
+  // Show schedule notifications on login (yellow = today, green = tomorrow)
+  useScheduleNotifications(isAuthed);
 
   // Subscription Restriction Check
   const { showModal } = useSubscriptionRestriction(isAuthed);

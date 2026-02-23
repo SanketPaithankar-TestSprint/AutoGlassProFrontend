@@ -41,7 +41,7 @@ const HeaderBar = ({
             {/* Title Section */}
             <div className="mb-6">
                 <h1 className="!text-[30px] font-bold text-slate-900">
-                    Dashboard
+                    Jobs
                 </h1>
                 <p className="text-slate-500 mt-1">
                     Manage and track your service documents

@@ -41,9 +41,9 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
             // publicUserId passed as prop is the Tenant/Shop ID we are visiting.
             if (!publicUserId) return;
 
-            // Wait for visitorId initialization
-            const vId = localStorage.getItem("visitorId");
-            if (!vId) return;
+            // Wait for visitorId initialization (state must be set)
+            if (!visitorId) return;
+            const vId = visitorId;
 
             chatSocket = new ChatSocket({
                 url: WS_URL,
@@ -95,10 +95,13 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
             setConnectionStatus('connected');
             // Immediate Actions on Connect
             if (isPublic) {
-                // Customer: Get History
+                // Customer: Get History using visitorId from state
                 const vId = localStorage.getItem("visitorId");
+                console.log('[ChatContext] Connected as CUSTOMER, requesting history for visitorId:', vId);
                 if (vId) {
                     chatSocket.send('getHistory', { visitorId: vId });
+                } else {
+                    console.warn('[ChatContext] No visitorId found in localStorage, cannot request history');
                 }
             } else {
                 // Shop: Get Conversations
@@ -120,7 +123,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
 
         return chatSocket;
 
-    }, [isPublic, publicUserId]);
+    }, [isPublic, publicUserId, visitorId]);
 
     // Initial Connection
     useEffect(() => {
@@ -189,12 +192,29 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
     };
 
     const handleHistory = (data) => {
-        const { conversationId, messages } = data;
-        if (!conversationId || !Array.isArray(messages)) return;
+        // Backend may send conversationId directly, or it may be nested.
+        // For customer/visitor-based lookups, conversationId might be absent.
+        let { conversationId, messages } = data;
 
-        // If Customer, we might not have 'conversations' map setup like Shop. 
-        // We might just need a single 'currentConversation' or store it in map too.
-        // Let's store in map for consistency.
+        console.log('[ChatContext] handleHistory received:', { conversationId, messageCount: messages?.length, rawData: data });
+
+        if (!Array.isArray(messages)) {
+            console.warn('[ChatContext] handleHistory: messages is not an array, ignoring', data);
+            return;
+        }
+
+        // If no conversationId in response (common for customer/visitor history),
+        // generate a fallback key using visitorId so we can still store messages.
+        if (!conversationId) {
+            const vId = localStorage.getItem("visitorId");
+            if (vId) {
+                conversationId = `visitor_${vId}`;
+                console.log('[ChatContext] No conversationId in history response, using fallback:', conversationId);
+            } else {
+                console.warn('[ChatContext] handleHistory: No conversationId and no visitorId, ignoring');
+                return;
+            }
+        }
 
         setConversations(prev => {
             const existing = prev[conversationId] || {
@@ -210,10 +230,14 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
                 [conversationId]: {
                     ...existing,
                     messages: sortedMessages,
-                    // customer info might be missing here if it was a cold load for customer
                 }
             };
         });
+
+        // Auto-set activeConversationId for customer
+        if (isPublic && !activeConversationId) {
+            setActiveConversationId(conversationId);
+        }
     };
 
     const handleNewMessage = (msg) => {
