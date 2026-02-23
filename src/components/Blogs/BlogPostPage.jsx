@@ -87,8 +87,8 @@ const BlogPostPage = () => {
     return (
         <div className="min-h-screen bg-white pt-20 pb-20 relative overflow-hidden font-sans text-slate-900">
             <PageHead
-                title={post.metaTitle || post.title}
-                description={post.metaDescription || post.excerpt || "Read our latest blog post on Auto Glass Pro."}
+                title={post.metaTitle}
+                description={post.metaDescription}
             />
             {/* Gradient Background */}
             <div

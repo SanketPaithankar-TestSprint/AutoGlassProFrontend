@@ -71,43 +71,87 @@ const routeMeta = [
 ]
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Injects <title> and <meta name="description"> just before </head> */
-function injectMeta(html, title, description) {
-  return html.replace(
-    '</head>',
-    `  <title>${title}</title>\n  <meta name="description" content="${description}" />\n</head>`
-  )
+
+/**
+ * Strips any existing <title>, <meta name="description">, <meta property="og:...">,
+ * <meta name="twitter:...">, and <link rel="canonical"> tags from the HTML string.
+ */
+function stripExistingMeta(html) {
+  return html
+    .replace(/<title>[^<]*<\/title>/gi, '')
+    .replace(/<meta\s+name="description"[^>]*>/gi, '')
+    .replace(/<meta\s+property="og:[^"]*"[^>]*>/gi, '')
+    .replace(/<meta\s+name="twitter:[^"]*"[^>]*>/gi, '')
+    .replace(/<link\s+rel="canonical"[^>]*>/gi, '')
+    .replace(/(\r?\n\s*){3,}/g, '\n\n') // collapse multiple blank lines
+}
+
+/**
+ * Escapes characters that would break an HTML attribute value.
+ * Replaces " with &quot; and ' with &#39;
+ */
+function esc(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+}
+
+/**
+ * Injects <title> and <meta name="description"> just before </head>.
+ * Assumes html has already been stripped of existing meta tags.
+ */
+function injectMeta(html, { title, description }) {
+  const tags = [
+    `  <title>${esc(title)}</title>`,
+    `  <meta name="description" content="${esc(description)}" />`,
+  ].join('\n')
+
+  return html.replace('</head>', `${tags}\n</head>`)
 }
 
 /**
  * Vite plugin: injects per-route meta tags into index.html at build time.
  *  - transformIndexHtml → injects home-page meta into the main dist/index.html
- *  - closeBundle        → creates dist/<route>/index.html for every other route
+ *  - closeBundle        → reads the fully-resolved dist/index.html from disk,
+ *                         then creates dist/<route>/index.html for every other
+ *                         route + fetches all blog slugs from API to generate
+ *                         dist/blogs/<slug>/index.html with blog-specific tags.
  */
 function metaInjectionPlugin() {
-  let capturedHtml = ''
-
   return {
     name: 'meta-injection',
 
-    // Runs on every HTML transform (dev serve + build)
+    // Injects home-page meta into the main dist/index.html
     transformIndexHtml(html) {
-      capturedHtml = html
       const home = routeMeta.find((r) => r.route === '/')
-      return injectMeta(html, home.title, home.description)
+      // Strip first (index.html has no meta yet, but be safe), then inject
+      const clean = stripExistingMeta(html)
+      return injectMeta(clean, {
+        title: home.title,
+        description: home.description,
+      })
     },
 
-    // Runs after build output is written
+    // Runs after Vite has written all output files
     async closeBundle() {
-      if (!capturedHtml) return
       const distDir = path.join(__dirname, 'dist')
+      const distIndexPath = path.join(distDir, 'index.html')
 
-      // ── Static routes ─────────────────────────────────────────────
+      if (!fs.existsSync(distIndexPath)) return
+
+      // Read the fully-resolved dist/index.html and strip its home-page meta.
+      // This gives us a clean base template with resolved asset hashes but no SEO tags.
+      const baseHtml = stripExistingMeta(fs.readFileSync(distIndexPath, 'utf-8'))
+
+      // ── Static routes ────────────────────────────────────────────
       for (const { route, title, description } of routeMeta) {
         if (route === '/') continue // already handled by transformIndexHtml
 
-        const html = injectMeta(capturedHtml, title, description)
-        const folder = path.join(distDir, route.slice(1)) // strip leading /
+        const html = injectMeta(baseHtml, { title, description })
+        const folder = path.join(distDir, route.slice(1))
         fs.mkdirSync(folder, { recursive: true })
         fs.writeFileSync(path.join(folder, 'index.html'), html, 'utf-8')
         console.log(`✅  Meta injected → dist${route}/index.html`)
@@ -117,21 +161,42 @@ function metaInjectionPlugin() {
       try {
         const API = process.env.VITE_JAVA_API_URL || 'https://javaapi.autopaneai.com/api'
         console.log('\n📡  Fetching blogs from API for meta injection…')
-        const res = await fetch(`${API}/v1/blogs`)
-        if (!res.ok) throw new Error(`API responded with ${res.status}`)
 
-        const blogs = await res.json()
+        // Step 1: get the list to collect all slugs
+        const listRes = await fetch(`${API}/v1/blogs`)
+        if (!listRes.ok) throw new Error(`Blog list API responded with ${listRes.status}`)
+        const blogList = await listRes.json()
+        const slugs = blogList.map((b) => b.slug).filter(Boolean)
+
+        // Step 2: fetch each blog individually (in parallel) to get metaTitle/metaDescription
+        const fullBlogs = await Promise.all(
+          slugs.map((slug) =>
+            fetch(`${API}/v1/blogs/${slug}`)
+              .then((r) => (r.ok ? r.json() : null))
+              .catch(() => null)
+          )
+        )
+
         let count = 0
-        for (const blog of blogs) {
-          const slug = blog.slug
-          if (!slug) continue
-          const title = blog.metaTitle || blog.title || 'APAI Blog'
-          const description = blog.metaDescription || blog.excerpt || 'Read this article on APAI.'
-          const html = injectMeta(capturedHtml, title, description)
-          const folder = path.join(distDir, 'blogs', slug)
+        for (const blog of fullBlogs) {
+          if (!blog?.slug) continue
+
+          // Strictly use metaTitle and metaDescription only — no fallbacks
+          const title = blog.metaTitle
+          const description = blog.metaDescription
+
+          if (!title || !description) {
+            console.warn(`⚠️  Skipping blog "${blog.slug}" — missing title or description from API`)
+            continue
+          }
+
+          console.log(`   📝 title: ${title}`)
+          console.log(`   📄 desc:  ${description}`)
+          const html = injectMeta(baseHtml, { title, description })
+          const folder = path.join(distDir, 'blogs', blog.slug)
           fs.mkdirSync(folder, { recursive: true })
           fs.writeFileSync(path.join(folder, 'index.html'), html, 'utf-8')
-          console.log(`✅  Blog meta injected → dist/blogs/${slug}/index.html`)
+          console.log(`✅  Blog meta injected → dist/blogs/${blog.slug}/index.html`)
           count++
         }
         console.log(`\n🎉  ${count} blog(s) pre-rendered for SEO.\n`)
