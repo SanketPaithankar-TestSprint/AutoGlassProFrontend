@@ -111,8 +111,14 @@ function AppContent() {
     );
   }
 
-  // Check if we're on the public contact form page - render standalone without main layout
-  const isContactPage = location.pathname.startsWith('/contact/');
+  // Strip trailing slashes so /contact/ → /contact, /blogs/slug/ → /blogs/slug etc.
+  if (location.pathname !== '/' && location.pathname.endsWith('/')) {
+    return <Navigate to={location.pathname.replace(/\/+$/, '') + location.search + location.hash} replace />;
+  }
+
+  // Only treat /contact/:slug as the standalone public shop contact form.
+  // The plain /contact page is a normal marketing page — do NOT intercept it here.
+  const isContactPage = /^\/contact\/.+/.test(location.pathname);
   const isServiceView = location.pathname.startsWith('/service-inquiry-view/');
   const isSetPasswordPage = location.pathname.startsWith('/set-password');
 
