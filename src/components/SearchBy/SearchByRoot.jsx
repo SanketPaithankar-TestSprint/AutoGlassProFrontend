@@ -1227,6 +1227,7 @@ const SearchByRoot = () => {
                     onClear={handleGlobalClear}
                     paymentData={paymentData}
                     schedulingData={schedulingData}
+                    setSchedulingData={setSchedulingData}
                     existingPayments={existingPayments}
                     onTotalChange={setCurrentTotalAmount}
                     manualDocType={manualDocType}
