@@ -19,7 +19,7 @@ const InsuranceBreakdownCard = ({ data }) => {
     const totalJobs = insurance_jobs + cash_jobs;
 
     const chartData = {
-        labels: ['Insurance', 'Cash'],
+        labels: ['Insurance', 'Direct Payment'],
         datasets: [
             {
                 data: [insurance_jobs, cash_jobs],
@@ -63,7 +63,7 @@ const InsuranceBreakdownCard = ({ data }) => {
     return (
         <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 p-4 sm:p-5 lg:p-6 h-full flex flex-col"
             style={{ boxShadow: '0 4px 24px -4px rgba(0, 0, 0, 0.06)' }}>
-            <h3 className="text-sm sm:text-base font-bold text-slate-700 mb-1 sm:mb-2">Insurance vs Cash</h3>
+            <h3 className="text-sm sm:text-base font-bold text-slate-700 mb-1 sm:mb-2">Insurance vs Direct Payment</h3>
 
             <div className="flex items-center justify-center mb-0 sm:mb-2 mt-[-8px]">
                 <div className="relative w-44 h-44 sm:w-48 sm:h-48">
@@ -102,7 +102,7 @@ const InsuranceBreakdownCard = ({ data }) => {
                             <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
                         </div>
                         <div className="min-w-0 flex-1">
-                            <p className="text-[11px] sm:text-xs font-medium text-slate-600 truncate">Cash</p>
+                            <p className="text-[11px] sm:text-xs font-medium text-slate-600 truncate">Direct Payment</p>
                         </div>
                     </div>
                     <div className="flex items-end justify-between px-1">
