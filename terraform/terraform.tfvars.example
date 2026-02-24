@@ -1,0 +1,4 @@
+bucket_name          = "apai"
+environment          = ""
+price_class          = "Priass_100"
+cors_allowed_origins = ["https://com"]
