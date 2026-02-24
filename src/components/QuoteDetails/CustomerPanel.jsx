@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { notification, Select, Spin, Radio, Switch, Segmented, Button, Popconfirm, AutoComplete } from "antd";
 import { UserOutlined, ShopOutlined, EditOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
+import ReactSelect from "react-select";
 import { getValidToken } from "../../api/getValidToken";
 import { getCustomers } from "../../api/getCustomers";
+import { searchCustomers } from "../../api/searchCustomers";
 import { getCustomerWithVehicles } from "../../api/getCustomerWithVehicles";
 import { updateCustomer } from "../../api/updateCustomer";
 import { getOrganizations, getOrganizationById, createOrganization, updateOrganization, updateOrganizationTaxExempt, getOrganizationVehicles, getOrganizationWithDetails } from "../../api/organizationApi";
@@ -182,6 +184,38 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
         } finally {
             setLoadingCustomers(false);
         }
+    };
+
+    // Customer Search Debounce
+    const typingTimeoutRef = useRef(null);
+
+    const handleCustomerSearch = (value) => {
+        if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+        }
+
+        if (!value || value.trim() === "") {
+            fetchCustomers(); // reset to default list
+            return;
+        }
+
+        typingTimeoutRef.current = setTimeout(async () => {
+            try {
+                setLoadingCustomers(true);
+                const token = await getValidToken();
+                const result = await searchCustomers(token, value);
+                const fetchedCustomers = result?.content || (Array.isArray(result) ? result : []);
+                setCustomers(fetchedCustomers);
+            } catch (error) {
+                console.error("Error searching customers:", error);
+                notification.error({
+                    message: "Search Error",
+                    description: "Failed to search customers."
+                });
+            } finally {
+                setLoadingCustomers(false);
+            }
+        }, 500);
     };
 
     // --- Mode Switching Logic ---
@@ -664,6 +698,11 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
             // Refresh organization list
             await fetchOrganizations();
+
+            // Repopulate with the latest data from the server
+            if (formData.organizationId) {
+                await handleOrganizationSelect(formData.organizationId);
+            }
         } catch (error) {
             console.error("Error updating organization:", error);
             if (!silent) {
@@ -781,23 +820,16 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                                 placeholder="Search by name/phone/email"
                                                 className="w-full"
                                                 loading={loadingCustomers}
-                                                filterOption={(input, option) => {
-                                                    const customer = customers.find(c => c.customerId === option.value);
-                                                    if (!customer) return false;
-                                                    const searchText = input.toLowerCase();
-                                                    return (
-                                                        `${customer.firstName} ${customer.lastName}`.toLowerCase().includes(searchText) ||
-                                                        (customer.phone && customer.phone.toLowerCase().includes(searchText)) ||
-                                                        (customer.email && customer.email.toLowerCase().includes(searchText))
-                                                    );
-                                                }}
+                                                onSearch={handleCustomerSearch}
+                                                filterOption={false} // Disable local filtering
                                                 onChange={handleCustomerSelect}
                                                 value={formData.customerId}
                                                 disabled={isDocumentLoaded} // Disable search
+                                                notFoundContent={loadingCustomers ? <Spin size="small" /> : "No customers found"}
                                             >
                                                 {customers.map(c => (
                                                     <Option key={c.customerId} value={c.customerId}>
-                                                        {c.firstName} {c.lastName}
+                                                        {c.firstName} {c.lastName} {c.phone ? `(${c.phone})` : ''}
                                                     </Option>
                                                 ))}
                                             </Select>
@@ -907,13 +939,115 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                 {/* Contact Person Details - Last Rows */}
                                 <div className="col-span-1">
                                     <label className="block text-sm font-medium text-slate-700 mb-1">Contact Name</label>
-                                    <AutoComplete
-                                        className="w-full"
-                                        value={orgFormData.contactName}
-                                        onChange={(val) => handleOrgFormChange({ target: { name: 'contactName', value: val } })}
-                                        onSelect={(val) => {
-                                            if (val === "NEW_CONTACT_TRIGGER") {
-                                                // Generate new UUID for new contact
+                                    {formData.newContactDetails ? (
+                                        <div className="flex-1 w-full">
+                                            <input
+                                                type="text"
+                                                name="contactName"
+                                                value={orgFormData.contactName || ""}
+                                                onChange={handleOrgFormChange}
+                                                placeholder="Enter new contact name"
+                                                className="border border-gray-200 rounded px-2 py-[5px] text-sm focus:ring-1 focus:ring-violet-500 focus:border-violet-500 focus:outline-none transition-all w-full h-[32px]"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="flex-1 w-full">
+                                            <ReactSelect
+                                                value={
+                                                    orgFormData.contactName
+                                                        ? { value: orgFormData.contactName, label: orgFormData.contactName }
+                                                        : null
+                                                }
+                                                onChange={(selectedOption) => {
+                                                    const val = selectedOption ? selectedOption.value : "";
+                                                    handleOrgFormChange({ target: { name: 'contactName', value: val } });
+
+                                                    const selected = orgFormData.contacts?.find(c => (c.name === val || c.contactName === val));
+                                                    if (selected) {
+                                                        console.log('[CustomerPanel] Selected existing contact:', selected);
+                                                        setOrgFormData(prev => ({
+                                                            ...prev,
+                                                            contactName: selected.name || selected.contactName
+                                                        }));
+
+                                                        setFormData(prev => ({
+                                                            ...prev,
+                                                            organizationContactId: selected.id || selected.contactId
+                                                        }));
+                                                    }
+                                                }}
+                                                options={(orgFormData.contacts || []).map(c => ({
+                                                    value: c.name || c.contactName,
+                                                    label: c.name || c.contactName
+                                                }))}
+                                                isClearable
+                                                placeholder="Select Contact"
+                                                styles={{
+                                                    control: (base) => ({
+                                                        ...base,
+                                                        minHeight: '32px',
+                                                        height: '32px',
+                                                        borderColor: '#e5e7eb',
+                                                        borderRadius: '0.25rem',
+                                                        boxShadow: 'none',
+                                                        fontSize: '0.875rem',
+                                                        '&:hover': {
+                                                            borderColor: '#8b5cf6'
+                                                        }
+                                                    }),
+                                                    valueContainer: (base) => ({
+                                                        ...base,
+                                                        padding: '0 8px',
+                                                        height: '30px',
+                                                    }),
+                                                    indicatorSeparator: (base) => ({
+                                                        ...base,
+                                                        display: 'none'
+                                                    }),
+                                                    indicatorsContainer: (base) => ({
+                                                        ...base,
+                                                        height: '30px',
+                                                    }),
+                                                    input: (base) => ({
+                                                        ...base,
+                                                        margin: 0,
+                                                        padding: 0
+                                                    }),
+                                                    singleValue: (base) => ({
+                                                        ...base,
+                                                        margin: 0
+                                                    })
+                                                }}
+                                                className="w-full text-sm"
+                                                classNamePrefix="react-select"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="col-span-1 flex items-end">
+                                    {formData.newContactDetails ? (
+                                        <Button
+                                            type="text"
+                                            icon={<CloseOutlined />}
+                                            className="text-gray-500 hover:text-red-500 px-2 h-[32px] flex items-center justify-center mb-[1px]"
+                                            onClick={() => {
+                                                // Cancel adding new contact
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    organizationContactId: null,
+                                                    newContactDetails: null
+                                                }));
+                                                setOrgFormData(prev => ({
+                                                    ...prev,
+                                                    contactName: ""
+                                                }));
+                                            }}
+                                        />
+                                    ) : (
+                                        <Button
+                                            type="dashed"
+                                            className="text-violet-600 border-violet-600 h-[32px] px-3 font-medium mb-[1px]"
+                                            onClick={() => {
                                                 const newContactId = crypto.randomUUID();
                                                 console.log('[CustomerPanel] Generating new contact UUID:', newContactId);
 
@@ -922,48 +1056,19 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                                     contactName: ""
                                                 }));
 
-                                                // Set the new contact ID
                                                 setFormData(prev => ({
                                                     ...prev,
                                                     organizationContactId: newContactId,
-                                                    // Prepare new contact details for saving
                                                     newContactDetails: {
                                                         id: newContactId,
                                                         name: ""
                                                     }
                                                 }));
-                                            } else {
-                                                // Find by 'name' or 'contactName'
-                                                const selected = orgFormData.contacts.find(c => (c.name === val || c.contactName === val));
-                                                if (selected) {
-                                                    console.log('[CustomerPanel] Selected existing contact:', selected);
-                                                    setOrgFormData(prev => ({
-                                                        ...prev,
-                                                        contactName: selected.name || selected.contactName
-                                                    }));
-
-                                                    // Set existing contact ID
-                                                    setFormData(prev => ({
-                                                        ...prev,
-                                                        organizationContactId: selected.id || selected.contactId
-                                                    }));
-                                                }
-                                            }
-                                        }}
-                                        options={[
-                                            ...(orgFormData.contacts || []).map(c => ({ value: c.name || c.contactName, label: c.name || c.contactName })),
-                                            { value: "NEW_CONTACT_TRIGGER", label: <span className="text-violet-600 font-medium">+ Add New Contact</span> }
-                                        ]}
-                                        placeholder=""
-                                        filterOption={(inputValue, option) => {
-                                            if (option.value === "NEW_CONTACT_TRIGGER") {
-                                                return true;
-                                            }
-                                            return option.label &&
-                                                typeof option.label === 'string' &&
-                                                option.label.toUpperCase().includes(inputValue.toUpperCase());
-                                        }}
-                                    />
+                                            }}
+                                        >
+                                            + Add
+                                        </Button>
+                                    )}
                                 </div>
 
 
