@@ -183,30 +183,33 @@ const CreateTaskModal = ({ visible, onClose, task = null }) => {
             okText={isEditMode ? 'Update Task' : 'Assign Task'}
             cancelText="Cancel"
             okButtonProps={{ className: 'bg-violet-600 hover:bg-violet-700' }}
-            footer={[
-                <Button key="back" onClick={onClose}>
-                    Cancel
-                </Button>,
-                isEditMode && (
-                    <Button
-                        key="delete"
-                        danger
-                        onClick={handleDelete}
-                        loading={deleteTaskMutation.isPending}
-                    >
-                        Delete
+            footer={
+                <div className="flex items-center gap-3 w-full">
+                    <Button key="back" onClick={onClose} className="flex-1">
+                        Cancel
                     </Button>
-                ),
-                <Button
-                    key="submit"
-                    type="primary"
-                    className='bg-violet-600 hover:bg-violet-700'
-                    loading={createTaskMutation.isPending || updateTaskMutation.isPending}
-                    onClick={handleCreate}
-                >
-                    {isEditMode ? 'Update Task' : 'Assign Task'}
-                </Button>
-            ]}
+                    {isEditMode && (
+                        <Button
+                            key="delete"
+                            danger
+                            onClick={handleDelete}
+                            loading={deleteTaskMutation.isPending}
+                            className="flex-1"
+                        >
+                            Delete
+                        </Button>
+                    )}
+                    <Button
+                        key="submit"
+                        type="primary"
+                        className='flex-1 bg-violet-600 hover:bg-violet-700'
+                        loading={createTaskMutation.isPending || updateTaskMutation.isPending}
+                        onClick={handleCreate}
+                    >
+                        {isEditMode ? 'Update Task' : 'Assign Task'}
+                    </Button>
+                </div>
+            }
         >
             <Form
                 form={form}
@@ -312,7 +315,10 @@ const CreateTaskModal = ({ visible, onClose, task = null }) => {
                     label="Task Description"
                     rules={[{ required: true, message: 'Please enter task description' }]}
                 >
-                    <Input placeholder="e.g. Replace windshield on customer vehicle" />
+                    <TextArea
+                        placeholder="e.g. Replace windshield on customer vehicle"
+                        autoSize={{ minRows: 2, maxRows: 8 }}
+                    />
                 </Form.Item>
 
                 <Form.Item

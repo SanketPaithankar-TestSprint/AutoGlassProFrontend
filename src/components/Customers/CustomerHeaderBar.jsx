@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Segmented, Input, Button } from 'antd';
-import { AppstoreOutlined, UnorderedListOutlined, SearchOutlined, ClockCircleOutlined, FilterOutlined } from '@ant-design/icons';
+import { Segmented, Input, Button, Tooltip } from 'antd';
+import { AppstoreOutlined, UnorderedListOutlined, SearchOutlined, ClockCircleOutlined, FilterOutlined, InfoCircleOutlined } from '@ant-design/icons';
 
 const CustomerHeaderBar = ({
     viewMode,
@@ -15,13 +15,13 @@ const CustomerHeaderBar = ({
         <div className="bg-slate-100 border-b border-slate-200 px-6 py-6">
             {/* Title Section */}
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-                <div>
-                    <h1 className="!text-[30px] font-extrabold text-slate-800">
+                <div className="flex items-center gap-2">
+                    <h1 className="!text-[30px] font-extrabold text-slate-800 m-0">
                         Contacts
                     </h1>
-                    <p className="text-slate-500 mt-1">
-                        Manage individual contacts and organizations
-                    </p>
+                    <Tooltip title="Manage individual contacts and organizations" placement="right">
+                        <InfoCircleOutlined className="text-slate-400 text-base cursor-pointer hover:text-violet-500 transition-colors" />
+                    </Tooltip>
                 </div>
             </div>
 

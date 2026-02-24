@@ -14,6 +14,7 @@ const SitemapPage = () => {
                 { path: '/about', title: 'About', description: 'Learn more about us' },
                 { path: '/contact', title: 'Contact', description: 'Get in touch with us' },
                 { path: '/blogs', title: 'Blogs', description: 'Read our latest articles and updates' },
+                { path: '/vin-decoder', title: 'VIN Decoder', description: 'Decode any vehicle VIN instantly using official NHTSA data' },
             ]
         },
         {

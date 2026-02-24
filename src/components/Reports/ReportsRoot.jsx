@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { DatePicker, Button, Card, message, Spin, Empty, Select } from 'antd';
-import { FileTextOutlined, DownloadOutlined, SearchOutlined } from '@ant-design/icons';
+import { DatePicker, Button, Card, message, Spin, Empty, Select, Tooltip } from 'antd';
+import { FileTextOutlined, DownloadOutlined, SearchOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { getSalesReport } from '../../api/getSalesReport';
 
@@ -122,11 +122,13 @@ const ReportsRoot = () => {
         <div className="min-h-full bg-slate-100 p-3 sm:p-4 md:p-6">
             <div className="max-w-[1200px] mx-auto">
                 {/* Header */}
-                <div className="mb-4 sm:mb-6 md:mb-8">
-                    <h1 className="!text-[30px] sm:text-xl md:text-2xl font-bold text-slate-900 mb-1 sm:mb-2">
+                <div className="mb-4 sm:mb-6 md:mb-8 flex items-center gap-2">
+                    <h1 className="!text-[30px] sm:text-xl md:text-2xl font-bold text-slate-900 m-0">
                         Sales Reports
                     </h1>
-                    <p className="text-xs sm:text-sm text-slate-500">Generate and download sales breakdown reports</p>
+                    <Tooltip title="Generate and download sales breakdown reports" placement="right">
+                        <InfoCircleOutlined className="text-slate-400 text-base cursor-pointer hover:text-violet-500 transition-colors" />
+                    </Tooltip>
                 </div>
 
                 {/* Controls Card */}

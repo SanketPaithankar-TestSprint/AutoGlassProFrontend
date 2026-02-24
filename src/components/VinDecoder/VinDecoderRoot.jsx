@@ -161,6 +161,43 @@ export default function VinDecoderRoot() {
     const [error, setError] = useState(null);
     const inputRef = useRef(null);
 
+    // ── SEO meta tags ──────────────────────────────────────────────────────────
+    React.useEffect(() => {
+        const prevTitle = document.title;
+        document.title = 'Free VIN Decoder | AutoPane AI — Instant Vehicle Info from NHTSA';
+
+        const setMeta = (name, content, prop = false) => {
+            const attr = prop ? 'property' : 'name';
+            let tag = document.querySelector(`meta[${attr}="${name}"]`);
+            if (!tag) { tag = document.createElement('meta'); tag.setAttribute(attr, name); document.head.appendChild(tag); }
+            tag.setAttribute('content', content);
+            return tag;
+        };
+        const setLink = (rel, href) => {
+            let tag = document.querySelector(`link[rel="${rel}"]`);
+            if (!tag) { tag = document.createElement('link'); tag.setAttribute('rel', rel); document.head.appendChild(tag); }
+            tag.setAttribute('href', href);
+            return tag;
+        };
+
+        const desc = 'Decode any 17-character VIN instantly with AutoPane AI\'s free VIN Decoder — powered by the official NHTSA API. Get make, model, engine, safety features, manufacturing details and more, no account required.';
+        const keywords = 'VIN decoder, free VIN lookup, vehicle identification number, NHTSA VIN, car decoder, VIN check, auto glass VIN, vehicle info, AutoPane AI';
+
+        const mDesc = setMeta('description', desc);
+        const mKw = setMeta('keywords', keywords);
+        const mRobots = setMeta('robots', 'index, follow');
+        const ogTitle = setMeta('og:title', 'Free VIN Decoder | AutoPane AI', true);
+        const ogDesc = setMeta('og:description', desc, true);
+        const ogUrl = setMeta('og:url', 'https://autopaneai.com/vin-decoder', true);
+        const ogType = setMeta('og:type', 'website', true);
+        const canon = setLink('canonical', 'https://autopaneai.com/vin-decoder');
+
+        return () => {
+            document.title = prevTitle;
+            [mDesc, mKw, mRobots, ogTitle, ogDesc, ogUrl, ogType, canon].forEach(el => el?.parentNode?.removeChild(el));
+        };
+    }, []);
+
     const handleDecode = async (e) => {
         e?.preventDefault();
         const trimmed = vin.trim().toUpperCase();

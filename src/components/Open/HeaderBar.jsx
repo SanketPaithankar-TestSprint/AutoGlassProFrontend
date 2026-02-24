@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Segmented, Input, Button, Tag, Spin } from 'antd';
-import { AppstoreOutlined, UnorderedListOutlined, SearchOutlined, ClockCircleOutlined, FilterOutlined, LoadingOutlined, CloudServerOutlined, DatabaseOutlined } from '@ant-design/icons';
+import { Segmented, Input, Button, Tag, Spin, Tooltip } from 'antd';
+import { AppstoreOutlined, UnorderedListOutlined, SearchOutlined, ClockCircleOutlined, FilterOutlined, LoadingOutlined, CloudServerOutlined, DatabaseOutlined, InfoCircleOutlined } from '@ant-design/icons';
 
 const HeaderBar = ({
     viewMode,
@@ -39,13 +39,13 @@ const HeaderBar = ({
     return (
         <div className="bg-white border-b border-slate-200 px-6 py-6">
             {/* Title Section */}
-            <div className="mb-6">
-                <h1 className="!text-[30px] font-bold text-slate-900">
+            <div className="mb-6 flex items-center gap-2">
+                <h1 className="!text-[30px] font-bold text-slate-900 m-0">
                     Jobs
                 </h1>
-                <p className="text-slate-500 mt-1">
-                    Manage and track your service documents
-                </p>
+                <Tooltip title="Manage and track your service documents" placement="right">
+                    <InfoCircleOutlined className="text-slate-400 text-base cursor-pointer hover:text-violet-500 transition-colors" />
+                </Tooltip>
             </div>
 
             {/* Controls Section - Below Title */}
