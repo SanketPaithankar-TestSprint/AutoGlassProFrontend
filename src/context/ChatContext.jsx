@@ -13,8 +13,14 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
     const [connectionStatus, setConnectionStatus] = useState('disconnected'); // disconnected, connected, reconnecting
     const [conversations, setConversations] = useState({}); // Map: conversationId -> conversationObj
     const [activeConversationId, setActiveConversationId] = useState(null);
+    const activeConversationIdRef = useRef(null); // always current, avoids stale closures
     const [visitorId, setVisitorId] = useState(null);
     const [unreadTotal, setUnreadTotal] = useState(0);
+
+    // Keep ref in sync with state
+    useEffect(() => {
+        activeConversationIdRef.current = activeConversationId;
+    }, [activeConversationId]);
 
     // Configuration
     const WS_URL = "wss://y3rxp208gj.execute-api.us-east-1.amazonaws.com/prod/";
@@ -266,9 +272,11 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
 
             const newMsg = { ...msg }; // Keep all fields
 
-            // Increment unread if not active (Shop only usually)
+            // Only increment unread for CUSTOMER messages, and only if this conversation is not currently open
             let newUnread = existing.unreadCount;
-            if (activeConversationId !== conversationId && !isPublic) {
+            const isFromCustomer = senderType !== 'SHOP';
+            const isCurrentlyOpen = activeConversationIdRef.current === conversationId;
+            if (isFromCustomer && !isCurrentlyOpen && !isPublic) {
                 newUnread += 1;
             }
 

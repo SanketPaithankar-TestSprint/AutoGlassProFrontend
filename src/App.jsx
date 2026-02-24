@@ -43,6 +43,8 @@ const BlogPostPage = React.lazy(() => import('./components/Blogs/BlogPostPage.js
 const ShopChatPanel = React.lazy(() => import('./components/Chat/ShopChatPanel.jsx'));
 import { ChatProvider } from './context/ChatContext';
 const SetPassword = React.lazy(() => import('./components/SetPassword.jsx'));
+const VinDecoderRoot = React.lazy(() => import('./components/VinDecoder/VinDecoderRoot.jsx'));
+const PublicChatRoot = React.lazy(() => import('./components/PublicChat/PublicChatRoot.jsx'));
 import RestrictedAccessModal from './components/RestrictedAccessModal';
 import { useSubscriptionRestriction } from './hooks/useSubscriptionRestriction';
 
@@ -122,11 +124,13 @@ function AppContent() {
 
   // Only treat /contact/:slug as the standalone public shop contact form.
   // The plain /contact page is a normal marketing page — do NOT intercept it here.
-  const isContactPage = /^\/contact\/.+/.test(location.pathname);
+  // Tightened regex: only single-segment slugs (not /contact/:slug/chat)
+  const isContactPage = /^\/contact\/[^/]+$/.test(location.pathname);
+  const isChatPage = /^\/contact\/[^/]+\/chat$/.test(location.pathname);
   const isServiceView = location.pathname.startsWith('/service-inquiry-view/');
   const isSetPasswordPage = location.pathname.startsWith('/set-password');
 
-  if (isContactPage || isServiceView || isSetPasswordPage) {
+  if (isContactPage || isChatPage || isServiceView || isSetPasswordPage) {
     return (
       <ErrorBoundary>
         <Suspense fallback={
@@ -135,6 +139,7 @@ function AppContent() {
           </div>
         }>
           <Routes>
+            {isChatPage && <Route path="/contact/:slug/chat" element={<PublicChatRoot />} />}
             {isContactPage && <Route path="/contact/:slug" element={<PublicContactRoot />} />}
             {isServiceView && <Route path="/service-inquiry-view/:id" element={<ServiceInquiryView />} />}
             {isSetPasswordPage && <Route path="/set-password" element={<SetPassword />} />}
@@ -197,6 +202,7 @@ function AppContent() {
                       <Route path="/employee-attendance" element={<EmployeeAttendance />} />
                       <Route path="/sitemap" element={<SitemapPage />} />
                       <Route path="/sitemap" element={<SitemapPage />} />
+                      <Route path="/vin-decoder" element={<VinDecoderRoot />} />
                       <Route path="/chat" element={
                         <ChatProvider isPublic={false}>
                           <ShopChatPanel />
@@ -239,6 +245,7 @@ function AppContent() {
                   <Route path="/blogs" element={<BlogsPage />} />
                   <Route path="/blogs/:slug" element={<BlogPostPage />} />
                   <Route path="/sitemap" element={<SitemapPage />} />
+                  <Route path="/vin-decoder" element={<VinDecoderRoot />} />
                 </Routes>
               </Suspense>
             </div>

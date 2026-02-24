@@ -4,6 +4,7 @@ import { Alert, Select, DatePicker } from 'antd';
 import Loader from '../Loader';
 import dayjs from 'dayjs';
 import { getAnalyticsDashboard } from '../../api/getAnalyticsDashboard';
+import AnalyticsDatePicker from './AnalyticsDatePicker';
 
 // Import new components
 import KpiGrid from './KpiGrid';
@@ -25,51 +26,22 @@ const { Option } = Select;
 const AnalyticsRoot = () => {
     const [userId, setUserId] = React.useState(null);
     const [checkingUserId, setCheckingUserId] = React.useState(true);
-    const [filterType, setFilterType] = React.useState('all_time');
-    const [customRange, setCustomRange] = React.useState(null);
+    const [dateParams, setDateParams] = React.useState({ startDate: null, endDate: null });
+    const [activeLabel, setActiveLabel] = React.useState('All time');
+
+    const handleDateChange = ({ startDate, endDate, label }) => {
+        setDateParams({ startDate, endDate });
+        if (label) setActiveLabel(label);
+    };
 
     React.useEffect(() => {
-        // Simulate async userId retrieval (extend here if needed)
         const id = sessionStorage.getItem('userId');
         setUserId(id);
         setCheckingUserId(false);
     }, []);
 
-    // Calculate start and end dates based on filter
-    const dateParams = React.useMemo(() => {
-        const today = dayjs().format('YYYY-MM-DD');
-        let startDate = null;
-        let endDate = null;
-
-        switch (filterType) {
-            case 'last_week':
-                startDate = dayjs().subtract(7, 'day').format('YYYY-MM-DD');
-                endDate = today;
-                break;
-            case 'last_month':
-                startDate = dayjs().subtract(30, 'day').format('YYYY-MM-DD');
-                endDate = today;
-                break;
-            case 'last_3_months':
-                startDate = dayjs().subtract(90, 'day').format('YYYY-MM-DD');
-                endDate = today;
-                break;
-            case 'custom':
-                if (customRange && customRange[0] && customRange[1]) {
-                    startDate = customRange[0].format('YYYY-MM-DD');
-                    endDate = customRange[1].format('YYYY-MM-DD');
-                }
-                break;
-            case 'all_time':
-            default:
-                break;
-        }
-        return { startDate, endDate };
-    }, [filterType, customRange]);
-
-
-    const { data, isLoading, error } = useQuery({
-        queryKey: ['analyticsDashboard', userId, dateParams],
+    const { data, isLoading, isFetching, error } = useQuery({
+        queryKey: ['analyticsDashboard', userId, dateParams.startDate ?? 'all', dateParams.endDate ?? 'all'],
         queryFn: async () => {
             if (!userId) {
                 throw new Error("User ID not found. Please ensure you are logged in.");
@@ -77,11 +49,12 @@ const AnalyticsRoot = () => {
             return getAnalyticsDashboard(userId, dateParams.startDate, dateParams.endDate);
         },
         enabled: !!userId,
+        placeholderData: (prev) => prev,  // v5: keep old data visible during refetch
     });
 
 
-    // Show a single loading spinner for all loading states
-    if (checkingUserId || !userId || isLoading) {
+    // Only show full-screen spinner on the very first load (no data yet)
+    if (checkingUserId || !userId || (isLoading && !data)) {
         return (
             <div className="h-full flex items-center justify-center bg-slate-100">
                 <Loader tip="Loading Dashboard..." />
@@ -109,47 +82,12 @@ const AnalyticsRoot = () => {
                 <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
                     <div>
                         <h1 className="!text-[30px] font-extrabold text-slate-800">
-                            Dashboard
+                            Shop Analytics
                         </h1>
                         <p className="text-slate-500 mt-1 text-xs sm:text-sm">Comprehensive business analytics and insights</p>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                        <Select
-                            value={filterType}
-                            style={{ width: '100%', minWidth: 150 }}
-                            onChange={(value) => setFilterType(value)}
-                            className="rounded-lg w-full sm:w-auto"
-                            getPopupContainer={(trigger) => trigger.parentElement}
-                        >
-                            <Option value="all_time">All Time</Option>
-                            <Option value="last_week">Last Week</Option>
-                            <Option value="last_month">Last Month</Option>
-                            <Option value="last_3_months">Last 3 Months</Option>
-                            <Option value="custom">Custom Date</Option>
-                        </Select>
-
-                        {filterType === 'custom' && (
-                            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                                <DatePicker
-                                    placeholder="Start Date"
-                                    value={customRange?.[0]}
-                                    onChange={(date) => setCustomRange([date, customRange?.[1]])}
-                                    className="rounded-lg w-full sm:w-auto"
-                                    getPopupContainer={(trigger) => trigger.parentElement}
-                                    format="MMM DD, YYYY"
-                                />
-                                <DatePicker
-                                    placeholder="End Date"
-                                    value={customRange?.[1]}
-                                    onChange={(date) => setCustomRange([customRange?.[0], date])}
-                                    className="rounded-lg w-full sm:w-auto"
-                                    getPopupContainer={(trigger) => trigger.parentElement}
-                                    format="MMM DD, YYYY"
-                                />
-                            </div>
-                        )}
-                    </div>
+                    <AnalyticsDatePicker onChange={handleDateChange} activeLabel={activeLabel} />
                 </header>
 
                 {/* KPI Overview */}

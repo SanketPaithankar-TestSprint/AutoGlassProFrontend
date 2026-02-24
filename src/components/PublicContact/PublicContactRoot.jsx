@@ -19,7 +19,7 @@ import CustomerChatWidget from './CustomerChatWidget';
 import './PublicContact.css';
 
 // Import Assets
-import carPreview from '../../assets/ContactFormCar.png';
+import carPreview from '../../assets/glasstypes1.jpg';
 import windshieldSensorGuide from '../../assets/windshield_sensor_guide.png';
 import { GLASS_OVERLAYS } from './const/imageConfig';
 
@@ -545,10 +545,10 @@ const PublicContactRoot = () => {
 
 
                 {/* Main Content - Strictly Single Page on Desktop */}
-                <main className="flex-1 w-full max-w-7xl mx-auto flex flex-col md:flex-row h-full overflow-y-auto md:overflow-hidden">
+                <main className="flex-1 w-full max-w-7xl mx-auto flex flex-col lg:flex-row h-full overflow-y-auto lg:overflow-hidden">
 
-                    {/* MOBILE ONLY: Top Design (Glass Reference) */}
-                    <div className="md:hidden w-full h-64 shrink-0 relative group overflow-hidden border-b border-gray-200">
+                    {/* MOBILE + TABLET: Top Design (Glass Reference) */}
+                    <div className="lg:hidden w-full h-64 md:h-96 shrink-0 relative group overflow-hidden border-b border-gray-200">
                         <GlassReference
                             serviceType={formData.serviceType}
                             carPreview={carPreview}
@@ -557,7 +557,7 @@ const PublicContactRoot = () => {
                     </div>
 
                     {/* Form Area */}
-                    <div className="w-full md:w-[60%] h-auto md:h-full md:overflow-y-auto custom-scrollbar relative bg-gray-50 flex-shrink-0">
+                    <div className="w-full lg:w-[60%] h-auto lg:h-full lg:overflow-y-auto custom-scrollbar relative bg-gray-50 flex-shrink-0">
                         <div className="p-4 md:p-6 lg:p-8 min-h-full">
                             <AnimatePresence mode="wait">
                                 {isSubmitted ? (
@@ -1064,8 +1064,8 @@ const PublicContactRoot = () => {
                         )}
                     </div>
 
-                    {/* DESKTOP ONLY: Right Column: Info/Map/Visuals */}
-                    <div className="hidden md:flex w-[40%] bg-white border-l border-gray-200 flex-col h-full shadow-lg z-10 flex-shrink-0">
+                    {/* DESKTOP ONLY (lg+): Right Column: Info/Map/Visuals */}
+                    <div className="hidden lg:flex w-[40%] bg-white border-l border-gray-200 flex-col h-full shadow-lg z-10 flex-shrink-0">
 
                         {/* Top: Glass Reference (30%) */}
                         <div className="h-[30%] shrink-0 relative group overflow-hidden">
