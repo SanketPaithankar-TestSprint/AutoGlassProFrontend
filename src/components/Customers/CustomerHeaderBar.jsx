@@ -17,10 +17,10 @@ const CustomerHeaderBar = ({
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
                 <div>
                     <h1 className="!text-[30px] font-extrabold text-slate-800">
-                        Customer Management
+                        Contacts
                     </h1>
                     <p className="text-slate-500 mt-1">
-                        Manage individual customers and organizations
+                        Manage individual contacts and organizations
                     </p>
                 </div>
             </div>
