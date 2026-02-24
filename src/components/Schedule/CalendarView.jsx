@@ -10,13 +10,13 @@ const localizer = momentLocalizer(moment);
 // Mobile Detector Hook
 const useIsMobile = () => {
     const [isMobile, setIsMobile] = useState(() => window.innerWidth < 1024);
-    
+
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 1024);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
-    
+
     return isMobile;
 };
 
@@ -292,7 +292,7 @@ const DesktopTaskCalendarView = ({ tasks = [], onEdit }) => {
                 events={events}
                 startAccessor="start"
                 endAccessor="end"
-                style={{ height: 'calc(100vh - 250px)' }}
+                style={{ height: 'calc(100vh - 350px)' }}
                 onSelectEvent={handleSelectEvent}
                 eventPropGetter={eventStyleGetter}
                 view={view}

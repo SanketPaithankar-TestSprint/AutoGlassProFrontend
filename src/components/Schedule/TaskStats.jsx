@@ -1,9 +1,8 @@
 import React from 'react';
-import { Card, Statistic, Row, Col, Progress } from 'antd';
+import { Progress } from 'antd';
 import { CheckCircleOutlined, ClockCircleOutlined, SyncOutlined, WarningOutlined } from '@ant-design/icons';
 
 const TaskStats = ({ tasks = [] }) => {
-    // Calculate stats
     const total = tasks.length;
     const completed = tasks.filter(t => t.status === 'COMPLETED').length;
     const pending = tasks.filter(t => t.status === 'PENDING').length;
@@ -16,50 +15,53 @@ const TaskStats = ({ tasks = [] }) => {
     const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
 
     return (
-        <Row gutter={[16, 16]} className="mb-6">
-            <Col xs={24} sm={12} md={6}>
-                <Card bordered={false} className="shadow-sm">
-                    <Statistic
-                        title="Completion Rate"
-                        value={completionRate}
-                        suffix="%"
-                        prefix={<CheckCircleOutlined className="text-green-500" />}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+            {/* Completion Rate — Donut */}
+            <div className="bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-sm border border-slate-200/60 flex items-center gap-3">
+                <Progress
+                    type="circle"
+                    percent={completionRate}
+                    size={48}
+                    strokeColor="#52c41a"
+                    trailColor="#f0f0f0"
+                    format={pct => <span className="text-[10px] font-bold text-slate-700">{pct}%</span>}
+                />
+                <div>
+                    <div className="text-2xl font-bold text-green-600">{completed}</div>
+                    <div className="text-xs text-slate-500 font-medium">Done</div>
+                </div>
+            </div>
+
+            {/* Pending */}
+            <div className="bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-sm border border-slate-200/60">
+                <div className="flex items-center justify-between mb-2">
+                    <ClockCircleOutlined className="text-3xl text-orange-400" />
+                    <div className="text-2xl font-bold text-orange-500">{pending}</div>
+                </div>
+                <div className="text-sm text-slate-500 font-medium">Pending</div>
+            </div>
+
+            {/* In Progress */}
+            <div className="bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-sm border border-slate-200/60">
+                <div className="flex items-center justify-between mb-2">
+                    <SyncOutlined
+                        spin={inProgress > 0}
+                        className="text-3xl text-blue-400"
                     />
-                    <Progress percent={completionRate} showInfo={false} size="small" status="active" strokeColor="#52c41a" />
-                </Card>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-                <Card bordered={false} className="shadow-sm">
-                    <Statistic
-                        title="Pending Tasks"
-                        value={pending}
-                        prefix={<ClockCircleOutlined className="text-orange-500" />}
-                    />
-                    <div className="text-xs text-gray-400 mt-2">To be picked up</div>
-                </Card>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-                <Card bordered={false} className="shadow-sm">
-                    <Statistic
-                        title="In Progress"
-                        value={inProgress}
-                        prefix={<SyncOutlined spin className="text-blue-500" />}
-                    />
-                    <div className="text-xs text-gray-400 mt-2">Currently active</div>
-                </Card>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-                <Card bordered={false} className="shadow-sm">
-                    <Statistic
-                        title="Overdue"
-                        value={overdue}
-                        prefix={<WarningOutlined className="text-red-500" />}
-                        valueStyle={{ color: overdue > 0 ? '#cf1322' : '#3f8600' }}
-                    />
-                    <div className="text-xs text-gray-400 mt-2">Late tasks</div>
-                </Card>
-            </Col>
-        </Row>
+                    <div className="text-2xl font-bold text-blue-500">{inProgress}</div>
+                </div>
+                <div className="text-sm text-slate-500 font-medium">In Progress</div>
+            </div>
+
+            {/* Overdue */}
+            <div className="bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-sm border border-slate-200/60">
+                <div className="flex items-center justify-between mb-2">
+                    <WarningOutlined className="text-3xl text-red-400" />
+                    <div className={`text-2xl font-bold ${overdue > 0 ? 'text-red-600' : 'text-slate-400'}`}>{overdue}</div>
+                </div>
+                <div className="text-sm text-slate-500 font-medium">Overdue</div>
+            </div>
+        </div>
     );
 };
 

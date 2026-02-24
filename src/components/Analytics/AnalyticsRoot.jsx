@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Alert, Select, DatePicker } from 'antd';
+import { Alert, Select, DatePicker, Tooltip } from 'antd';
+import { InfoCircleOutlined } from '@ant-design/icons';
 import Loader from '../Loader';
 import dayjs from 'dayjs';
 import { getAnalyticsDashboard } from '../../api/getAnalyticsDashboard';
@@ -80,11 +81,13 @@ const AnalyticsRoot = () => {
             <div className="max-w-[1600px] mx-auto space-y-4 sm:space-y-6 lg:space-y-8">
                 {/* Header */}
                 <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
-                    <div>
-                        <h1 className="!text-[30px] font-extrabold text-slate-800">
+                    <div className="flex items-center gap-2">
+                        <h1 className="!text-[30px] font-extrabold text-slate-800 m-0">
                             Shop Analytics
                         </h1>
-                        <p className="text-slate-500 mt-1 text-xs sm:text-sm">Comprehensive business analytics and insights</p>
+                        <Tooltip title="Comprehensive business analytics and insights" placement="right">
+                            <InfoCircleOutlined className="text-slate-400 text-base cursor-pointer hover:text-violet-500 transition-colors" />
+                        </Tooltip>
                     </div>
 
                     <AnalyticsDatePicker onChange={handleDateChange} activeLabel={activeLabel} />

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { Tabs, Button, Select, Space, message, Spin, DatePicker, Input, Switch, notification } from 'antd';
-import { PlusOutlined, AppstoreOutlined, UnorderedListOutlined, ReloadOutlined, CalendarOutlined, FileTextOutlined, TeamOutlined, ToolOutlined, CreditCardOutlined } from '@ant-design/icons';
+import { Tabs, Button, Select, Space, message, Spin, DatePicker, Input, Switch, notification, Tooltip } from 'antd';
+import { PlusOutlined, AppstoreOutlined, UnorderedListOutlined, ReloadOutlined, CalendarOutlined, FileTextOutlined, TeamOutlined, ToolOutlined, CreditCardOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import moment from 'moment';
 import dayjs from 'dayjs';
@@ -18,6 +18,8 @@ import { getShopTasks } from '../../api/getShopTasks';
 import { updateTaskStatus } from '../../api/updateTaskStatus';
 import { getServiceDocumentSchedule } from '../../api/getServiceDocumentSchedule';
 import { getCompositeServiceDocument } from '../../api/getCompositeServiceDocument';
+import { getProfile } from '../../api/getProfile';
+import { getValidToken } from '../../api/getValidToken';
 import { useNavigate } from 'react-router-dom';
 
 const { Search } = Input;
@@ -45,6 +47,25 @@ const ScheduleRoot = () => {
     // Get current user ID (fallback to 2 if not found)
     const userId = localStorage.getItem('userId') || 2;
     const queryClient = useQueryClient();
+
+    // ===== Profile / Role Query =====
+    const { data: userProfile } = useQuery({
+        queryKey: ['profile'],
+        queryFn: async () => {
+            const token = await getValidToken();
+            if (!token) return null;
+            return await getProfile(token);
+        },
+        staleTime: 1000 * 60 * 30, // 30 min
+    });
+
+    const isAdmin = userProfile?.role === 'SHOP_OWNER';
+
+    // Auto-set task scope based on role (ADMIN sees shop tasks, employees see their own)
+    React.useEffect(() => {
+        if (!userProfile) return;
+        setTaskScope(isAdmin ? 'shop' : 'mine');
+    }, [isAdmin, userProfile]);
 
     // ===== Schedule Documents Query =====
     const {
@@ -250,9 +271,11 @@ const ScheduleRoot = () => {
         <div className="p-6 h-full flex flex-col bg-slate-50 overflow-y-auto">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-                <div>
+                <div className="flex items-center gap-2">
                     <h1 className="!text-[30px] font-bold text-slate-900 m-0">Schedule & Tasks</h1>
-                    <p className="text-slate-500 m-0">Manage your appointments and daily workflow</p>
+                    <Tooltip title="Manage your appointments and daily workflow" placement="right">
+                        <InfoCircleOutlined className="text-slate-400 text-base cursor-pointer hover:text-violet-500 transition-colors" />
+                    </Tooltip>
                 </div>
                 <div className="flex flex-wrap gap-2 w-full md:w-auto">
                     {/* View Switcher */}
@@ -265,17 +288,6 @@ const ScheduleRoot = () => {
                         >
                             Calendar
                         </Button>
-                        {/* Board button only shown in Tasks tab, hidden in Schedule tab */}
-                        {activeTab === 'tasks' && (
-                            <Button
-                                type={viewMode === 'kanban' ? 'primary' : 'text'}
-                                icon={<AppstoreOutlined />}
-                                onClick={() => setViewMode('kanban')}
-                                size="small"
-                            >
-                                Board
-                            </Button>
-                        )}
                         <Button
                             type={viewMode === 'table' ? 'primary' : 'text'}
                             icon={<UnorderedListOutlined />}
@@ -299,47 +311,69 @@ const ScheduleRoot = () => {
             {/* Tab-specific Content */}
             {activeTab === 'schedule' ? (
                 <>
-                    {/* Schedule Filters */}
-                    <div className="flex flex-col gap-4 mb-4 bg-white p-4 rounded-lg shadow-sm border border-slate-100">
-                        <div className="flex flex-col md:flex-row items-center gap-3 w-full">
+                    {/* Schedule Filters — responsive: 1 row desktop, 2 rows mobile */}
+                    <div className="mb-4 bg-white px-4 py-2 rounded-lg shadow-sm border border-slate-100">
+                        <div className="flex flex-col md:flex-row md:flex-nowrap md:items-center gap-2 md:gap-3">
+                            {/* Row 1 (mobile) / start (desktop): Search */}
                             <Search
                                 placeholder="Search documents..."
                                 allowClear
                                 onSearch={val => setScheduleSearchText(val)}
                                 onChange={e => setScheduleSearchText(e.target.value)}
-                                className="w-full md:w-[250px]"
+                                className="w-full"
+                                style={{ maxWidth: 360 }}
+                                size="small"
                             />
-                            <Select
-                                value={scheduleDays}
-                                onChange={setScheduleDays}
-                                options={daysOptions}
-                                className="w-full md:w-[120px]"
-                                placeholder="Days"
-                            />
-                            <DatePicker
-                                value={scheduleStartDate}
-                                onChange={setScheduleStartDate}
-                                className="w-full md:w-[150px]"
-                                placeholder="Start Date"
-                                allowClear={false}
-                            />
-                        </div>
-                        <div className="flex flex-row items-center gap-3 justify-between md:justify-end w-full">
-                            <div className="flex items-center gap-2 flex-1 md:flex-none">
-                                <span className="text-sm text-slate-600">Include Past:</span>
-                                <Switch
-                                    checked={scheduleIncludePast}
-                                    onChange={setScheduleIncludePast}
+                            {/* Row 2 (mobile) / rest (desktop) */}
+                            <div className="flex items-center gap-2 overflow-x-auto flex-nowrap">
+                                <Select
+                                    value={scheduleDays}
+                                    onChange={setScheduleDays}
+                                    options={daysOptions}
+                                    style={{ width: 95, flexShrink: 0 }}
+                                    placeholder="Days"
                                     size="small"
                                 />
+                                <DatePicker
+                                    value={scheduleStartDate}
+                                    onChange={setScheduleStartDate}
+                                    style={{ width: 105, flexShrink: 0 }}
+                                    placeholder="Date"
+                                    allowClear={false}
+                                    size="small"
+                                />
+                                <div className="flex items-center gap-1 flex-shrink-0">
+                                    <span className="hidden md:inline text-xs text-slate-500 whitespace-nowrap">Include Past:</span>
+                                    {/* Mobile only: styled switch with PAST label inside */}
+                                    <div className="md:hidden">
+                                        <Switch
+                                            checked={scheduleIncludePast}
+                                            onChange={setScheduleIncludePast}
+                                            size="small"
+                                            checkedChildren={<span className="text-[10px] font-bold">PAST</span>}
+                                            unCheckedChildren={<span className="text-[10px] font-bold">PAST</span>}
+                                        />
+                                    </div>
+                                    {/* Desktop only: plain normal toggle */}
+                                    <div className="hidden md:block">
+                                        <Switch
+                                            checked={scheduleIncludePast}
+                                            onChange={setScheduleIncludePast}
+                                            size="small"
+                                        />
+                                    </div>
+                                </div>
+                                <Button
+                                    icon={<ReloadOutlined />}
+                                    onClick={() => refetchSchedule()}
+                                    loading={isLoadingSchedule}
+                                    size="small"
+                                    style={{ flexShrink: 0 }}
+                                    title="Refresh"
+                                >
+                                    <span className="hidden md:inline">Refresh</span>
+                                </Button>
                             </div>
-                            <Button
-                                icon={<ReloadOutlined />}
-                                onClick={() => refetchSchedule()}
-                                loading={isLoadingSchedule}
-                            >
-                                Refresh
-                            </Button>
                         </div>
                     </div>
 
@@ -404,58 +438,47 @@ const ScheduleRoot = () => {
                 </>
             ) : (
                 <>
-                    {/* Tasks Scope Switcher */}
-                    <div className="flex mb-4">
-                        <div className="bg-white border p-1 rounded-lg flex">
-                            <Button
-                                type={taskScope === 'mine' ? 'primary' : 'text'}
-                                onClick={() => setTaskScope('mine')}
-                                size="small"
-                            >
-                                My Tasks
-                            </Button>
-                            <Button
-                                type={taskScope === 'shop' ? 'primary' : 'text'}
-                                onClick={() => setTaskScope('shop')}
-                                size="small"
-                            >
-                                Shop Tasks
-                            </Button>
-                        </div>
-                    </div>
-
-                    {/* Tasks Stats */}
-                    <TaskStats tasks={tasks} />
-
-                    {/* Tasks Filters & Actions */}
-                    <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4 bg-white p-4 rounded-lg shadow-sm border border-slate-100">
-                        <div className="flex flex-col md:flex-row items-center gap-3 flex-1 w-full">
+                    {/* Tasks Filters — responsive: 1 row desktop, 2 rows mobile */}
+                    <div className="mb-4 bg-white px-4 py-2 rounded-lg shadow-sm border border-slate-100">
+                        <div className="flex flex-col md:flex-row md:flex-nowrap md:items-center gap-2 md:gap-3">
+                            {/* Row 1 (mobile): Search */}
                             <Search
                                 placeholder="Search tasks..."
                                 allowClear
                                 onSearch={val => setSearchText(val)}
                                 onChange={e => setSearchText(e.target.value)}
-                                className="w-full md:w-[250px]"
+                                className="w-full"
+                                style={{ maxWidth: 360 }}
+                                size="small"
                             />
-                            <Select
-                                value={filterStatus}
-                                onChange={setFilterStatus}
-                                options={statusOptions}
-                                className="w-full md:w-[150px]"
-                            />
-                        </div>
-                        <div className="flex gap-2 w-full md:w-auto justify-end">
-                            <Button icon={<ReloadOutlined />} onClick={() => refetchTasks()} loading={isLoadingTasks}>Refresh</Button>
-                            <Button
-                                type="primary"
-                                icon={<PlusOutlined />}
-                                className="bg-gradient-to-r from-violet-600 to-indigo-600 border-0 hover:from-violet-500 hover:to-indigo-500 shadow-md"
-                                onClick={() => setCreateModalVisible(true)}
-                            >
-                                New Task
-                            </Button>
+                            {/* Row 2 (mobile): New Task first, then Status + Refresh */}
+                            <div className="flex items-center gap-2 overflow-x-auto flex-nowrap">
+                                <Button
+                                    type="primary"
+                                    icon={<PlusOutlined />}
+                                    size="small"
+                                    style={{ flexShrink: 0 }}
+                                    className="bg-gradient-to-r from-violet-600 to-indigo-600 border-0 hover:from-violet-500 hover:to-indigo-500 shadow-md"
+                                    onClick={() => setCreateModalVisible(true)}
+                                >
+                                    New Task
+                                </Button>
+                                <Select
+                                    value={filterStatus}
+                                    onChange={setFilterStatus}
+                                    options={statusOptions}
+                                    style={{ width: 130, flexShrink: 0 }}
+                                    size="small"
+                                />
+                                <Button icon={<ReloadOutlined />} onClick={() => refetchTasks()} loading={isLoadingTasks} size="small" style={{ flexShrink: 0 }} title="Refresh">
+                                    <span className="hidden md:inline">Refresh</span>
+                                </Button>
+                            </div>
                         </div>
                     </div>
+
+                    {/* Tasks Stats */}
+                    <TaskStats tasks={tasks} />
 
                     {/* Tasks Content */}
                     <div className="flex-1 min-h-0">

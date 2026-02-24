@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Card, Tag, Button, Statistic, Row, Col, Typography, message, Popconfirm, Tooltip, Modal, List } from 'antd';
-import { ReloadOutlined, EyeOutlined, DeleteOutlined, UserOutlined, CarOutlined, ToolOutlined, CalendarOutlined } from '@ant-design/icons';
+import { ReloadOutlined, EyeOutlined, DeleteOutlined, UserOutlined, CarOutlined, ToolOutlined, CalendarOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { getValidToken } from '../../api/getValidToken';
 import urls from '../../config';
 import InquiryDetails from './InquiryDetails';
@@ -220,7 +220,12 @@ const ServiceContactFormRoot = () => {
     return (
         <div className="min-h-screen p-4 md:p-6 bg-slate-100">
             <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h1 className="!text-[30px] md:text-2xl font-bold text-slate-900 m-0">Service Inquiries</h1>
+                <div className="flex items-center gap-2">
+                    <h1 className="!text-[30px] md:text-2xl font-bold text-slate-900 m-0">Service Inquiries</h1>
+                    <Tooltip title="View and manage incoming service requests from customers" placement="right">
+                        <InfoCircleOutlined className="text-slate-400 text-base cursor-pointer hover:text-violet-500 transition-colors" />
+                    </Tooltip>
+                </div>
                 <Button
                     icon={<ReloadOutlined />}
                     onClick={fetchInquiries}

@@ -103,8 +103,6 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
     ...(!isAuthed ? [
       { key: "features", label: "Features", href: "/features", icon: null },
       { key: "pricing", label: "Pricing", href: "/pricing", icon: null },
-      { key: "blogs", label: "Blogs", href: "/blogs", icon: null },
-      { key: "vin-decoder", label: "VIN Decoder", href: "/vin-decoder", icon: null },
       { key: "about", label: "About", href: "/about", icon: null },
       { key: "contact", label: "Contact", href: "/contact", icon: null },
     ] : []),

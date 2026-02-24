@@ -42,6 +42,8 @@ const Footer = () => {
             <Link to="/features" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide text-xs md:text-xs">Features</Link>
             <Link to="/about" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide text-xs md:text-xs">About</Link>
             <Link to="/contact" className="text-slate-500 hover:text-slate-800 transition-colors tracking-wide text-xs md:text-xs">Contact</Link>
+            <Link to="/blogs" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide text-xs md:text-xs">Blogs</Link>
+            <Link to="/vin-decoder" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide text-xs md:text-xs">VIN Decoder</Link>
             <Link to="/sitemap" className="text-slate-500 hover:text-slate-800 transition-colors tracking-wide text-xs md:text-xs">Sitemap</Link>
             <Link to="/privacy-policy" className="text-slate-500 hover:text-slate-800 transition-colors tracking-wide text-xs md:text-xs">Privacy</Link>
             <Link to="/terms-of-service" className="text-slate-500 hover:text-slate-800 transition-colors tracking-wide text-xs md:text-xs">Terms</Link>
@@ -145,6 +147,7 @@ const Footer = () => {
             <ul className="space-y-1 md:space-y-2 text-xs sm:text-sm">
               <li><Link to="/contact" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Contact</Link></li>
               <li><Link to="/blogs" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Blogs</Link></li>
+              <li><Link to="/vin-decoder" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">VIN Decoder</Link></li>
               <li><Link to="/sitemap" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Sitemap</Link></li>
               <li><Link to="/privacy-policy" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Privacy</Link></li>
               <li><Link to="/terms-of-service" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Terms of Service</Link></li>

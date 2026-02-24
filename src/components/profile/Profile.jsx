@@ -17,7 +17,6 @@ import DistributorCredentials from "./DistributorCredentials";
 import UserKitPricePage from "./UserKitPricePage";
 import UserAdasPricePage from "./UserAdasPricePage";
 import SpecialInstructions from "./SpecialInstructions";
-import UserSignature from "./UserSignature";
 import Shops from "./Shops";
 import SlugConfig from "../SlugConfig/SlugConfig";
 import { COUNTRIES, getStatesOrProvinces, getCities } from "../../const/locations";
@@ -437,7 +436,6 @@ const Profile = () => {
                             { id: 'userKitPrice', label: 'Kit Price', icon: <GiftOutlined /> },
                             { id: 'userAdasPrice', label: 'ADAS', icon: <CameraOutlined /> },
                             { id: 'slugConfig', label: 'Form Config', icon: <LinkOutlined /> },
-                            { id: 'signature', label: 'Signature', icon: <EditOutlined /> },
                         ].map(item => {
                             const isActive = activeTab === item.id;
                             return (
@@ -471,7 +469,6 @@ const Profile = () => {
                             {renderMenuItem('userAdasPrice', 'ADAS Pricing', <CameraOutlined />)}
                             {renderMenuItem('specialInstructions', 'Special Instructions', <FileTextOutlined />)}
                             {renderMenuItem('slugConfig', 'Contact Form Config', <LinkOutlined />)}
-                            {renderMenuItem('signature', 'Signature', <EditOutlined />)}
                         </div>
                     </div>
                 </div>
@@ -490,7 +487,6 @@ const Profile = () => {
                     {activeTab === 'userAdasPrice' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><UserAdasPricePage /></div>}
                     {activeTab === 'specialInstructions' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><SpecialInstructions /></div>}
                     {activeTab === 'slugConfig' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><SlugConfig /></div>}
-                    {activeTab === 'signature' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><UserSignature /></div>}
                 </div>
             </div>
         </div>
