@@ -7,7 +7,7 @@ import { updateCustomer } from "../../api/updateCustomer";
 import { getOrganizations, createOrganization, updateOrganization, getOrganizationById } from "../../api/organizationApi";
 import { getValidToken } from "../../api/getValidToken";
 import { TeamOutlined, EditOutlined, PlusOutlined, ShopOutlined, UserOutlined, FilterOutlined } from "@ant-design/icons";
-import { Modal, Form, Input, Button, notification, Tabs, Tag, Empty } from "antd";
+import { Modal, Form, Input, Button, notification, Tabs, Tag, Empty, Pagination } from "antd";
 import { getProfile } from "../../api/getProfile";
 
 // Imports for Filter/Layout
@@ -26,6 +26,11 @@ const CustomersRoot = () => {
 
     // ------------------- STATES ------------------- //
     const [activeTab, setActiveTab] = useState('individuals');
+
+    // Pagination States
+    const [currentPage, setCurrentPage] = useState(0);
+    const [pageSize, setPageSize] = useState(50);
+    const [totalCustomers, setTotalCustomers] = useState(0);
 
     // Filter States
     const [searchTerm, setSearchTerm] = useState('');
@@ -75,13 +80,24 @@ const CustomersRoot = () => {
     });
 
     const { data: customers = [], isLoading: loadingCustomers } = useQuery({
-        queryKey: ['customers'],
+        queryKey: ['customers', currentPage, pageSize],
         queryFn: async () => {
             if (!token) throw new Error("No token found. Please login.");
-            const res = await getCustomers(token);
-            return Array.isArray(res) ? res : [];
+            const res = await getCustomers(token, { page: currentPage, size: pageSize });
+            // Handle Spring Boot Page response
+            if (res && res.content) {
+                setTotalCustomers(res.totalElements || 0);
+                return Array.isArray(res.content) ? res.content : [];
+            }
+            // Fallback for non-paginated response
+            if (Array.isArray(res)) {
+                setTotalCustomers(res.length);
+                return res;
+            }
+            return [];
         },
-        enabled: !!token
+        enabled: !!token,
+        keepPreviousData: true,
     });
 
     const { data: organizations = [], isLoading: loadingOrgs, refetch: refetchOrgs } = useQuery({
@@ -129,6 +145,7 @@ const CustomersRoot = () => {
         setHasVehicleFilter(false);
         setHasEmailFilter(false);
         setTaxExemptFilter(false);
+        setCurrentPage(0);
     };
 
     // Phone number formatting helper
@@ -456,7 +473,7 @@ const CustomersRoot = () => {
                     {/* Add Button Section */}
                     <div className="flex justify-between items-center mb-6">
                         <div className="text-sm text-slate-600">
-                            Showing {activeTab === 'individuals' ? filteredCustomers.length : filteredOrgs.length} results
+                            Showing {activeTab === 'individuals' ? `${filteredCustomers.length} of ${totalCustomers}` : filteredOrgs.length} results
                         </div>
                         <div>
                             {activeTab === 'individuals' ? (
@@ -484,7 +501,27 @@ const CustomersRoot = () => {
                             {
                                 key: 'individuals',
                                 label: <span className="flex items-center gap-2"><UserOutlined /> Individual Customers</span>,
-                                children: renderCustomersTable(),
+                                children: (
+                                    <>
+                                        {renderCustomersTable()}
+                                        {totalCustomers > pageSize && (
+                                            <div className="flex justify-center mt-6">
+                                                <Pagination
+                                                    current={currentPage + 1}
+                                                    pageSize={pageSize}
+                                                    total={totalCustomers}
+                                                    onChange={(page, size) => {
+                                                        setCurrentPage(page - 1);
+                                                        setPageSize(size);
+                                                    }}
+                                                    showSizeChanger
+                                                    pageSizeOptions={['25', '50', '100']}
+                                                    showTotal={(total, range) => `${range[0]}-${range[1]} of ${total} customers`}
+                                                />
+                                            </div>
+                                        )}
+                                    </>
+                                ),
                             },
                             {
                                 key: 'organizations',

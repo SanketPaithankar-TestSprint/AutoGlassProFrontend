@@ -1,7 +1,11 @@
 import urls from "../config";
 
-export async function getCustomers(token) {
-    const url = `${urls.javaApiUrl}/v1/customers`;
+export async function getCustomers(token, { page, size } = {}) {
+    const params = new URLSearchParams();
+    if (page !== undefined) params.append('page', page);
+    if (size !== undefined) params.append('size', size);
+    const queryString = params.toString();
+    const url = `${urls.javaApiUrl}/v1/customers${queryString ? `?${queryString}` : ''}`;
     try {
         const response = await fetch(url, {
             method: "GET",
