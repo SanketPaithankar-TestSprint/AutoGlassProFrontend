@@ -19,6 +19,7 @@ import UserAdasPricePage from "./UserAdasPricePage";
 import SpecialInstructions from "./SpecialInstructions";
 import Shops from "./Shops";
 import SlugConfig from "../SlugConfig/SlugConfig";
+import EmployeeManagement from "../EmployeeAttendance/EmployeeManagement";
 import { COUNTRIES, getStatesOrProvinces, getCities } from "../../const/locations";
 
 const Profile = () => {
@@ -429,6 +430,7 @@ const Profile = () => {
                         {[
                             { id: 'profile', label: 'Profile', icon: <UserOutlined /> },
                             { id: 'shops', label: 'Shops', icon: <ShopOutlined /> },
+                            { id: 'manageEmployees', label: 'Employees', icon: <TeamOutlined /> },
                             { id: 'distributorCredentials', label: 'Distributor', icon: <KeyOutlined /> },
                             { id: 'laborRate', label: 'Labor Rate', icon: <CalculatorOutlined /> },
                             { id: 'taxRates', label: 'Tax Rates', icon: <PercentageOutlined /> },
@@ -461,6 +463,7 @@ const Profile = () => {
                         <div className="space-y-2">
                             {renderMenuItem('profile', 'Profile', <UserOutlined />)}
                             {renderMenuItem('shops', 'Shops', <ShopOutlined />)}
+                            {renderMenuItem('manageEmployees', 'Manage Employees', <TeamOutlined />)}
                             {renderMenuItem('distributorCredentials', 'Distributor Credentials', <KeyOutlined />)}
                             {renderMenuItem('laborRate', 'Labor Rate', <CalculatorOutlined />)}
                             {renderMenuItem('taxRates', 'Tax Rates', <PercentageOutlined />)}
@@ -479,6 +482,7 @@ const Profile = () => {
                 <div className={`${isMobile ? 'w-full' : 'max-w-4xl'} mx-auto`}>
                     {activeTab === 'profile' && renderProfileContent()}
                     {activeTab === 'shops' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><Shops userProfile={profile} /></div>}
+                    {activeTab === 'manageEmployees' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><EmployeeManagement token={token} isMobile={isMobile} /></div>}
                     {activeTab === 'distributorCredentials' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><DistributorCredentials /></div>}
                     {activeTab === 'laborRate' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><LaborRateConfiguration /></div>}
                     {activeTab === 'taxRates' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><TaxRateConfiguration /></div>}
