@@ -248,9 +248,9 @@ const FeaturesPage = () => {
 
     return (
         <div className="bg-white min-h-screen pb-20 relative overflow-hidden font-sans text-slate-900">
-            <PageHead 
-                title="APAI Features | VIN Decode, AI Chat, Quotes & NAGS Data" 
-                description="Discover APAI's powerful features: Instant VIN decoding, AI Chat, professional PDF quotes, and real-time NAGS data. Scale your glass shop for just $99/mo." 
+            <PageHead
+                title="APAI Features | VIN Decode, AI Chat, Quotes & NAGS Data"
+                description="Discover APAI's powerful features: Instant VIN decoding, AI Chat, professional PDF quotes, and real-time NAGS data. Scale your glass shop for just $99/mo."
             />
             {/* Optimized Gradient Background (Same as Pricing Page) */}
             <div
@@ -361,6 +361,106 @@ const FeaturesPage = () => {
                                 children: (
                                     <p className="text-slate-700 leading-relaxed">
                                         APAI is web-based and responsive, working on both desktop and mobile devices. You can access quotes, customer information, and schedules from your phone or tablet on the job site, making it perfect for on-the-go business management.
+                                    </p>
+                                ),
+                                style: { borderRadius: '8px', marginBottom: '8px' }
+                            },
+                            {
+                                key: '6',
+                                label: <span className="font-semibold text-slate-900">Who is APAI designed for?</span>,
+                                children: (
+                                    <p className="text-slate-700 leading-relaxed">
+                                        The platform is built for the auto glass industry in the USA, specifically serving auto glass shop owners, repair shop owners, and technicians. Whether you are a one-man mobile operation or a multi-location enterprise, APAI scales to fit your needs.
+                                    </p>
+                                ),
+                                style: { borderRadius: '8px', marginBottom: '8px' }
+                            },
+                            {
+                                key: '7',
+                                label: <span className="font-semibold text-slate-900">How much does APAI cost?</span>,
+                                children: (
+                                    <p className="text-slate-700 leading-relaxed">
+                                        APAI is currently offered at a straightforward, flat rate of $99 per month/per user. We believe in simple pricing with no hidden fees or "per-lead" charges.
+                                    </p>
+                                ),
+                                style: { borderRadius: '8px', marginBottom: '8px' }
+                            },
+                            {
+                                key: '8',
+                                label: <span className="font-semibold text-slate-900">What is SmartVIN technology and how does it help me?</span>,
+                                children: (
+                                    <p className="text-slate-700 leading-relaxed">
+                                        SmartVIN is our proprietary AI decoding technology. Unlike basic VIN deciphering, SmartVIN automatically identifies the exact glass, specific sensors (like rain or light sensors), and ADAS requirements for a vehicle. This eliminates manual cross-referencing and ensures you never show up to a job site with the wrong part.
+                                    </p>
+                                ),
+                                style: { borderRadius: '8px', marginBottom: '8px' }
+                            },
+                            {
+                                key: '9',
+                                label: <span className="font-semibold text-slate-900">Does APAI include NAGS data?</span>,
+                                children: (
+                                    <p className="text-slate-700 leading-relaxed">
+                                        Yes. APAI provides instant access to National Auto Glass Specifications (NAGS) data, allowing you to generate 100% accurate quotes with current part numbers and industry-standard labor hours.
+                                    </p>
+                                ),
+                                style: { borderRadius: '8px', marginBottom: '8px' }
+                            },
+                            {
+                                key: '10',
+                                label: <span className="font-semibold text-slate-900">Can I see live pricing from my glass distributors?</span>,
+                                children: (
+                                    <p className="text-slate-700 leading-relaxed">
+                                        Absolutely. APAI integrates with major distributors like Pilkington, giving you real-time access to parts availability and your specific wholesale pricing directly inside the quote builder.
+                                    </p>
+                                ),
+                                style: { borderRadius: '8px', marginBottom: '8px' }
+                            },
+                            {
+                                key: '11',
+                                label: <span className="font-semibold text-slate-900">Is there a mobile app for my technicians?</span>,
+                                children: (
+                                    <p className="text-slate-700 leading-relaxed">
+                                        Yes, APAI is a mobile-first platform. Technicians can use the mobile interface on the road to view job details, capture "before and after" photos, collect digital signatures, and update job status in real-time.
+                                    </p>
+                                ),
+                                style: { borderRadius: '8px', marginBottom: '8px' }
+                            },
+                            {
+                                key: '12',
+                                label: <span className="font-semibold text-slate-900">How does APAI handle insurance billing?</span>,
+                                children: (
+                                    <p className="text-slate-700 leading-relaxed">
+                                        APAI features instant EDI (Electronic Data Interchange) billing. You can manage every invoice and submit insurance claims directly through the platform, automating the communication loop and helping you get paid faster.
+                                    </p>
+                                ),
+                                style: { borderRadius: '8px', marginBottom: '8px' }
+                            },
+                            {
+                                key: '13',
+                                label: <span className="font-semibold text-slate-900">Can I customize the contact form on my own website?</span>,
+                                children: (
+                                    <p className="text-slate-700 leading-relaxed">
+                                        Yes! APAI provides a custom contact form feature that you can embed on your website. This form allows customers to enter their VIN and select their glass type directly, flowing that lead data straight into your APAI dashboard for one-click quoting.
+                                    </p>
+                                ),
+                                style: { borderRadius: '8px', marginBottom: '8px' }
+                            },
+                            {
+                                key: '14',
+                                label: <span className="font-semibold text-slate-900">How long does it take to get started?</span>,
+                                children: (
+                                    <p className="text-slate-700 leading-relaxed">
+                                        You can start a free trial and begin exploring the platform immediately. Because our system is cloud-based and intuitive, most shops are up and running within a single day.
+                                    </p>
+                                ),
+                                style: { borderRadius: '8px', marginBottom: '8px' }
+                            },
+                            {
+                                key: '15',
+                                label: <span className="font-semibold text-slate-900">How do I get support if I have a question?</span>,
+                                children: (
+                                    <p className="text-slate-700 leading-relaxed">
+                                        Our dedicated support team is ready to help. You can reach us anytime at <a href="mailto:support@autopaneai.com" className="text-violet-600 hover:underline">support@autopaneai.com</a> for assistance with your account, technical questions, or training needs.
                                     </p>
                                 ),
                                 style: { borderRadius: '8px', marginBottom: '8px' }

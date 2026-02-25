@@ -113,14 +113,7 @@ const ValuePropSection = () => {
     ];
 
     return (
-        <div className="relative py-16 md:py-24 px-6 md:px-12 lg:px-20 overflow-hidden">
-            {/* Background with Fade-in Gradient to eliminate hard edge */}
-            <div
-                className="absolute inset-0 -z-10 backdrop-blur-3xl"
-                style={{
-                    background: 'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.9) 150px, rgba(255,255,255,1) 100%)'
-                }}
-            />
+        <div className="relative py-16 md:py-24 px-6 md:px-12 lg:px-20 overflow-hidden bg-transparent">
 
             {/* 1. Value Proposition Header */}
             <AnimatedSection>
@@ -318,7 +311,7 @@ const ValuePropSection = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-24">
                     {/* Custom Contact Form Card */}
                     <AnimatedSection delay="0.1s">
-                        <div className="bg-white border border-slate-200 p-10 rounded-3xl shadow-lg relative overflow-hidden group hover:border-violet-300 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-violet-200/50 h-full">
+                        <div className="bg-white/70 backdrop-blur-sm border border-slate-200/60 p-10 rounded-3xl shadow-lg relative overflow-hidden group hover:border-violet-300 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-violet-200/50 h-full">
                             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                                 <FormOutlined style={{ fontSize: '120px', color: '#7c3aed' }} />
                             </div>
@@ -334,7 +327,7 @@ const ValuePropSection = () => {
 
                     {/* AI Chatbot Card */}
                     <AnimatedSection delay="0.2s">
-                        <div className="bg-white border border-slate-200 p-10 rounded-3xl shadow-lg relative overflow-hidden group hover:border-violet-300 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-violet-200/50 h-full">
+                        <div className="bg-white/70 backdrop-blur-sm border border-slate-200/60 p-10 rounded-3xl shadow-lg relative overflow-hidden group hover:border-violet-300 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-violet-200/50 h-full">
                             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                                 <MessageOutlined style={{ fontSize: '120px', color: '#7c3aed' }} />
                             </div>
@@ -350,7 +343,7 @@ const ValuePropSection = () => {
 
                 {/* Security & Reliability Section */}
                 <AnimatedSection delay="0.3s">
-                    <div className="mt-20 text-center max-w-4xl mx-auto bg-white border border-slate-200 rounded-3xl p-8 md:p-12 shadow-lg relative overflow-hidden group hover:border-violet-300 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-violet-200/50">
+                    <div className="mt-20 text-center max-w-4xl mx-auto bg-white/70 backdrop-blur-sm border border-slate-200/60 rounded-3xl p-8 md:p-12 shadow-lg relative overflow-hidden group hover:border-violet-300 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-violet-200/50">
                         <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
                             <LockOutlined style={{ fontSize: '150px', color: '#7c3aed' }} />
                         </div>
