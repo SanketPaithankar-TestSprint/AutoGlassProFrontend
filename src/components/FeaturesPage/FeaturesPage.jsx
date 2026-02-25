@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Layout, Button, Collapse } from 'antd';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import PageHead from '../PageHead';
 import {
     FileSearchOutlined,
@@ -15,6 +15,9 @@ import {
     UnorderedListOutlined,
     MailOutlined,
     BarChartOutlined,
+    MessageOutlined,
+    BgColorsOutlined,
+    AppstoreAddOutlined,
     CheckCircleFilled
 } from '@ant-design/icons';
 import gsap from 'gsap';
@@ -146,6 +149,140 @@ const FeatureBlock = ({ icon, title, description }) => {
         </div>
     );
 };
+// Coverflow carousel — 3 cards visible, portrait, direction-aware animation, drag-enabled
+const FeatureCarousel = ({ features, color, sectionId }) => {
+    const [current, setCurrent] = useState(0);
+    const [dir, setDir] = useState(1); // 1 = going right/next, -1 = going left/prev
+    const [gen, setGen] = useState(0); // bumped on each transition to force re-key
+    const [hovered, setHovered] = useState(false);
+    const [dragging, setDragging] = useState(false);
+    const dragStartX = useRef(null);
+    const total = features.length;
+
+    const go = (newIdx, direction) => {
+        setDir(direction);
+        setGen(g => g + 1);
+        setCurrent(newIdx);
+    };
+    const next = () => go((current + 1) % total, 1);
+    const prev = () => go((current - 1 + total) % total, -1);
+
+    useEffect(() => {
+        if (hovered) return;
+        const id = setInterval(next, 1100);
+        return () => clearInterval(id);
+    }, [hovered, current]);
+
+    const onMouseDown = e => { dragStartX.current = e.clientX; setDragging(false); };
+    const onMouseMove = e => { if (dragStartX.current !== null && Math.abs(e.clientX - dragStartX.current) > 10) setDragging(true); };
+    const onMouseUp = e => {
+        if (dragStartX.current === null) return;
+        const diff = dragStartX.current - e.clientX;
+        if (Math.abs(diff) > 50) diff > 0 ? next() : prev();
+        dragStartX.current = null;
+        setTimeout(() => setDragging(false), 60);
+    };
+
+    // Layout: center at 0%, left at -130%, right at +130% (cards fully spaced)
+    const slots = [
+        { rel: -1, offset: -120, scale: 0.78, opacity: 0.75, z: 1, blur: 'none' },
+        { rel: 0, offset: 0, scale: 1, opacity: 1, z: 10, blur: 'none' },
+        { rel: 1, offset: 120, scale: 0.78, opacity: 0.75, z: 1, blur: 'none' },
+    ];
+
+    return (
+        <div
+            className="relative select-none"
+            style={{ paddingBottom: '16px' }}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => { setHovered(false); dragStartX.current = null; }}
+            onMouseDown={onMouseDown}
+            onMouseMove={onMouseMove}
+            onMouseUp={onMouseUp}
+        >
+            {/* Inject keyframes */}
+            <style>{`
+                @keyframes cfSlideInRight { from { opacity:0; transform: translateX(60px) scale(0.85); } to { opacity:1; transform: translateX(0) scale(1); } }
+                @keyframes cfSlideInLeft  { from { opacity:0; transform: translateX(-60px) scale(0.85); } to { opacity:1; transform: translateX(0) scale(1); } }
+                @keyframes cfSideIn       { from { opacity:0; } to { opacity:1; } }
+            `}</style>
+
+            {/* Clip window — wide enough to show 3 cards but clip beyond that */}
+            <div style={{ overflow: 'hidden', borderRadius: '24px', padding: '12px 0' }}>
+                <div className="relative" style={{ height: '440px' }}>
+                    {slots.map(({ rel, offset, scale, opacity, z, blur }) => {
+                        const idx = (current + rel + total) % total;
+                        const f = features[idx];
+                        const isCenter = rel === 0;
+
+                        const animation = isCenter
+                            ? `${dir > 0 ? 'cfSlideInRight' : 'cfSlideInLeft'} 0.42s cubic-bezier(0.25,0.8,0.25,1) both`
+                            : 'cfSideIn 0.42s ease both';
+
+                        return (
+                            <div
+                                key={`${rel}-${idx}-${gen}`}
+                                className="absolute flex flex-col p-7 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200 shadow-2xl"
+                                style={{
+                                    width: '300px',
+                                    minHeight: '420px',
+                                    top: '50%',
+                                    left: '50%',
+                                    marginLeft: '-150px',
+                                    marginTop: '-210px',
+                                    transform: `translateX(${offset}%) scale(${scale})`,
+                                    opacity,
+                                    filter: blur === 'none' ? 'none' : `blur(${blur})`,
+                                    zIndex: z,
+                                    cursor: isCenter ? (dragging ? 'grabbing' : 'grab') : 'pointer',
+                                    animation,
+                                    userSelect: 'none',
+                                    boxShadow: isCenter
+                                        ? '0 20px 60px -10px rgba(126,92,254,0.35), 0 8px 24px rgba(0,0,0,0.12)'
+                                        : '0 4px 20px rgba(0,0,0,0.08)',
+                                }}
+                                onClick={() => { if (!dragging && !isCenter) rel > 0 ? next() : prev(); }}
+                            >
+                                <div className={`flex-shrink-0 text-3xl bg-gradient-to-br ${color} p-4 rounded-xl text-white shadow-md w-fit mb-5`}>
+                                    {f.icon}
+                                </div>
+                                <h4 className="text-xl font-bold text-slate-900 mb-3 font-outfit leading-snug">
+                                    {f.title}
+                                </h4>
+                                <p className="text-sm text-slate-600 leading-relaxed flex-1">
+                                    {f.desc}
+                                </p>
+                                <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-end">
+                                    {sectionId && (
+                                        <Link
+                                            to={`/features/${sectionId}`}
+                                            onClick={(e) => e.stopPropagation()} // prevent card drag/click
+                                            className="text-violet-600 font-bold hover:text-violet-700 transition-colors flex items-center group/btn"
+                                        >
+                                            Read More
+                                            <span className="ml-1 group-hover/btn:translate-x-1 transition-transform">→</span>
+                                        </Link>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* Status indicators (purple stripes) */}
+            <div className="flex justify-center gap-2 mt-6 relative z-20">
+                {features.map((_, i) => (
+                    <div
+                        key={i}
+                        className={`h-1.5 rounded-full transition-all duration-500 ${i === current ? 'bg-violet-600 w-12' : 'bg-violet-200 w-4'
+                            }`}
+                    />
+                ))}
+            </div>
+        </div>
+    );
+};
 
 const FeaturesPage = () => {
     const navigate = useNavigate();
@@ -157,6 +294,7 @@ const FeaturesPage = () => {
 
     const sections = [
         {
+            id: "quoting-and-pricing",
             category: "Quoting & Pricing",
             title: "Precision Quoting: Win the Job and Maximize Profit.",
             subHeadline: "Generate professional, accurate estimates instantly, reducing administrative time and eliminating costly errors.",
@@ -185,6 +323,7 @@ const FeaturesPage = () => {
             ]
         },
         {
+            id: "work-order-and-field-service",
             category: "Work Order & Field Service",
             title: "Mobile Management: Empower Your Technicians, Anywhere.",
             subHeadline: "APAI is built for the mobile service economy, giving remote installers and shop technicians the tools they need to complete jobs efficiently.",
@@ -213,6 +352,7 @@ const FeaturesPage = () => {
             ]
         },
         {
+            id: "invoicing-and-payments",
             category: "Invoicing & Payments",
             title: "Financial Control: Simplify Billing and Accelerate Cash Flow.",
             subHeadline: "Turn completed jobs into paid invoices with robust tracking, insurance management, and automated follow-up.",
@@ -239,6 +379,30 @@ const FeaturesPage = () => {
                     desc: "Access reports that analyze job profitability, technician performance, and revenue trends, helping you make data-driven decisions."
                 }
             ]
+        },
+        {
+            id: "customer-engagement-and-contact",
+            category: "Customer Engagement & Contact",
+            title: "Seamless Booking: Capture Leads and Chat Live.",
+            subHeadline: "Provide your customers with a modern, branded experience from their first inquiry to the final job.",
+            color: "from-amber-500 to-orange-500",
+            features: [
+                {
+                    icon: <AppstoreAddOutlined />,
+                    title: "Embeddable Custom Form",
+                    desc: "Easily embed our clean, optimized quote request widget directly onto your shop's existing website to capture high-intent visual quote requests instantly."
+                },
+                {
+                    icon: <MessageOutlined />,
+                    title: "Live Customer Chat",
+                    desc: "Engage with visitors in real-time through an integrated live chat service that connects straight to your APAI dashboard for instant lead conversion."
+                },
+                {
+                    icon: <BgColorsOutlined />,
+                    title: "Full Theme Customization",
+                    desc: "Make the widget yours by customizing colors, maps, and styling to perfectly match your brand's aesthetic and website design."
+                }
+            ]
         }
     ];
 
@@ -260,16 +424,14 @@ const FeaturesPage = () => {
 
             {/* Page Header */}
             <div className="relative pt-10 pb-16 px-6 md:px-12 lg:px-20 border-b border-transparent z-10">
-                <AnimatedSection>
-                    <div className="max-w-4xl mx-auto text-center">
-                        <h1 className="text-3xl md:text-5xl font-bold mb-4 font-outfit text-slate-900 leading-tight">
-                            Everything You Need to Run Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-fuchsia-600">Auto Glass Business</span>
-                        </h1>
-                        <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-                            From the first quote to the final payment, APAI provides a comprehensive suite of tools designed for speed, accuracy, and growth.
-                        </p>
-                    </div>
-                </AnimatedSection>
+                <div className="max-w-4xl mx-auto text-center" style={{ visibility: 'visible' }}>
+                    <h1 className="text-3xl md:text-5xl font-bold mb-4 font-outfit text-slate-900 leading-tight">
+                        Everything You Need to Run Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-fuchsia-600">Auto Glass Business</span>
+                    </h1>
+                    <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+                        From the first quote to the final payment, APAI provides a comprehensive suite of tools designed for speed, accuracy, and growth.
+                    </p>
+                </div>
             </div>
 
             <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-12 space-y-32">
@@ -284,23 +446,13 @@ const FeaturesPage = () => {
                                 <h2 className="text-3xl md:text-5xl font-extrabold mb-4 font-outfit text-slate-900">
                                     {section.title}
                                 </h2>
-                                <p className="text-lg md:text-xl text-slate-500 max-w-3xl leading-relaxed mx-auto md:mx-0">
-                                    {section.subHeadline}
-                                </p>
                             </div>
                         </AnimatedSection>
 
-                        {/* Use StaggeredSection for the grid items */}
-                        <StaggeredSection className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {section.features.map((feature, fIdx) => (
-                                <FeatureBlock
-                                    key={fIdx}
-                                    icon={feature.icon}
-                                    title={feature.title}
-                                    description={feature.desc}
-                                />
-                            ))}
-                        </StaggeredSection>
+                        {/* Cards: mapped to carousel for all sections */}
+                        <AnimatedSection>
+                            <FeatureCarousel features={section.features} color={section.color} sectionId={section.id} />
+                        </AnimatedSection>
                     </div>
                 ))}
             </div>

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Form, Input, Button, Radio, Select, message, Typography } from 'antd';
 import { MailOutlined, UserOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import PageHead from './PageHead';
+import contactImage from '../assets/contact_form_image_1.png';
+import contactImage2 from '../assets/contact_form_image_2.png';
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
@@ -58,9 +60,9 @@ ${userMessage || 'No message provided'}
 
     return (
         <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 flex flex-col items-center animate-fade-in-up relative overflow-hidden">
-            <PageHead 
-                title="Contact APAI | Sign Up for Your Auto Glass Business" 
-                description="Have questions about APAI? Contact our team today for support, demos, or sign up for 30 days trial. We're here to help your auto glass shop succeed." 
+            <PageHead
+                title="Contact APAI | Sign Up for Your Auto Glass Business"
+                description="Have questions about APAI? Contact our team today for support, demos, or sign up for 30 days trial. We're here to help your auto glass shop succeed."
             />
             {/* Simple static gradient background */}
             <div
@@ -71,42 +73,30 @@ ${userMessage || 'No message provided'}
             <div className="w-full max-w-6xl flex flex-col items-center relative z-10">
 
                 {/* Header Section */}
-                <div className="text-center mb-16 max-w-3xl">
-                    <Title level={1} className="!font-bold !text-4xl md:!text-5xl !mb-4">
+                <div className="text-center mb-10 max-w-3xl">
+                    <h1 className="text-3xl md:text-5xl font-bold mb-4 font-outfit text-slate-900 leading-tight">
                         Contact Us
-                    </Title>
-                    <div className="w-16 h-1 bg-blue-500 mx-auto rounded-full mb-8"></div>
-                    <Paragraph className="text-lg text-slate-600">
-                        Get in Touch with Us. <br />
-                        Wherever you are, everything you need!
-                    </Paragraph>
+                    </h1>
+                    <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+                        Get in Touch with Us. Wherever you are, everything you need!
+                    </p>
                 </div>
 
                 {/* Main Content Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full max-w-6xl">
 
-                    {/* Left Column: Email Info */}
-                    <div className="relative">
-                        <div className="bg-blue-50/50 rounded-3xl p-8 flex flex-col items-start">
-                            {/* Abstract map background decoration could go here if we had the asset */}
-
-                            <div className="z-10 bg-white/60 backdrop-blur-sm p-6 rounded-2xl w-full max-w-md shadow-sm border border-blue-100">
-                                <div className="flex items-center gap-4 mb-4">
-                                    <div className="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center text-white text-xl shadow-lg shadow-blue-500/30">
-                                        <MailOutlined />
-                                    </div>
-                                    <Title level={3} className="!mb-0 !text-xl">E-mail Us</Title>
-                                </div>
-
-                                <Paragraph className="text-slate-600 mb-6 leading-relaxed">
-                                    For any inquiries, support, or feedback, feel free to email us. Our team will get back to you within 24–48 hours.
-                                </Paragraph>
-
-                                <Text strong className="text-lg text-slate-800 break-all">
-                                    support@autopaneai.com
-                                </Text>
-                            </div>
-                        </div>
+                    {/* Left Column: Images Only (Hidden on Mobile) */}
+                    <div className="relative h-full hidden lg:flex flex-col items-center justify-center gap-12">
+                        <img
+                            src={contactImage2}
+                            alt="Contact Support Primary"
+                            className="w-full max-w-lg lg:max-w-xl object-contain drop-shadow-2xl"
+                        />
+                        <img
+                            src={contactImage}
+                            alt="Contact Support Secondary"
+                            className="w-full max-w-lg lg:max-w-xl object-contain drop-shadow-2xl"
+                        />
                     </div>
 
                     {/* Right Column: Contact Form */}
@@ -266,6 +256,24 @@ ${userMessage || 'No message provided'}
                                 </>
                             )}
                         </div>
+                    </div>
+                </div>
+
+                {/* Email Info Block moved below the main grid */}
+                <div className="w-full max-w-4xl mt-12 bg-white/60 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-blue-100 flex flex-col md:flex-row items-center gap-6 justify-between">
+                    <div className="text-center md:text-left">
+                        <div className="flex items-center justify-center md:justify-start gap-4 mb-3">
+                            <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center text-white text-lg shadow-lg shadow-blue-500/30">
+                                <MailOutlined />
+                            </div>
+                            <h3 className="text-lg font-bold font-outfit text-slate-900 m-0">E-mail Us</h3>
+                        </div>
+                        <p className="text-slate-600 m-0 leading-relaxed max-w-md">
+                            For any inquiries, support, or feedback, feel free to email us. Our team will get back to you within 24–48 hours.
+                        </p>
+                    </div>
+                    <div className="bg-blue-50 px-8 py-4 rounded-xl border border-blue-100 whitespace-nowrap">
+                        <span className="text-lg font-bold text-blue-700">support@autopaneai.com</span>
                     </div>
                 </div>
             </div>

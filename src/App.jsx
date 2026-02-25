@@ -28,6 +28,7 @@ const CustomersRoot = React.lazy(() => import('./components/Customers/CustomersR
 const SearchByRoot = React.lazy(() => import("./components/SearchBy/SearchByRoot"));
 const Schedule = React.lazy(() => import('./components/Schedule/ScheduleRoot.jsx'));
 const FeaturesPage = React.lazy(() => import('./components/FeaturesPage/FeaturesPage.jsx'));
+const FeatureSectionDetail = React.lazy(() => import('./components/FeaturesPage/FeatureSectionDetail.jsx'));
 const AboutPage = React.lazy(() => import('./components/About/AboutPage.jsx'));
 const PublicContactRoot = React.lazy(() => import('./components/PublicContact/PublicContactRoot.jsx'));
 const ServiceContactFormRoot = React.lazy(() => import('./components/ServiceContactForm/ServiceContactFormRoot.jsx'));
@@ -194,6 +195,8 @@ function AppContent() {
 
                       <Route path="/Order" element={<OrderPage />} />
                       <Route path="/pricing" element={<PricingPage />} />
+                      <Route path="/features" element={<FeaturesPage />} />
+                      <Route path="/features/:sectionId" element={<FeatureSectionDetail />} />
                       <Route path="/open" element={<OpenRoot />} />
                       <Route path="/reports" element={<ReportsRoot />} />
                       <Route path="/auth" element={<AuthRoot />} />
@@ -232,6 +235,7 @@ function AppContent() {
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/features" element={<FeaturesPage />} />
+                  <Route path="/features/:sectionId" element={<FeatureSectionDetail />} />
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/contact" element={<ContactPage />} />
                   <Route path="/search-by-root" element={<SearchByRoot />} />
