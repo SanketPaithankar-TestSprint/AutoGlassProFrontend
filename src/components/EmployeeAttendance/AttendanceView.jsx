@@ -8,10 +8,11 @@ import {
     CalendarOutlined, UserOutlined, CheckCircleOutlined,
     CloseCircleOutlined, ClockCircleOutlined, TeamOutlined,
     PlusOutlined, FieldTimeOutlined, ThunderboltOutlined,
-    DownloadOutlined, SearchOutlined
+    DownloadOutlined, SearchOutlined, UnorderedListOutlined
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { getAllAttendance, recordAttendance, bulkRecordAttendance } from "../../api/attendance";
+import AttendanceCalendarView from "./AttendanceCalendarView";
 import { getEmployees } from "../../api/getEmployees";
 import { getAllShops } from "../../api/getAllShops";
 
@@ -31,220 +32,6 @@ const MONTHS = [
     "July", "August", "September", "October", "November", "December",
 ];
 
-/* ─── Styles ─── */
-const styles = {
-    wrapper: {
-        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-    },
-    headerCard: {
-        background: "linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)",
-        borderRadius: 16,
-        padding: "28px 32px",
-        marginBottom: 24,
-        color: "#fff",
-        boxShadow: "0 4px 24px rgba(126, 92, 254, 0.25)",
-    },
-    headerTitle: {
-        fontSize: 26,
-        fontWeight: 700,
-        margin: 0,
-        letterSpacing: "-0.5px",
-    },
-    headerSub: {
-        fontSize: 14,
-        opacity: 0.85,
-        marginTop: 4,
-    },
-    controlsRow: {
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
-        marginTop: 18,
-        flexWrap: "wrap",
-    },
-    selectStyle: {
-        minWidth: 140,
-    },
-    tableContainer: {
-        background: "#fff",
-        borderRadius: 14,
-        boxShadow: "0 1px 12px rgba(0,0,0,0.06)",
-        border: "1px solid #f0f0f0",
-        overflow: "hidden",
-    },
-    scrollArea: {
-        overflowX: "auto",
-        overflowY: "auto",
-        maxHeight: "calc(100vh - 320px)",
-    },
-    table: {
-        borderCollapse: "separate",
-        borderSpacing: 0,
-        width: "100%",
-        minWidth: 1200,
-        fontSize: 13,
-    },
-    stickyName: {
-        position: "sticky",
-        left: 0,
-        zIndex: 12,
-        background: "#fff",
-        minWidth: 200,
-        maxWidth: 220,
-        padding: "10px 16px",
-        borderRight: "2px solid #f0f0f0",
-        fontWeight: 600,
-        whiteSpace: "nowrap",
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-    },
-    stickyNameHeader: {
-        position: "sticky",
-        left: 0,
-        zIndex: 20,
-        background: "#f8fafc",
-        minWidth: 200,
-        maxWidth: 220,
-        padding: "12px 16px",
-        borderRight: "2px solid #e2e8f0",
-        fontWeight: 700,
-        fontSize: 12,
-        textTransform: "uppercase",
-        letterSpacing: "0.05em",
-        color: "#475569",
-    },
-    dayHeaderCell: {
-        padding: "10px 4px",
-        textAlign: "center",
-        fontWeight: 600,
-        fontSize: 11,
-        color: "#64748b",
-        minWidth: 42,
-        width: 42,
-        position: "sticky",
-        top: 0,
-        zIndex: 10,
-        background: "#f8fafc",
-        borderBottom: "2px solid #e2e8f0",
-        userSelect: "none",
-    },
-    dayCell: {
-        padding: "4px",
-        textAlign: "center",
-        verticalAlign: "middle",
-        minWidth: 42,
-        width: 42,
-        cursor: "pointer",
-        transition: "background 0.15s",
-        borderBottom: "1px solid #f1f5f9",
-        borderRight: "1px solid #f8fafc",
-    },
-    badge: (status) => {
-        const s = STATUS_MAP[status];
-        if (!s) return {};
-        return {
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 30,
-            height: 26,
-            borderRadius: 6,
-            fontSize: 12,
-            fontWeight: 700,
-            color: s.color,
-            background: s.bg,
-            lineHeight: 1,
-            transition: "transform 0.15s, box-shadow 0.15s",
-        };
-    },
-    summaryCell: {
-        padding: "6px 8px",
-        textAlign: "center",
-        fontWeight: 700,
-        fontSize: 13,
-        borderBottom: "1px solid #f1f5f9",
-        minWidth: 48,
-    },
-    summaryHeader: {
-        padding: "10px 8px",
-        textAlign: "center",
-        fontWeight: 700,
-        fontSize: 11,
-        textTransform: "uppercase",
-        letterSpacing: "0.05em",
-        position: "sticky",
-        top: 0,
-        zIndex: 10,
-        background: "#f8fafc",
-        borderBottom: "2px solid #e2e8f0",
-        minWidth: 48,
-    },
-    weekendHeader: {
-        background: "#fef2f2",
-        color: "#e11d48",
-    },
-    weekendCell: {
-        background: "#fffbfb",
-    },
-    todayHeader: {
-        background: "#f5f3ff",
-        color: "#7c3aed",
-        fontWeight: 800,
-    },
-    todayCell: {
-        background: "#faf5ff",
-    },
-    tooltip: {
-        background: "#1e293b",
-        borderRadius: 8,
-        padding: "10px 14px",
-        fontSize: 12,
-        lineHeight: 1.5,
-    },
-    emptyCell: {
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        width: 30,
-        height: 26,
-        borderRadius: 6,
-        fontSize: 16,
-        color: "#e2e8f0",
-        fontWeight: 400,
-        lineHeight: 1,
-    },
-    mobileCard: {
-        background: "#fff",
-        borderRadius: 14,
-        border: "1px solid #f0f0f0",
-        padding: 16,
-        marginBottom: 12,
-        boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-    },
-    mobileRow: {
-        display: "flex",
-        gap: 4,
-        flexWrap: "wrap",
-        marginTop: 8,
-    },
-    mobileBadge: (status) => {
-        const s = STATUS_MAP[status];
-        if (!s) return { width: 22, height: 22, borderRadius: 4, background: "#f1f5f9", display: "inline-block" };
-        return {
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 22,
-            height: 22,
-            borderRadius: 4,
-            fontSize: 10,
-            fontWeight: 700,
-            color: s.color,
-            background: s.bg,
-        };
-    },
-};
-
 const AttendanceView = ({ token, isMobile }) => {
     const queryClient = useQueryClient();
     const [recordModalOpen, setRecordModalOpen] = useState(false);
@@ -252,7 +39,51 @@ const AttendanceView = ({ token, isMobile }) => {
     const [recordForm] = Form.useForm();
     const [bulkForm] = Form.useForm();
     const tableRef = useRef(null);
+    const [viewMode, setViewMode] = useState("list");
 
+    /* ─── Horizontal Scroll on Wheel ─── */
+    useEffect(() => {
+        const handleWheel = (e) => {
+            if (tableRef.current) {
+                const container = tableRef.current;
+                const hasVerticalScroll = container.scrollHeight > container.clientHeight;
+
+                // If holding Shift, always scroll horizontally
+                if (e.shiftKey && e.deltaY !== 0) {
+                    const canScrollLeft = container.scrollLeft > 0;
+                    const canScrollRight = Math.ceil(container.scrollLeft) < container.scrollWidth - container.clientWidth;
+                    if ((e.deltaY > 0 && canScrollRight) || (e.deltaY < 0 && canScrollLeft)) {
+                        e.preventDefault();
+                        container.scrollLeft += e.deltaY;
+                    }
+                    return;
+                }
+
+                // If not holding shift, and there's NO vertical scroll needed, convert vertical wheel to horizontal
+                if (!e.shiftKey && !hasVerticalScroll && e.deltaY !== 0) {
+                    const canScrollLeft = container.scrollLeft > 0;
+                    const canScrollRight = Math.ceil(container.scrollLeft) < container.scrollWidth - container.clientWidth;
+
+                    if ((e.deltaY > 0 && canScrollRight) || (e.deltaY < 0 && canScrollLeft)) {
+                        e.preventDefault();
+                        container.scrollLeft += e.deltaY;
+                    }
+                }
+            }
+        };
+
+        const currentRef = tableRef.current;
+        if (currentRef) {
+            // passive: false is required to be able to call e.preventDefault()
+            currentRef.addEventListener('wheel', handleWheel, { passive: false });
+        }
+
+        return () => {
+            if (currentRef) {
+                currentRef.removeEventListener('wheel', handleWheel);
+            }
+        };
+    }, []);
     /* ─── Filter State ─── */
     const now = dayjs();
     const [month, setMonth] = useState(now.month() + 1);
@@ -512,7 +343,7 @@ const AttendanceView = ({ token, isMobile }) => {
             );
         }
         return matrixData.map(emp => (
-            <div key={emp.employeeId} style={styles.mobileCard}>
+            <div key={emp.employeeId} className="bg-white rounded-xl border border-gray-100 p-4 mb-3 shadow-sm">
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                     <div>
                         <div style={{ fontWeight: 700, fontSize: 15 }}>{emp.employeeName}</div>
@@ -523,17 +354,27 @@ const AttendanceView = ({ token, isMobile }) => {
                         <span style={{ fontSize: 12, fontWeight: 700, color: "#f59e0b" }}>L:{emp.totals.L}</span>
                     </div>
                 </div>
-                <div style={styles.mobileRow}>
+                <div className="flex gap-1 flex-wrap mt-2">
                     {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
                         const info = emp.days[day];
                         const weekend = isWeekend(day);
                         const isToday = isCurrentMonth && day === today;
+
+                        let badgeStyle = { width: 22, height: 22, borderRadius: 4, background: "#f1f5f9", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: "#64748b" };
+                        if (info) {
+                            const s = STATUS_MAP[info.status];
+                            if (s) {
+                                badgeStyle.background = s.bg;
+                                badgeStyle.color = s.color;
+                            }
+                        }
+
                         return (
                             <Tooltip key={day} title={info ? renderTooltip(info, day) : `${monthName} ${day} – No record`}>
                                 <div
                                     onClick={() => handleCellClick(emp.employeeId, day)}
                                     style={{
-                                        ...styles.mobileBadge(info?.status),
+                                        ...badgeStyle,
                                         ...(weekend && !info ? { background: "#fef2f2" } : {}),
                                         ...(isToday ? { outline: "2px solid #7c3aed", outlineOffset: -1 } : {}),
                                     }}
@@ -553,32 +394,31 @@ const AttendanceView = ({ token, isMobile }) => {
         const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
         return (
-            <div style={styles.tableContainer}>
-                <div style={styles.scrollArea} ref={tableRef}>
-                    <table style={styles.table}>
+            <div className="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden flex flex-col flex-1 min-h-0">
+                <div className="overflow-x-auto overflow-y-auto flex-1 min-h-[400px] max-h-[calc(100vh-280px)] custom-scrollbar" ref={tableRef}>
+                    <table className="w-full min-w-[1200px] border-collapse text-[13px] border-spacing-0">
                         <thead>
                             <tr>
-                                <th style={styles.stickyNameHeader}>Employee</th>
+                                <th className="sticky left-0 z-20 bg-slate-50 min-w-[200px] max-w-[220px] px-4 py-3 border-r-2 border-slate-200 font-bold text-xs uppercase tracking-wider text-slate-600">Employee</th>
                                 {days.map(day => {
                                     const weekend = isWeekend(day);
                                     const isToday = isCurrentMonth && day === today;
                                     return (
                                         <th
                                             key={day}
-                                            style={{
-                                                ...styles.dayHeaderCell,
-                                                ...(weekend ? styles.weekendHeader : {}),
-                                                ...(isToday ? styles.todayHeader : {}),
-                                            }}
+                                            className={`sticky top-0 z-10 px-1 py-2.5 text-center font-semibold text-[11px] min-w-[42px] w-[42px] border-b-2 border-slate-200 select-none ${isToday ? 'bg-violet-50 text-violet-600 font-extrabold' :
+                                                weekend ? 'bg-red-50 text-rose-600' :
+                                                    'bg-slate-50 text-slate-500'
+                                                }`}
                                         >
                                             <div>{getDayName(day)}</div>
                                             <div style={{ fontSize: 13, fontWeight: 700 }}>{day}</div>
                                         </th>
                                     );
                                 })}
-                                <th style={{ ...styles.summaryHeader, color: "#22c55e", borderLeft: "2px solid #e2e8f0" }}>P</th>
-                                <th style={{ ...styles.summaryHeader, color: "#ef4444" }}>A</th>
-                                <th style={{ ...styles.summaryHeader, color: "#f59e0b" }}>L</th>
+                                <th className="sticky top-0 z-10 bg-slate-50 min-w-[48px] px-2 py-2.5 text-center font-bold text-[11px] uppercase tracking-wider border-b-2 border-l-2 border-slate-200 text-green-500">P</th>
+                                <th className="sticky top-0 z-10 bg-slate-50 min-w-[48px] px-2 py-2.5 text-center font-bold text-[11px] uppercase tracking-wider border-b-2 border-slate-200 text-red-500">A</th>
+                                <th className="sticky top-0 z-10 bg-slate-50 min-w-[48px] px-2 py-2.5 text-center font-bold text-[11px] uppercase tracking-wider border-b-2 border-slate-200 text-amber-500">L</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -608,10 +448,7 @@ const AttendanceView = ({ token, isMobile }) => {
                                         onMouseEnter={e => e.currentTarget.style.background = "#f1f5f9"}
                                         onMouseLeave={e => e.currentTarget.style.background = rowIdx % 2 === 0 ? "#fff" : "#fafbfc"}
                                     >
-                                        <td style={{
-                                            ...styles.stickyName,
-                                            background: rowIdx % 2 === 0 ? "#fff" : "#fafbfc",
-                                        }}>
+                                        <td className={`sticky left-0 z-12 min-w-[200px] max-w-[220px] px-4 py-2.5 border-r-2 border-slate-100 font-semibold whitespace-nowrap overflow-hidden text-ellipsis ${rowIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
                                             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                                 <div style={{
                                                     width: 30, height: 30, borderRadius: "50%",
@@ -631,14 +468,26 @@ const AttendanceView = ({ token, isMobile }) => {
                                             const info = emp.days[day];
                                             const weekend = isWeekend(day);
                                             const isToday = isCurrentMonth && day === today;
+
+                                            // Determine styles for day cells
+                                            let cellClass = "p-1 text-center align-middle min-w-[42px] w-[42px] cursor-pointer transition-colors border-b border-r border-slate-50 hover:bg-slate-100 ";
+                                            if (isToday) cellClass += "bg-purple-50 ";
+                                            else if (weekend) cellClass += "bg-red-50/30 ";
+
+                                            // Determine styles for badges
+                                            let badgeStyle = { width: 30, height: 26, borderRadius: 6, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, lineHeight: 1, color: "#e2e8f0" };
+                                            if (info) {
+                                                const s = STATUS_MAP[info.status];
+                                                if (s) {
+                                                    badgeStyle.background = s.bg;
+                                                    badgeStyle.color = s.color;
+                                                }
+                                            }
+
                                             return (
                                                 <td
                                                     key={day}
-                                                    style={{
-                                                        ...styles.dayCell,
-                                                        ...(weekend ? styles.weekendCell : {}),
-                                                        ...(isToday ? styles.todayCell : {}),
-                                                    }}
+                                                    className={cellClass}
                                                     onClick={() => handleCellClick(emp.employeeId, day)}
                                                 >
                                                     {info ? (
@@ -647,30 +496,24 @@ const AttendanceView = ({ token, isMobile }) => {
                                                             placement="top"
                                                             color="#1e293b"
                                                         >
-                                                            <span style={styles.badge(info.status)}>
+                                                            <span style={badgeStyle}>
                                                                 {STATUS_MAP[info.status]?.short || "?"}
                                                             </span>
                                                         </Tooltip>
                                                     ) : (
-                                                        <span style={styles.emptyCell}>·</span>
+                                                        <span className="inline-flex items-center justify-center w-[30px] h-[26px] rounded-md text-base text-slate-300 font-normal leading-none" style={{ color: "#e2e8f0" }}>·</span>
                                                     )}
                                                 </td>
                                             );
                                         })}
-                                        <td style={{ ...styles.summaryCell, color: "#22c55e", borderLeft: "2px solid #f0f0f0" }}>
-                                            <span style={{
-                                                background: "#f0fdf4", padding: "3px 10px", borderRadius: 6,
-                                            }}>{emp.totals.P}</span>
+                                        <td className="px-2 py-1.5 text-center font-bold text-[13px] border-b border-l-2 border-slate-100 min-w-[48px] text-green-500">
+                                            <span className="bg-green-50 px-2.5 py-1 rounded-md">{emp.totals.P}</span>
                                         </td>
-                                        <td style={{ ...styles.summaryCell, color: "#ef4444" }}>
-                                            <span style={{
-                                                background: "#fef2f2", padding: "3px 10px", borderRadius: 6,
-                                            }}>{emp.totals.A}</span>
+                                        <td className="px-2 py-1.5 text-center font-bold text-[13px] border-b border-slate-100 min-w-[48px] text-red-500">
+                                            <span className="bg-red-50 px-2.5 py-1 rounded-md">{emp.totals.A}</span>
                                         </td>
-                                        <td style={{ ...styles.summaryCell, color: "#f59e0b" }}>
-                                            <span style={{
-                                                background: "#fffbeb", padding: "3px 10px", borderRadius: 6,
-                                            }}>{emp.totals.L}</span>
+                                        <td className="px-2 py-1.5 text-center font-bold text-[13px] border-b border-slate-100 min-w-[48px] text-amber-500">
+                                            <span className="bg-amber-50 px-2.5 py-1 rounded-md">{emp.totals.L}</span>
                                         </td>
                                     </tr>
                                 ))
@@ -700,59 +543,70 @@ const AttendanceView = ({ token, isMobile }) => {
     };
 
     return (
-        <div style={styles.wrapper} className="animate-fadeIn">
-            {/* ─── Header Card ─── */}
-            <div style={styles.headerCard}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
-                    <div>
-                        <h2 style={styles.headerTitle}>
-                            <CalendarOutlined style={{ marginRight: 10 }} />
-                            Monthly Attendance – {monthName} {year}
-                        </h2>
-                        <p style={styles.headerSub}>
-                            {matrixData.length} employee{matrixData.length !== 1 ? "s" : ""} tracked
-                            {stats.total > 0 && ` · ${stats.total} records this month`}
-                        </p>
-                    </div>
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <div className="flex-1 flex flex-col font-sans animate-fadeIn">
+            {/* ─── Header Container ─── */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                <div className="flex items-center gap-4">
+                    <h1 className="!text-[30px] font-bold text-slate-900 m-0">Attendance</h1>
+                    <div className="bg-slate-100 p-1 rounded-lg flex gap-1 hidden sm:flex">
                         <Button
-                            icon={<PlusOutlined />}
-                            type="primary"
-                            style={{ background: "rgba(255,255,255,0.2)", borderColor: "rgba(255,255,255,0.3)", color: "#fff" }}
-                            onClick={() => {
-                                recordForm.resetFields();
-                                const n = dayjs();
-                                recordForm.setFieldsValue({ date: n, status: "PRESENT", clockInTime: n });
-                                setRecordModalOpen(true);
-                            }}
+                            type={viewMode === 'list' ? 'primary' : 'text'}
+                            icon={<UnorderedListOutlined />}
+                            onClick={() => setViewMode('list')}
+                            className={`border-0 ${viewMode === 'list' ? 'bg-white shadow-sm text-violet-600 font-medium' : 'text-slate-500 hover:text-slate-700'}`}
+                            size="small"
                         >
-                            Record
+                            List
                         </Button>
                         <Button
-                            icon={<TeamOutlined />}
-                            style={{ background: "rgba(255,255,255,0.2)", borderColor: "rgba(255,255,255,0.3)", color: "#fff" }}
-                            onClick={() => { bulkForm.resetFields(); setBulkModalOpen(true); }}
+                            type={viewMode === 'calendar' ? 'primary' : 'text'}
+                            icon={<CalendarOutlined />}
+                            onClick={() => setViewMode('calendar')}
+                            className={`border-0 ${viewMode === 'calendar' ? 'bg-white shadow-sm text-violet-600 font-medium' : 'text-slate-500 hover:text-slate-700'}`}
+                            size="small"
                         >
-                            Bulk
-                        </Button>
-                        <Button
-                            icon={<DownloadOutlined />}
-                            style={{ background: "rgba(255,255,255,0.2)", borderColor: "rgba(255,255,255,0.3)", color: "#fff" }}
-                            onClick={handleExportCSV}
-                        >
-                            Export
+                            Calendar
                         </Button>
                     </div>
                 </div>
+                <div className="flex flex-wrap gap-2 w-full md:w-auto">
+                    <Button
+                        type="primary"
+                        icon={<PlusOutlined />}
+                        className="bg-gradient-to-r from-violet-600 to-indigo-600 border-0 hover:from-violet-500 hover:to-indigo-500 shadow-md"
+                        onClick={() => {
+                            recordForm.resetFields();
+                            const n = dayjs();
+                            recordForm.setFieldsValue({ date: n, status: "PRESENT", clockInTime: n });
+                            setRecordModalOpen(true);
+                        }}
+                    >
+                        Record
+                    </Button>
+                    <Button
+                        icon={<TeamOutlined />}
+                        onClick={() => { bulkForm.resetFields(); setBulkModalOpen(true); }}
+                    >
+                        Bulk
+                    </Button>
+                    <Button
+                        icon={<DownloadOutlined />}
+                        onClick={handleExportCSV}
+                    >
+                        Export
+                    </Button>
+                </div>
+            </div>
 
-                {/* Controls row */}
-                <div style={styles.controlsRow}>
+            {/* Controls row */}
+            <div className="mb-4 bg-white px-4 py-2 rounded-lg shadow-sm border border-slate-100">
+                <div className="flex flex-col md:flex-row md:flex-nowrap md:items-center gap-2 md:gap-3">
                     <Select
                         value={month}
                         onChange={setMonth}
-                        style={{ ...styles.selectStyle, width: 150 }}
+                        className="w-[120px] shrink-0"
                         popupMatchSelectWidth={false}
-                        dropdownStyle={{ borderRadius: 10 }}
+                        size="small"
                     >
                         {MONTHS.map((m, i) => (
                             <Option key={i + 1} value={i + 1}>{m}</Option>
@@ -761,7 +615,8 @@ const AttendanceView = ({ token, isMobile }) => {
                     <Select
                         value={year}
                         onChange={setYear}
-                        style={{ ...styles.selectStyle, width: 100 }}
+                        className="w-[80px] shrink-0"
+                        size="small"
                     >
                         {yearOptions.map(y => (
                             <Option key={y} value={y}>{y}</Option>
@@ -774,8 +629,9 @@ const AttendanceView = ({ token, isMobile }) => {
                         optionFilterProp="children"
                         value={filterEmployee}
                         onChange={setFilterEmployee}
-                        style={{ ...styles.selectStyle, width: 200 }}
+                        className="w-[200px] shrink-0"
                         loading={loadingEmployees}
+                        size="small"
                     >
                         {employees.map(e => (
                             <Option key={e.employeeId} value={e.employeeId}>
@@ -784,12 +640,13 @@ const AttendanceView = ({ token, isMobile }) => {
                         ))}
                     </Select>
                     <Input
-                        prefix={<SearchOutlined style={{ color: "#cbd5e1" }} />}
+                        prefix={<SearchOutlined className="text-slate-400" />}
                         placeholder="Search name..."
                         allowClear
                         value={searchText}
                         onChange={e => setSearchText(e.target.value)}
-                        style={{ width: 180, borderRadius: 8 }}
+                        className="w-full md:w-[220px]"
+                        size="small"
                     />
                 </div>
             </div>
@@ -802,6 +659,15 @@ const AttendanceView = ({ token, isMobile }) => {
                 </div>
             ) : isMobile ? (
                 renderMobileView()
+            ) : viewMode === 'calendar' ? (
+                <AttendanceCalendarView
+                    attendanceData={attendanceData}
+                    currentDate={dayjs(`${year}-${String(month).padStart(2, '0')}-01`)}
+                    setCurrentDate={(d) => {
+                        setMonth(d.month() + 1);
+                        setYear(d.year());
+                    }}
+                />
             ) : (
                 renderSpreadsheet()
             )}
