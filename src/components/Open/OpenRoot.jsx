@@ -381,7 +381,7 @@ const OpenRoot = () => {
 
     return (
         <DashboardLayout sidebar={sidebarContent} isMobile={isMobile} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}>
-            <div className="min-h-screen bg-slate-50">
+            <div className="min-h-screen bg-[#F1F5F9]">
                 {/* Header */}
                 <HeaderBar
                     viewMode={viewMode}

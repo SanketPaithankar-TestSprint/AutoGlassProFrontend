@@ -67,11 +67,6 @@ export default function AuthRoot() {
 
     return (
         <div className="w-full bg-white flex items-start justify-center p-4 pt-24 md:pt-32 pb-24 relative overflow-hidden">
-            {/* Simple static gradient background */}
-            <div
-                className="fixed inset-0 z-0 pointer-events-none opacity-20"
-                style={{ background: 'linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)' }}
-            />
 
 
             <div

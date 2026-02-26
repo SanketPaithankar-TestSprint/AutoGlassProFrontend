@@ -61,17 +61,13 @@ ${userMessage || 'No message provided'}
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 flex flex-col items-center animate-fade-in-up relative overflow-hidden">
+        <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 flex flex-col items-center animate-fade-in-up relative overflow-hidden">
             <PageHead
                 title="Contact APAI | Sign Up for Your Auto Glass Business"
                 description="Have questions about APAI? Contact our team today for support, demos, or sign up for 30 days trial. We're here to help your auto glass shop succeed."
             />
-            {/* Simple static gradient background */}
-            <div
-                className="fixed inset-0 z-0 pointer-events-none opacity-20"
-                style={{ background: 'linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)' }}
-            />
-            {/* Content Container (z-10 to sit above background) */}
+
+            {/* Content Container */}
             <div className="w-full max-w-6xl flex flex-col items-center relative z-10">
 
                 {/* Header Section */}

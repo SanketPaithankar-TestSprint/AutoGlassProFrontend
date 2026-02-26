@@ -57,7 +57,7 @@ const AnimatedSection = ({ children, delay = "0s", className = "" }) => {
 
 const FounderCard = ({ name, role, description, delay }) => (
     <AnimatedSection delay={delay} className="h-full">
-        <div className="bg-white/60 backdrop-blur-md p-6 md:p-8 rounded-3xl border border-white/50 h-full hover:shadow-xl hover:shadow-violet-100/50 hover:border-violet-200 transition-all duration-300">
+        <div className="bg-white p-6 md:p-8 rounded-3xl border border-violet-100 h-full hover:shadow-xl hover:shadow-violet-100/50 hover:border-violet-200 transition-all duration-300">
             <div className="flex items-center gap-4 mb-6">
                 <div className="h-14 w-14 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 text-2xl font-bold">
                     {name.charAt(0)}
@@ -136,16 +136,12 @@ const AboutPage = () => {
     ];
 
     return (
-        <div className="bg-white min-h-screen pt-10 pb-20 relative overflow-hidden">
-            <PageHead 
-                title="About APAI | Empowering Independent Auto Glass Shops" 
-                description="Learn the story behind APAI. We're empowering independent auto glass shops with AI-driven tools to automate workflows, increase profits, and simplify scaling." 
+        <div className="min-h-screen pt-10 pb-20 relative overflow-hidden">
+            <PageHead
+                title="About APAI | Empowering Independent Auto Glass Shops"
+                description="Learn the story behind APAI. We're empowering independent auto glass shops with AI-driven tools to automate workflows, increase profits, and simplify scaling."
             />
-            {/* Simple static gradient background */}
-            <div
-                className="fixed inset-0 z-0 pointer-events-none opacity-20"
-                style={{ background: 'linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)' }}
-            />
+
             {/* Main Content Wrapper */}
             <div className="relative z-10">
                 {/* 1. Header & Mission */}
@@ -160,7 +156,7 @@ const AboutPage = () => {
                     </AnimatedSection>
 
                     <AnimatedSection delay="0.2s">
-                        <div className="max-w-4xl mx-auto bg-white/60 backdrop-blur-md border border-white/50 p-6 md:p-10 rounded-3xl mt-6 shadow-sm">
+                        <div className="max-w-4xl mx-auto bg-white border border-violet-100 p-6 md:p-10 rounded-3xl mt-6 shadow-sm">
                             <h2 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-3">Our Mission</h2>
                             <p className="text-lg md:text-xl text-slate-800 leading-relaxed font-medium">
                                 APAI was founded to solve the core inefficiencies that plague the auto glass industry: inaccurate quotes, paper-based work orders, and slow payment cycles. We provide a single, cloud-based platform that handles the entire service flow, allowing shop owners and remote installers to focus on service delivery, not paperwork.
@@ -194,8 +190,7 @@ const AboutPage = () => {
                 {/* 3. Our Users */}
                 <div className="max-w-7xl mx-auto px-4 md:px-8 mt-24 mb-20">
                     <AnimatedSection>
-                        <div className="px-6 md:px-12 lg:px-20 py-20 bg-violet-50 rounded-[2.5rem] relative overflow-hidden border border-violet-100">
-                            <div className="absolute top-0 left-0 w-full h-full opacity-5 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                        <div className="px-6 md:px-12 lg:px-20 py-20 bg-white rounded-[2.5rem] relative overflow-hidden border border-violet-100">
                             <div className="relative z-10 max-w-7xl mx-auto">
                                 <div className="text-center mb-16">
                                     <h2 className="text-3xl md:text-4xl font-bold mb-4 font-outfit text-slate-900">Who We Serve</h2>

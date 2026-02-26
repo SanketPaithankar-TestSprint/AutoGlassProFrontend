@@ -14,18 +14,11 @@ const PricingPage = () => {
   const navigate = useNavigate();
 
   return (
-    <Layout className="flex-grow bg-white font-sans text-slate-900 flex flex-col justify-center relative overflow-hidden">
+    <Layout className="flex-grow font-sans text-slate-900 flex flex-col justify-center relative overflow-hidden">
       <PageHead
         title="APAI Pricing | Transparent Auto Glass Software for $99/mo"
         description="Simple, flat-rate pricing for your auto glass shop. Get full access to VIN decoding, NAGS data, and invoicing for just $99/month. No contracts, no hidden fees."
       />
-      {/* Gradient Background */}
-      <div
-        className="fixed inset-0 z-0 pointer-events-none opacity-20"
-        style={{ background: 'linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)' }}
-      />
-
-
 
       {/* Reduced padding to ensure fit */}
       <Content className="p-4 md:p-6 flex flex-col justify-center h-full relative z-10">

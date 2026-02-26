@@ -9,8 +9,9 @@
 
 /* Clean light background for main page */
 body,
-.ant-layout {
-  background: #ffffff !important;
+.ant-layout,
+.ant-layout-content {
+  background: transparent !important;
 }
 
 /* Navbar and Footer custom styles */
@@ -18,6 +19,7 @@ body,
   background: transparent !important;
   /* Default to transparent, let specific classes override */
   color: #0f172a !important;
+  border-bottom: none !important;
 }
 
 .footer-gradient {
@@ -108,9 +110,9 @@ body,
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #fbfbfb;
+  color-scheme: light;
+  color: #0f172a;
+  background-color: #FFFFFF;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -191,7 +193,7 @@ input[type=number] {
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
-    background-color: #ffffff;
+    background-color: #F1F5F9;
   }
 
   a:hover {
@@ -253,38 +255,87 @@ input[type=number] {
   .ant-select-dropdown .ant-select-item-option-content {
     font-size: 16px !important;
   }
-  
+
   /* Additional mobile font scaling */
   .ant-col {
     font-size: 0.875rem;
   }
-  
+
   .ant-descriptions-item-label {
     font-size: 0.8rem;
   }
-  
+
   .ant-descriptions-item-content {
     font-size: 0.85rem;
   }
-  
+
   .ant-tabs-tab {
     font-size: 0.85rem;
   }
-  
+
   .ant-badge-count {
     font-size: 0.7rem;
     padding: 0 4px;
   }
-  
+
   .ant-tag {
     font-size: 0.75rem;
   }
-  
+
   .ant-alert {
     font-size: 0.85rem;
   }
-  
+
   .ant-message {
     font-size: 0.85rem;
   }
+}
+
+/* --- Sidebar Active Tab Cut-out Effect --- */
+.ant-menu-dark.ant-menu-root {
+  padding-right: 0 !important;
+}
+
+.ant-menu-dark .ant-menu-item {
+  margin-right: 0 !important;
+  width: calc(100% - 12px) !important;
+  margin-left: 12px !important;
+  border-radius: 20px 0 0 20px !important;
+  margin-top: 8px !important;
+  margin-bottom: 8px !important;
+  position: relative;
+}
+
+.ant-menu-dark .ant-menu-item-selected {
+  background-color: var(--active-bg, #F1F5F9) !important;
+  /* Matches main app background */
+  color: #4f46e5 !important;
+  width: calc(100% - 12px + 2px) !important;
+  position: relative;
+  right: -2px;
+  z-index: 10;
+}
+
+/* Smooth outer curves (scooped corners) */
+.ant-menu-dark .ant-menu-item-selected::before,
+.ant-menu-dark .ant-menu-item-selected::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  background-color: transparent;
+  pointer-events: none;
+}
+
+/* Top curved corner bridging into the sidebar above the tab */
+.ant-menu-dark .ant-menu-item-selected::before {
+  top: -20px;
+  background-image: radial-gradient(circle at top left, transparent 20px, var(--active-bg, #F1F5F9) 21px);
+}
+
+/* Bottom curved corner bridging into the sidebar below the tab */
+.ant-menu-dark .ant-menu-item-selected::after {
+  bottom: -20px;
+  background-image: radial-gradient(circle at bottom left, transparent 20px, var(--active-bg, #F1F5F9) 21px);
 }
