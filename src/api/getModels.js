@@ -97,6 +97,51 @@ export const getBodyTypes = async (year, makeId, makeModelId, vehModifierId = nu
 };
 
 /**
+ * Reverse lookup — cascades Model → Make → Year
+ * - No params: returns all distinct base models AND modifier variants
+ *   Each item has make_model_id, name, veh_modifier_id (null for base models)
+ * - make_model_id only (+ optional veh_modifier_id): returns all makes for that model/variant
+ *   Response: list of { make_id, name }
+ * - make_model_id + make_id (+ optional veh_modifier_id): returns all years for that make+model/variant
+ *   Response: list of year integers in descending order
+ */
+export const getModelsReverse = async ({ makeModelId, vehModifierId, makeId } = {}) => {
+    const baseUrl = urls.pythonApiUrl + "agp/v1/model-lookup-reverse";
+    const params = new URLSearchParams();
+
+    if (makeModelId !== undefined && makeModelId !== null) {
+        params.append("make_model_id", makeModelId);
+    }
+    if (vehModifierId !== undefined && vehModifierId !== null) {
+        params.append("veh_modifier_id", vehModifierId);
+    }
+    if (makeId !== undefined && makeId !== null) {
+        params.append("make_id", makeId);
+    }
+
+    const url = params.toString() ? `${baseUrl}?${params.toString()}` : baseUrl;
+
+    try {
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                accept: "application/json",
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error("Failed to fetch reverse model lookup:", error);
+        throw error;
+    }
+};
+
+/**
  * Fetch vehicle details including veh_id and model_id using all IDs
  * @param {number|string} year - Vehicle year
  * @param {number} makeId - Vehicle make ID

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Select, Spin, message, Button } from "antd";
-import { getModels, getBodyTypes, getVehicleDetails, getMakes } from "../../api/getModels";
+import { getModels, getBodyTypes, getVehicleDetails, getMakes, getModelsReverse } from "../../api/getModels";
 
 const buildYears = (start = 1949) => {
   const current = new Date().getFullYear();
@@ -56,9 +56,19 @@ export default function SearchByYMM({
   const makesCache = useRef(new Map()); // key: year
   const modelsCache = useRef(new Map()); // key: `${makeId}|${year}`
   const bodyTypesCache = useRef(new Map()); // key: `${year}|${makeId}|${makeModelId}|${vehModifierId}`
+  const reverseModelsCache = useRef(null); // store all models from reverse API (fetched once)
+  const reverseMakesCache = useRef(new Map()); // key: `${makeModelId}|${vehModifierId}`
+  const reverseYearsCache = useRef(new Map()); // key: `${makeModelId}|${vehModifierId}|${makeId}`
 
   // Track the last auto-searched combination to prevent infinite loops
   const lastAutoSearch = useRef(null);
+
+  // --- Reverse lookup state ---
+  // allModels: full list from reverse API, used when no year/make selected
+  const [allModels, setAllModels] = useState([]);
+  const [loadingAllModels, setLoadingAllModels] = useState(false);
+  // filteredYears: when model+make chosen via reverse, override the default year list
+  const [filteredYears, setFilteredYears] = useState(null); // null = show all years
 
   const years = useMemo(() => buildYears(minYear), [minYear]);
 
@@ -225,6 +235,81 @@ export default function SearchByYMM({
     }
   }, [makeId, makeName, makeModelId, modelName, bodyType, value]);
 
+  // -----------------------------------------------------------------------
+  // Reverse lookup helpers
+  // -----------------------------------------------------------------------
+
+  // Load ALL models on mount (no params) — fills Model dropdown immediately
+  useEffect(() => {
+    if (reverseModelsCache.current) {
+      setAllModels(reverseModelsCache.current);
+      return;
+    }
+    setLoadingAllModels(true);
+    getModelsReverse()
+      .then((data) => {
+        const list = Array.isArray(data?.models) ? data.models : [];
+        const norm = list.map((m) => ({
+          make_model_id: m.make_model_id,
+          model_name: m.name,
+          veh_modifier_id: m.veh_modifier_id || null,
+        }));
+        norm.sort((a, b) => a.model_name.localeCompare(b.model_name));
+        reverseModelsCache.current = norm;
+        setAllModels(norm);
+      })
+      .catch((e) => console.error("Failed to load all models (reverse):", e))
+      .finally(() => setLoadingAllModels(false));
+  }, []);
+
+  // Load makes for a chosen model (reverse: model → makes)
+  const loadMakesReverse = async (mmId, vModId) => {
+    const cacheKey = `${mmId}|${vModId ?? 'null'}`;
+    if (reverseMakesCache.current.has(cacheKey)) {
+      setMakes(reverseMakesCache.current.get(cacheKey));
+      return;
+    }
+    setLoadingMakes(true);
+    try {
+      const data = await getModelsReverse({ makeModelId: mmId, vehModifierId: vModId });
+      const list = Array.isArray(data?.makes) ? data.makes : [];
+      const norm = list.map((m) => ({ make_id: m.make_id, name: m.name }));
+      norm.sort((a, b) => a.name.localeCompare(b.name));
+      reverseMakesCache.current.set(cacheKey, norm);
+      setMakes(norm);
+    } catch (e) {
+      console.error("Failed to load makes (reverse):", e);
+    } finally {
+      setLoadingMakes(false);
+    }
+  };
+
+  // Load years for a chosen model+make (reverse: model+make → years)
+  const loadYearsReverse = async (mmId, vModId, mId) => {
+    const cacheKey = `${mmId}|${vModId ?? 'null'}|${mId}`;
+    if (reverseYearsCache.current.has(cacheKey)) {
+      setFilteredYears(reverseYearsCache.current.get(cacheKey));
+      return;
+    }
+    try {
+      const data = await getModelsReverse({ makeModelId: mmId, vehModifierId: vModId, makeId: mId });
+      const list = Array.isArray(data?.years) ? data.years : [];
+      reverseYearsCache.current.set(cacheKey, list);
+      setFilteredYears(list);
+      // If the currently selected year is not in the valid list, clear it
+      if (year && list.length > 0 && !list.includes(year)) {
+        setYear(null);
+        setBodyType(null);
+      }
+    } catch (e) {
+      console.error("Failed to load years (reverse):", e);
+    }
+  };
+
+  // -----------------------------------------------------------------------
+  // Forward lookup helpers (existing behaviour preserved)
+  // -----------------------------------------------------------------------
+
   // Fetch makes when year changes OR user interacts
   const loadMakes = async (y) => {
     if (!y) {
@@ -253,10 +338,17 @@ export default function SearchByYMM({
 
   // Triggered when user opens Make dropdown
   const handleMakeDropdownVisibleChange = (open) => {
-    if (open && year) {
-      // Fetch full list if we only have the single pre-filled item or empty
-      if (makes.length <= 1) {
-        loadMakes(year);
+    if (open) {
+      if (makeModelId) {
+        // Model was chosen first → use reverse makes list
+        if (makes.length <= 1) {
+          loadMakesReverse(makeModelId, vehModifierId);
+        }
+      } else if (year) {
+        // Year was chosen first → use forward makes list
+        if (makes.length <= 1) {
+          loadMakes(year);
+        }
       }
     }
   };
@@ -338,19 +430,21 @@ export default function SearchByYMM({
   // Then we can fetch.
 
   useEffect(() => {
-    if (year && makes.length === 0 && !makeId) {
-      // Year selected, but no make yet (normal manual flow) -> Fetch
+    if (year && makes.length === 0 && !makeId && !makeModelId) {
+      // Forward flow: Year selected, no make yet, no model selected via reverse -> Fetch
       loadMakes(year);
-    } else if (!year) {
+    } else if (!year && !makeModelId) {
+      // Only clear makes if neither year nor reverse-selected model is active
       setMakes([]);
     }
-  }, [year, makeId]); // Added makeId to deps to prevent re-fetching if makeId gets set by value prop
+  }, [year, makeId, makeModelId]); // makeModelId guards the reverse flow
 
   useEffect(() => {
     if (year && makeId && models.length === 0 && !makeModelId) {
-      // Make selected, no model yet (manual flow) -> Fetch
+      // Forward flow: Make selected, no model yet -> Fetch models
       loadModels(makeId, year);
-    } else if (!makeId) {
+    } else if (!makeId && !makeModelId) {
+      // Only clear the forward models list when neither make nor reverse model is active
       setModels([]);
     }
   }, [year, makeId, makeModelId]); // Added makeModelId to deps
@@ -478,15 +572,17 @@ export default function SearchByYMM({
   // Handler for year selection
   const handleYear = (v) => {
     setYear(v);
-    setMakeId(null);
-    setMakeName(null);
-    setMakeModelId(null);
-    setModelName(null);
-    setVehModifierId(null);
+    // If model was NOT already chosen, reset makes/model downstream
+    if (!makeModelId) {
+      setMakeId(null);
+      setMakeName(null);
+    }
     setBodyType(null);
     setModelId(null);
     setModelImage(null);
     setModelDescription(null);
+    // Reset filtered years when user manually picks year (not from reverse flow)
+    setFilteredYears(null);
   };
 
   // Handler for make selection - receives make_id, looks up name
@@ -494,13 +590,20 @@ export default function SearchByYMM({
     const selectedMake = makes.find(m => m.make_id === selectedMakeId);
     setMakeId(selectedMakeId);
     setMakeName(selectedMake?.name || null);
-    setMakeModelId(null);
-    setModelName(null);
-    setVehModifierId(null);
     setBodyType(null);
     setModelId(null);
     setModelImage(null);
     setModelDescription(null);
+    // If model was selected first via reverse flow, load valid years for model+make
+    if (makeModelId) {
+      loadYearsReverse(makeModelId, vehModifierId, selectedMakeId);
+    } else {
+      // Forward flow: clear model, reset filtered years
+      setMakeModelId(null);
+      setModelName(null);
+      setVehModifierId(null);
+      setFilteredYears(null);
+    }
   };
 
   // Handler for model selection - receives composite key, parses both IDs
@@ -510,11 +613,16 @@ export default function SearchByYMM({
     const selectedMakeModelId = parseInt(mmIdStr, 10);
     const selectedVehModifierId = vModIdStr === 'null' ? null : parseInt(vModIdStr, 10);
 
-    // Find the matching model
-    const selectedModel = models.find(m =>
-      m.make_model_id === selectedMakeModelId &&
-      (m.veh_modifier_id || null) === selectedVehModifierId
-    );
+    // Find the matching model — check both loaded models list and allModels
+    const selectedModel =
+      models.find(m =>
+        m.make_model_id === selectedMakeModelId &&
+        (m.veh_modifier_id || null) === selectedVehModifierId
+      ) ||
+      allModels.find(m =>
+        m.make_model_id === selectedMakeModelId &&
+        (m.veh_modifier_id || null) === selectedVehModifierId
+      );
 
     setMakeModelId(selectedMakeModelId);
     setModelName(selectedModel?.model_name || null);
@@ -523,17 +631,29 @@ export default function SearchByYMM({
     setModelId(null);
     setModelImage(null);
     setModelDescription(null);
+    // Reset make/year when model changes in reverse flow
+    setMakeId(null);
+    setMakeName(null);
+    setFilteredYears(null);
+    setYear(null);
+    // Load makes for this model via reverse API
+    loadMakesReverse(selectedMakeModelId, selectedVehModifierId);
   };
 
   // Generate model options with composite key (make_model_id|veh_modifier_id)
-  const modelOptions = models.map(m => {
-    // Create composite value: "make_model_id|veh_modifier_id" 
+  // If a year+make is set (forward flow), use the loaded models list.
+  // Otherwise (reverse flow / initial state), use allModels.
+  const activeModelList = (year && makeId && models.length > 0) ? models : allModels;
+  const modelOptions = activeModelList.map(m => {
     const compositeValue = `${m.make_model_id}|${m.veh_modifier_id ?? 'null'}`;
     return {
       label: m.model_name,
       value: compositeValue,
     };
   });
+
+  // Active year list: use filtered set from reverse lookup when available
+  const activeYears = filteredYears ? filteredYears : years;
 
   // Get current composite value for the select
   const currentModelValue = makeModelId !== null
@@ -572,7 +692,7 @@ export default function SearchByYMM({
               value={year}
               onChange={handleYear}
               disabled={disabled}
-              options={years.map((y) => ({ label: y.toString(), value: y }))}
+              options={activeYears.map((y) => ({ label: y.toString(), value: y }))}
               showSearch={showSearch}
               virtual={false}
               getPopupContainer={() => document.body}
@@ -591,7 +711,7 @@ export default function SearchByYMM({
               value={makeId}
               onChange={handleMake}
               onDropdownVisibleChange={handleMakeDropdownVisibleChange}
-              disabled={disabled || !year}
+              disabled={disabled || (!year && !makeModelId)}
               notFoundContent={loadingMakes ? <Spin size="small" /> : null}
               options={makes.map(m => ({
                 label: m.name,
@@ -621,14 +741,14 @@ export default function SearchByYMM({
               value={currentModelValue}
               onChange={handleModel}
               onDropdownVisibleChange={handleModelDropdownVisibleChange}
-              disabled={disabled || !year || !makeId}
-              notFoundContent={loadingModels ? <Spin size="small" /> : null}
+              disabled={disabled}
+              notFoundContent={(loadingModels || loadingAllModels) ? <Spin size="small" /> : null}
               options={modelOptions}
               showSearch={showSearch}
               filterOption={(input, option) =>
                 (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
               }
-              virtual={false}
+              listHeight={300}
               getPopupContainer={() => document.body}
               dropdownStyle={{ maxHeight: 300, overflow: 'auto', zIndex: 9999 }}
               popupMatchSelectWidth={false}
