@@ -107,11 +107,6 @@ const BlogsPage = () => {
                 title="Auto Glass Business Insights & Guides | APAI Blog"
                 description="Expert advice for auto glass shop owners. Read our latest guides on scaling your business, and using AI features to increase your shop's profitability."
             />
-            {/* Gradient Background matching other pages */}
-            <div
-                className="fixed inset-0 z-0 pointer-events-none opacity-20"
-                style={{ background: 'linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)' }}
-            />
 
             <div className="max-w-7xl mx-auto relative z-10">
                 {/* Hero / Header Section */}

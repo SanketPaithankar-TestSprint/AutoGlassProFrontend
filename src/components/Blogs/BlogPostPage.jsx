@@ -90,11 +90,6 @@ const BlogPostPage = () => {
                 title={post.metaTitle}
                 description={post.metaDescription}
             />
-            {/* Gradient Background */}
-            <div
-                className="fixed inset-0 z-0 pointer-events-none opacity-20"
-                style={{ background: 'linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)' }}
-            />
 
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 {/* Back Button */}

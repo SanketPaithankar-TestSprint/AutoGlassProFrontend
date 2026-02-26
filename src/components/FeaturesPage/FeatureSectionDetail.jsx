@@ -30,12 +30,6 @@ const FeatureSectionDetail = () => {
         <div className="bg-white min-h-screen pb-20 relative overflow-hidden font-sans text-slate-900">
             <PageHead title={`${data.title} | APAI`} description={data.description} />
 
-            {/* Optimized Gradient Background (Same as Features/Pricing Page) */}
-            <div
-                className="fixed inset-0 z-0 pointer-events-none opacity-20"
-                style={{ background: 'linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)' }}
-            />
-
             <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 lg:px-20 pt-16 md:pt-24 pb-12">
                 <Link to="/features" className="inline-flex items-center text-violet-600 hover:text-violet-700 font-semibold mb-8 transition-colors">
                     <ArrowLeftOutlined className="mr-2" />
@@ -101,7 +95,7 @@ const FeatureSectionDetail = () => {
                     ))}
                 </div>
 
-                <div className="mt-32 text-center bg-slate-50 p-12 rounded-3xl border border-slate-100">
+                <div className="mt-32 text-center bg-white p-12 rounded-3xl border border-slate-100">
                     <h2 className="text-3xl font-bold mb-4 font-outfit">Ready to upgrade your shop?</h2>
                     <p className="text-lg text-slate-600 mb-8 max-w-2xl mx-auto">
                         Join hundreds of auto glass professionals who have streamlined their workflow with APAI.

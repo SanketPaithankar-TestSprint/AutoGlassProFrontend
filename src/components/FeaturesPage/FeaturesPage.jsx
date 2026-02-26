@@ -137,7 +137,7 @@ const FeatureBlock = ({ icon, title, description }) => {
             ref={cardRef}
             onMouseEnter={onEnter}
             onMouseLeave={onLeave}
-            className="flex gap-4 items-start p-6 bg-white/80 backdrop-blur-md rounded-2xl border border-slate-100 h-full cursor-default will-change-transform"
+            className="flex gap-4 items-start p-6 bg-white rounded-2xl border border-slate-100 h-full cursor-default will-change-transform"
         >
             <div className="feature-icon flex-shrink-0 mt-1 text-3xl text-violet-600 bg-violet-50 p-3 rounded-xl">
                 {icon}
@@ -222,7 +222,7 @@ const FeatureCarousel = ({ features, color, sectionId }) => {
                         return (
                             <div
                                 key={`${rel}-${idx}-${gen}`}
-                                className="absolute flex flex-col p-7 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200 shadow-2xl"
+                                className="absolute flex flex-col p-7 bg-white rounded-2xl border border-slate-200 shadow-2xl"
                                 style={{
                                     width: '300px',
                                     minHeight: '420px',
@@ -411,15 +411,10 @@ const FeaturesPage = () => {
     };
 
     return (
-        <div className="bg-white min-h-screen pb-20 relative overflow-hidden font-sans text-slate-900">
+        <div className="min-h-screen pb-20 relative overflow-hidden font-sans text-slate-900">
             <PageHead
                 title="APAI Features | VIN Decode, AI Chat, Quotes & NAGS Data"
                 description="Discover APAI's powerful features: Instant VIN decoding, AI Chat, professional PDF quotes, and real-time NAGS data. Scale your glass shop for just $99/mo."
-            />
-            {/* Optimized Gradient Background (Same as Pricing Page) */}
-            <div
-                className="fixed inset-0 z-0 pointer-events-none opacity-20"
-                style={{ background: 'linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)' }}
             />
 
             {/* Page Header */}
