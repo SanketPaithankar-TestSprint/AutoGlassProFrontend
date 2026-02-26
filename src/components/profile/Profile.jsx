@@ -18,6 +18,7 @@ import UserKitPricePage from "./UserKitPricePage";
 import UserAdasPricePage from "./UserAdasPricePage";
 import SpecialInstructions from "./SpecialInstructions";
 import Shops from "./Shops";
+import EmployeeManagement from "./EmployeeManagement";
 import SlugConfig from "../SlugConfig/SlugConfig";
 import EmployeeManagement from "../EmployeeAttendance/EmployeeManagement";
 import { COUNTRIES, getStatesOrProvinces, getCities } from "../../const/locations";
@@ -438,6 +439,7 @@ const Profile = () => {
                             { id: 'userKitPrice', label: 'Kit Price', icon: <GiftOutlined /> },
                             { id: 'userAdasPrice', label: 'ADAS', icon: <CameraOutlined /> },
                             { id: 'slugConfig', label: 'Form Config', icon: <LinkOutlined /> },
+                            { id: 'employeeManagement', label: 'Employees', icon: <TeamOutlined /> },
                         ].map(item => {
                             const isActive = activeTab === item.id;
                             return (
@@ -472,6 +474,7 @@ const Profile = () => {
                             {renderMenuItem('userAdasPrice', 'ADAS Pricing', <CameraOutlined />)}
                             {renderMenuItem('specialInstructions', 'Special Instructions', <FileTextOutlined />)}
                             {renderMenuItem('slugConfig', 'Contact Form Config', <LinkOutlined />)}
+                            {renderMenuItem('employeeManagement', 'Employee Management', <TeamOutlined />)}
                         </div>
                     </div>
                 </div>
@@ -491,6 +494,7 @@ const Profile = () => {
                     {activeTab === 'userAdasPrice' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><UserAdasPricePage /></div>}
                     {activeTab === 'specialInstructions' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><SpecialInstructions /></div>}
                     {activeTab === 'slugConfig' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><SlugConfig /></div>}
+                    {activeTab === 'employeeManagement' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><EmployeeManagement token={token} isMobile={isMobile} /></div>}
                 </div>
             </div>
         </div>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Select, DatePicker, Collapse, Button, Tag, Checkbox } from 'antd';
 import { FilterOutlined, ClearOutlined, CalendarOutlined, CarOutlined, CheckSquareOutlined } from '@ant-design/icons';
 import { getDateRangeOptions } from './helpers/utils';
+import { useTranslation } from 'react-i18next';
 
 const { RangePicker } = DatePicker;
 const { Panel } = Collapse;
@@ -28,6 +29,7 @@ const CustomerSidebarFilters = ({
     activeFilterCount = 0,
 }) => {
     const [expandedPanels, setExpandedPanels] = useState(['properties', 'dateRange']); // Expand by default
+    const { t } = useTranslation();
 
     const dateRangeOptions = getDateRangeOptions();
 
@@ -51,7 +53,7 @@ const CustomerSidebarFilters = ({
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
                     <FilterOutlined className="text-violet-600 text-lg" />
-                    <h2 className="text-lg font-bold text-slate-900">Filters</h2>
+                    <h2 className="text-lg font-bold text-slate-900">{t('common.filter')}</h2>
                     {activeFilterCount > 0 && (
                         <Tag color="violet" className="ml-2">
                             {activeFilterCount} active
@@ -66,7 +68,7 @@ const CustomerSidebarFilters = ({
                         onClick={onClearAll}
                         className="text-slate-500 hover:text-violet-600"
                     >
-                        Clear
+                        {t('common.clearAll')}
                     </Button>
                 )}
             </div>
@@ -116,7 +118,7 @@ const CustomerSidebarFilters = ({
             {/* Filter Summary */}
             {activeFilterCount > 0 && (
                 <div className="mt-auto pt-4 border-t border-slate-200">
-                    <p className="text-xs text-slate-500 mb-2">Active Filters:</p>
+                    <p className="text-xs text-slate-500 mb-2">{t('common.filter')}:</p>
                     <div className="flex flex-wrap gap-1">
                         {hasVehicleFilter && (
                             <Tag color="blue" closable onClose={() => setHasVehicleFilter(false)}>Has Vehicle</Tag>
@@ -125,7 +127,7 @@ const CustomerSidebarFilters = ({
                             <Tag color="cyan" closable onClose={() => setHasEmailFilter(false)}>Has Email</Tag>
                         )}
                         {taxExemptFilter && (
-                            <Tag color="purple" closable onClose={() => setTaxExemptFilter(false)}>Tax Exempt</Tag>
+                            <Tag color="purple" closable onClose={() => setTaxExemptFilter(false)}>{t('customers.taxExempt')}</Tag>
                         )}
                         {dateRangeFilter && dateRangeFilter !== 'all' && (
                             <Tag color="green" closable onClose={() => { setDateRangeFilter('all'); setCustomDateRange(null); }}>

@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from 'react-i18next';
 import { Layout, Button, Tooltip } from "antd";
 import { CheckOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -9,13 +10,14 @@ import { freeTierFeatures, professionalTierFeatures, enterpriseTierFeatures } fr
 const { Content } = Layout;
 
 const PricingPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   return (
     <Layout className="flex-grow bg-white font-sans text-slate-900 flex flex-col justify-center relative overflow-hidden">
-      <PageHead 
-        title="APAI Pricing | Transparent Auto Glass Software for $99/mo" 
-        description="Simple, flat-rate pricing for your auto glass shop. Get full access to VIN decoding, NAGS data, and invoicing for just $99/month. No contracts, no hidden fees." 
+      <PageHead
+        title="APAI Pricing | Transparent Auto Glass Software for $99/mo"
+        description="Simple, flat-rate pricing for your auto glass shop. Get full access to VIN decoding, NAGS data, and invoicing for just $99/month. No contracts, no hidden fees."
       />
       {/* Gradient Background */}
       <div
@@ -31,10 +33,10 @@ const PricingPage = () => {
           {/* Compact Header */}
           <div className="text-center mb-6 opacity-0 animate-[fadeInUp_0.6s_ease-out_forwards]">
             <h1 className="text-lg md:text-xl font-extrabold text-slate-900 tracking-tight mb-2">
-              Pricing
+              {t('pricing.title')}
             </h1>
             <p className="text-slate-500 mb-3 text-sm">
-              get started on our free plan and upgrade when you are ready.
+              {t('pricing.getStartedFree')}
             </p>
             <div className="h-1 w-16 mx-auto rounded-full" style={{ background: 'linear-gradient(90deg, #00A8E4 0%, #38BDF8 100%)' }} />
           </div>
@@ -45,13 +47,13 @@ const PricingPage = () => {
             {/* CARD 1: Free Trial - Compact */}
             <div className="group w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col relative shadow-lg hover:shadow-2xl transition-all duration-300 opacity-0 animate-[fadeInUp_0.6s_ease-out_0.2s_forwards] hover:-translate-y-1">
               <div className="mb-4">
-                <h3 className="text-base font-bold text-slate-700 mb-1">30-Day Free Trial</h3>
+                <h3 className="text-base font-bold text-slate-700 mb-1">{t('pricing.freeTrial')}</h3>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-3xl font-extrabold text-slate-900">Free</span>
-                  <span className="text-xs font-medium text-slate-500">30 days</span>
+                  <span className="text-3xl font-extrabold text-slate-900">{t('pricing.free')}</span>
+                  <span className="text-xs font-medium text-slate-500">{t('pricing.freeTrialDays')}</span>
                 </div>
                 <p className="text-slate-500 text-xs font-medium">
-                  Professional Preview - No commitment.
+                  {t('pricing.freePreview')}
                 </p>
               </div>
 
@@ -75,7 +77,7 @@ const PricingPage = () => {
                 style={{ backgroundColor: '#00A8E4', boxShadow: '0 4px 14px 0 rgba(0, 168, 228, 0.39)' }}
                 onClick={() => { window.scrollTo(0, 0); window.scroll({ top: 0, left: 0, behavior: 'smooth' }); navigate('/auth', { state: { mode: 'signup' } }); }}
               >
-                Start Free Trial
+                {t('pricing.startFreeTrial')}
               </Button>
             </div>
 
@@ -89,18 +91,18 @@ const PricingPage = () => {
               {/* Badge */}
               <div className="absolute top-0 right-0 p-4">
                 <span className="bg-white/20 backdrop-blur-sm text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                  Most Popular
+                  {t('pricing.mostPopular')}
                 </span>
               </div>
 
               <div className="mb-4">
-                <h3 className="text-base font-bold text-white mb-1">Professional</h3>
+                <h3 className="text-base font-bold text-white mb-1">{t('pricing.professional')}</h3>
                 <div className="flex items-baseline gap-2 mb-1">
                   <span className="text-3xl font-extrabold text-white">$99</span>
-                  <span className="text-xs font-medium text-blue-50">per month per user</span>
+                  <span className="text-xs font-medium text-blue-50">{t('pricing.perMonthPerUser')}</span>
                 </div>
                 <p className="text-blue-50 text-xs font-medium opacity-90">
-                  Everything you need to run your auto glass quoting workflow.
+                  {t('pricing.proDescription')}
                 </p>
               </div>
 
@@ -122,23 +124,23 @@ const PricingPage = () => {
                 style={{ color: '#00A8E4' }}
                 onClick={() => { window.scrollTo(0, 0); window.scroll({ top: 0, left: 0, behavior: 'smooth' }); navigate('/auth', { state: { mode: 'signup' } }); }}
               >
-                Get Started
+                {t('pricing.getStarted')}
               </Button>
             </div>
 
             {/* CARD 3: Enterprise - Standard Look */}
             <div className="group w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col relative shadow-lg hover:shadow-2xl transition-all duration-300 opacity-0 animate-[fadeInUp_0.6s_ease-out_0.6s_forwards] hover:-translate-y-1">
               <div className="mb-4">
-                <h3 className="text-base font-bold text-slate-700 mb-1">Enterprise</h3>
+                <h3 className="text-base font-bold text-slate-700 mb-1">{t('pricing.enterprise')}</h3>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-3xl font-extrabold text-slate-900">Custom</span>
+                  <span className="text-3xl font-extrabold text-slate-900">{t('pricing.enterpriseCustom')}</span>
                 </div>
                 <p className="text-slate-500 text-xs font-medium">
-                  For large organizations with advanced needs.
+                  {t('pricing.enterpriseDesc')}
                 </p>
                 <div className="mt-3 pt-3 border-t border-slate-100">
                   <p className="text-blue-600 text-xs font-bold flex items-center gap-1.5">
-                    Everything in Professional, plus:
+                    {t('pricing.everythingInPro')}
                   </p>
                 </div>
               </div>
@@ -161,7 +163,7 @@ const PricingPage = () => {
                 style={{ backgroundColor: '#00A8E4', boxShadow: '0 4px 14px 0 rgba(0, 168, 228, 0.39)' }}
                 onClick={() => { window.scrollTo(0, 0); window.scroll({ top: 0, left: 0, behavior: 'smooth' }); navigate('/contact'); }}
               >
-                Contact Sales
+                {t('pricing.contactSales')}
               </Button>
             </div>
           </div>
@@ -169,7 +171,7 @@ const PricingPage = () => {
           {/* Reduce margin top for footer link */}
           <div className="mt-10 text-center">
             <p className="text-slate-400 text-xs">
-              Need help choosing? <a href="/contact" className="text-blue-600 hover:text-blue-700 font-medium">Contact Sales</a>
+              {t('pricing.needHelp')} <a href="/contact" className="text-blue-600 hover:text-blue-700 font-medium">{t('pricing.contactSales')}</a>
             </p>
           </div>
 

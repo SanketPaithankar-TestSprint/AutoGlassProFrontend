@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Segmented, Input, Button, Tooltip } from 'antd';
 import { AppstoreOutlined, UnorderedListOutlined, SearchOutlined, ClockCircleOutlined, FilterOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 
 const CustomerHeaderBar = ({
     viewMode,
@@ -10,6 +11,7 @@ const CustomerHeaderBar = ({
     onOpenFilters,
     sidebarOpen = true,
 }) => {
+    const { t } = useTranslation();
 
     return (
         <div className="bg-slate-100 border-b border-slate-200 px-6 py-6">
@@ -17,7 +19,7 @@ const CustomerHeaderBar = ({
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
                 <div className="flex items-center gap-2">
                     <h1 className="!text-[30px] font-extrabold text-slate-800 m-0">
-                        Contacts
+                        {t('nav.customers')}
                     </h1>
                     <Tooltip title="Manage individual contacts and organizations" placement="right">
                         <InfoCircleOutlined className="text-slate-400 text-base cursor-pointer hover:text-violet-500 transition-colors" />
@@ -51,7 +53,7 @@ const CustomerHeaderBar = ({
                         icon={<FilterOutlined />}
                         onClick={onOpenFilters}
                     >
-                        {sidebarOpen ? 'Hide Filters' : 'Show Filters'}
+                        {sidebarOpen ? t('common.filter') : t('common.filter')}
                     </Button>
                 </div>
 
@@ -59,7 +61,7 @@ const CustomerHeaderBar = ({
                 <div className="flex-1 w-full sm:max-w-md">
                     <Input
                         size="large"
-                        placeholder="Search by Name, Email, Phone, Company..."
+                        placeholder={t('common.searchPlaceholder')}
                         prefix={<SearchOutlined className="text-slate-400" />}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}

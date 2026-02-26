@@ -7,12 +7,14 @@ import { SOCIAL_LINKS, SITEMAP_LINK } from "../const/socialLinks";
 import { getValidToken } from "../api/getValidToken";
 import Logo from "./logo";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 const { Footer: AntFooter } = Layout;
 const { Title, Paragraph } = Typography;
 
 const Footer = () => {
   const [isAuthed, setIsAuthed] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const token = getValidToken();
@@ -37,16 +39,16 @@ const Footer = () => {
 
           {/* Quick Links Section */}
           <div className="hidden md:flex items-center gap-3 md:gap-4 lg:gap-6 text-xs flex-wrap">
-            <Link to="/" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide text-xs md:text-xs">Home</Link>
-            <Link to="/pricing" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide text-xs md:text-xs">Pricing</Link>
-            <Link to="/features" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide text-xs md:text-xs">Features</Link>
-            <Link to="/about" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide text-xs md:text-xs">About</Link>
-            <Link to="/contact" className="text-slate-500 hover:text-slate-800 transition-colors tracking-wide text-xs md:text-xs">Contact</Link>
-            <Link to="/blogs" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide text-xs md:text-xs">Blogs</Link>
-            <Link to="/vin-decoder" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide text-xs md:text-xs">VIN Decoder</Link>
-            <Link to="/sitemap" className="text-slate-500 hover:text-slate-800 transition-colors tracking-wide text-xs md:text-xs">Sitemap</Link>
-            <Link to="/privacy-policy" className="text-slate-500 hover:text-slate-800 transition-colors tracking-wide text-xs md:text-xs">Privacy</Link>
-            <Link to="/terms-of-service" className="text-slate-500 hover:text-slate-800 transition-colors tracking-wide text-xs md:text-xs">Terms</Link>
+            <Link to="/" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide text-xs md:text-xs">{t('nav.home')}</Link>
+            <Link to="/pricing" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide text-xs md:text-xs">{t('nav.pricing')}</Link>
+            <Link to="/features" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide text-xs md:text-xs">{t('nav.features')}</Link>
+            <Link to="/about" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide text-xs md:text-xs">{t('nav.about')}</Link>
+            <Link to="/contact" className="text-slate-500 hover:text-slate-800 transition-colors tracking-wide text-xs md:text-xs">{t('nav.contact')}</Link>
+            <Link to="/blogs" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide text-xs md:text-xs">{t('nav.blogs')}</Link>
+            <Link to="/vin-decoder" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide text-xs md:text-xs">{t('nav.vinDecoder')}</Link>
+            <Link to="/sitemap" className="text-slate-500 hover:text-slate-800 transition-colors tracking-wide text-xs md:text-xs">{t('nav.sitemap')}</Link>
+            <Link to="/privacy-policy" className="text-slate-500 hover:text-slate-800 transition-colors tracking-wide text-xs md:text-xs">{t('nav.privacy')}</Link>
+            <Link to="/terms-of-service" className="text-slate-500 hover:text-slate-800 transition-colors tracking-wide text-xs md:text-xs">{t('nav.terms')}</Link>
           </div>
           {/* Social Media Section */}
           <div className="flex items-center gap-2 sm:gap-3">
@@ -122,42 +124,42 @@ const Footer = () => {
             </motion.div>
 
             <Paragraph className="!text-slate-600 !mt-2 md:!mt-4 !mb-4 text-xs sm:text-sm leading-relaxed max-w-sm">
-              Professional auto glass pricing &amp; quoting platform built for modern repair shops.
+              {t('footer.tagline')}
             </Paragraph>
           </Col>
 
           {/* Quick Links */}
           <Col xs={24} sm={12} md={6} lg={6} className="ps-2 sm:ps-4 md:ps-0">
             <Title level={5} className="!text-slate-800 !mb-2 md:!mb-3 text-xs sm:text-sm font-semibold">
-              Quick Links
+              {t('footer.quickLinks')}
             </Title>
             <ul className="mt-2 md:mt-3 space-y-1 md:space-y-2 text-xs sm:text-sm">
-              <li><Link to="/" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Home</Link></li>
-              <li><Link to="/pricing" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Pricing</Link></li>
-              <li><Link to="/features" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Features</Link></li>
-              <li><Link to="/about" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">About</Link></li>
+              <li><Link to="/" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">{t('nav.home')}</Link></li>
+              <li><Link to="/pricing" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">{t('nav.pricing')}</Link></li>
+              <li><Link to="/features" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">{t('nav.features')}</Link></li>
+              <li><Link to="/about" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">{t('nav.about')}</Link></li>
             </ul>
           </Col>
 
           {/* Resources */}
           <Col xs={24} sm={12} md={6} lg={6} className="ps-2 sm:ps-4 md:ps-0">
             <Title level={5} className="!text-slate-800 !mb-2 md:!mb-3 text-xs sm:text-sm font-semibold">
-              Resources
+              {t('footer.resources')}
             </Title>
             <ul className="space-y-1 md:space-y-2 text-xs sm:text-sm">
-              <li><Link to="/contact" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Contact</Link></li>
-              <li><Link to="/blogs" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Blogs</Link></li>
-              <li><Link to="/vin-decoder" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">VIN Decoder</Link></li>
-              <li><Link to="/sitemap" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Sitemap</Link></li>
-              <li><Link to="/privacy-policy" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Privacy</Link></li>
-              <li><Link to="/terms-of-service" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">Terms of Service</Link></li>
+              <li><Link to="/contact" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">{t('nav.contact')}</Link></li>
+              <li><Link to="/blogs" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">{t('nav.blogs')}</Link></li>
+              <li><Link to="/vin-decoder" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">{t('nav.vinDecoder')}</Link></li>
+              <li><Link to="/sitemap" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">{t('nav.sitemap')}</Link></li>
+              <li><Link to="/privacy-policy" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">{t('nav.privacy')}</Link></li>
+              <li><Link to="/terms-of-service" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">{t('nav.termsOfService')}</Link></li>
             </ul>
           </Col>
 
           {/* Follow Us */}
           <Col xs={24} sm={12} md={6} lg={6} className="ps-2 sm:ps-4 md:ps-0">
             <Title level={5} className="!text-slate-800 !mb-2 md:!mb-3 text-xs sm:text-sm font-semibold">
-              Follow Us
+              {t('footer.followUs')}
             </Title>
             <div className="flex items-center gap-2 sm:gap-3 md:gap-4 flex-wrap">
               <motion.a href={SOCIAL_LINKS.youtube} className="hover:scale-110 transition-transform" target="_blank" rel="noopener noreferrer" aria-label="YouTube" whileHover={{ scale: 1.2 }}>
@@ -182,7 +184,7 @@ const Footer = () => {
         <Divider className="!border-slate-200 !mt-4 md:!mt-6 !mb-2 md:!mb-3" />
 
         <div className="py-2 text-center text-[10px] xs:text-[11px] sm:text-xs text-slate-400">
-          © {new Date().getFullYear()} APAI. All rights reserved.
+          © {new Date().getFullYear()} APAI. {t('footer.allRightsReserved')}
         </div>
       </div>
     </AntFooter>

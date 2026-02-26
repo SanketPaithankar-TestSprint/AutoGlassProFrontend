@@ -1,5 +1,6 @@
 // Home.jsx
 import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from "react-router-dom";
 import { getValidToken } from "../../api/getValidToken";
 import PageHead from "../PageHead";
@@ -15,6 +16,7 @@ import { useGSAP } from "@gsap/react";
 gsap.registerPlugin(SplitText);
 
 const Home = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [isAuthed, setIsAuthed] = useState(false);
     const [mounted, setMounted] = useState(false);
@@ -150,7 +152,7 @@ const Home = () => {
                                         }}
                                         onClick={() => navigate('/auth', { state: { mode: 'signup' } })}
                                     >
-                                        <span className="font-medium">Start Free Trial</span>
+                                        <span className="font-medium">{t('pricing.startFreeTrial')}</span>
                                     </Button>
                                 </motion.div>
 

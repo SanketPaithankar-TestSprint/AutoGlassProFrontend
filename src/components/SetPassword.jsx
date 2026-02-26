@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Form, Input, Button, Card, notification, Typography, Result, Alert } from 'antd';
 import { LockOutlined, ArrowLeftOutlined, MailOutlined } from '@ant-design/icons';
 import { useSearchParams, useNavigate } from 'react-router-dom';
@@ -7,6 +8,7 @@ import { setPassword } from '../api/setPassword';
 const { Title, Text } = Typography;
 
 const SetPassword = () => {
+    const { t } = useTranslation();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const token = searchParams.get('token');
@@ -121,7 +123,7 @@ const SetPassword = () => {
         <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4">
             <Card className="w-full max-w-md shadow-lg rounded-xl border border-slate-200">
                 <div className="text-center mb-6">
-                    <Title level={3} className="!mb-2">Set Password</Title>
+                    <Title level={3} className="!mb-2">{t('auth.setPassword')}</Title>
                     <Text type="secondary">Create a new password for your account</Text>
                 </div>
 
@@ -153,7 +155,7 @@ const SetPassword = () => {
                     >
                         <Input.Password
                             prefix={<LockOutlined className="text-gray-400" />}
-                            placeholder="New Password"
+                            placeholder={t('auth.password')}
                         />
                     </Form.Item>
 
@@ -174,13 +176,13 @@ const SetPassword = () => {
                     >
                         <Input.Password
                             prefix={<LockOutlined className="text-gray-400" />}
-                            placeholder="Confirm Password"
+                            placeholder={t('auth.confirmPassword')}
                         />
                     </Form.Item>
 
                     <Form.Item className="mb-2">
                         <Button type="primary" htmlType="submit" className="w-full bg-violet-600 hover:bg-violet-700" loading={loading}>
-                            Set Password
+                            {t('auth.setPassword')}
                         </Button>
                     </Form.Item>
                 </Form>

@@ -5,6 +5,8 @@ import { MenuOutlined, UserOutlined, DownOutlined, PieChartOutlined, TeamOutline
 import Logo from "./logo";
 import { getValidToken } from "../api/getValidToken";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import LanguageToggle from "./LanguageToggle";
 
 const { Header: AntHeader } = Layout;
 
@@ -12,10 +14,11 @@ const { Header: AntHeader } = Layout;
 
 // ProfileDropdown component
 const ProfileDropdown = ({ onLogout }) => {
+  const { t } = useTranslation();
   const items = [
     {
       key: "profile",
-      label: <Link to="/profile">User Profile</Link>,
+      label: <Link to="/profile">{t('auth.userProfile')}</Link>,
     },
 
     {
@@ -25,7 +28,7 @@ const ProfileDropdown = ({ onLogout }) => {
           style={{ color: "#f97373" }}
           onClick={onLogout}
         >
-          Logout
+          {t('auth.logout')}
         </span>
       ),
       danger: true,
@@ -44,7 +47,7 @@ const ProfileDropdown = ({ onLogout }) => {
         className="!h-9 !px-4 !text-slate-700 hover:!text-slate-900 !bg-transparent hover:!bg-transparent !border-0 focus:!outline-none focus:!ring-0"
       >
         <span className="inline-flex items-center gap-1">
-          <span>Profile</span>
+          <span>{t('auth.profile')}</span>
           <DownOutlined className="text-[10px]" />
         </span>
       </Button>
@@ -79,6 +82,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
   const [loading, setLoading] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const token = getValidToken();
@@ -101,23 +105,23 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
 
 
   const menuItems = [
-    { key: "home", label: "Home", href: "/", icon: null },
+    { key: "home", label: t('nav.home'), href: "/", icon: null },
     ...(!isAuthed ? [
-      { key: "features", label: "Features", href: "/features", icon: null },
-      { key: "pricing", label: "Pricing", href: "/pricing", icon: null },
-      { key: "about", label: "About", href: "/about", icon: null },
-      { key: "contact", label: "Contact", href: "/contact", icon: null },
+      { key: "features", label: t('nav.features'), href: "/features", icon: null },
+      { key: "pricing", label: t('nav.pricing'), href: "/pricing", icon: null },
+      { key: "about", label: t('nav.about'), href: "/about", icon: null },
+      { key: "contact", label: t('nav.contact'), href: "/contact", icon: null },
     ] : []),
     ...(isAuthed ? [
-      { key: "analytics", label: "Analytics", href: "/analytics", icon: <PieChartOutlined /> },
-      { key: "customers", label: "Customers", href: "/customers", icon: <TeamOutlined /> },
-      { key: "Quote", label: "Quote", href: "/search-by-root", icon: <FormOutlined /> },
-      { key: "schedule", label: "Schedule", href: "/schedule", icon: <CalendarOutlined /> },
-      { key: "dashboard", label: "Dashboard", href: "/open", icon: <FolderOpenOutlined /> },
-      { key: "reports", label: "Reports", href: "/reports", icon: <BarChartOutlined /> },
-      { key: "service-inquiries", label: "Service Inquiries", href: "/service-contact-form", icon: <MessageOutlined /> },
-      { key: "employee-attendance", label: "Employee Attendance", href: "/employee-attendance", icon: <AuditOutlined /> },
-      { key: "live-chat", label: "Live Chat", href: "/chat", icon: <MdSupportAgent className="text-xl" /> },
+      { key: "analytics", label: t('nav.analytics'), href: "/analytics", icon: <PieChartOutlined /> },
+      { key: "customers", label: t('nav.customers'), href: "/customers", icon: <TeamOutlined /> },
+      { key: "Quote", label: t('nav.quote'), href: "/search-by-root", icon: <FormOutlined /> },
+      { key: "schedule", label: t('nav.schedule'), href: "/schedule", icon: <CalendarOutlined /> },
+      { key: "dashboard", label: t('nav.dashboard'), href: "/open", icon: <FolderOpenOutlined /> },
+      { key: "reports", label: t('nav.reports'), href: "/reports", icon: <BarChartOutlined /> },
+      { key: "service-inquiries", label: t('nav.serviceInquiries'), href: "/service-contact-form", icon: <MessageOutlined /> },
+      { key: "employee-attendance", label: t('nav.employeeAttendance'), href: "/employee-attendance", icon: <AuditOutlined /> },
+      { key: "live-chat", label: t('nav.liveChat'), href: "/chat", icon: <MdSupportAgent className="text-xl" /> },
     ] : []),
   ];
 
@@ -174,23 +178,25 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
         {/* Right: Buttons / Profile */}
         {!isAuthed ? (
           <div className="hidden lg:flex ml-auto min-w-0 items-center gap-2 sm:gap-4 pr-6">
+            <LanguageToggle />
             <Button
               type="text"
               className="!h-9 !px-2 sm:!px-3 !text-slate-700 hover:!text-[#7E5CFE] !bg-transparent hover:!bg-transparent !border-0 focus:!outline-none focus:!ring-0 focus:!shadow-none hover:!shadow-none active:!shadow-none transition-colors duration-300 !text-[1.1rem]"
               onClick={() => navigate('/auth', { state: { mode: 'signin' } })}
             >
-              Login
+              {t('auth.login')}
             </Button>
             <Button
               type="primary"
               onClick={() => navigate('/auth', { state: { mode: 'signup' } })}
               className="relative !h-9 !px-6 !rounded-full !border-0 !bg-gradient-to-r from-[#7E5CFE] to-[#00A8E4] hover:!from-[#6b4ce6] hover:!to-[#008dc2] !text-white shadow-lg shadow-purple-500/30 transition-all duration-300 hover:scale-105"
             >
-              <span className="relative font-semibold text-[1.1rem]">Sign Up</span>
+              <span className="relative font-semibold text-[1.1rem]">{t('auth.signUp')}</span>
             </Button>
           </div>
         ) : (
           <div className="hidden lg:flex items-center gap-2 sm:gap-3 ml-auto min-w-0">
+            <LanguageToggle />
             <ProfileDropdown
               onLogout={() => {
                 localStorage.removeItem("ApiToken");
@@ -245,6 +251,11 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
           className="ap-header-drawer"
         >
           <nav className="p-4 text-slate-700">
+            {/* Language Toggle in mobile drawer */}
+            <div className="flex items-center justify-center py-3 mb-2 border-b border-slate-200">
+              <LanguageToggle />
+            </div>
+
             <ul className="space-y-2 pl-0 m-0 list-none">
               {menuItems.filter(item => item.key !== 'home').map((item) => (
                 <li key={item.key}>
@@ -270,7 +281,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
                       className="block px-4 py-2 rounded-md text-base text-slate-700 hover:text-violet-700 hover:bg-violet-100 outline-none transition-colors duration-150"
                       onClick={() => setDrawerOpen(false)}
                     >
-                      View Profile
+                      {t('auth.viewProfile')}
                     </Link>
                   </li>
 
@@ -284,7 +295,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
                         window.location.href = "/";
                       }}
                     >
-                      Logout
+                      {t('auth.logout')}
                     </div>
                   </li>
                 </ul>
@@ -301,7 +312,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
                     navigate('/auth', { state: { mode: 'signin' } });
                   }}
                 >
-                  Login
+                  {t('auth.login')}
                 </Button>
                 <Button
                   type="primary"
@@ -311,7 +322,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
                   }}
                   className="w-full !h-10 !mt-2 !rounded-lg !bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:!from-violet-400 hover:!to-fuchsia-400 !border-0 !text-white text-base shadow-lg shadow-violet-800/40"
                 >
-                  Sign Up
+                  {t('auth.signUp')}
                 </Button>
               </div>
             )}
@@ -336,6 +347,11 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
           className="ap-header-drawer"
         >
           <nav className="p-4 text-slate-700">
+            {/* Language Toggle in mobile drawer */}
+            <div className="flex items-center justify-center py-3 mb-2 border-b border-slate-200">
+              <LanguageToggle />
+            </div>
+
             <ul className="space-y-2 pl-0 m-0 list-none">
               {menuItems.filter(item => item.key !== 'home').map((item) => (
                 <li key={item.key}>
@@ -361,7 +377,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
                   navigate('/auth', { state: { mode: 'signin' } });
                 }}
               >
-                Login
+                {t('auth.login')}
               </Button>
               <Button
                 type="primary"
@@ -371,7 +387,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
                 }}
                 className="w-full !h-10 !mt-2 !rounded-lg !bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:!from-violet-400 hover:!to-fuchsia-400 !border-0 !text-white text-base shadow-lg shadow-violet-800/40"
               >
-                Sign Up
+                {t('auth.signUp')}
               </Button>
             </div>
           </nav>

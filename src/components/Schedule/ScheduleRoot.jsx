@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Tabs, Button, Select, Space, message, Spin, DatePicker, Input, Switch, notification, Tooltip } from 'antd';
 import { PlusOutlined, AppstoreOutlined, UnorderedListOutlined, ReloadOutlined, CalendarOutlined, FileTextOutlined, TeamOutlined, ToolOutlined, CreditCardOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -25,6 +26,7 @@ import { useNavigate } from 'react-router-dom';
 const { Search } = Input;
 
 const ScheduleRoot = () => {
+    const { t } = useTranslation();
     // Main Tab State
     const [activeTab, setActiveTab] = useState('schedule'); // 'schedule' or 'tasks'
 
@@ -109,7 +111,7 @@ const ScheduleRoot = () => {
             return updateTaskStatus(taskId, newStatus);
         },
         onSuccess: () => {
-            message.success('Task status updated');
+            message.success(t('schedule.status') + ' updated');
             queryClient.invalidateQueries(['tasks']);
         },
         onError: () => {
@@ -252,7 +254,7 @@ const ScheduleRoot = () => {
             label: (
                 <span className="flex items-center gap-2">
                     <CalendarOutlined />
-                    Schedule
+                    {t('schedule.title')}
                 </span>
             ),
         },
@@ -272,7 +274,7 @@ const ScheduleRoot = () => {
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                 <div className="flex items-center gap-2">
-                    <h1 className="!text-[30px] font-bold text-slate-900 m-0">Schedule & Tasks</h1>
+                    <h1 className="!text-[30px] font-bold text-slate-900 m-0">{t('schedule.title')}</h1>
                     <Tooltip title="Manage your appointments and daily workflow" placement="right">
                         <InfoCircleOutlined className="text-slate-400 text-base cursor-pointer hover:text-violet-500 transition-colors" />
                     </Tooltip>
@@ -461,7 +463,7 @@ const ScheduleRoot = () => {
                                     className="bg-gradient-to-r from-violet-600 to-indigo-600 border-0 hover:from-violet-500 hover:to-indigo-500 shadow-md"
                                     onClick={() => setCreateModalVisible(true)}
                                 >
-                                    New Task
+                                    {t('schedule.createTask')}
                                 </Button>
                                 <Select
                                     value={filterStatus}

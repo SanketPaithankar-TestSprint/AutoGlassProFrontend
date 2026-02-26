@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
 import Login from "./login";
 import SignUpForm from "./SignUpForm";
 import ForgotPasswordForm from "./ForgotPasswordForm";
@@ -20,6 +21,7 @@ const Logo = ({ className }) => {
 };
 
 export default function AuthRoot() {
+    const { t } = useTranslation();
     // Mode: 'LOGIN', 'SIGNUP', 'FORGOT_PASSWORD'
     const [authMode, setAuthMode] = useState('LOGIN');
     const { login } = useAuth();
@@ -86,7 +88,7 @@ export default function AuthRoot() {
                         <div className="h-full flex flex-col items-center justify-center p-8 bg-transparent">
                             <div className="w-full h-full overflow-y-auto custom-scrollbar flex flex-col items-center">
                                 <div className="w-full max-w-xl pb-8">
-                                    <h1 className="text-3xl md:text-4xl font-extrabold mb-4 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent text-center mt-8 tracking-tight">Join Us</h1>
+                                    <h1 className="text-3xl md:text-4xl font-extrabold mb-4 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent text-center mt-8 tracking-tight">{t('auth.joinUs')}</h1>
                                     <SignUpForm onSuccess={handleSignUpSuccess} onCancel={() => setAuthMode('LOGIN')} />
                                 </div>
                             </div>
@@ -104,7 +106,7 @@ export default function AuthRoot() {
                                 <div className="w-full max-w-sm transition-opacity duration-300">
                                     {authMode === 'LOGIN' && (
                                         <>
-                                            <h1 className="text-3xl md:text-4xl font-extrabold mb-6 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent tracking-tight text-center p-5">Sign In</h1>
+                                            <h1 className="text-3xl md:text-4xl font-extrabold mb-6 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent tracking-tight text-center p-5">{t('auth.signIn')}</h1>
                                             <Login
                                                 onLoginSuccess={handleLoginSuccess}
                                                 onForgotPasswordClick={() => setAuthMode('FORGOT_PASSWORD')}
@@ -115,7 +117,7 @@ export default function AuthRoot() {
 
                                     {authMode === 'FORGOT_PASSWORD' && (
                                         <>
-                                            <h1 className="text-2xl md:text-3xl font-extrabold mb-6 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent tracking-tight text-center">Reset Password</h1>
+                                            <h1 className="text-2xl md:text-3xl font-extrabold mb-6 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent tracking-tight text-center">{t('auth.resetPassword')}</h1>
                                             <ForgotPasswordForm
                                                 onBackToLogin={() => setAuthMode('LOGIN')}
                                                 onSuccess={() => setAuthMode('LOGIN')}
@@ -144,8 +146,8 @@ export default function AuthRoot() {
                             <div className={`absolute inset-0 flex flex-col items-center justify-center text-center px-8 transition-opacity duration-700
                              ${!isSignUpMode ? 'opacity-100 delay-200 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
                             >
-                                <h1 className="text-3xl md:text-5xl font-extrabold mb-4 tracking-tight">New Here?</h1>
-                                <p className="text-lg mb-8 text-white/90 font-medium leading-relaxed">Join our network to access professional quoting and invoicing tools.</p>
+                                <h1 className="text-3xl md:text-5xl font-extrabold mb-4 tracking-tight">{t('auth.newHere')}</h1>
+                                <p className="text-lg mb-8 text-white/90 font-medium leading-relaxed">{t('auth.joinNetwork')}</p>
                                 <button
                                     style={{
                                         backgroundColor: 'rgba(255, 255, 255, 0.95)',
@@ -155,7 +157,7 @@ export default function AuthRoot() {
                                     className="px-10 py-3 rounded-full font-bold uppercase tracking-wider cursor-pointer shadow-lg transition-all transform hover:scale-105 focus:outline-none hover:shadow-xl"
                                     onClick={() => setAuthMode('SIGNUP')}
                                 >
-                                    Sign Up
+                                    {t('auth.signUp')}
                                 </button>
                             </div>
 
@@ -163,8 +165,8 @@ export default function AuthRoot() {
                             <div className={`absolute inset-0 flex flex-col items-center justify-center text-center px-8 transition-opacity duration-700
                             ${isSignUpMode ? 'opacity-100 delay-200 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
                             >
-                                <h1 className="text-3xl md:text-4xl font-extrabold mb-4 tracking-tight">Already a Partner?</h1>
-                                <p className="text-lg mb-8 text-white/90 font-medium leading-relaxed">Log in to your dashboard to manage quotes and invoices.</p>
+                                <h1 className="text-3xl md:text-4xl font-extrabold mb-4 tracking-tight">{t('auth.alreadyPartner')}</h1>
+                                <p className="text-lg mb-8 text-white/90 font-medium leading-relaxed">{t('auth.loginDashboard')}</p>
                                 <button
                                     style={{
                                         backgroundColor: 'rgba(255, 255, 255, 0.95)',
@@ -174,7 +176,7 @@ export default function AuthRoot() {
                                     className="px-10 py-3 rounded-full font-bold uppercase tracking-wider cursor-pointer shadow-lg transition-all transform hover:scale-105 focus:outline-none hover:shadow-xl"
                                     onClick={() => setAuthMode('LOGIN')}
                                 >
-                                    Sign In
+                                    {t('auth.signIn')}
                                 </button>
                             </div>
 
@@ -190,13 +192,13 @@ export default function AuthRoot() {
                             className={`flex-1 py-2 rounded-md font-semibold transition-all ${authMode === 'LOGIN' || authMode === 'FORGOT_PASSWORD' ? 'bg-violet-600 shadow-md text-white' : 'text-slate-500 hover:bg-slate-200'}`}
                             onClick={() => setAuthMode('LOGIN')}
                         >
-                            SignIn
+                            {t('auth.signIn')}
                         </button>
                         <button
                             className={`flex-1 py-2 rounded-md font-semibold transition-all ${authMode === 'SIGNUP' ? 'bg-violet-600 shadow-md text-white' : 'text-slate-500 hover:bg-slate-200'}`}
                             onClick={() => setAuthMode('SIGNUP')}
                         >
-                            Sign Up
+                            {t('auth.signUp')}
                         </button>
                     </div>
 
@@ -219,7 +221,7 @@ export default function AuthRoot() {
 
                         {authMode === 'FORGOT_PASSWORD' && (
                             <div className="animate-fade-in">
-                                <h2 className="text-xl font-bold mb-4 text-center">Reset Password</h2>
+                                <h2 className="text-xl font-bold mb-4 text-center">{t('auth.resetPassword')}</h2>
                                 <ForgotPasswordForm
                                     onBackToLogin={() => setAuthMode('LOGIN')}
                                     onSuccess={() => setAuthMode('LOGIN')}

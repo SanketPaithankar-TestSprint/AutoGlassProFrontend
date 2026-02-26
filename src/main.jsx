@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import './i18n'; // Initialize i18n before app renders
 import './index.css'
 import AppRoutes from './App.jsx'
 import 'antd/dist/reset.css'; // For Ant Design v5+

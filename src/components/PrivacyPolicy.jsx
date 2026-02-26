@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Typography, Divider } from 'antd';
 import { SafetyCertificateOutlined } from '@ant-design/icons';
 import PageHead from './PageHead';
@@ -6,6 +7,7 @@ import PageHead from './PageHead';
 const { Title, Text, Paragraph } = Typography;
 
 const PrivacyPolicy = () => {
+    const { t } = useTranslation();
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
@@ -105,7 +107,7 @@ const PrivacyPolicy = () => {
                 <div className="text-center mb-12">
                     <SafetyCertificateOutlined className="text-5xl text-violet-600 mb-4" />
                     <Title level={1} className="!text-3xl md:!text-4xl !font-bold !text-slate-900 !mb-3 !font-outfit">
-                        Privacy Policy
+                        {t('privacy.title')}
                     </Title>
                     <Paragraph className="!text-slate-600 !text-base !mb-1 !leading-relaxed max-w-2xl mx-auto">
                         This Privacy Policy describes how AutoPane AI (APAI) ("we," "us," or "our") collects, uses, and discloses

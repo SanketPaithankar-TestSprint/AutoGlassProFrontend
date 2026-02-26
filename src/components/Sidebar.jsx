@@ -26,6 +26,8 @@ import { getUserLogo } from '../api/getUserLogo';
 import { getValidToken } from '../api/getValidToken';
 import urls from '../config';
 import { useInquiry } from '../context/InquiryContext';
+import { useTranslation } from 'react-i18next';
+import LanguageToggle from './LanguageToggle';
 
 const { Sider } = Layout;
 
@@ -44,6 +46,7 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
     const [userLogo, setUserLogo] = useState(localStorage.getItem('userLogo'));
     const { badgeCount } = useInquiry(); // Get badge count from context
     const [localBadgeCount, setLocalBadgeCount] = useState(0);
+    const { t } = useTranslation();
 
     // Fetch logo on mount and when route changes (to catch post-login state)
     useEffect(() => {
@@ -153,32 +156,32 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
         {
             key: '/analytics',
             icon: <PieChartOutlined />,
-            label: <Link to="/analytics">Analytics</Link>,
+            label: <Link to="/analytics">{t('nav.analytics')}</Link>,
         },
         {
             key: '/customers',
             icon: <TeamOutlined />,
-            label: <Link to="/customers">Customers</Link>,
+            label: <Link to="/customers">{t('nav.customers')}</Link>,
         },
         {
             key: '/search-by-root',
             icon: <FormOutlined />,
-            label: <Link to="/search-by-root">Quote</Link>,
+            label: <Link to="/search-by-root">{t('nav.quote')}</Link>,
         },
         {
             key: '/schedule',
             icon: <CalendarOutlined />,
-            label: <Link to="/schedule">Schedule</Link>,
+            label: <Link to="/schedule">{t('nav.schedule')}</Link>,
         },
         {
             key: '/open',
             icon: <FolderOpenOutlined />,
-            label: <Link to="/open">Dashboard</Link>,
+            label: <Link to="/open">{t('nav.dashboard')}</Link>,
         },
         {
             key: '/reports',
             icon: <BarChartOutlined />,
-            label: <Link to="/reports">Reports</Link>,
+            label: <Link to="/reports">{t('nav.reports')}</Link>,
         },
         {
             key: '/service-contact-form',
@@ -193,7 +196,7 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
             label: (
                 <Link to="/service-contact-form">
                     <span className="inline-flex items-center gap-2">
-                        <span>Service Inquiries</span>
+                        <span>{t('nav.serviceInquiries')}</span>
                         {!collapsed && localBadgeCount > 0 && (
                             <Badge
                                 count={localBadgeCount}
@@ -216,13 +219,13 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
         {
             key: '/employee-attendance',
             icon: <AuditOutlined />,
-            label: <Link to="/employee-attendance">Employee Attendance</Link>,
+            label: <Link to="/employee-attendance">{t('nav.employeeAttendance')}</Link>,
         },
 
         {
             key: '/chat',
             icon: <MdSupportAgent style={{ fontSize: '1.2rem' }} />,
-            label: <Link to="/chat">Live Chat</Link>,
+            label: <Link to="/chat">{t('nav.liveChat')}</Link>,
         },
         // Add other authenticated links here if needed
     ];
@@ -231,7 +234,7 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
         <Menu items={[
             {
                 key: 'profile',
-                label: <Link to="/profile">Profile</Link>,
+                label: <Link to="/profile">{t('auth.profile')}</Link>,
                 icon: <UserOutlined />
             },
             /* {
@@ -244,7 +247,7 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
             },
             {
                 key: 'logout',
-                label: 'Logout',
+                label: t('auth.logout'),
                 icon: <LogoutOutlined />,
                 danger: true,
                 onClick: onLogout
@@ -281,8 +284,11 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
                     />
                 </div>
 
-                {/* Bottom: Profile */}
+                {/* Bottom: Language Toggle + Profile */}
                 <div className="p-4 border-t border-gray-100">
+                    <div className={`flex ${collapsed ? 'justify-center' : 'justify-start'} mb-3`}>
+                        <LanguageToggle compact={collapsed} />
+                    </div>
                     <Dropdown overlay={profileMenu} trigger={['click']} placement="topRight">
                         <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between'} p-2 rounded-lg hover:bg-violet-50 cursor-pointer transition-colors group`}>
                             <div className="flex items-center gap-3">
@@ -295,7 +301,7 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
                                 </div>
                                 {!collapsed && (
                                     <div className="flex flex-col min-w-0">
-                                        <span className="text-sm font-medium text-slate-700 truncate group-hover:text-violet-700">My Account</span>
+                                        <span className="text-sm font-medium text-slate-700 truncate group-hover:text-violet-700">{t('auth.myAccount')}</span>
                                     </div>
                                 )}
                             </div>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
     Form,
@@ -114,6 +115,7 @@ const validatePhoneNumber = (value) => {
 };
 
 const SignUpForm = ({ onSuccess, onCancel }) => {
+    const { t } = useTranslation();
     const [form] = Form.useForm();
     const [selectedCountry, setSelectedCountry] = useState('USA');
     const [availableStates, setAvailableStates] = useState(getStatesOrProvinces('USA'));
@@ -286,7 +288,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                     <Col xs={24} sm={12}>
                         <Form.Item
                             name="businessName"
-                            label="Business Name"
+                            label={t('customers.companyName')}
                             rules={[{ required: true, message: 'Please input business name!' }]}
                             style={formItemStyle}
                         >
@@ -296,7 +298,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                     <Col xs={24} sm={12}>
                         <Form.Item
                             name="ownerName"
-                            label="Contact Name"
+                            label={t('customers.contactName')}
                             rules={[{ required: true, message: 'Please input contact name!' }]}
                             style={formItemStyle}
                         >
@@ -309,7 +311,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                     <Col xs={24} sm={12}>
                         <Form.Item
                             name="email"
-                            label="Email"
+                            label={t('auth.email')}
                             rules={[
                                 { required: true, message: 'Please input email!' },
                                 { type: 'email', message: 'Invalid email!' }
@@ -359,7 +361,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                     <Col xs={24} sm={12}>
                         <Form.Item
                             name="phone"
-                            label="Phone"
+                            label={t('customers.phone')}
                             rules={[
                                 { required: true, message: 'Please input phone number!' },
                                 { validator: (_, value) => validatePhoneNumber(value || '') }
@@ -406,7 +408,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
 
                 <Form.Item
                     name="addressLine1"
-                    label="Address Line 1"
+                    label={t('customers.addressLine1')}
                     rules={[{ required: true, message: 'Please input address!' }]}
                     style={formItemStyle}
                 >
@@ -426,7 +428,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                     <Col xs={24} sm={12}>
                         <Form.Item
                             name="country"
-                            label="Country"
+                            label={t('customers.country')}
                             rules={[{ required: true, message: 'Please select country!' }]}
                             initialValue="USA"
                             style={formItemStyle}
@@ -472,7 +474,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                     <Col xs={24} sm={12}>
                         <Form.Item
                             name="city"
-                            label="City"
+                            label={t('customers.city')}
                             rules={[{ required: true, message: 'Please enter or select city!' }]}
                             style={formItemStyle}
                         >
@@ -493,7 +495,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                     <Col xs={24} sm={12}>
                         <Form.Item
                             name="postalCode"
-                            label="Zip Code"
+                            label={t('customers.zipCode')}
                             rules={[{ required: true, message: 'Please input zip code!' }]}
                             style={formItemStyle}
                         >
@@ -527,7 +529,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                 <Form.Item style={{ marginBottom: 0, marginTop: '24px' }}>
                     <Space style={{ width: '100%', justifyContent: 'center' }}>
                         <Button onClick={onCancel}>
-                            Cancel
+                            {t('common.cancel')}
                         </Button>
                         <Button
                             type="primary"

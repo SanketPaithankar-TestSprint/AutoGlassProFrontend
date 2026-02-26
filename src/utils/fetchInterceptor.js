@@ -18,9 +18,11 @@ export const setupFetchInterceptor = () => {
                 } else if (!window.location.pathname.includes('/auth')) {
                     console.warn("Unauthorized access detected. Redirecting to login...");
 
-                    // Clear all storage
+                    // Preserve language preference before clearing storage
+                    const savedLang = localStorage.getItem('i18nextLng');
                     localStorage.clear();
                     sessionStorage.clear();
+                    if (savedLang) localStorage.setItem('i18nextLng', savedLang);
 
                     window.location.href = '/auth';
                 }
