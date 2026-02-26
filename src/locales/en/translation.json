@@ -265,6 +265,21 @@
         "specialInstructions": "Special Instructions",
         "contactFormConfig": "Contact Form Config"
     },
+    "distributors": {
+        "title": "Distributor Credentials",
+        "addCredential": "Add Credential",
+        "noCredentialsFound": "No credentials found",
+        "addCredentialsToManage": "Add credentials to manage integrations.",
+        "distributor": "Distributor",
+        "username": "Username",
+        "agentId": "Agent ID",
+        "accountNumber": "Account Number",
+        "set": "Set",
+        "notSet": "Not Set",
+        "editCredential": "Edit Credential",
+        "deleteCredential": "Delete Credential",
+        "deleteConfirm": "Are you sure you want to delete this credential?"
+    },
     "pricing": {
         "fetchKitPricesFailed": "Failed to fetch kit prices",
         "priceUpdated": "Price for {{code}} updated",

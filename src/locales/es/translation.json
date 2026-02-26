@@ -265,6 +265,21 @@
         "specialInstructions": "Instrucciones Especiales",
         "contactFormConfig": "Configuración de Formulario de Contacto"
     },
+    "distributors": {
+        "title": "Credenciales de Distribuidor",
+        "addCredential": "Añadir Credencial",
+        "noCredentialsFound": "No se encontraron credenciales",
+        "addCredentialsToManage": "Añade credenciales para gestionar integraciones.",
+        "distributor": "Distribuidor",
+        "username": "Nombre de Usuario",
+        "agentId": "ID de Agente",
+        "accountNumber": "Número de Cuenta",
+        "set": "Establecido",
+        "notSet": "No Establecido",
+        "editCredential": "Editar Credencial",
+        "deleteCredential": "Eliminar Credencial",
+        "deleteConfirm": "¿Estás seguro de que deseas eliminar esta credencial?"
+    },
     "pricing": {
         "fetchKitPricesFailed": "Error al obtener los precios de los kits",
         "priceUpdated": "Precio del {{code}} actualizado",

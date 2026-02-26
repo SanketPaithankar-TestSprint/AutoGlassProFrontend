@@ -20,9 +20,10 @@ import SpecialInstructions from "./SpecialInstructions";
 import Shops from "./Shops";
 import EmployeeManagement from "./EmployeeManagement";
 import SlugConfig from "../SlugConfig/SlugConfig";
-import { COUNTRIES, getStatesOrProvinces, getCities } from "../../const/locations";
+import { getStatesOrProvinces, getCities, COUNTRIES } from "../../const/locations";
 import { useSidebarStore } from '../../store/useSidebarStore';
 import { getPageBackground } from '../../const/pageBackgrounds';
+import { useTranslation } from 'react-i18next';
 
 const Profile = () => {
     const [activeTab, setActiveTab] = useState('profile');
@@ -31,6 +32,7 @@ const Profile = () => {
     const queryClient = useQueryClient();
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const setActiveTabBg = useSidebarStore(state => state.setActiveTabBg);
+    const { t } = useTranslation();
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
