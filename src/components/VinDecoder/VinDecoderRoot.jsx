@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { Collapse } from 'antd';
 
 // ─── NHTSA API ─────────────────────────────────────────────────────────────────
 const NHTSA_BASE = 'https://vpic.nhtsa.dot.gov/api';
@@ -164,7 +165,7 @@ export default function VinDecoderRoot() {
     // ── SEO meta tags ──────────────────────────────────────────────────────────
     React.useEffect(() => {
         const prevTitle = document.title;
-        document.title = 'Free VIN Decoder | AutoPane AI — Instant Vehicle Info from NHTSA';
+        document.title = 'Free VIN Decoder | Official NHTSA Vehicle Lookup | APAI';
 
         const setMeta = (name, content, prop = false) => {
             const attr = prop ? 'property' : 'name';
@@ -180,21 +181,39 @@ export default function VinDecoderRoot() {
             return tag;
         };
 
-        const desc = 'Decode any 17-character VIN instantly with AutoPane AI\'s free VIN Decoder — powered by the official NHTSA API. Get make, model, engine, safety features, manufacturing details and more, no account required.';
+        const desc = 'Use APAI’s free VIN decoder to instantly identify vehicle year, make, model, and safety features. Powered by official NHTSA data for 100% accuracy.';
         const keywords = 'VIN decoder, free VIN lookup, vehicle identification number, NHTSA VIN, car decoder, VIN check, auto glass VIN, vehicle info, AutoPane AI';
 
         const mDesc = setMeta('description', desc);
         const mKw = setMeta('keywords', keywords);
         const mRobots = setMeta('robots', 'index, follow');
-        const ogTitle = setMeta('og:title', 'Free VIN Decoder | AutoPane AI', true);
+        const ogTitle = setMeta('og:title', 'Free VIN Decoder | Official NHTSA Vehicle Lookup | APAI', true);
         const ogDesc = setMeta('og:description', desc, true);
         const ogUrl = setMeta('og:url', 'https://autopaneai.com/vin-decoder', true);
         const ogType = setMeta('og:type', 'website', true);
         const canon = setLink('canonical', 'https://autopaneai.com/vin-decoder');
 
+        const schemaString = JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            "name": "APAI VIN Decoder",
+            "applicationCategory": "BusinessApplication",
+            "operatingSystem": "All",
+            "description": "Free VIN decoder from APAI to instantly identify vehicle year, make, model, and safety features using official NHTSA data.",
+            "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD"
+            }
+        });
+        const schemaScript = document.createElement('script');
+        schemaScript.type = 'application/ld+json';
+        schemaScript.textContent = schemaString;
+        document.head.appendChild(schemaScript);
+
         return () => {
             document.title = prevTitle;
-            [mDesc, mKw, mRobots, ogTitle, ogDesc, ogUrl, ogType, canon].forEach(el => el?.parentNode?.removeChild(el));
+            [mDesc, mKw, mRobots, ogTitle, ogDesc, ogUrl, ogType, canon, schemaScript].forEach(el => el?.parentNode?.removeChild(el));
         };
     }, []);
 
@@ -268,8 +287,8 @@ export default function VinDecoderRoot() {
                                     {years.map(y => <option key={y} value={y}>{y}</option>)}
                                 </select>
                                 <button type="submit" disabled={loading || !vin.trim()}
-                                    className="px-7 py-3.5 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-md transition-all text-sm whitespace-nowrap hover:opacity-90"
-                                    style={{ background: 'linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)' }}>
+                                    className="px-8 py-3.5 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-full shadow-md shadow-violet-200 transition-all text-base whitespace-nowrap bg-violet-600 hover:bg-violet-500"
+                                >
                                     {loading ? <span className="flex items-center gap-2"><svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>Decoding…</span> : 'Decode VIN'}
                                 </button>
                             </div>
@@ -316,8 +335,8 @@ export default function VinDecoderRoot() {
                                 {years.map(y => <option key={y} value={y}>{y}</option>)}
                             </select>
                             <button type="submit" disabled={loading || !vin.trim()}
-                                className="px-5 py-2 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all text-sm whitespace-nowrap hover:opacity-90"
-                                style={{ background: 'linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)' }}>
+                                className="px-5 py-2 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold rounded-full shadow-sm shadow-violet-200 transition-all text-sm whitespace-nowrap bg-violet-600 hover:bg-violet-500"
+                            >
                                 {loading ? '…' : 'Decode'}
                             </button>
                         </form>
@@ -371,16 +390,99 @@ export default function VinDecoderRoot() {
                     </>
                 )}
 
-                {/* Empty state */}
-                {!result && !error && !loading && (
-                    <div className="text-center py-16 text-slate-400">
-                        <svg className="w-16 h-16 mx-auto mb-4 text-slate-200" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                            <rect x="3" y="6" width="18" height="13" rx="2" /><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2" /><line x1="12" y1="11" x2="12" y2="16" /><line x1="9.5" y1="13.5" x2="14.5" y2="13.5" />
-                        </svg>
-                        <p className="font-semibold text-slate-500 text-lg">Enter a VIN to get started</p>
-                        <p className="text-sm mt-1">You'll get make, model, engine, safety ratings, manufacturing details and more</p>
-                    </div>
-                )}
+
+            </div>
+
+            {/* ── Additional Content ── */}
+            <div className="max-w-4xl mx-auto px-4 py-6 sm:py-12 text-slate-700">
+                <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-4">Free VIN Decoder: Official NHTSA Vehicle Lookup for Auto Glass Pros</h2>
+                <p className="mb-8 text-lg">Instantly identify vehicle specifications with 100% accuracy using the APAI free VIN check, powered by official NHTSA data.</p>
+
+                <h3 className="text-xl font-semibold text-slate-800 mb-3">Precision Starts with the Right Data</h3>
+                <p className="mb-4 leading-relaxed">In the auto glass industry, a "close enough" part match isn't good enough. The APAI VIN decoder provides instant access to NHTSA vehicle specifications, ensuring you identify the exact year, make, and model before you ever place a glass order.</p>
+                <p className="mb-8 leading-relaxed">By leveraging the official NHTSA VIN lookup, our tool eliminates the guesswork that leads to costly returns and wasted technician time. Whether you are performing a windshield VIN search or a comprehensive free VIN report in the US, this tool is the foundation for a professional repair workflow.</p>
+
+                <h3 className="text-xl font-semibold text-slate-800 mb-3">Why Use the APAI Auto Glass VIN Decoder?</h3>
+                <ul className="list-disc pl-6 mb-8 space-y-3">
+                    <li className="leading-relaxed"><strong>Official Accuracy:</strong> Directly integrated with the NHTSA API for the most reliable vehicle data available.</li>
+                    <li className="leading-relaxed"><strong>Built for Speed:</strong> Designed for technicians on the road who need a free VIN check that works instantly on mobile or desktop.</li>
+                    <li className="leading-relaxed"><strong>Beyond the Basics:</strong> While other decoders stop at the model name, APAI helps you prepare for the next step—identifying specific glass features and ADAS requirements.</li>
+                </ul>
+
+                <h3 className="text-xl font-semibold text-slate-800 mb-3">From "Decoding" to "Doing": The SmartVIN™ Advantage</h3>
+                <p className="mb-4 leading-relaxed">While a standard VIN decoder tells you the vehicle's engine size and assembly plant, auto glass professionals need more. A basic NHTSA VIN lookup won't always tell you if a car has a rain sensor, a heated wiper park, or a forward-facing camera.</p>
+                <p className="mb-4 leading-relaxed">That is why we built SmartVIN™. While this page provides a high-quality free VIN check, the full APAI platform takes that data further:</p>
+                <ul className="list-disc pl-6 mb-10 space-y-3">
+                    <li className="leading-relaxed"><strong>Identify Car Parts by VIN:</strong> Automatically map decoded data to specific NAGS part numbers.</li>
+                    <li className="leading-relaxed"><strong>ADAS Identification:</strong> Know exactly which safety systems are on board and what calibration is required before the tech arrives.</li>
+                    <li className="leading-relaxed"><strong>Live Pricing Integration:</strong> Move from a decoded VIN to a live price from distributors like Pilkington in seconds.</li>
+                </ul>
+
+                <h3 className="text-2xl font-bold text-slate-900 mb-6 border-t pt-8">Frequently Asked Questions</h3>
+                <div className="mb-8">
+                    <Collapse
+                        items={[
+                            {
+                                key: '1',
+                                label: <span className="font-semibold text-slate-900">Is this a free VIN check?</span>,
+                                children: (
+                                    <p className="text-slate-700 leading-relaxed">Yes. The APAI VIN decoder is a completely free tool provided to help the auto glass community access accurate NHTSA vehicle specifications quickly and easily.</p>
+                                ),
+                                style: { borderRadius: '8px', marginBottom: '8px' }
+                            },
+                            {
+                                key: '2',
+                                label: <span className="font-semibold text-slate-900">What information is included in the NHTSA VIN lookup?</span>,
+                                children: (
+                                    <p className="text-slate-700 leading-relaxed">Our decoder provides a comprehensive overview of the vehicle, including the year, make, model, body class, engine type, and safety features like airbags and brake systems.</p>
+                                ),
+                                style: { borderRadius: '8px', marginBottom: '8px' }
+                            },
+                            {
+                                key: '3',
+                                label: <span className="font-semibold text-slate-900">Can I identify car parts by VIN using this tool?</span>,
+                                children: (
+                                    <p className="text-slate-700 leading-relaxed">This free tool identifies the vehicle’s core specifications. For industry-specific needs—like identifying the exact windshield part number or ADAS camera type—we recommend the full APAI software suite.</p>
+                                ),
+                                style: { borderRadius: '8px', marginBottom: '8px' }
+                            },
+                            {
+                                key: '4',
+                                label: <span className="font-semibold text-slate-900">Does this windshield VIN search work for all US vehicles?</span>,
+                                children: (
+                                    <p className="text-slate-700 leading-relaxed">Our decoder works for all 17-digit VINs registered in the United States from 1981 to the current 2026 models, utilizing the latest NHTSA vehicle specifications.</p>
+                                ),
+                                style: { borderRadius: '8px', marginBottom: '8px' }
+                            },
+                            {
+                                key: '5',
+                                label: <span className="font-semibold text-slate-900">How do I get more than just the basic specs?</span>,
+                                children: (
+                                    <p className="text-slate-700 leading-relaxed">For just $99 per month, you can upgrade to the full APAI platform. This gives you the power to convert decoded VIN data into instant quotes, order parts directly from distributors, and manage your entire paperless shop.</p>
+                                ),
+                                style: { borderRadius: '8px', marginBottom: '8px' }
+                            }
+                        ]}
+                        accordion
+                        style={{
+                            backgroundColor: '#f8fafc',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '12px'
+                        }}
+                    />
+                </div>
+
+                <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-8 sm:p-10 text-center mt-12 mb-6 shadow-sm">
+                    <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-4">Ready to Scale Your Shop?</h3>
+                    <p className="text-lg text-slate-700 mb-8 max-w-2xl mx-auto leading-relaxed">
+                        The free APAI VIN decoder is just the beginning. Automate your quoting, eliminate part errors, and manage your technicians from one mobile-first dashboard.
+                    </p>
+                    <a href="/pricing" className="inline-block px-8 py-3.5 font-bold rounded-full text-white shadow-md shadow-violet-200 transition-all bg-violet-600 hover:bg-violet-500 text-base"
+                    >
+                        Start with APAI at just $99/mo.
+                    </a>
+                    <p className="mt-4 text-sm text-slate-500 font-medium">No hidden fees. Build a smarter shop today.</p>
+                </div>
             </div>
 
             {/* Footer note */}

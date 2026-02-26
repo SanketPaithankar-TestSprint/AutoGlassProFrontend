@@ -77,21 +77,6 @@ const Home = () => {
                 description="Scale your auto glass business with APAI. Automate quoting, invoicing, and NAGS pricing. The all-in-one AI platform built to grow your shop for only $99/mo."
             />
 
-            {/* Global Gradient Background */}
-            <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-                <motion.div
-                    className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] min-w-[500px] min-h-[500px] rounded-full blur-[120px] opacity-20"
-                    style={{ background: 'linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)', willChange: 'transform, opacity' }}
-                    animate={{ scale: [1, 1.1, 1], opacity: [0.15, 0.25, 0.15] }}
-                    transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-                />
-                <motion.div
-                    className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] min-w-[500px] min-h-[500px] rounded-full blur-[120px] opacity-20"
-                    style={{ background: 'linear-gradient(135deg, #00A8E4 0%, #7E5CFE 100%)', willChange: 'transform, opacity' }}
-                    animate={{ scale: [1, 1.2, 1], opacity: [0.15, 0.25, 0.15] }}
-                    transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                />
-            </div>
 
             <div className="relative z-10">
                 {/* Hero Section */}

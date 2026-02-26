@@ -8,7 +8,7 @@ import {
     CalendarOutlined, UserOutlined, CheckCircleOutlined,
     CloseCircleOutlined, ClockCircleOutlined, TeamOutlined,
     PlusOutlined, FieldTimeOutlined, ThunderboltOutlined,
-    DownloadOutlined, SearchOutlined, UnorderedListOutlined
+    DownloadOutlined, SearchOutlined, UnorderedListOutlined, InfoCircleOutlined
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { getAllAttendance, recordAttendance, bulkRecordAttendance } from "../../api/attendance";
@@ -424,20 +424,22 @@ const AttendanceView = ({ token, isMobile }) => {
                         <tbody>
                             {matrixData.length === 0 ? (
                                 <tr>
-                                    <td colSpan={daysInMonth + 4} style={{ textAlign: "center", padding: 60, color: "#94a3b8" }}>
-                                        <Empty
-                                            image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                            description="No attendance records for this month"
-                                        >
-                                            <Button
-                                                type="primary"
-                                                icon={<PlusOutlined />}
-                                                onClick={() => { recordForm.resetFields(); setRecordModalOpen(true); }}
-                                                style={{ background: "#7c3aed", borderColor: "#7c3aed" }}
+                                    <td colSpan={daysInMonth + 4} className="p-0 border-0" style={{ height: "400px", minWidth: "100%" }}>
+                                        <div style={{ position: "sticky", left: 0, width: "100%", display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
+                                            <Empty
+                                                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                                description={<span style={{ color: "#94a3b8" }}>No attendance records for this month</span>}
                                             >
-                                                Record Attendance
-                                            </Button>
-                                        </Empty>
+                                                <Button
+                                                    type="primary"
+                                                    icon={<PlusOutlined />}
+                                                    onClick={() => { recordForm.resetFields(); setRecordModalOpen(true); }}
+                                                    style={{ background: "#7c3aed", borderColor: "#7c3aed" }}
+                                                >
+                                                    Record Attendance
+                                                </Button>
+                                            </Empty>
+                                        </div>
                                     </td>
                                 </tr>
                             ) : (
@@ -548,6 +550,9 @@ const AttendanceView = ({ token, isMobile }) => {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                 <div className="flex items-center gap-4">
                     <h1 className="!text-[30px] font-bold text-slate-900 m-0">Attendance</h1>
+                    <Tooltip title="View and manage employee attendance records" placement="right">
+                        <InfoCircleOutlined className="text-slate-400 text-base cursor-pointer hover:text-violet-500 transition-colors" />
+                    </Tooltip>
                     <div className="bg-slate-100 p-1 rounded-lg flex gap-1 hidden sm:flex">
                         <Button
                             type={viewMode === 'list' ? 'primary' : 'text'}

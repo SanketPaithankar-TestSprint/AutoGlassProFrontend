@@ -1,6 +1,21 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useSidebarStore } from '../../store/useSidebarStore';
+import { getPageBackground } from '../../const/pageBackgrounds';
 
 const DashboardLayout = ({ children, sidebar, isMobile, sidebarOpen, setSidebarOpen }) => {
+    const setActiveTabBg = useSidebarStore(state => state.setActiveTabBg);
+    const location = useLocation();
+
+    useEffect(() => {
+        // When the filter sidebar is open on desktop, its background is white.
+        // Otherwise it directly touches the main background for the current page.
+        if (sidebarOpen && !isMobile) {
+            setActiveTabBg('#ffffff');
+        } else {
+            setActiveTabBg(getPageBackground(location.pathname));
+        }
+    }, [sidebarOpen, isMobile, location.pathname, setActiveTabBg]);
 
     return (
         <div className="flex min-h-screen bg-slate-50">

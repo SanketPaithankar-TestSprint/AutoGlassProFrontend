@@ -21,7 +21,8 @@ import Shops from "./Shops";
 import EmployeeManagement from "./EmployeeManagement";
 import SlugConfig from "../SlugConfig/SlugConfig";
 import { COUNTRIES, getStatesOrProvinces, getCities } from "../../const/locations";
-import { useTranslation } from "react-i18next";
+import { useSidebarStore } from '../../store/useSidebarStore';
+import { getPageBackground } from '../../const/pageBackgrounds';
 
 const Profile = () => {
     const [activeTab, setActiveTab] = useState('profile');
@@ -29,13 +30,22 @@ const Profile = () => {
     const [pageSize, setPageSize] = useState(10);
     const queryClient = useQueryClient();
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-    const { t } = useTranslation();
+    const setActiveTabBg = useSidebarStore(state => state.setActiveTabBg);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    // Sync active tab background: White if desktop (shows sub-menu), standard page bg if mobile
+    useEffect(() => {
+        if (!isMobile) {
+            setActiveTabBg('#ffffff');
+        } else {
+            setActiveTabBg(getPageBackground('/profile'));
+        }
+    }, [isMobile, setActiveTabBg]);
 
     // Modals state
     const [isCustomerModalVisible, setIsCustomerModalVisible] = useState(false);

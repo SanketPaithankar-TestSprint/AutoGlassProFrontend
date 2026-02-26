@@ -53,23 +53,26 @@ const HeaderBar = ({
                 <div className="flex items-center gap-3 w-full sm:w-auto">
                     {/* View Mode Toggle - Hide on mobile */}
                     {!isMobile && (
-                        <Segmented
-                            value={viewMode}
-                            onChange={setViewMode}
-                            options={[
-                                {
-                                    label: 'Grid',
-                                    value: 'grid',
-                                    icon: <AppstoreOutlined />,
-                                },
-                                {
-                                    label: 'List',
-                                    value: 'list',
-                                    icon: <UnorderedListOutlined />,
-                                },
-                            ]}
-                            className="flex-shrink-0"
-                        />
+                        <div className="bg-slate-100 p-1 rounded-lg flex gap-1">
+                            <Button
+                                type={viewMode === 'grid' ? 'primary' : 'text'}
+                                icon={<AppstoreOutlined />}
+                                onClick={() => setViewMode('grid')}
+                                className={`flex-shrink-0 border-0 ${viewMode === 'grid' ? 'bg-white shadow-sm text-violet-600 font-medium' : 'text-slate-500 hover:text-slate-700'}`}
+                                size="small"
+                            >
+                                Grid
+                            </Button>
+                            <Button
+                                type={viewMode === 'list' ? 'primary' : 'text'}
+                                icon={<UnorderedListOutlined />}
+                                onClick={() => setViewMode('list')}
+                                className={`flex-shrink-0 border-0 ${viewMode === 'list' ? 'bg-white shadow-sm text-violet-600 font-medium' : 'text-slate-500 hover:text-slate-700'}`}
+                                size="small"
+                            >
+                                List
+                            </Button>
+                        </div>
                     )}
 
                     {/* Filter Toggle Button */}

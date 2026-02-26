@@ -1,4 +1,5 @@
 import React, { useState, useEffect, Suspense } from 'react';
+import { motion } from 'framer-motion';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { Layout, App as AntApp } from 'antd';
@@ -225,8 +226,25 @@ function AppContent() {
         <Layout className="min-h-screen bg-white flex flex-col">
           <Header onLoginSuccess={handleLoginSuccess} />
 
-          <Content className="flex-1 flex flex-col"> {/* Header is fixed provided we handle spacing in pages */}
-            <div className={`flex flex-col ${location.pathname === '/auth' ? '' : 'min-h-screen'} ${(location.pathname === '/' || location.pathname === '/auth') ? '' : 'pt-20 lg:pt-24'}`}>
+          <Content className="flex-1 flex flex-col relative overflow-hidden"> {/* Header is fixed provided we handle spacing in pages */}
+            {/* Shared Gradient Background for all public pages */}
+            {location.pathname !== '/auth' && (
+              <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+                <motion.div
+                  className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] min-w-[500px] min-h-[500px] rounded-full blur-[120px] opacity-20"
+                  style={{ background: 'linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)', willChange: 'transform, opacity' }}
+                  animate={{ scale: [1, 1.1, 1], opacity: [0.15, 0.25, 0.15] }}
+                  transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+                />
+                <motion.div
+                  className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] min-w-[500px] min-h-[500px] rounded-full blur-[120px] opacity-20"
+                  style={{ background: 'linear-gradient(135deg, #00A8E4 0%, #7E5CFE 100%)', willChange: 'transform, opacity' }}
+                  animate={{ scale: [1, 1.2, 1], opacity: [0.15, 0.25, 0.15] }}
+                  transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                />
+              </div>
+            )}
+            <div className={`flex flex-col relative z-10 ${location.pathname === '/auth' ? '' : 'min-h-screen'} ${(location.pathname === '/' || location.pathname === '/auth') ? '' : 'pt-20 lg:pt-24'}`}>
               <Suspense fallback={
                 <div className="flex items-center justify-center h-full">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
