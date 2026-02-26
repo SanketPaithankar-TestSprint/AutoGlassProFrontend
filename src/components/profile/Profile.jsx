@@ -20,7 +20,6 @@ import SpecialInstructions from "./SpecialInstructions";
 import Shops from "./Shops";
 import EmployeeManagement from "./EmployeeManagement";
 import SlugConfig from "../SlugConfig/SlugConfig";
-import EmployeeManagement from "../EmployeeAttendance/EmployeeManagement";
 import { COUNTRIES, getStatesOrProvinces, getCities } from "../../const/locations";
 
 const Profile = () => {
