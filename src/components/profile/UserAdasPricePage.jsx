@@ -3,14 +3,15 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Input, Card, notification, Table, Tag } from "antd";
 import { DollarOutlined } from "@ant-design/icons";
 import { createUserAdasPrice, getUserAdasPrices } from "../../api/userAdasPrices";
-
 import { ADAS_TYPES } from "../../const/adasTypes";
+import { useTranslation } from 'react-i18next';
 
 const UserAdasPricePage = () => {
     const [prices, setPrices] = useState({}); // Map of code -> price
     const [updating, setUpdating] = useState({}); // Map of code -> boolean
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const queryClient = useQueryClient();
+    const { t } = useTranslation();
 
     React.useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -24,7 +25,7 @@ const UserAdasPricePage = () => {
         onError: (error) => {
             console.error("Error fetching ADAS prices:", error);
             notification.error({
-                message: "Failed to fetch ADAS prices",
+                message: t('pricing.fetchAdasPricesFailed', { defaultValue: 'Failed to fetch ADAS prices' }),
                 description: error.message
             });
         }
@@ -62,12 +63,12 @@ const UserAdasPricePage = () => {
                 calibrationPrice: price
             });
 
-            notification.success({ message: `${code} Price updated` });
+            notification.success({ message: t('pricing.priceUpdated', { defaultValue: 'Price for {{code}} updated', code }) });
             queryClient.invalidateQueries({ queryKey: ['userAdasPrices'] });
         } catch (error) {
             console.error("Error saving ADAS price:", error);
             notification.error({
-                message: "Failed to update price",
+                message: t('pricing.updatePriceFailed', { defaultValue: 'Failed to update price' }),
                 description: error.message
             });
         } finally {
@@ -83,13 +84,13 @@ const UserAdasPricePage = () => {
 
     const columns = [
         {
-            title: 'Calibration Type',
+            title: t('pricing.calibrationType', { defaultValue: 'Calibration Type' }),
             dataIndex: 'code',
             key: 'code',
             render: text => <span className="font-medium text-slate-700">{text}</span>
         },
         {
-            title: 'Price',
+            title: t('pricing.price', { defaultValue: 'Price' }),
             dataIndex: 'price',
             key: 'price',
             width: 200,
@@ -109,15 +110,15 @@ const UserAdasPricePage = () => {
             )
         },
         {
-            title: 'Status',
+            title: t('employees.status', { defaultValue: 'Status' }),
             key: 'status',
             width: 100,
             render: (_, record) => {
                 const isSet = prices[record.code] !== undefined && prices[record.code] !== null;
                 return isSet ? (
-                    <Tag color="green">Active</Tag>
+                    <Tag color="green">{t('employees.active', { defaultValue: 'Active' })}</Tag>
                 ) : (
-                    <Tag>Not Set</Tag>
+                    <Tag>{t('pricing.notSet', { defaultValue: 'Not Set' })}</Tag>
                 );
             }
         }
@@ -126,7 +127,7 @@ const UserAdasPricePage = () => {
     return (
         <div className="space-y-6 animate-fadeIn max-w-4xl mx-auto">
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">ADAS Calibration Pricing</h2>
+                <h2 className="text-2xl font-bold text-gray-800">{t('pricing.adasCalibrationPricing', { defaultValue: 'ADAS Calibration Pricing' })}</h2>
             </div>
 
             <Card className="shadow-sm border border-slate-200">
@@ -134,9 +135,9 @@ const UserAdasPricePage = () => {
                     <div className="flex items-center gap-3 mb-2">
                         <DollarOutlined className="text-2xl text-violet-600" />
                         <div>
-                            <h3 className="text-lg font-semibold text-gray-800">Manage ADAS Prices</h3>
+                            <h3 className="text-lg font-semibold text-gray-800">{t('pricing.manageAdasPrices', { defaultValue: 'Manage ADAS Prices' })}</h3>
                             <p className="text-sm text-gray-500">
-                                Set your standard pricing for ADAS calibration types.
+                                {t('pricing.manageAdasPricesDesc', { defaultValue: 'Set your standard pricing for ADAS calibration types.' })}
                             </p>
                         </div>
                     </div>
@@ -156,9 +157,9 @@ const UserAdasPricePage = () => {
                     {isMobile && (
                         <div className="space-y-3">
                             {loading ? (
-                                <div className="text-center py-8 text-gray-500">Loading...</div>
+                                <div className="text-center py-8 text-gray-500">{t('pricing.loadingLaborRate', { defaultValue: 'Loading...' })}</div>
                             ) : tableData.length === 0 ? (
-                                <div className="text-center py-8 text-gray-500">No ADAS types found</div>
+                                <div className="text-center py-8 text-gray-500">{t('pricing.noAdasFound', { defaultValue: 'No ADAS types found' })}</div>
                             ) : (
                                 tableData.map((adas) => (
                                     <div key={adas.code} className="bg-slate-50 rounded-lg border border-slate-200 p-3">
@@ -167,7 +168,7 @@ const UserAdasPricePage = () => {
                                         </div>
                                         <div className="space-y-3">
                                             <div className="flex justify-between items-center">
-                                                <span className="text-gray-600 font-medium">Price:</span>
+                                                <span className="text-gray-600 font-medium">{t('pricing.price', { defaultValue: 'Price' })}:</span>
                                                 <div className="flex items-center gap-2">
                                                     <Input
                                                         type="number"
@@ -186,9 +187,9 @@ const UserAdasPricePage = () => {
                                             </div>
                                             <div>
                                                 {prices[adas.code] ? (
-                                                    <Tag color="green">✓ Set - ${prices[adas.code]}</Tag>
+                                                    <Tag color="green">✓ {t('pricing.set', { defaultValue: 'Set' })} - ${prices[adas.code]}</Tag>
                                                 ) : (
-                                                    <Tag color="red">Not Set</Tag>
+                                                    <Tag color="red">{t('pricing.notSet', { defaultValue: 'Not Set' })}</Tag>
                                                 )}
                                             </div>
                                         </div>

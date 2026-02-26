@@ -8,6 +8,7 @@ import { deleteShop } from "../../api/deleteShop";
 import { getValidToken } from "../../api/getValidToken";
 import { ShopOutlined, PlusOutlined, EditOutlined, DeleteOutlined, EnvironmentOutlined, PhoneOutlined, MailOutlined, GlobalOutlined, ReloadOutlined } from "@ant-design/icons";
 import { Modal, Form, Input, Button, notification, Popconfirm, Card, Empty, Tag } from "antd";
+import { useTranslation } from 'react-i18next';
 
 const formatPhoneNumber = (value) => {
     const digits = value.replace(/\D/g, '');
@@ -24,6 +25,7 @@ const Shops = ({ userProfile }) => {
     const [saving, setSaving] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [form] = Form.useForm();
+    const { t } = useTranslation();
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -114,7 +116,7 @@ const Shops = ({ userProfile }) => {
             const token = getValidToken();
             if (!token) throw new Error("No token found");
             await deleteShop(token, id);
-            notification.success({ message: "Shop deleted successfully" });
+            notification.success({ message: t('shops.title'), description: "Shop deleted successfully" });
             queryClient.invalidateQueries({ queryKey: ['shops'] });
         } catch (err) {
             console.error(err);
@@ -138,7 +140,7 @@ const Shops = ({ userProfile }) => {
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
                     <ShopOutlined className="text-violet-500" />
-                    Shops
+                    {t('shops.title')}
                 </h2>
                 <div className="flex gap-2">
                     <Button
@@ -147,7 +149,7 @@ const Shops = ({ userProfile }) => {
                         loading={loading}
                         title="Refresh list"
                     >
-                        Refresh
+                        {t('shops.refresh')}
                     </Button>
                     <Button
                         type="primary"
@@ -155,7 +157,7 @@ const Shops = ({ userProfile }) => {
                         onClick={handleAdd}
                         className="bg-violet-600 hover:bg-violet-700"
                     >
-                        Add Shop
+                        {t('shops.addShop')}
                     </Button>
                 </div>
             </div>
@@ -163,27 +165,26 @@ const Shops = ({ userProfile }) => {
             {(!shops || shops.length === 0) ? (
                 <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-gray-300">
                     <ShopOutlined className="text-4xl text-gray-300 mb-3" />
-                    <p className="text-gray-500">No shops found.</p>
-                    <p className="text-sm text-gray-400 mt-2">Create a new shop to get started.</p>
+                    <p className="text-gray-500">{t('shops.noShopsFound')}</p>
+                    <p className="text-sm text-gray-400 mt-2">{t('shops.createShopToStart')}</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {Array.isArray(shops) && shops.map((shop) => (
                         <Card
                             key={shop.id}
-                            className="shadow-sm hover:shadow-md transition-shadow border-gray-100 rounded-xl"
                             actions={[
-                                <Button type="text" icon={<EditOutlined />} onClick={() => handleEdit(shop)} key="edit">Edit</Button>,
+                                <Button type="text" icon={<EditOutlined />} onClick={() => handleEdit(shop)} key="edit">{t('shops.editShop')}</Button>,
                                 <Popconfirm
-                                    title="Delete shop"
-                                    description="Are you sure you want to delete this shop?"
+                                    title={t('shops.deleteShop')}
+                                    description={t('shops.deleteConfirm')}
                                     onConfirm={() => handleDelete(shop.id)}
                                     okText="Yes"
                                     cancelText="No"
                                     okButtonProps={{ danger: true }}
                                     key="delete"
                                 >
-                                    <Button type="text" danger icon={<DeleteOutlined />}>Delete</Button>
+                                    <Button type="text" danger icon={<DeleteOutlined />}>{t('shops.deleteShop')}</Button>
                                 </Popconfirm>
                             ]}
                         >
@@ -230,7 +231,7 @@ const Shops = ({ userProfile }) => {
                 title={
                     <div className="flex items-center gap-2">
                         <ShopOutlined />
-                        {editingShop ? "Edit Shop" : "Add New Shop"}
+                        {editingShop ? t('shops.editShop') : t('shops.addShop')}
                     </div>
                 }
                 open={isModalVisible}
@@ -240,14 +241,14 @@ const Shops = ({ userProfile }) => {
                     form.resetFields();
                 }}
                 confirmLoading={saving}
-                okText={editingShop ? "Update" : "Create"}
+                okText={editingShop ? t('shops.update') : t('shops.create')}
                 width={isMobile ? '95%' : 600}
                 style={isMobile ? { maxWidth: 'calc(100vw - 20px)' } : {}}
             >
                 <Form form={form} layout="vertical" className="mt-4">
                     <Form.Item
                         name="name"
-                        label="Shop Name"
+                        label={t('shops.shopName')}
                         rules={[{ required: true, message: "Please enter shop name" }]}
                     >
                         <Input placeholder="e.g. Auto Glass Pro - Downtown" size="large" />
@@ -255,7 +256,7 @@ const Shops = ({ userProfile }) => {
 
                     <Form.Item
                         name="address"
-                        label="Address"
+                        label={t('profile.address')}
                         rules={[{ required: true, message: "Please enter address" }]}
                     >
                         <Input.TextArea placeholder="Full address" rows={3} />
@@ -264,7 +265,7 @@ const Shops = ({ userProfile }) => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <Form.Item
                             name="phone"
-                            label="Phone"
+                            label={t('contact.phone')}
                             rules={[
                                 { required: true, message: "Please enter phone number" },
                                 {
@@ -274,7 +275,7 @@ const Shops = ({ userProfile }) => {
                                         if (digitsOnly.length >= 10 && digitsOnly.length <= 15) {
                                             return Promise.resolve();
                                         }
-                                        return Promise.reject(new Error('Phone must contain at least 10 digits'));
+                                        return Promise.reject(new Error(t('shops.phoneMustContain')));
                                     }
                                 }
                             ]}
@@ -291,7 +292,7 @@ const Shops = ({ userProfile }) => {
 
                         <Form.Item
                             name="email"
-                            label="Email"
+                            label={t('auth.email')}
                             rules={[
                                 {
                                     validator: (_, value) => {
@@ -300,7 +301,7 @@ const Shops = ({ userProfile }) => {
                                         if (emailRegex.test(value)) {
                                             return Promise.resolve();
                                         }
-                                        return Promise.reject(new Error('Invalid email format'));
+                                        return Promise.reject(new Error(t('shops.invalidEmail')));
                                     }
                                 }
                             ]}
@@ -311,14 +312,14 @@ const Shops = ({ userProfile }) => {
 
                     <Form.Item
                         name="website"
-                        label="Website"
-                        rules={[{ type: 'url', message: "Invalid URL" }]}
+                        label={t('shops.website')}
+                        rules={[{ type: 'url', message: t('shops.invalidUrl') }]}
                     >
                         <Input placeholder="https://autoglasspro.com" size="large" />
                     </Form.Item>
                 </Form>
             </Modal>
-        </div>
+        </div >
     );
 };
 

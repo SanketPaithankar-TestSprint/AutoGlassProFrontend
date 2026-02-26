@@ -21,6 +21,7 @@ import Shops from "./Shops";
 import EmployeeManagement from "./EmployeeManagement";
 import SlugConfig from "../SlugConfig/SlugConfig";
 import { COUNTRIES, getStatesOrProvinces, getCities } from "../../const/locations";
+import { useTranslation } from "react-i18next";
 
 const Profile = () => {
     const [activeTab, setActiveTab] = useState('profile');
@@ -28,6 +29,7 @@ const Profile = () => {
     const [pageSize, setPageSize] = useState(10);
     const queryClient = useQueryClient();
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const { t } = useTranslation();
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -214,7 +216,7 @@ const Profile = () => {
 
                     <div className="flex justify-between items-center mb-6">
                         <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                            <ShopOutlined className="text-violet-500" /> Business Information
+                            <ShopOutlined className="text-violet-500" /> {t('profile.businessInformation')}
                         </h2>
                         <Button
                             type="primary"
@@ -222,7 +224,7 @@ const Profile = () => {
                             onClick={handleEditProfile}
                             className="bg-violet-600 hover:bg-violet-700"
                         >
-                            Edit Profile
+                            {t('profile.editProfile')}
                         </Button>
                     </div>
 
@@ -240,9 +242,9 @@ const Profile = () => {
                             </div>
                         </div>
                         <div className="flex-1">
-                            <h3 className="text-sm font-bold text-gray-900 mb-1">Shop Logo</h3>
+                            <h3 className="text-sm font-bold text-gray-900 mb-1">{t('profile.shopLogo')}</h3>
                             <p className="text-xs text-gray-500 mb-2 md:mb-3 leading-tight">
-                                Upload a logo for your shop.
+                                {t('profile.uploadLogoDesc')}
                             </p>
                             <ImgCrop rotationSlider showReset aspect={1} modalWidth={isMobile ? 300 : 600}>
                                 <Upload
@@ -256,7 +258,7 @@ const Profile = () => {
                                         size="small"
                                         className="bg-white"
                                     >
-                                        {uploadingLogo ? "Uploading..." : "Change Logo"}
+                                        {uploadingLogo ? t('profile.uploading') : t('profile.changeLogo')}
                                     </Button>
                                 </Upload>
                             </ImgCrop>
@@ -265,15 +267,15 @@ const Profile = () => {
 
                     <div className="grid grid-cols-2 gap-4 md:gap-6">
                         <div className="space-y-1">
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Business Name</span>
+                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{t('profile.businessName')}</span>
                             <p className="text-gray-900 font-semibold text-lg">{profile.businessName || "-"}</p>
                         </div>
                         <div className="space-y-1">
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Owner Name</span>
+                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{t('profile.ownerName')}</span>
                             <p className="text-gray-900 font-semibold text-lg">{profile.ownerName || "-"}</p>
                         </div>
                         <div className="space-y-1">
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">User Type</span>
+                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{t('profile.userType')}</span>
                             <div>
                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                     {profile.userType || "-"}
@@ -281,11 +283,11 @@ const Profile = () => {
                             </div>
                         </div>
                         <div className="space-y-1">
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Business License</span>
+                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{t('profile.businessLicense')}</span>
                             <p className="text-gray-900 font-mono">{profile.businessLicenseNumber || "-"}</p>
                         </div>
                         <div className="space-y-1">
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">EIN</span>
+                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{t('profile.ein')}</span>
                             <p className="text-gray-900 font-mono">{profile.ein || "-"}</p>
                         </div>
                     </div>
@@ -293,20 +295,20 @@ const Profile = () => {
 
                 <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                     <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                        <PhoneOutlined className="text-violet-500" /> Contact Information
+                        <PhoneOutlined className="text-violet-500" /> {t('profile.contactInformation')}
                     </h2>
                     <div className="grid grid-cols-2 gap-4 md:gap-6">
                         <div className="space-y-1">
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Email</span>
+                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{t('auth.email')}</span>
                             <p className="text-gray-900 font-medium">{profile.email || "-"}</p>
                         </div>
                         <div className="space-y-1">
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Phone</span>
+                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{t('contact.phone')}</span>
                             <p className="text-gray-900 font-medium">{profile.phone || "-"}</p>
                         </div>
                         {profile.alternatePhone && (
                             <div className="space-y-1">
-                                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Alternate Phone</span>
+                                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{t('profile.alternatePhone')}</span>
                                 <p className="text-gray-900 font-medium">{profile.alternatePhone}</p>
                             </div>
                         )}
@@ -315,17 +317,17 @@ const Profile = () => {
 
                 <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                     <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                        <EnvironmentOutlined className="text-violet-500" /> Address
+                        <EnvironmentOutlined className="text-violet-500" /> {t('profile.address')}
                     </h2>
                     <div className="space-y-4">
                         <div className="space-y-1">
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Full Address</span>
+                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{t('profile.fullAddress')}</span>
                             <p className="text-gray-900 font-medium">{formatAddress(profile)}</p>
                         </div>
                     </div>
                 </div>
                 <Modal
-                    title="Edit Profile"
+                    title={t('profile.editProfile')}
                     open={isEditProfileModalVisible}
                     onOk={handleUpdateProfile}
                     onCancel={() => setIsEditProfileModalVisible(false)}
@@ -336,50 +338,50 @@ const Profile = () => {
                     <Form form={profileForm} layout="vertical">
                         {/* ... Business Info Fields ... */}
                         <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
-                            <Form.Item name="businessName" label="Business Name" rules={[{ required: true }]}>
+                            <Form.Item name="businessName" label={t('profile.businessName')} rules={[{ required: true }]}>
                                 <Input />
                             </Form.Item>
-                            <Form.Item name="ownerName" label="Owner Name">
-                                <Input />
-                            </Form.Item>
-                        </div>
-
-                        <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
-                            <Form.Item name="businessNumber" label="Business License Number">
-                                <Input />
-                            </Form.Item>
-                            <Form.Item name="ein" label="EIN">
+                            <Form.Item name="ownerName" label={t('profile.ownerName')}>
                                 <Input />
                             </Form.Item>
                         </div>
 
                         <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
-                            <Form.Item name="email" label="Email" rules={[{ type: 'email', required: true }]}>
+                            <Form.Item name="businessNumber" label={t('profile.businessLicense')}>
                                 <Input />
                             </Form.Item>
-                            <Form.Item name="phone" label="Phone" rules={[{ required: true }]}>
+                            <Form.Item name="ein" label={t('profile.ein')}>
                                 <Input />
                             </Form.Item>
                         </div>
 
                         <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
-                            <Form.Item name="alternatePhone" label="Alternate Phone">
+                            <Form.Item name="email" label={t('auth.email')} rules={[{ type: 'email', required: true }]}>
+                                <Input />
+                            </Form.Item>
+                            <Form.Item name="phone" label={t('contact.phone')} rules={[{ required: true }]}>
+                                <Input />
+                            </Form.Item>
+                        </div>
+
+                        <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
+                            <Form.Item name="alternatePhone" label={t('profile.alternatePhone')}>
                                 <Input />
                             </Form.Item>
                         </div>
 
                         <div className="border-t pt-4 mt-2">
-                            <h4 className="text-sm font-bold text-gray-500 uppercase mb-3">Address</h4>
-                            <Form.Item name="addressLine1" label="Address Line 1">
+                            <h4 className="text-sm font-bold text-gray-500 uppercase mb-3">{t('profile.address')}</h4>
+                            <Form.Item name="addressLine1" label={t('customers.addressLine1')}>
                                 <Input />
                             </Form.Item>
-                            <Form.Item name="addressLine2" label="Address Line 2">
+                            <Form.Item name="addressLine2" label={t('profile.addressLine2')}>
                                 <Input />
                             </Form.Item>
 
                             {/* Country First to drive State */}
                             <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
-                                <Form.Item name="country" label="Country">
+                                <Form.Item name="country" label={t('customers.country')}>
                                     <Select
                                         showSearch
                                         options={COUNTRIES}
@@ -388,13 +390,13 @@ const Profile = () => {
                                         }}
                                     />
                                 </Form.Item>
-                                <Form.Item name="postalCode" label="Zip Code">
+                                <Form.Item name="postalCode" label={t('profile.zipCode')}>
                                     <Input />
                                 </Form.Item>
                             </div>
 
                             <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
-                                <Form.Item name="state" label="State/Province">
+                                <Form.Item name="state" label={t('profile.stateProvince')}>
                                     <Select
                                         showSearch
                                         options={states}
@@ -402,7 +404,7 @@ const Profile = () => {
                                         onChange={() => profileForm.setFieldsValue({ city: null })}
                                     />
                                 </Form.Item>
-                                <Form.Item name="city" label="City">
+                                <Form.Item name="city" label={t('customers.city')}>
                                     {cities.length > 0 ? (
                                         <Select showSearch options={cities} />
                                     ) : (
@@ -428,17 +430,16 @@ const Profile = () => {
                 <div className="w-full bg-white border-b border-gray-200 p-4">
                     <div className="grid grid-cols-3 gap-2">
                         {[
-                            { id: 'profile', label: 'Profile', icon: <UserOutlined /> },
-                            { id: 'shops', label: 'Shops', icon: <ShopOutlined /> },
-                            { id: 'manageEmployees', label: 'Employees', icon: <TeamOutlined /> },
-                            { id: 'distributorCredentials', label: 'Distributor', icon: <KeyOutlined /> },
-                            { id: 'laborRate', label: 'Labor Rate', icon: <CalculatorOutlined /> },
-                            { id: 'taxRates', label: 'Tax Rates', icon: <PercentageOutlined /> },
-                            { id: 'smtp', label: 'Email', icon: <MailOutlined /> },
-                            { id: 'userKitPrice', label: 'Kit Price', icon: <GiftOutlined /> },
-                            { id: 'userAdasPrice', label: 'ADAS', icon: <CameraOutlined /> },
-                            { id: 'slugConfig', label: 'Form Config', icon: <LinkOutlined /> },
-                            { id: 'employeeManagement', label: 'Employees', icon: <TeamOutlined /> },
+                            { id: 'profile', label: t('auth.profile'), icon: <UserOutlined /> },
+                            { id: 'shops', label: t('profile.shops'), icon: <ShopOutlined /> },
+                            { id: 'manageEmployees', label: t('profile.manageEmployees'), icon: <TeamOutlined /> },
+                            { id: 'distributorCredentials', label: t('profile.distributorCredentials'), icon: <KeyOutlined /> },
+                            { id: 'laborRate', label: t('profile.laborRate'), icon: <CalculatorOutlined /> },
+                            { id: 'taxRates', label: t('profile.taxSettings'), icon: <PercentageOutlined /> },
+                            { id: 'smtp', label: t('profile.emailSettings'), icon: <MailOutlined /> },
+                            { id: 'userKitPrice', label: t('profile.standardKits'), icon: <GiftOutlined /> },
+                            { id: 'userAdasPrice', label: t('profile.adasPricing'), icon: <CameraOutlined /> },
+                            { id: 'slugConfig', label: t('profile.contactFormConfig'), icon: <LinkOutlined /> }
                         ].map(item => {
                             const isActive = activeTab === item.id;
                             return (
@@ -460,20 +461,19 @@ const Profile = () => {
             {!isMobile && (
                 <div className="w-64 bg-white border-r border-gray-200 flex-shrink-0 md:h-[calc(100vh-64px)] overflow-y-auto">
                     <div className="p-6">
-                        <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Menu</h2>
+                        <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">{t('profile.menu')}</h2>
                         <div className="space-y-2">
-                            {renderMenuItem('profile', 'Profile', <UserOutlined />)}
-                            {renderMenuItem('shops', 'Shops', <ShopOutlined />)}
-                            {renderMenuItem('manageEmployees', 'Manage Employees', <TeamOutlined />)}
-                            {renderMenuItem('distributorCredentials', 'Distributor Credentials', <KeyOutlined />)}
-                            {renderMenuItem('laborRate', 'Labor Rate', <CalculatorOutlined />)}
-                            {renderMenuItem('taxRates', 'Tax Rates', <PercentageOutlined />)}
-                            {renderMenuItem('smtp', 'Email (SMTP)', <MailOutlined />)}
-                            {renderMenuItem('userKitPrice', 'User Kit Price', <GiftOutlined />)}
-                            {renderMenuItem('userAdasPrice', 'ADAS Pricing', <CameraOutlined />)}
-                            {renderMenuItem('specialInstructions', 'Special Instructions', <FileTextOutlined />)}
-                            {renderMenuItem('slugConfig', 'Contact Form Config', <LinkOutlined />)}
-                            {renderMenuItem('employeeManagement', 'Employee Management', <TeamOutlined />)}
+                            {renderMenuItem('profile', t('auth.profile'), <UserOutlined />)}
+                            {renderMenuItem('shops', t('profile.shops'), <ShopOutlined />)}
+                            {renderMenuItem('manageEmployees', t('profile.manageEmployees'), <TeamOutlined />)}
+                            {renderMenuItem('distributorCredentials', t('profile.distributorCredentials'), <KeyOutlined />)}
+                            {renderMenuItem('laborRate', t('profile.laborRate'), <CalculatorOutlined />)}
+                            {renderMenuItem('taxRates', t('profile.taxSettings'), <PercentageOutlined />)}
+                            {renderMenuItem('smtp', t('profile.emailSettings'), <MailOutlined />)}
+                            {renderMenuItem('userKitPrice', t('profile.standardKits'), <GiftOutlined />)}
+                            {renderMenuItem('userAdasPrice', t('profile.adasPricing'), <CameraOutlined />)}
+                            {renderMenuItem('specialInstructions', t('profile.specialInstructions'), <FileTextOutlined />)}
+                            {renderMenuItem('slugConfig', t('profile.contactFormConfig'), <LinkOutlined />)}
                         </div>
                     </div>
                 </div>
@@ -493,7 +493,6 @@ const Profile = () => {
                     {activeTab === 'userAdasPrice' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><UserAdasPricePage /></div>}
                     {activeTab === 'specialInstructions' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><SpecialInstructions /></div>}
                     {activeTab === 'slugConfig' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><SlugConfig /></div>}
-                    {activeTab === 'employeeManagement' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><EmployeeManagement token={token} isMobile={isMobile} /></div>}
                 </div>
             </div>
         </div>

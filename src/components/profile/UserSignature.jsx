@@ -4,6 +4,7 @@ import { Button, notification, Spin } from "antd";
 import { EditOutlined, DeleteOutlined, SaveOutlined, LoadingOutlined } from "@ant-design/icons";
 import getUserSignature from "../../api/getUserSignature";
 import uploadUserSignature from "../../api/uploadUserSignature";
+import { useTranslation } from 'react-i18next';
 
 const UserSignature = () => {
     const sigCanvasRef = useRef(null);
@@ -11,6 +12,7 @@ const UserSignature = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const { t } = useTranslation();
 
     // Fetch existing signature on mount
     useEffect(() => {
@@ -40,7 +42,7 @@ const UserSignature = () => {
 
     const handleSave = async () => {
         if (!sigCanvasRef.current || sigCanvasRef.current.isEmpty()) {
-            notification.warning({ message: "Please draw your signature before saving." });
+            notification.warning({ message: t('pricing.pleaseDrawSignature', { defaultValue: 'Please draw your signature before saving.' }) });
             return;
         }
 
@@ -58,10 +60,10 @@ const UserSignature = () => {
             setSignatureUrl(url);
             setIsEditing(false);
 
-            notification.success({ message: "Signature saved successfully!" });
+            notification.success({ message: t('pricing.signatureSaved', { defaultValue: 'Signature saved successfully!' }) });
         } catch (error) {
             console.error(error);
-            notification.error({ message: "Failed to save signature", description: error.message });
+            notification.error({ message: t('pricing.saveSignatureFailed', { defaultValue: 'Failed to save signature' }), description: error.message });
         } finally {
             setIsSaving(false);
         }
@@ -85,13 +87,13 @@ const UserSignature = () => {
             <div className="space-y-6 animate-fadeIn">
                 <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                     <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                        <EditOutlined className="text-violet-500" /> Your Signature
+                        <EditOutlined className="text-violet-500" /> {t('pricing.yourSignature', { defaultValue: 'Your Signature' })}
                     </h2>
                     <div className="flex flex-col items-center gap-6">
                         <div className="border border-gray-200 rounded-xl p-4 bg-gray-50 w-full max-w-lg">
                             <img
                                 src={signatureUrl}
-                                alt="Your Signature"
+                                alt={t('pricing.yourSignature', { defaultValue: 'Your Signature' })}
                                 className="mx-auto max-h-48 object-contain"
                             />
                         </div>
@@ -101,7 +103,7 @@ const UserSignature = () => {
                             onClick={handleUpdateClick}
                             className="bg-violet-600 hover:bg-violet-700"
                         >
-                            Update Signature
+                            {t('pricing.updateSignature', { defaultValue: 'Update Signature' })}
                         </Button>
                     </div>
                 </div>
@@ -114,10 +116,10 @@ const UserSignature = () => {
         <div className="space-y-6 animate-fadeIn">
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                 <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                    <EditOutlined className="text-violet-500" /> {signatureUrl ? "Update Signature" : "Draw Your Signature"}
+                    <EditOutlined className="text-violet-500" /> {signatureUrl ? t('pricing.updateSignature', { defaultValue: 'Update Signature' }) : t('pricing.drawSignature', { defaultValue: 'Draw Your Signature' })}
                 </h2>
                 <p className="text-sm text-gray-500 mb-4">
-                    Use your mouse or finger to draw your signature in the box below.
+                    {t('pricing.drawSignatureDesc', { defaultValue: 'Use your mouse or finger to draw your signature in the box below.' })}
                 </p>
                 <div className="flex flex-col items-center gap-4">
                     <div className="border-2 border-dashed border-violet-300 rounded-xl bg-white w-full max-w-lg overflow-hidden">
@@ -138,11 +140,11 @@ const UserSignature = () => {
                             onClick={handleClear}
                             danger
                         >
-                            Clear
+                            {t('employees.clear', { defaultValue: 'Clear' })}
                         </Button>
                         {signatureUrl && (
                             <Button onClick={() => setIsEditing(false)}>
-                                Cancel
+                                {t('employees.cancel', { defaultValue: 'Cancel' })}
                             </Button>
                         )}
                         <Button
@@ -152,7 +154,7 @@ const UserSignature = () => {
                             loading={isSaving}
                             className="bg-violet-600 hover:bg-violet-700"
                         >
-                            Save Signature
+                            {t('pricing.saveSignature', { defaultValue: 'Save Signature' })}
                         </Button>
                     </div>
                 </div>

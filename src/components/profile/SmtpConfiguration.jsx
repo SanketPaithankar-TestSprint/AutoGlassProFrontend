@@ -8,6 +8,7 @@ import { updateSmtpConfig } from "../../api/updateSmtpConfig";
 import { deleteSmtpConfig } from "../../api/deleteSmtpConfig";
 import { testSmtpConnection } from "../../api/testSmtpConnection";
 import { verifySmtpConfig } from "../../api/verifySmtpConfig";
+import { useTranslation } from 'react-i18next';
 
 const { Option } = Select;
 
@@ -20,6 +21,7 @@ const SmtpConfiguration = () => {
     const [editingConfig, setEditingConfig] = useState(null);
     const [testingId, setTestingId] = useState(null);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const { t } = useTranslation();
 
     React.useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -34,7 +36,7 @@ const SmtpConfiguration = () => {
             return Array.isArray(data) ? data : [];
         },
         onError: (error) => {
-            message.error("Failed to load SMTP configurations");
+            message.error(t('settings.failedToLoadSmtp', { defaultValue: 'Failed to load SMTP configurations' }));
             console.error(error);
         }
     });
@@ -62,10 +64,10 @@ const SmtpConfiguration = () => {
     const handleDelete = async (configId) => {
         try {
             await deleteSmtpConfig(configId);
-            message.success("SMTP configuration deleted");
+            message.success(t('settings.smtpDeleted', { defaultValue: 'SMTP configuration deleted' }));
             queryClient.invalidateQueries({ queryKey: ['smtpConfigs'] });
         } catch (error) {
-            message.error("Failed to delete configuration");
+            message.error(t('settings.failedToDeleteSmtp', { defaultValue: 'Failed to delete configuration' }));
         }
     };
 
@@ -73,9 +75,9 @@ const SmtpConfiguration = () => {
         setTestingId(configId);
         try {
             await testSmtpConnection(configId);
-            message.success("Connection test successful!");
+            message.success(t('settings.connectionTestSuccessful', { defaultValue: 'Connection test successful!' }));
         } catch (error) {
-            message.error("Connection test failed: " + error.message);
+            message.error(t('settings.connectionTestFailed', { defaultValue: 'Connection test failed: ' }) + error.message);
         } finally {
             setTestingId(null);
         }
@@ -84,10 +86,10 @@ const SmtpConfiguration = () => {
     const handleVerify = async (configId) => {
         try {
             await verifySmtpConfig(configId);
-            message.success("Configuration verified");
+            message.success(t('settings.verificationSuccessful', { defaultValue: 'Configuration verified' }));
             queryClient.invalidateQueries({ queryKey: ['smtpConfigs'] });
         } catch (error) {
-            message.error("Verification failed: " + error.message);
+            message.error(t('settings.verificationFailed', { defaultValue: 'Verification failed: ' }) + error.message);
         }
     };
 
@@ -96,64 +98,64 @@ const SmtpConfiguration = () => {
             if (editingConfig) {
                 // Update existing
                 await updateSmtpConfig(editingConfig.id, values);
-                message.success("SMTP configuration updated");
+                message.success(t('settings.smtpUpdated', { defaultValue: 'SMTP configuration updated' }));
             } else {
                 // Create new
                 await createSmtpConfig(values);
-                message.success("SMTP configuration created");
+                message.success(t('settings.smtpCreated', { defaultValue: 'SMTP configuration created' }));
             }
             setModalVisible(false);
             form.resetFields();
             queryClient.invalidateQueries({ queryKey: ['smtpConfigs'] });
         } catch (error) {
-            message.error("Failed to save configuration: " + error.message);
+            message.error(t('settings.failedToSaveSmtp', { defaultValue: 'Failed to save configuration: ' }) + error.message);
         }
     };
 
     const columns = [
         {
-            title: "Status",
+            title: t('employees.status', { defaultValue: 'Status' }),
             dataIndex: "isActive",
             key: "isActive",
             width: 100,
             render: (isActive) => (
                 isActive ? (
-                    <Tag color="green" icon={<CheckCircleOutlined />}>Active</Tag>
+                    <Tag color="green" icon={<CheckCircleOutlined />}>{t('employees.active', { defaultValue: 'Active' })}</Tag>
                 ) : (
-                    <Tag color="default">Inactive</Tag>
+                    <Tag color="default">{t('employees.inactive', { defaultValue: 'Inactive' })}</Tag>
                 )
             )
         },
         {
-            title: "Host",
+            title: t('settings.host', { defaultValue: 'Host' }),
             dataIndex: "host",
             key: "host",
         },
         {
-            title: "Port",
+            title: t('settings.port', { defaultValue: 'Port' }),
             dataIndex: "port",
             key: "port",
             width: 80
         },
         {
-            title: "Encryption",
+            title: t('settings.encryption', { defaultValue: 'Encryption' }),
             dataIndex: "encryption",
             key: "encryption",
             width: 100,
             render: (encryption) => <Tag>{encryption || "NONE"}</Tag>
         },
         {
-            title: "From Email",
+            title: t('settings.fromEmail', { defaultValue: 'From Email' }),
             dataIndex: "fromEmail",
             key: "fromEmail",
         },
         {
-            title: "Username",
+            title: t('auth.username', { defaultValue: 'Username' }),
             dataIndex: "username",
             key: "username",
         },
         {
-            title: "Actions",
+            title: t('employees.actions', { defaultValue: 'Actions' }),
             key: "actions",
             width: 200,
             render: (_, record) => (
@@ -165,7 +167,7 @@ const SmtpConfiguration = () => {
                         onClick={() => handleTest(record.id)}
                         loading={testingId === record.id}
                     >
-                        Test
+                        {t('settings.test', { defaultValue: 'Test' })}
                     </Button>
                     <Button
                         type="text"
@@ -174,10 +176,10 @@ const SmtpConfiguration = () => {
                         onClick={() => handleEdit(record)}
                     />
                     <Popconfirm
-                        title="Delete this configuration?"
+                        title={t('settings.deleteConfigConfirm', { defaultValue: 'Delete this configuration?' })}
                         onConfirm={() => handleDelete(record.id)}
-                        okText="Yes"
-                        cancelText="No"
+                        okText={t('employees.yes', { defaultValue: 'Yes' })}
+                        cancelText={t('employees.no', { defaultValue: 'No' })}
                     >
                         <Button
                             type="text"
@@ -195,15 +197,15 @@ const SmtpConfiguration = () => {
         <div className="smtp-configuration">
             <div className="flex justify-between items-center mb-4">
                 <div>
-                    <h3 className="text-lg font-semibold mb-1">Email Configuration (SMTP)</h3>
-                    <p className="text-sm text-gray-500">Manage SMTP settings for sending emails from the system</p>
+                    <h3 className="text-lg font-semibold mb-1">{t('settings.emailConfig', { defaultValue: 'Email Configuration (SMTP)' })}</h3>
+                    <p className="text-sm text-gray-500">{t('settings.emailConfigDesc', { defaultValue: 'Manage SMTP settings for sending emails from the system' })}</p>
                 </div>
                 <Button
                     type="primary"
                     icon={<PlusOutlined />}
                     onClick={handleAdd}
                 >
-                    Add Configuration
+                    {t('settings.addConfig', { defaultValue: 'Add Configuration' })}
                 </Button>
             </div>
 
@@ -224,9 +226,9 @@ const SmtpConfiguration = () => {
             {isMobile && (
                 <div className="space-y-3">
                     {loading ? (
-                        <div className="text-center py-8 text-gray-500">Loading...</div>
+                        <div className="text-center py-8 text-gray-500">{t('pricing.loadingLaborRate', { defaultValue: 'Loading...' })}</div>
                     ) : configs.length === 0 ? (
-                        <div className="text-center py-8 text-gray-500">No configurations found</div>
+                        <div className="text-center py-8 text-gray-500">{t('settings.noConfigsFound', { defaultValue: 'No configurations found' })}</div>
                     ) : (
                         configs.map((config) => (
                             <div key={config.id} className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm">
@@ -239,29 +241,29 @@ const SmtpConfiguration = () => {
                                 </div>
                                 <div className="space-y-2 text-xs mb-3">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-gray-500">Status:</span>
+                                        <span className="text-gray-500">{t('employees.status', { defaultValue: 'Status' })}:</span>
                                         <Tag color={config.isActive ? 'green' : 'red'}>
-                                            {config.isActive ? 'Active' : 'Inactive'}
+                                            {config.isActive ? t('employees.active', { defaultValue: 'Active' }) : t('employees.inactive', { defaultValue: 'Inactive' })}
                                         </Tag>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                        <span className="text-gray-500">Host:</span>
+                                        <span className="text-gray-500">{t('settings.host', { defaultValue: 'Host' })}:</span>
                                         <span className="text-gray-900 font-mono text-xs">{config.host}</span>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                        <span className="text-gray-500">Port:</span>
+                                        <span className="text-gray-500">{t('settings.port', { defaultValue: 'Port' })}:</span>
                                         <span className="text-gray-900 font-bold">{config.port}</span>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                        <span className="text-gray-500">Encryption:</span>
+                                        <span className="text-gray-500">{t('settings.encryption', { defaultValue: 'Encryption' })}:</span>
                                         <Tag>{config.encryption || "NONE"}</Tag>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                        <span className="text-gray-500">From Email:</span>
+                                        <span className="text-gray-500">{t('settings.fromEmail', { defaultValue: 'From Email' })}:</span>
                                         <span className="text-gray-900 font-mono text-xs">{config.fromEmail}</span>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                        <span className="text-gray-500">Username:</span>
+                                        <span className="text-gray-500">{t('auth.username', { defaultValue: 'Username' })}:</span>
                                         <span className="text-gray-900 font-mono text-xs">{config.username}</span>
                                     </div>
                                 </div>
@@ -274,7 +276,7 @@ const SmtpConfiguration = () => {
                                         loading={testingId === config.id}
                                         className="flex-1"
                                     >
-                                        Test
+                                        {t('settings.test', { defaultValue: 'Test' })}
                                     </Button>
                                     <Button
                                         type="text"
@@ -283,7 +285,7 @@ const SmtpConfiguration = () => {
                                         onClick={() => handleEdit(config)}
                                         className="flex-1"
                                     >
-                                        Edit
+                                        {t('employees.edit', { defaultValue: 'Edit' })}
                                     </Button>
                                     <Popconfirm
                                         title="Delete configuration"
@@ -300,7 +302,7 @@ const SmtpConfiguration = () => {
                                             icon={<DeleteOutlined />}
                                             className="flex-1"
                                         >
-                                            Delete
+                                            {t('employees.delete', { defaultValue: 'Delete' })}
                                         </Button>
                                     </Popconfirm>
                                 </div>
@@ -311,7 +313,7 @@ const SmtpConfiguration = () => {
             )}
 
             <Modal
-                title={editingConfig ? "Edit SMTP Configuration" : "Add SMTP Configuration"}
+                title={editingConfig ? t('settings.editConfig', { defaultValue: 'Edit SMTP Configuration' }) : t('settings.addConfig', { defaultValue: 'Add SMTP Configuration' })}
                 open={modalVisible}
                 onCancel={() => {
                     setModalVisible(false);
@@ -333,55 +335,55 @@ const SmtpConfiguration = () => {
                 >
                     <Form.Item
                         name="host"
-                        label="SMTP Host"
-                        rules={[{ required: true, message: "Please enter SMTP host" }]}
+                        label={t('settings.smtpHost', { defaultValue: 'SMTP Host' })}
+                        rules={[{ required: true, message: t('settings.enterHost', { defaultValue: 'Please enter SMTP host' }) }]}
                     >
                         <Input placeholder="smtp.gmail.com" />
                     </Form.Item>
 
                     <Form.Item
                         name="port"
-                        label="SMTP Port"
-                        rules={[{ required: true, message: "Please enter port" }]}
+                        label={t('settings.smtpPort', { defaultValue: 'SMTP Port' })}
+                        rules={[{ required: true, message: t('settings.enterPort', { defaultValue: 'Please enter port' }) }]}
                     >
                         <InputNumber className="w-full" min={1} max={65535} />
                     </Form.Item>
 
                     <Form.Item
                         name="encryption"
-                        label="Encryption"
-                        rules={[{ required: true, message: "Please select encryption" }]}
+                        label={t('settings.encryption', { defaultValue: 'Encryption' })}
+                        rules={[{ required: true, message: t('settings.selectEncryption', { defaultValue: 'Please select encryption' }) }]}
                     >
                         <Select>
                             <Option value="TLS">TLS (Port 587)</Option>
                             <Option value="SSL">SSL (Port 465)</Option>
-                            <Option value="NONE">None</Option>
+                            <Option value="NONE">{t('pricing.none', { defaultValue: 'None' })}</Option>
                         </Select>
                     </Form.Item>
 
                     <Form.Item
                         name="username"
-                        label="SMTP Username"
-                        rules={[{ required: true, message: "Please enter username" }]}
+                        label={t('settings.smtpUsername', { defaultValue: 'SMTP Username' })}
+                        rules={[{ required: true, message: t('settings.enterUsername', { defaultValue: 'Please enter username' }) }]}
                     >
                         <Input placeholder="your-email@gmail.com" />
                     </Form.Item>
 
                     <Form.Item
                         name="password"
-                        label="SMTP Password"
-                        rules={[{ required: !editingConfig, message: "Please enter password" }]}
-                        extra={editingConfig ? "Leave blank to keep existing password" : ""}
+                        label={t('settings.smtpPassword', { defaultValue: 'SMTP Password' })}
+                        rules={[{ required: !editingConfig, message: t('settings.enterPassword', { defaultValue: 'Please enter password' }) }]}
+                        extra={editingConfig ? t('settings.leaveBlankToKeep', { defaultValue: 'Leave blank to keep existing password' }) : ""}
                     >
                         <Input.Password placeholder="App password or SMTP password" />
                     </Form.Item>
 
                     <Form.Item
                         name="fromEmail"
-                        label="From Email Address"
+                        label={t('settings.fromEmailAddress', { defaultValue: 'From Email Address' })}
                         rules={[
-                            { required: true, message: "Please enter from email" },
-                            { type: "email", message: "Please enter a valid email" }
+                            { required: true, message: t('settings.enterFromEmail', { defaultValue: 'Please enter from email' }) },
+                            { type: "email", message: t('settings.enterValidEmail', { defaultValue: 'Please enter a valid email' }) }
                         ]}
                     >
                         <Input placeholder="noreply@yourcompany.com" />
@@ -389,12 +391,12 @@ const SmtpConfiguration = () => {
 
                     <Form.Item
                         name="isActive"
-                        label="Set as Active Configuration"
+                        label={t('settings.setActiveConfig', { defaultValue: 'Set as Active Configuration' })}
                         valuePropName="checked"
                     >
                         <Select>
-                            <Option value={true}>Yes - Use this as default</Option>
-                            <Option value={false}>No - Save for later</Option>
+                            <Option value={true}>{t('settings.yesUseDefault', { defaultValue: 'Yes - Use this as default' })}</Option>
+                            <Option value={false}>{t('settings.noSaveLater', { defaultValue: 'No - Save for later' })}</Option>
                         </Select>
                     </Form.Item>
                 </Form>

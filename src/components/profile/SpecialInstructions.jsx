@@ -6,6 +6,7 @@ import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { getSpecialInstructions, saveSpecialInstructions, updateSpecialInstructions } from '../../api/specialInstructions';
 import { getValidToken } from '../../api/getValidToken';
+import { useTranslation } from 'react-i18next';
 
 const SpecialInstructions = () => {
     const [isSaving, setIsSaving] = useState(false);
@@ -13,6 +14,7 @@ const SpecialInstructions = () => {
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const token = getValidToken();
     const queryClient = useQueryClient();
+    const { t } = useTranslation();
 
     React.useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -55,26 +57,26 @@ const SpecialInstructions = () => {
             if (exists) {
                 await updateSpecialInstructions(token, instructions);
                 localStorage.setItem("user_special_instructions", instructions);
-                notification.success({ message: "Special instructions updated successfully" });
+                notification.success({ message: t('pricing.instructionsUpdated', { defaultValue: 'Special instructions updated successfully' }) });
             } else {
                 await saveSpecialInstructions(token, instructions);
                 localStorage.setItem("user_special_instructions", instructions);
-                notification.success({ message: "Special instructions saved successfully" });
+                notification.success({ message: t('pricing.instructionsSaved', { defaultValue: 'Special instructions saved successfully' }) });
                 setExists(true); // Now it exists
             }
             queryClient.invalidateQueries({ queryKey: ['specialInstructions'] });
         } catch (err) {
             console.error(err);
-            notification.error({ message: "Failed to save instructions", description: err.message });
+            notification.error({ message: t('pricing.saveInstructionsFailed', { defaultValue: 'Failed to save instructions' }), description: err.message });
         } finally {
             setIsSaving(false);
         }
     };
 
-    if (isLoading) return <div className="text-center py-12"><Spin tip="Loading instructions..." /></div>;
+    if (isLoading) return <div className="text-center py-12"><Spin tip={t('pricing.loadingInstructions', { defaultValue: 'Loading instructions...' })} /></div>;
 
     if (error && error.message.indexOf('404') === -1) {
-        return <div className="text-center py-12 text-red-500">Failed to load instructions: {error.message}</div>;
+        return <div className="text-center py-12 text-red-500">{t('pricing.loadInstructionsFailed', { defaultValue: 'Failed to load instructions:' })} {error.message}</div>;
     }
 
     const modules = {
@@ -88,12 +90,12 @@ const SpecialInstructions = () => {
     return (
         <div className="space-y-6 animate-fadeIn">
             <Card
-                title={<span className="flex items-center gap-2"><FileTextOutlined className="text-violet-500" /> Special Instructions</span>}
+                title={<span className="flex items-center gap-2"><FileTextOutlined className="text-violet-500" /> {t('pricing.specialInstructions', { defaultValue: 'Special Instructions' })}</span>}
                 className="shadow-sm border border-gray-100 rounded-2xl"
             >
                 <div>
                     <p className="text-gray-500 mb-4">
-                        These instructions will be included in the PDF generation.
+                        {t('pricing.instructionsIncluded', { defaultValue: 'These instructions will be included in the PDF generation.' })}
                     </p>
                     <div className="mb-4 bg-white rounded-lg">
                         {/* Wrapper div to ensure styles don't leak or break layout */}
@@ -113,7 +115,7 @@ const SpecialInstructions = () => {
                             loading={isSaving}
                             className="bg-violet-600 hover:bg-violet-700"
                         >
-                            Save Instructions
+                            {t('pricing.saveInstructions', { defaultValue: 'Save Instructions' })}
                         </Button>
                     </div>
                 </div>

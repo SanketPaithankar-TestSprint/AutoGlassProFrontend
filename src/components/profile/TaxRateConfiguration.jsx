@@ -5,6 +5,7 @@ import { PlusOutlined, EditOutlined, DeleteOutlined, StarOutlined, StarFilled, R
 import { getTaxRates, createTaxRate, updateTaxRate, deleteTaxRate, setDefaultTaxRate } from "../../api/taxRateApi";
 import { getTaxSettings, saveTaxSettings } from "../../api/taxSettings";
 import { Checkbox } from "antd";
+import { useTranslation } from 'react-i18next';
 
 // US States list for dropdown
 const US_STATES = [
@@ -36,6 +37,7 @@ const TaxRateConfiguration = () => {
     const [saving, setSaving] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [form] = Form.useForm();
+    const { t } = useTranslation();
 
     React.useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -51,7 +53,7 @@ const TaxRateConfiguration = () => {
         },
         onError: (error) => {
             console.error("Error fetching tax rates:", error);
-            notification.error({ message: "Failed to fetch tax rates", description: error.message });
+            notification.error({ message: t('pricing.fetchTaxRatesFailed', { defaultValue: 'Failed to fetch tax rates' }), description: error.message });
         }
     });
 
@@ -91,10 +93,10 @@ const TaxRateConfiguration = () => {
             setSavingSettings(true);
             await saveTaxSettings(taxSettings);
             localStorage.setItem("user_tax_settings", JSON.stringify(taxSettings)); // Update cache
-            notification.success({ message: "Tax settings saved successfully" });
+            notification.success({ message: t('pricing.taxSettingsSaved', { defaultValue: 'Tax settings saved successfully' }) });
             queryClient.invalidateQueries({ queryKey: ['taxSettings'] });
         } catch (error) {
-            notification.error({ message: "Failed to save settings", description: error.message });
+            notification.error({ message: t('pricing.saveSettingsFailed', { defaultValue: 'Failed to save settings' }), description: error.message });
         } finally {
             setSavingSettings(false);
         }
@@ -122,20 +124,20 @@ const TaxRateConfiguration = () => {
     const handleDelete = async (taxRateId) => {
         try {
             await deleteTaxRate(taxRateId);
-            notification.success({ message: "Tax rate deleted successfully" });
+            notification.success({ message: t('pricing.taxRateDeleted', { defaultValue: 'Tax rate deleted successfully' }) });
             queryClient.invalidateQueries({ queryKey: ['taxRates'] });
         } catch (error) {
-            notification.error({ message: "Failed to delete tax rate", description: error.message });
+            notification.error({ message: t('pricing.deleteTaxRateFailed', { defaultValue: 'Failed to delete tax rate' }), description: error.message });
         }
     };
 
     const handleSetDefault = async (taxRateId) => {
         try {
             await setDefaultTaxRate(taxRateId);
-            notification.success({ message: "Default tax rate updated" });
+            notification.success({ message: t('pricing.defaultTaxRateUpdated', { defaultValue: 'Default tax rate updated' }) });
             queryClient.invalidateQueries({ queryKey: ['taxRates'] });
         } catch (error) {
-            notification.error({ message: "Failed to set default", description: error.message });
+            notification.error({ message: t('pricing.setDefaultFailed', { defaultValue: 'Failed to set default' }), description: error.message });
         }
     };
 
@@ -152,17 +154,17 @@ const TaxRateConfiguration = () => {
 
             if (editingRate) {
                 await updateTaxRate(editingRate.taxRateId, values);
-                notification.success({ message: "Tax rate updated successfully" });
+                notification.success({ message: t('pricing.taxRateUpdated', { defaultValue: 'Tax rate updated successfully' }) });
             } else {
                 await createTaxRate(values);
-                notification.success({ message: "Tax rate created successfully" });
+                notification.success({ message: t('pricing.taxRateCreated', { defaultValue: 'Tax rate created successfully' }) });
             }
 
             setModalVisible(false);
             queryClient.invalidateQueries({ queryKey: ['taxRates'] });
         } catch (error) {
             if (error.errorFields) return; // Form validation error
-            notification.error({ message: "Failed to save tax rate", description: error.message });
+            notification.error({ message: t('pricing.saveTaxRateFailed', { defaultValue: 'Failed to save tax rate' }), description: error.message });
         } finally {
             setSaving(false);
         }
@@ -180,20 +182,20 @@ const TaxRateConfiguration = () => {
 
     const columns = [
         {
-            title: "State",
+            title: t('employees.state', { defaultValue: 'State' }),
             key: "state",
             render: (_, record) => (
                 <div className="flex items-center gap-2">
                     <span className="font-bold text-violet-600">{record.stateCode}</span>
                     <span className="text-gray-600">- {record.stateName}</span>
                     {record.isDefault && (
-                        <Tag color="gold" icon={<StarFilled />}>Default</Tag>
+                        <Tag color="gold" icon={<StarFilled />}>{t('pricing.default', { defaultValue: 'Default' })}</Tag>
                     )}
                 </div>
             )
         },
         {
-            title: "Tax Rate",
+            title: t('pricing.taxRate', { defaultValue: 'Tax Rate' }),
             dataIndex: "taxPercent",
             key: "taxPercent",
             render: (value) => (
@@ -201,23 +203,23 @@ const TaxRateConfiguration = () => {
             )
         },
         {
-            title: "Status",
+            title: t('employees.status', { defaultValue: 'Status' }),
             dataIndex: "isActive",
             key: "isActive",
             render: (isActive) => (
                 <Tag color={isActive ? "green" : "default"}>
-                    {isActive ? "Active" : "Inactive"}
+                    {isActive ? t('employees.active', { defaultValue: 'Active' }) : t('employees.inactive', { defaultValue: 'Inactive' })}
                 </Tag>
             )
         },
         {
-            title: "Actions",
+            title: t('employees.actions', { defaultValue: 'Actions' }),
             key: "actions",
             width: 200,
             render: (_, record) => (
                 <div className="flex gap-2">
                     {!record.isDefault && (
-                        <Tooltip title="Set as Default">
+                        <Tooltip title={t('pricing.setAsDefault', { defaultValue: 'Set as Default' })}>
                             <Button
                                 type="text"
                                 icon={<StarOutlined />}
@@ -225,7 +227,7 @@ const TaxRateConfiguration = () => {
                             />
                         </Tooltip>
                     )}
-                    <Tooltip title="Edit">
+                    <Tooltip title={t('employees.edit', { defaultValue: 'Edit' })}>
                         <Button
                             type="text"
                             icon={<EditOutlined />}
@@ -233,13 +235,13 @@ const TaxRateConfiguration = () => {
                         />
                     </Tooltip>
                     <Popconfirm
-                        title="Delete this tax rate?"
-                        description="This action cannot be undone."
+                        title={t('pricing.deleteTaxRate', { defaultValue: 'Delete this tax rate?' })}
+                        description={t('pricing.deleteConfirm', { defaultValue: 'This action cannot be undone.' })}
                         onConfirm={() => handleDelete(record.taxRateId)}
-                        okText="Delete"
+                        okText={t('employees.delete', { defaultValue: 'Delete' })}
                         okType="danger"
                     >
-                        <Tooltip title="Delete">
+                        <Tooltip title={t('employees.delete', { defaultValue: 'Delete' })}>
                             <Button type="text" danger icon={<DeleteOutlined />} />
                         </Tooltip>
                     </Popconfirm>
@@ -252,8 +254,8 @@ const TaxRateConfiguration = () => {
         <div className="space-y-6 animate-fadeIn">
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-800">State Tax Rates</h2>
-                    <p className="text-gray-500 text-sm mt-1">Configure tax rates for different states</p>
+                    <h2 className="text-2xl font-bold text-gray-800">{t('pricing.stateTaxRates', { defaultValue: 'State Tax Rates' })}</h2>
+                    <p className="text-gray-500 text-sm mt-1">{t('pricing.stateTaxRatesDesc', { defaultValue: 'Configure tax rates for different states' })}</p>
                 </div>
                 <div className="flex gap-2">
                     <Button
@@ -266,39 +268,39 @@ const TaxRateConfiguration = () => {
                         icon={<PlusOutlined />}
                         onClick={handleAdd}
                     >
-                        Add Tax Rate
+                        {t('pricing.addTaxRate', { defaultValue: 'Add Tax Rate' })}
                     </Button>
                 </div>
             </div>
 
             {/* Taxable Items Configuration */}
-            <Card title="Taxable Items Configuration" className="shadow-sm border-violet-100">
+            <Card title={t('pricing.taxableItemsConfig', { defaultValue: 'Taxable Items Configuration' })} className="shadow-sm border-violet-100">
                 <div className="flex flex-col gap-4">
-                    <p className="text-gray-500 text-sm">Select which items should be taxable by default in quotes and invoices.</p>
+                    <p className="text-gray-500 text-sm">{t('pricing.taxableItemsDesc', { defaultValue: 'Select which items should be taxable by default in quotes and invoices.' })}</p>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <Checkbox
                             checked={taxSettings.taxParts}
                             onChange={(e) => handleSettingChange('taxParts', e.target.checked)}
                         >
-                            Tax Parts
+                            {t('pricing.taxParts', { defaultValue: 'Tax Parts' })}
                         </Checkbox>
                         <Checkbox
                             checked={taxSettings.taxLabor}
                             onChange={(e) => handleSettingChange('taxLabor', e.target.checked)}
                         >
-                            Tax Labor
+                            {t('pricing.taxLabor', { defaultValue: 'Tax Labor' })}
                         </Checkbox>
                         <Checkbox
                             checked={taxSettings.taxService}
                             onChange={(e) => handleSettingChange('taxService', e.target.checked)}
                         >
-                            Tax Service
+                            {t('pricing.taxService', { defaultValue: 'Tax Service' })}
                         </Checkbox>
                         <Checkbox
                             checked={taxSettings.taxAdas}
                             onChange={(e) => handleSettingChange('taxAdas', e.target.checked)}
                         >
-                            Tax ADAS
+                            {t('pricing.taxAdas', { defaultValue: 'Tax ADAS' })}
                         </Checkbox>
                     </div>
                     <div className="flex justify-end mt-2">
@@ -307,7 +309,7 @@ const TaxRateConfiguration = () => {
                             onClick={handleSaveSettings}
                             loading={savingSettings}
                         >
-                            Save Configuration
+                            {t('pricing.saveConfig', { defaultValue: 'Save Configuration' })}
                         </Button>
                     </div>
                 </div>
@@ -316,11 +318,11 @@ const TaxRateConfiguration = () => {
             <Card className="shadow-sm">
                 {taxRates.length === 0 && !loading ? (
                     <Empty
-                        description="No tax rates configured"
+                        description={t('pricing.noTaxRates', { defaultValue: 'No tax rates configured' })}
                         image={Empty.PRESENTED_IMAGE_SIMPLE}
                     >
                         <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-                            Add Your First Tax Rate
+                            {t('pricing.addFirstTaxRate', { defaultValue: 'Add Your First Tax Rate' })}
                         </Button>
                     </Empty>
                 ) : (
@@ -351,13 +353,13 @@ const TaxRateConfiguration = () => {
                                         </div>
                                         <div className="space-y-1 text-xs mb-3">
                                             <div className="flex justify-between">
-                                                <span className="text-gray-500">Tax Rate:</span>
+                                                <span className="text-gray-500">{t('pricing.taxRate', { defaultValue: 'Tax Rate' })}:</span>
                                                 <span className="font-mono font-bold text-gray-900">{rate.taxRate}%</span>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span className="text-gray-500">Status:</span>
+                                                <span className="text-gray-500">{t('employees.status', { defaultValue: 'Status' })}:</span>
                                                 <Tag color={rate.isActive ? 'green' : 'red'}>
-                                                    {rate.isActive ? 'Active' : 'Inactive'}
+                                                    {rate.isActive ? t('employees.active', { defaultValue: 'Active' }) : t('employees.inactive', { defaultValue: 'Inactive' })}
                                                 </Tag>
                                             </div>
                                         </div>
@@ -370,7 +372,7 @@ const TaxRateConfiguration = () => {
                                                     onClick={() => handleSetDefault(rate.taxRateId)}
                                                     className="flex-1"
                                                 >
-                                                    Set Default
+                                                    {t('pricing.setDefault', { defaultValue: 'Set Default' })}
                                                 </Button>
                                             )}
                                             <Button
@@ -380,14 +382,14 @@ const TaxRateConfiguration = () => {
                                                 onClick={() => handleEdit(rate)}
                                                 className={!rate.isDefault ? 'flex-1' : 'flex-1'}
                                             >
-                                                Edit
+                                                {t('employees.edit', { defaultValue: 'Edit' })}
                                             </Button>
                                             <Popconfirm
-                                                title="Delete tax rate"
-                                                description="Are you sure?"
+                                                title={t('pricing.deleteTaxRate', { defaultValue: 'Delete tax rate' })}
+                                                description={t('shops.deleteConfirm', { defaultValue: 'Are you sure?' })}
                                                 onConfirm={() => handleDelete(rate.taxRateId)}
-                                                okText="Yes"
-                                                cancelText="No"
+                                                okText={t('employees.yes', { defaultValue: 'Yes' })}
+                                                cancelText={t('employees.no', { defaultValue: 'No' })}
                                                 okButtonProps={{ danger: true }}
                                             >
                                                 <Button
@@ -397,7 +399,7 @@ const TaxRateConfiguration = () => {
                                                     icon={<DeleteOutlined />}
                                                     className="flex-1"
                                                 >
-                                                    Delete
+                                                    {t('employees.delete', { defaultValue: 'Delete' })}
                                                 </Button>
                                             </Popconfirm>
                                         </div>
@@ -410,26 +412,26 @@ const TaxRateConfiguration = () => {
             </Card>
 
             <div className="text-sm text-gray-500 bg-blue-50 p-4 rounded-lg">
-                <p className="font-medium text-blue-700 mb-1">💡 Tip</p>
-                <p>Set a default tax rate to have it automatically selected when creating new service documents. You can always override it on individual documents.</p>
+                <p className="font-medium text-blue-700 mb-1">💡 {t('pricing.tip', { defaultValue: 'Tip' })}</p>
+                <p>{t('pricing.taxRateTip', { defaultValue: 'Set a default tax rate to have it automatically selected when creating new service documents. You can always override it on individual documents.' })}</p>
             </div>
 
             <Modal
-                title={editingRate ? "Edit Tax Rate" : "Add Tax Rate"}
+                title={editingRate ? t('pricing.editTaxRate', { defaultValue: 'Edit Tax Rate' }) : t('pricing.addTaxRate', { defaultValue: 'Add Tax Rate' })}
                 open={modalVisible}
                 onOk={handleSave}
                 onCancel={() => setModalVisible(false)}
                 confirmLoading={saving}
-                okText={editingRate ? "Update" : "Create"}
+                okText={editingRate ? t('shops.update', { defaultValue: 'Update' }) : t('shops.create', { defaultValue: 'Create' })}
             >
                 <Form form={form} layout="vertical" className="mt-4">
                     <div className="grid grid-cols-2 gap-4">
                         <Form.Item
                             name="stateCode"
-                            label="State Code"
+                            label={t('pricing.stateCode', { defaultValue: 'State Code' })}
                             rules={[
-                                { required: true, message: "Required" },
-                                { pattern: /^[A-Z]{2}$/, message: "Must be 2 uppercase letters" }
+                                { required: true, message: t('pricing.required', { defaultValue: 'Required' }) },
+                                { pattern: /^[A-Z]{2}$/, message: t('pricing.stateCodePattern', { defaultValue: 'Must be 2 uppercase letters' }) }
                             ]}
                         >
                             <Input
@@ -445,8 +447,8 @@ const TaxRateConfiguration = () => {
                         </Form.Item>
                         <Form.Item
                             name="stateName"
-                            label="State Name"
-                            rules={[{ required: true, message: "Required" }]}
+                            label={t('pricing.stateName', { defaultValue: 'State Name' })}
+                            rules={[{ required: true, message: t('pricing.required', { defaultValue: 'Required' }) }]}
                         >
                             <Input placeholder="e.g., California" />
                         </Form.Item>
@@ -454,10 +456,10 @@ const TaxRateConfiguration = () => {
 
                     <Form.Item
                         name="taxPercent"
-                        label="Tax Percentage"
+                        label={t('pricing.taxPercentage', { defaultValue: 'Tax Percentage' })}
                         rules={[
-                            { required: true, message: "Required" },
-                            { type: 'number', min: 0, max: 99.99, message: "Must be between 0 and 99.99" }
+                            { required: true, message: t('pricing.required', { defaultValue: 'Required' }) },
+                            { type: 'number', min: 0, max: 99.99, message: t('pricing.taxPercentRange', { defaultValue: 'Must be between 0 and 99.99' }) }
                         ]}
                     >
                         <InputNumber
@@ -474,14 +476,14 @@ const TaxRateConfiguration = () => {
                     <div className="grid grid-cols-2 gap-4">
                         <Form.Item
                             name="isActive"
-                            label="Active"
+                            label={t('pricing.active', { defaultValue: 'Active' })}
                             valuePropName="checked"
                         >
                             <Switch />
                         </Form.Item>
                         <Form.Item
                             name="isDefault"
-                            label="Set as Default"
+                            label={t('pricing.setAsDefault', { defaultValue: 'Set as Default' })}
                             valuePropName="checked"
                         >
                             <Switch />

@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Input, Card, notification, Table, Tag } from "antd";
 import { DollarOutlined } from "@ant-design/icons";
 import { createUserKitPrice, getUserKitPrices } from "../../api/userKitPrices";
+import { useTranslation } from 'react-i18next';
 
 const STANDARD_KITS = [
     { code: '1246', desc: 'Urethane,Dam,Primer' },
@@ -17,6 +18,7 @@ const UserKitPricePage = () => {
     const [updating, setUpdating] = useState({}); // Map of code -> boolean
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const queryClient = useQueryClient();
+    const { t } = useTranslation();
 
     React.useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -30,7 +32,7 @@ const UserKitPricePage = () => {
         onError: (error) => {
             console.error("Error fetching kit prices:", error);
             notification.error({
-                message: "Failed to fetch kit prices",
+                message: t('pricing.fetchKitPricesFailed', { defaultValue: 'Failed to fetch kit prices' }),
                 description: error.message
             });
         }
@@ -76,11 +78,11 @@ const UserKitPricePage = () => {
             localStorage.setItem("user_kit_prices", JSON.stringify(currentData));
             queryClient.invalidateQueries({ queryKey: ['userKitPrices'] });
 
-            notification.success({ message: `Price for ${code} updated` });
+            notification.success({ message: t('pricing.priceUpdated', { defaultValue: 'Price for {{code}} updated', code }) });
         } catch (error) {
             console.error("Error saving kit price:", error);
             notification.error({
-                message: "Failed to update price",
+                message: t('pricing.updatePriceFailed', { defaultValue: 'Failed to update price' }),
                 description: error.message
             });
         } finally {
@@ -96,13 +98,13 @@ const UserKitPricePage = () => {
 
     const columns = [
         {
-            title: 'Description',
+            title: t('shops.description', { defaultValue: 'Description' }),
             dataIndex: 'desc',
             key: 'desc',
             render: text => <span className="text-slate-600">{text}</span>
         },
         {
-            title: 'Price',
+            title: t('pricing.price', { defaultValue: 'Price' }),
             dataIndex: 'price',
             key: 'price',
             width: 200,
@@ -122,15 +124,15 @@ const UserKitPricePage = () => {
             )
         },
         {
-            title: 'Status',
+            title: t('employees.status', { defaultValue: 'Status' }),
             key: 'status',
             width: 100,
             render: (_, record) => {
                 const isSet = prices[record.code] !== undefined && prices[record.code] !== null;
                 return isSet ? (
-                    <Tag color="green">Active</Tag>
+                    <Tag color="green">{t('employees.active', { defaultValue: 'Active' })}</Tag>
                 ) : (
-                    <Tag>Not Set</Tag>
+                    <Tag>{t('pricing.notSet', { defaultValue: 'Not Set' })}</Tag>
                 );
             }
         }
@@ -139,7 +141,7 @@ const UserKitPricePage = () => {
     return (
         <div className="space-y-6 animate-fadeIn max-w-4xl mx-auto">
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">Standard Kit Pricing</h2>
+                <h2 className="text-2xl font-bold text-gray-800">{t('pricing.standardKitPricing', { defaultValue: 'Standard Kit Pricing' })}</h2>
             </div>
 
             <Card className="shadow-sm border border-slate-200">
@@ -147,10 +149,9 @@ const UserKitPricePage = () => {
                     <div className="flex items-center gap-3 mb-2">
                         <DollarOutlined className="text-2xl text-violet-600" />
                         <div>
-                            <h3 className="text-lg font-semibold text-gray-800">Manage Kit Prices</h3>
+                            <h3 className="text-lg font-semibold text-gray-800">{t('pricing.manageKitPrices', { defaultValue: 'Manage Kit Prices' })}</h3>
                             <p className="text-sm text-gray-500">
-                                Set your standard pricing for common installation kits.
-                                These prices will be automatically applied when adding kits to a quote.
+                                {t('pricing.manageKitPricesDesc', { defaultValue: 'Set your standard pricing for common installation kits. These prices will be automatically applied when adding kits to a quote.' })}
                             </p>
                         </div>
                     </div>
@@ -170,9 +171,9 @@ const UserKitPricePage = () => {
                     {isMobile && (
                         <div className="space-y-3">
                             {loading ? (
-                                <div className="text-center py-8 text-gray-500">Loading...</div>
+                                <div className="text-center py-8 text-gray-500">{t('pricing.loadingLaborRate', { defaultValue: 'Loading...' })}</div>
                             ) : tableData.length === 0 ? (
-                                <div className="text-center py-8 text-gray-500">No kits found</div>
+                                <div className="text-center py-8 text-gray-500">{t('pricing.noKitsFound', { defaultValue: 'No kits found' })}</div>
                             ) : (
                                 tableData.map((kit) => (
                                     <div key={kit.code} className="bg-slate-50 rounded-lg border border-slate-200 p-3">
@@ -181,7 +182,7 @@ const UserKitPricePage = () => {
                                         </div>
                                         <div className="space-y-3">
                                             <div className="flex justify-between items-center">
-                                                <span className="text-gray-600 font-medium">Price:</span>
+                                                <span className="text-gray-600 font-medium">{t('pricing.price', { defaultValue: 'Price' })}:</span>
                                                 <div className="flex items-center gap-2">
                                                     <Input
                                                         type="number"
@@ -200,9 +201,9 @@ const UserKitPricePage = () => {
                                             </div>
                                             <div>
                                                 {prices[kit.code] ? (
-                                                    <Tag color="green">✓ Set - ${prices[kit.code]}</Tag>
+                                                    <Tag color="green">✓ {t('pricing.set', { defaultValue: 'Set' })} - ${prices[kit.code]}</Tag>
                                                 ) : (
-                                                    <Tag color="red">Not Set</Tag>
+                                                    <Tag color="red">{t('pricing.notSet', { defaultValue: 'Not Set' })}</Tag>
                                                 )}
                                             </div>
                                         </div>

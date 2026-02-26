@@ -11,6 +11,7 @@ import { updateEmployee } from "../../api/updateEmployee";
 import { enableEmployeeLogin } from "../../api/enableEmployeeLogin";
 import { getProfile } from "../../api/getProfile";
 import { getAllShops } from "../../api/getAllShops";
+import { useTranslation } from 'react-i18next';
 
 const { Option } = Select;
 
@@ -31,6 +32,7 @@ const EmployeeManagement = ({ token, isMobile }) => {
     const [saving, setSaving] = useState(false);
     const [editingEmployee, setEditingEmployee] = useState(null); // State to track which employee is being edited
     const [selectedEmployeeForLogin, setSelectedEmployeeForLogin] = useState(null);
+    const { t } = useTranslation();
 
     // Profile query to get User ID for creation
     const { data: profile } = useQuery({
@@ -149,7 +151,7 @@ const EmployeeManagement = ({ token, isMobile }) => {
 
     const columns = [
         {
-            title: "Name",
+            title: t('employees.name', { defaultValue: 'Name' }),
             key: "name",
             render: (_, record) => (
                 <span className="font-medium text-gray-900">
@@ -158,7 +160,7 @@ const EmployeeManagement = ({ token, isMobile }) => {
             ),
         },
         {
-            title: "Role",
+            title: t('employees.role'),
             dataIndex: "role",
             key: "role",
             render: (role) => (
@@ -166,7 +168,7 @@ const EmployeeManagement = ({ token, isMobile }) => {
             ),
         },
         {
-            title: "Email",
+            title: t('auth.email'),
             dataIndex: "email",
             key: "email",
             render: (email) => (
@@ -174,7 +176,7 @@ const EmployeeManagement = ({ token, isMobile }) => {
             ),
         },
         {
-            title: "Shop",
+            title: t('employees.shop'),
             dataIndex: "shopName",
             key: "shopName",
             render: (shopName) => (
@@ -182,17 +184,17 @@ const EmployeeManagement = ({ token, isMobile }) => {
             ),
         },
         {
-            title: "Status",
+            title: t('employees.status'),
             dataIndex: "isActive",
             key: "status",
             render: (isActive) => (
                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                    {isActive ? 'Active' : 'Inactive'}
+                    {isActive ? t('employees.active') : t('employees.inactive')}
                 </span>
             ),
         },
         {
-            title: "Actions",
+            title: t('employees.actions'),
             key: "actions",
             render: (_, record) => (
                 <Space>
@@ -203,7 +205,7 @@ const EmployeeManagement = ({ token, isMobile }) => {
                             onClick={() => handleEditEmployee(record)}
                         />
                     </Tooltip>
-                    <Tooltip title="Enable Login / Set Password">
+                    <Tooltip title={t('employees.enableLogin')}>
                         <Button
                             type="text"
                             icon={<LockOutlined />}
@@ -227,14 +229,14 @@ const EmployeeManagement = ({ token, isMobile }) => {
                     onClick={handleAddEmployee}
                     style={{ background: "#7c3aed", borderColor: "#7c3aed" }}
                 >
-                    Add Employee
+                    {t('employees.addEmployee')}
                 </Button>
             </div>
 
             {employees.length === 0 ? (
                 <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-gray-300">
                     <IdcardOutlined className="text-4xl text-gray-300 mb-3" />
-                    <p className="text-gray-500">No employees found.</p>
+                    <p className="text-gray-500">{t('employees.noEmployeesFound')}</p>
                 </div>
             ) : (
                 <>
@@ -259,7 +261,7 @@ const EmployeeManagement = ({ token, isMobile }) => {
                                         <div className="flex flex-col">
                                             <h3 className="text-sm font-bold text-gray-900">{e.firstName} {e.lastName}</h3>
                                             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium w-fit mt-1 ${e.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                                                {e.isActive ? 'Active' : 'Inactive'}
+                                                {e.isActive ? t('employees.active') : t('employees.inactive')}
                                             </span>
                                         </div>
                                         <Space>
@@ -277,11 +279,11 @@ const EmployeeManagement = ({ token, isMobile }) => {
                                     </div>
                                     <div className="space-y-1 text-xs mt-2">
                                         <div className="flex justify-between">
-                                            <span className="text-gray-500">Role:</span>
+                                            <span className="text-gray-500">{t('employees.role')}:</span>
                                             <span className="text-gray-900 font-medium">{e.role || "-"}</span>
                                         </div>
                                         <div className="flex justify-between">
-                                            <span className="text-gray-500">Email:</span>
+                                            <span className="text-gray-500">{t('auth.email')}:</span>
                                             <span className="text-gray-900 font-mono">{e.email || "-"}</span>
                                         </div>
                                     </div>
@@ -293,7 +295,7 @@ const EmployeeManagement = ({ token, isMobile }) => {
             )}
 
             <Modal
-                title={editingEmployee ? "Edit Employee" : "Add Employee"}
+                title={editingEmployee ? t('employees.editEmployee') : t('employees.addEmployee')}
                 open={isEmployeeModalVisible}
                 onOk={handleSaveEmployee}
                 onCancel={() => setIsEmployeeModalVisible(false)}
@@ -303,15 +305,15 @@ const EmployeeManagement = ({ token, isMobile }) => {
             >
                 <Form form={employeeForm} layout="vertical">
                     <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}>
-                        <Form.Item name="firstName" label="First Name" rules={[{ required: true }]}>
+                        <Form.Item name="firstName" label={t('order.firstName')} rules={[{ required: true }]}>
                             <Input />
                         </Form.Item>
-                        <Form.Item name="lastName" label="Last Name" rules={[{ required: true }]}>
+                        <Form.Item name="lastName" label={t('order.lastName')} rules={[{ required: true }]}>
                             <Input />
                         </Form.Item>
                     </div>
 
-                    <Form.Item name="shopId" label="Shop" rules={[{ required: true, message: "Please select a shop" }]}>
+                    <Form.Item name="shopId" label={t('employees.shop')} rules={[{ required: true, message: t('employees.shopRequired') }]}>
                         <Select placeholder="Select a shop">
                             {Array.isArray(shops) && shops.length > 0 && shops.map(shop => (
                                 <Select.Option key={shop.shopId} value={shop.shopId}>
@@ -322,7 +324,7 @@ const EmployeeManagement = ({ token, isMobile }) => {
                     </Form.Item>
                     <Form.Item
                         name="email"
-                        label="Email"
+                        label={t('auth.email')}
                         rules={[
                             {
                                 validator: (_, value) => {
@@ -340,7 +342,7 @@ const EmployeeManagement = ({ token, isMobile }) => {
                     </Form.Item>
                     <Form.Item
                         name="phone"
-                        label="Phone"
+                        label={t('contact.phone')}
                         rules={[
                             { required: true, message: "Please enter phone number" },
                             {
@@ -363,31 +365,31 @@ const EmployeeManagement = ({ token, isMobile }) => {
                             }}
                         />
                     </Form.Item>
-                    <Form.Item name="role" label="Role" rules={[{ required: true }]}>
+                    <Form.Item name="role" label={t('employees.role')} rules={[{ required: true }]}>
                         <Select>
-                            <Select.Option value="technician">Technician</Select.Option>
-                            <Select.Option value="manager">Manager</Select.Option>
-                            <Select.Option value="sales">Sales</Select.Option>
-                            <Select.Option value="csr">CSR</Select.Option>
-                            <Select.Option value="installer">Installer</Select.Option>
+                            <Select.Option value="technician">{t('employees.technician')}</Select.Option>
+                            <Select.Option value="manager">{t('employees.manager')}</Select.Option>
+                            <Select.Option value="sales">{t('employees.sales')}</Select.Option>
+                            <Select.Option value="csr">{t('employees.csr')}</Select.Option>
+                            <Select.Option value="installer">{t('employees.installer')}</Select.Option>
                         </Select>
                     </Form.Item>
                 </Form>
             </Modal>
 
             <Modal
-                title="Enable Employe Login"
+                title={t('employees.enableLogin')}
                 open={isLoginModalVisible}
                 onOk={handleSaveLogin}
                 onCancel={() => setIsLoginModalVisible(false)}
                 confirmLoading={saving}
             >
                 <Form form={loginForm} layout="vertical">
-                    <p className="text-gray-500 mb-4">Set up login credentials for {selectedEmployeeForLogin?.firstName}.</p>
-                    <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email' }]}>
+                    <p className="text-gray-500 mb-4">{t('employees.setUpLogin')} {selectedEmployeeForLogin?.firstName}.</p>
+                    <Form.Item name="email" label={t('auth.email')} rules={[{ required: true, type: 'email' }]}>
                         <Input disabled />
                     </Form.Item>
-                    <Form.Item name="password" label="New Password" rules={[{ required: true, min: 6 }]}>
+                    <Form.Item name="password" label={t('auth.password')} rules={[{ required: true, min: 6 }]}>
                         <Input.Password />
                     </Form.Item>
                 </Form>
