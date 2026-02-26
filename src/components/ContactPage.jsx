@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Form, Input, Button, Radio, Select, message, Typography } from 'antd';
 import { MailOutlined, UserOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import PageHead from './PageHead';
@@ -15,6 +16,7 @@ import { sendEmail } from '../api/sendEmail';
 // ... (existing imports)
 
 const ContactPage = () => {
+    const { t } = useTranslation();
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
@@ -58,9 +60,9 @@ ${userMessage || 'No message provided'}
 
     return (
         <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 flex flex-col items-center animate-fade-in-up relative overflow-hidden">
-            <PageHead 
-                title="Contact APAI | Sign Up for Your Auto Glass Business" 
-                description="Have questions about APAI? Contact our team today for support, demos, or sign up for 30 days trial. We're here to help your auto glass shop succeed." 
+            <PageHead
+                title="Contact APAI | Sign Up for Your Auto Glass Business"
+                description="Have questions about APAI? Contact our team today for support, demos, or sign up for 30 days trial. We're here to help your auto glass shop succeed."
             />
             {/* Simple static gradient background */}
             <div
@@ -73,12 +75,12 @@ ${userMessage || 'No message provided'}
                 {/* Header Section */}
                 <div className="text-center mb-16 max-w-3xl">
                     <Title level={1} className="!font-bold !text-4xl md:!text-5xl !mb-4">
-                        Contact Us
+                        {t('contact.title')}
                     </Title>
                     <div className="w-16 h-1 bg-blue-500 mx-auto rounded-full mb-8"></div>
                     <Paragraph className="text-lg text-slate-600">
-                        Get in Touch with Us. <br />
-                        Wherever you are, everything you need!
+                        {t('contact.getInTouch')} <br />
+                        {t('contact.loveToHear')}
                     </Paragraph>
                 </div>
 
@@ -117,15 +119,15 @@ ${userMessage || 'No message provided'}
                                     <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                                         <CheckCircleOutlined className="text-4xl text-green-500" />
                                     </div>
-                                    <Title level={2} className="!mb-4 !text-slate-800">Message Sent!</Title>
+                                    <Title level={2} className="!mb-4 !text-slate-800">{t('contact.messageSent')}</Title>
                                     <Paragraph className="text-slate-600 mb-8 max-w-xs mx-auto text-lg">
-                                        Thank you for reaching out. We will get back to you shortly.
+                                        {t('contact.messageSentDesc')}
                                     </Paragraph>
                                     <Button
                                         onClick={handleReset}
                                         className="h-11 px-8 rounded-lg text-base font-semibold border-slate-300 text-slate-600 hover:text-slate-800 hover:border-slate-400"
                                     >
-                                        Send another message
+                                        {t('contact.sendAnother')}
                                     </Button>
                                 </div>
                             ) : (
@@ -157,7 +159,7 @@ ${userMessage || 'No message provided'}
                                     >
                                         <Form.Item
                                             name="shopName"
-                                            label={<span className="font-medium text-slate-700">Shop Name<span className="text-red-500">*</span></span>}
+                                            label={<span className="font-medium text-slate-700">{t('contact.companyName')}<span className="text-red-500">*</span></span>}
                                             rules={[{ required: true, message: 'Please enter your shop name' }]}
                                             className="mb-3"
                                         >
@@ -167,7 +169,7 @@ ${userMessage || 'No message provided'}
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
                                             <Form.Item
                                                 name="firstName"
-                                                label={<span className="font-medium text-slate-700">First Name<span className="text-red-500">*</span></span>}
+                                                label={<span className="font-medium text-slate-700">{t('contact.firstName')}<span className="text-red-500">*</span></span>}
                                                 rules={[{ required: true, message: 'Please enter your first name' }]}
                                                 className="mb-0"
                                             >
@@ -176,7 +178,7 @@ ${userMessage || 'No message provided'}
 
                                             <Form.Item
                                                 name="lastName"
-                                                label={<span className="font-medium text-slate-700">Last Name<span className="text-red-500">*</span></span>}
+                                                label={<span className="font-medium text-slate-700">{t('contact.lastName')}<span className="text-red-500">*</span></span>}
                                                 rules={[{ required: true, message: 'Please enter your last name' }]}
                                                 className="mb-0"
                                             >
@@ -186,7 +188,7 @@ ${userMessage || 'No message provided'}
 
                                         <Form.Item
                                             name="email"
-                                            label={<span className="font-medium text-slate-700">Email<span className="text-red-500">*</span></span>}
+                                            label={<span className="font-medium text-slate-700">{t('contact.email')}<span className="text-red-500">*</span></span>}
                                             rules={[
                                                 { required: true, message: 'Please enter your email' },
                                                 { type: 'email', message: 'Please enter a valid email' }
@@ -197,7 +199,7 @@ ${userMessage || 'No message provided'}
                                         </Form.Item>
 
                                         <Form.Item
-                                            label={<span className="font-medium text-slate-700">Phone number<span className="text-red-500">*</span></span>}
+                                            label={<span className="font-medium text-slate-700">{t('contact.phone')}<span className="text-red-500">*</span></span>}
                                             required
                                             className="mb-3"
                                         >
@@ -242,13 +244,13 @@ ${userMessage || 'No message provided'}
 
                                         <Form.Item
                                             name="message"
-                                            label={<span className="font-medium text-slate-700">Message</span>}
+                                            label={<span className="font-medium text-slate-700">{t('contact.message')}</span>}
                                             className="mb-6"
                                         >
                                             <Input.TextArea
                                                 rows={3}
                                                 className="rounded-lg bg-gray-50 border-gray-200 hover:bg-white focus:bg-white transition-all"
-                                                placeholder="How can we help you?"
+                                                placeholder={t('contact.howCanWeHelp')}
                                             />
                                         </Form.Item>
 
@@ -259,7 +261,7 @@ ${userMessage || 'No message provided'}
                                                 loading={loading}
                                                 className="!bg-[#FF7A50] hover:!bg-[#E06945] !border-none !h-11 !px-8 !rounded-lg !text-base !font-semibold shadow-lg shadow-orange-200 w-full md:w-auto"
                                             >
-                                                Submit
+                                                {t('common.submit')}
                                             </Button>
                                         </Form.Item>
                                     </Form>

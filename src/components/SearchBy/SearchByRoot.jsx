@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQuoteStore } from "../../store";
 import { useQueryClient } from "@tanstack/react-query";
@@ -27,6 +28,7 @@ import DocumentEditorHeader from "./DocumentEditorHeader";
 
 
 const SearchByRoot = () => {
+  const { t } = useTranslation();
 
   // Zustand Store
   const {
@@ -159,7 +161,7 @@ const SearchByRoot = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    document.title = "APAI | Search";
+    document.title = `APAI | ${t('quote.title')}`;
   }, []);
 
   // Handle Incoming Composite Data (Edit Mode) OR Prefill Data (New Quote)

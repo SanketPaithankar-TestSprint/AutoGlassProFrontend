@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Form, Input, Button, Steps, notification, Alert } from 'antd';
 import { MailOutlined, LockOutlined, SafetyOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { requestPasswordResetOtp, resetPasswordWithOtp } from '../api/password';
@@ -40,6 +41,7 @@ const customInputStyle = `
 `;
 
 export default function ForgotPasswordForm({ onBackToLogin, onSuccess }) {
+    const { t } = useTranslation();
     const [currentStep, setCurrentStep] = useState(0);
     const [loading, setLoading] = useState(false);
     const [email, setEmail] = useState('');
@@ -102,7 +104,7 @@ export default function ForgotPasswordForm({ onBackToLogin, onSuccess }) {
                     onClick={onBackToLogin}
                     className="text-slate-500 hover:text-violet-600 pl-0"
                 >
-                    Back to Login
+                    {t('auth.login')}
                 </Button>
             </div>
 
@@ -119,8 +121,8 @@ export default function ForgotPasswordForm({ onBackToLogin, onSuccess }) {
             )}
 
             <Steps current={currentStep} size="small" className="mb-8" items={[
-                { title: 'Email' },
-                { title: 'Reset' },
+                { title: t('auth.email') },
+                { title: t('auth.resetPassword') },
             ]} />
 
             {currentStep === 0 && (
@@ -134,7 +136,7 @@ export default function ForgotPasswordForm({ onBackToLogin, onSuccess }) {
                     <p className="mb-6 text-slate-500 text-sm">Enter your registered email address to receive a One-Time Password (OTP).</p>
                     <Form.Item
                         name="email"
-                        label="Email Address"
+                        label={t('auth.email')}
                         rules={[
                             { required: true, message: 'Please input your email!' },
                             { type: 'email', message: 'Please enter a valid email!' }
@@ -193,7 +195,7 @@ export default function ForgotPasswordForm({ onBackToLogin, onSuccess }) {
                     </Form.Item>
                     <Form.Item
                         name="newPassword"
-                        label="New Password"
+                        label={t('auth.password')}
                         rules={[
                             { required: true, message: 'Please enter your new password!' },
                             { min: 6, message: 'Password must be at least 6 characters.' }
@@ -208,7 +210,7 @@ export default function ForgotPasswordForm({ onBackToLogin, onSuccess }) {
                     </Form.Item>
                     <Form.Item
                         name="confirmPassword"
-                        label="Confirm New Password"
+                        label={t('auth.confirmPassword')}
                         dependencies={['newPassword']}
                         rules={[
                             { required: true, message: 'Please confirm your new password!' },
@@ -246,7 +248,7 @@ export default function ForgotPasswordForm({ onBackToLogin, onSuccess }) {
                                 boxShadow: '0 4px 14px 0 rgba(118, 75, 162, 0.39)'
                             }}
                         >
-                            Reset Password
+                            {t('auth.resetPassword')}
                         </Button>
                     </Form.Item>
                 </Form>

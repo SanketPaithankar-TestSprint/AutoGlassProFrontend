@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Alert, Select, DatePicker, Tooltip } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
@@ -25,6 +26,7 @@ const { Option } = Select;
 
 
 const AnalyticsRoot = () => {
+    const { t } = useTranslation();
     const [userId, setUserId] = React.useState(null);
     const [checkingUserId, setCheckingUserId] = React.useState(true);
     const [dateParams, setDateParams] = React.useState({ startDate: null, endDate: null });
@@ -58,7 +60,7 @@ const AnalyticsRoot = () => {
     if (checkingUserId || !userId || (isLoading && !data)) {
         return (
             <div className="h-full flex items-center justify-center bg-slate-100">
-                <Loader tip="Loading Dashboard..." />
+                <Loader tip={t('common.loading')} />
             </div>
         );
     }
@@ -83,7 +85,7 @@ const AnalyticsRoot = () => {
                 <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
                     <div className="flex items-center gap-2">
                         <h1 className="!text-[30px] font-extrabold text-slate-800 m-0">
-                            Shop Analytics
+                            {t('analytics.title')}
                         </h1>
                         <Tooltip title="Comprehensive business analytics and insights" placement="right">
                             <InfoCircleOutlined className="text-slate-400 text-base cursor-pointer hover:text-violet-500 transition-colors" />

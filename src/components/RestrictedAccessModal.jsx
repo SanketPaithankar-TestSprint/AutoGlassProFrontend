@@ -1,9 +1,11 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, Button } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/auth/useAuth';
 
 const RestrictedAccessModal = ({ visible }) => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const { setIsAuthenticated } = useAuth();
 
@@ -33,16 +35,16 @@ const RestrictedAccessModal = ({ visible }) => {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
                     </svg>
                 </div>
-                <h2 className="text-xl font-bold mb-2">Restricted Access</h2>
+                <h2 className="text-xl font-bold mb-2">{t('restricted.title')}</h2>
                 <p className="text-gray-600 mb-6 text-center">
-                    This is a test account. and you cannot access it
+                    {t('restricted.message')}
                 </p>
                 <div className="flex gap-4">
                     <Button type="primary" onClick={handleGoToSearch}>
-                        Go to Search
+                        {t('restricted.goToSearch')}
                     </Button>
                     <Button danger onClick={handleLogout}>
-                        Logout
+                        {t('auth.logout')}
                     </Button>
                 </div>
             </div>

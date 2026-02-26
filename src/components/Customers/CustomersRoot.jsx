@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { getCustomers } from "../../api/getCustomers";
 import { createCustomer } from "../../api/createCustomer";
 import { updateCustomer } from "../../api/updateCustomer";
@@ -19,10 +20,11 @@ import { applyCustomerFilters } from "./helpers/utils";
 const CustomersRoot = () => {
     const queryClient = useQueryClient();
     const token = getValidToken();
+    const { t } = useTranslation();
 
     useEffect(() => {
-        document.title = "APAI | Customers & Organizations";
-    }, []);
+        document.title = `APAI | ${t('customers.title')}`;
+    }, [t]);
 
     // ------------------- STATES ------------------- //
     const [activeTab, setActiveTab] = useState('individuals');
@@ -200,16 +202,16 @@ const CustomersRoot = () => {
 
             if (editingItem) {
                 await updateCustomer(token, editingItem.customerId, payload);
-                notification.success({ message: "Customer updated" });
+                notification.success({ message: t('customers.customerUpdated') });
             } else {
                 await createCustomer(token, payload);
-                notification.success({ message: "Customer created" });
+                notification.success({ message: t('customers.customerCreated') });
             }
             setIsCustomerModalVisible(false);
             queryClient.invalidateQueries({ queryKey: ['customers'] });
         } catch (err) {
             console.error(err);
-            notification.error({ message: "Failed to save customer", description: err.message });
+            notification.error({ message: t('customers.failedToSaveCustomer'), description: err.message });
         } finally {
             setSaving(false);
         }
@@ -245,7 +247,7 @@ const CustomersRoot = () => {
                 delete payload.addressLine2;
 
                 await updateOrganization(editingItem.organizationId, payload);
-                notification.success({ message: "Organization updated" });
+                notification.success({ message: t('customers.organizationUpdated') });
             } else {
                 // For new organization
                 const payload = {
@@ -260,14 +262,14 @@ const CustomersRoot = () => {
                 delete payload.addressLine2;
 
                 await createOrganization(payload);
-                notification.success({ message: "Organization created" });
+                notification.success({ message: t('customers.organizationCreated') });
             }
             setIsOrgModalVisible(false);
             await queryClient.invalidateQueries({ queryKey: ['organizations'] });
             refetchOrgs();
         } catch (err) {
             console.error(err);
-            notification.error({ message: "Failed to save organization", description: err.message });
+            notification.error({ message: t('customers.failedToSaveOrganization'), description: err.message });
         } finally {
             setSaving(false);
         }
@@ -281,7 +283,7 @@ const CustomersRoot = () => {
             return (
                 <div className="space-y-3">
                     {filteredCustomers.length === 0 ? (
-                        <Empty description="No customers found" className="py-12" />
+                        <Empty description={t('customers.noCustomersFound')} className="py-12" />
                     ) : (
                         filteredCustomers.map((c) => (
                             <div key={c.customerId || Math.random()} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
@@ -316,10 +318,10 @@ const CustomersRoot = () => {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-gray-50/80 border-b border-gray-100">
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider pl-6">Name</th>
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Email</th>
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Phone</th>
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right pr-6">Actions</th>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider pl-6">{t('customers.name')}</th>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">{t('customers.email')}</th>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">{t('customers.phone')}</th>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right pr-6">{t('common.actions')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
@@ -349,7 +351,7 @@ const CustomersRoot = () => {
             return (
                 <div className="space-y-3">
                     {filteredOrgs.length === 0 ? (
-                        <Empty description="No organizations found" className="py-12" />
+                        <Empty description={t('customers.noOrganizationsFound')} className="py-12" />
                     ) : (
                         filteredOrgs.map((org) => (
                             <div key={org.organizationId} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
@@ -357,7 +359,7 @@ const CustomersRoot = () => {
                                     <div className="flex-1 min-w-0">
                                         <div className="font-semibold text-gray-900 text-base truncate">
                                             {org.companyName}
-                                            {org.taxExempt && <Tag color="green" className="ml-2 text-[10px]">Tax Exempt</Tag>}
+                                            {org.taxExempt && <Tag color="green" className="ml-2 text-[10px]">{t('customers.taxExempt')}</Tag>}
                                         </div>
                                         <div className="text-sm text-gray-500 truncate">{org.email || "-"}</div>
                                     </div>
@@ -368,12 +370,12 @@ const CustomersRoot = () => {
                                 </div>
                                 <div className="space-y-1 text-sm text-gray-600">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-gray-400 text-xs flex-shrink-0">Contact:</span>
+                                        <span className="text-gray-400 text-xs flex-shrink-0">{t('customers.contactName')}:</span>
                                         <span className="truncate">{org.contactName || "-"}</span>
                                     </div>
                                     {org.taxId && (
                                         <div className="flex items-center gap-2">
-                                            <span className="text-gray-400 text-xs flex-shrink-0">Tax ID:</span>
+                                            <span className="text-gray-400 text-xs flex-shrink-0">{t('customers.taxId')}:</span>
                                             <span className="font-mono truncate">{org.taxId}</span>
                                         </div>
                                     )}
@@ -394,12 +396,12 @@ const CustomersRoot = () => {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-gray-50/80 border-b border-gray-100">
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider pl-6">Company Name</th>
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Email</th>
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Phone</th>
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Contact</th>
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Tax ID</th>
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right pr-6">Actions</th>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider pl-6">{t('customers.companyName')}</th>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">{t('customers.email')}</th>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">{t('customers.phone')}</th>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">{t('customers.contactName')}</th>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">{t('customers.taxId')}</th>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right pr-6">{t('common.actions')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
@@ -407,7 +409,7 @@ const CustomersRoot = () => {
                                     <tr key={org.organizationId} className="hover:bg-violet-50/50 transition-colors group">
                                         <td className="p-4 pl-6 text-sm font-semibold text-gray-900">
                                             {org.companyName}
-                                            {org.taxExempt && <Tag color="green" className="ml-2">Tax Exempt</Tag>}
+                                            {org.taxExempt && <Tag color="green" className="ml-2">{t('customers.taxExempt')}</Tag>}
                                         </td>
                                         <td className="p-4 text-sm text-gray-600">
                                             {org.email || org.companyEmail || org.contactEmail || "-"}
@@ -473,7 +475,7 @@ const CustomersRoot = () => {
                     {/* Add Button Section */}
                     <div className="flex justify-between items-center mb-6">
                         <div className="text-sm text-slate-600">
-                            Showing {activeTab === 'individuals' ? `${filteredCustomers.length} of ${totalCustomers}` : filteredOrgs.length} results
+                            {t('common.showing')} {activeTab === 'individuals' ? `${filteredCustomers.length} ${t('common.of')} ${totalCustomers}` : filteredOrgs.length} {t('common.results')}
                         </div>
                         <div>
                             {activeTab === 'individuals' ? (
@@ -481,14 +483,14 @@ const CustomersRoot = () => {
                                     onClick={handleAddCustomer}
                                     className="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm"
                                 >
-                                    <PlusOutlined /> Add Customer
+                                    <PlusOutlined /> {t('customers.addCustomer')}
                                 </button>
                             ) : (
                                 <button
                                     onClick={handleAddOrg}
                                     className="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm"
                                 >
-                                    <PlusOutlined /> Add Organization
+                                    <PlusOutlined /> {t('customers.addOrganization')}
                                 </button>
                             )}
                         </div>
@@ -500,7 +502,7 @@ const CustomersRoot = () => {
                         items={[
                             {
                                 key: 'individuals',
-                                label: <span className="flex items-center gap-2"><UserOutlined /> Individual Customers</span>,
+                                label: <span className="flex items-center gap-2"><UserOutlined /> {t('customers.individualCustomers')}</span>,
                                 children: (
                                     <>
                                         {renderCustomersTable()}
@@ -516,7 +518,7 @@ const CustomersRoot = () => {
                                                     }}
                                                     showSizeChanger
                                                     pageSizeOptions={['25', '50', '100']}
-                                                    showTotal={(total, range) => `${range[0]}-${range[1]} of ${total} customers`}
+                                                    showTotal={(total, range) => `${range[0]}-${range[1]} ${t('common.of')} ${total}`}
                                                 />
                                             </div>
                                         )}
@@ -525,7 +527,7 @@ const CustomersRoot = () => {
                             },
                             {
                                 key: 'organizations',
-                                label: <span className="flex items-center gap-2"><ShopOutlined /> Organizations</span>,
+                                label: <span className="flex items-center gap-2"><ShopOutlined /> {t('customers.organizations')}</span>,
                                 children: renderOrganizationsTable(),
                             },
                         ]}
@@ -535,14 +537,14 @@ const CustomersRoot = () => {
                 </div>
 
                 {/* Modals */}
-                <Modal title={editingItem ? "Edit Customer" : "Add Customer"} open={isCustomerModalVisible} onOk={handleSaveCustomer} onCancel={() => setIsCustomerModalVisible(false)} confirmLoading={saving} okText="Save" centered>
+                <Modal title={editingItem ? t('customers.editCustomer') : t('customers.addCustomer')} open={isCustomerModalVisible} onOk={handleSaveCustomer} onCancel={() => setIsCustomerModalVisible(false)} confirmLoading={saving} okText={t('common.save')} cancelText={t('common.cancel')} centered>
                     <Form form={customerForm} layout="vertical" className="mt-4">
                         <div className="grid grid-cols-2 gap-4">
-                            <Form.Item name="firstName" label="First Name" rules={[{ required: true }]}><Input /></Form.Item>
-                            <Form.Item name="lastName" label="Last Name"><Input /></Form.Item>
+                            <Form.Item name="firstName" label={t('customers.firstName')} rules={[{ required: true }]}><Input /></Form.Item>
+                            <Form.Item name="lastName" label={t('customers.lastName')}><Input /></Form.Item>
                         </div>
-                        <Form.Item name="email" label="Email" rules={[{ type: 'email' }]}><Input /></Form.Item>
-                        <Form.Item name="phone" label="Phone" rules={[{ required: true, message: 'Phone is required' }]}>
+                        <Form.Item name="email" label={t('customers.email')} rules={[{ type: 'email' }]}><Input /></Form.Item>
+                        <Form.Item name="phone" label={t('customers.phone')} rules={[{ required: true, message: t('common.phoneRequired') }]}>
                             <Input
                                 placeholder="(XXX) XXX-XXXX"
                                 onChange={(e) => handlePhoneChange(e, customerForm)}
@@ -550,32 +552,32 @@ const CustomersRoot = () => {
                             />
                         </Form.Item>
                         <div className="border-t pt-4 mt-2">
-                            <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">Address</h4>
-                            <Form.Item name="addressLine1" label="Address Line 1"><Input /></Form.Item>
+                            <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">{t('customers.address')}</h4>
+                            <Form.Item name="addressLine1" label={t('customers.addressLine1')}><Input /></Form.Item>
                             <div className="grid grid-cols-2 gap-4">
-                                <Form.Item name="city" label="City"><Input /></Form.Item>
-                                <Form.Item name="state" label="State"><Input /></Form.Item>
+                                <Form.Item name="city" label={t('customers.city')}><Input /></Form.Item>
+                                <Form.Item name="state" label={t('customers.state')}><Input /></Form.Item>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
-                                <Form.Item name="postalCode" label="Zip Code"><Input /></Form.Item>
-                                <Form.Item name="country" label="Country"><Input /></Form.Item>
+                                <Form.Item name="postalCode" label={t('customers.zipCode')}><Input /></Form.Item>
+                                <Form.Item name="country" label={t('customers.country')}><Input /></Form.Item>
                             </div>
                         </div>
                     </Form>
                 </Modal>
 
-                <Modal title={editingItem ? "Edit Organization" : "Add Organization"} open={isOrgModalVisible} onOk={handleSaveOrg} onCancel={() => setIsOrgModalVisible(false)} confirmLoading={saving} okText="Save" centered width={700}>
+                <Modal title={editingItem ? t('customers.editOrganization') : t('customers.addOrganization')} open={isOrgModalVisible} onOk={handleSaveOrg} onCancel={() => setIsOrgModalVisible(false)} confirmLoading={saving} okText={t('common.save')} cancelText={t('common.cancel')} centered width={700}>
                     <Form form={orgForm} layout="vertical" className="mt-4">
                         <div className="grid grid-cols-2 gap-4">
-                            <Form.Item name="companyName" label="Company Name" rules={[{ required: true }]}><Input /></Form.Item>
-                            <Form.Item name="contactName" label="Contact Name"><Input /></Form.Item>
+                            <Form.Item name="companyName" label={t('customers.companyName')} rules={[{ required: true }]}><Input /></Form.Item>
+                            <Form.Item name="contactName" label={t('customers.contactName')}><Input /></Form.Item>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
-                            <Form.Item name="taxId" label="Tax ID"><Input /></Form.Item>
+                            <Form.Item name="taxId" label={t('customers.taxId')}><Input /></Form.Item>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
-                            <Form.Item name="email" label="Email" rules={[{ type: 'email' }]}><Input /></Form.Item>
-                            <Form.Item name="phone" label="Phone" rules={[{ required: true }]}>
+                            <Form.Item name="email" label={t('customers.email')} rules={[{ type: 'email' }]}><Input /></Form.Item>
+                            <Form.Item name="phone" label={t('customers.phone')} rules={[{ required: true }]}>
                                 <Input
                                     placeholder="(XXX) XXX-XXXX"
                                     onChange={(e) => handlePhoneChange(e, orgForm)}
@@ -584,11 +586,11 @@ const CustomersRoot = () => {
                             </Form.Item>
                         </div>
                         <div className="border-t pt-4 mt-2">
-                            <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">Address</h4>
-                            <Form.Item name="addressLine1" label="Address Line 1"><Input /></Form.Item>
+                            <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">{t('customers.address')}</h4>
+                            <Form.Item name="addressLine1" label={t('customers.addressLine1')}><Input /></Form.Item>
                             <div className="grid grid-cols-2 gap-4">
-                                <Form.Item name="postalCode" label="Zip"><Input /></Form.Item>
-                                <Form.Item name="country" label="Country"><Input /></Form.Item>
+                                <Form.Item name="postalCode" label={t('customers.zipCode')}><Input /></Form.Item>
+                                <Form.Item name="country" label={t('customers.country')}><Input /></Form.Item>
                             </div>
                         </div>
                     </Form>

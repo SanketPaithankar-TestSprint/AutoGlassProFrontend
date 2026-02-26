@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { Tag } from "antd";
+import { useTranslation } from 'react-i18next';
 
 const Row = ({ label, value }) => (
     <div className="grid grid-cols-12 gap-3 py-2">
@@ -9,18 +10,19 @@ const Row = ({ label, value }) => (
 );
 
 export default function OrderPage({ data }) {
+    const { t } = useTranslation();
     useEffect(() => {
-        document.title = "APAI | Orders";
+        document.title = `APAI | ${t('order.title')}`;
     }, []);
 
     if (!data) {
-        return <div className="text-gray-500">Enter a VIN to view vehicle details.</div>;
+        return <div className="text-gray-500">{t('order.enterVinPrompt')}</div>;
     }
 
     return (
         <div>
-            <h2 className="text-lg font-semibold mb-1">Order</h2>
-            <p className="text-gray-500 mb-4">Vehicle details decoded from VIN</p>
+            <h2 className="text-lg font-semibold mb-1">{t('order.title')}</h2>
+            <p className="text-gray-500 mb-4">{t('order.vehicleDetails')}</p>
 
             <div className="flex flex-wrap items-center gap-2 mb-4">
                 <Tag>{data?.year ?? "—"}</Tag>
@@ -36,8 +38,8 @@ export default function OrderPage({ data }) {
                     <Row label="Year" value={data?.year} />
                     <Row label="Make" value={data?.make} />
                     <Row label="Model" value={data?.model} />
-                    <Row label="Body Type" value={data?.body_type} />
-                    <Row label="Vehicle Type" value={data?.vehicle_type} />
+                    <Row label={t('order.bodyType')} value={data?.body_type} />
+                    <Row label={t('order.vehicleType')} value={data?.vehicle_type} />
                 </div>
                 <div>
                 </div>

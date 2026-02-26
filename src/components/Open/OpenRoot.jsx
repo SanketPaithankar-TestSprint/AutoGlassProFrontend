@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { App, Pagination, List, Empty, Modal, Button, Space, Select } from 'antd';
 import { ExclamationCircleOutlined, WarningOutlined } from '@ant-design/icons';
@@ -26,6 +27,7 @@ import {
 
 
 const OpenRoot = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const { message, notification } = App.useApp();
 
@@ -398,7 +400,7 @@ const OpenRoot = () => {
 
                     {/* Results count */}
                     <div className="mb-4 text-sm text-slate-600">
-                        Showing {filteredDocuments.length} of {documents.length} documents
+                        {t('common.showing')} {filteredDocuments.length} {t('common.of')} {documents.length} documents
                         {activeFilterCount > 0 && ` (${activeFilterCount} filter${activeFilterCount > 1 ? 's' : ''} applied)`}
                     </div>
 
@@ -431,7 +433,7 @@ const OpenRoot = () => {
                         locale={{
                             emptyText: (
                                 <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-dashed border-slate-200">
-                                    <Empty description="No documents found" />
+                                    <Empty description={t('common.noData')} />
                                 </div>
                             )
                         }}
@@ -483,7 +485,7 @@ const OpenRoot = () => {
                                         setPageSize(size);
                                     }}
                                     showSizeChanger={!isMobile}
-                                    showTotal={(total, range) => `${range[0]}-${range[1]} of ${total} documents`}
+                                    showTotal={(total, range) => `${range[0]}-${range[1]} ${t('common.of')} ${total}`}
                                     pageSizeOptions={['10', '20', '50', '100']}
                                 />
                             </div>

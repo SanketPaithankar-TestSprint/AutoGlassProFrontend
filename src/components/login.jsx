@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { Form, Input, Button, Checkbox, Alert, Space, notification } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { loginUser, handleLoginSuccess } from "../api/login";
@@ -63,6 +64,7 @@ const customInputStyle = `
 `;
 
 export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordClick }) {
+    const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -94,7 +96,7 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
 
                 notification.success({
                     message: `Welcome, ${res.data.username}!`,
-                    description: "Signed in successfully.",
+                    description: t('auth.signedInSuccess'),
                     placement: "topRight",
                 });
 
@@ -118,7 +120,7 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
             <style>{customInputStyle}</style>
             {error && (
                 <Alert
-                    message="Log In Failed"
+                    message={t('auth.loginFailed')}
                     description={error}
                     type="error"
                     showIcon
@@ -129,7 +131,7 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
             )}
 
             <Form
-                
+
                 name="login"
                 initialValues={{ remember: true }}
                 onFinish={onFinish}
@@ -139,7 +141,7 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
             >
                 <Form.Item
                     name="email"
-                    label="Email or Username"
+                    label={t('auth.emailOrUsername')}
                     rules={[
                         { required: true, message: 'Please input your email or username!' },
                         {
@@ -164,7 +166,7 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
 
                 <Form.Item
                     name="password"
-                    label="Password"
+                    label={t('auth.password')}
                     rules={[{ required: true, message: 'Please input your password!' }]}
                     style={formItemStyle}
                 >
@@ -176,7 +178,7 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
                     <Form.Item name="remember" valuePropName="checked" noStyle>
-                        <Checkbox>Remember me</Checkbox>
+                        <Checkbox>{t('auth.rememberMe')}</Checkbox>
                     </Form.Item>
                     <a
                         className="login-form-forgot"
@@ -186,7 +188,7 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
                             if (onForgotPasswordClick) onForgotPasswordClick();
                         }}
                     >
-                        Forgot password?
+                        {t('auth.forgotPassword')}
                     </a>
                 </div>
 
@@ -206,7 +208,7 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
                             boxShadow: '0 4px 14px 0 rgba(118, 75, 162, 0.39)'
                         }}
                     >
-                        {loading ? 'Signing in...' : 'Sign In'}
+                        {loading ? t('auth.signingIn') : t('auth.signIn')}
                     </Button>
                 </Form.Item>
             </Form>
