@@ -77,12 +77,12 @@ ${userMessage || 'No message provided'}
                 {/* Header Section */}
                 <div className="text-center mb-16 max-w-3xl">
                     <Title level={1} className="!font-bold !text-4xl md:!text-5xl !mb-4">
-                        Contact Us
+                        {t('contact.title')}
                     </Title>
                     <div className="w-16 h-1 bg-blue-500 mx-auto rounded-full mb-8"></div>
                     <Paragraph className="text-lg text-slate-600">
-                        Get in Touch with Us. <br />
-                        Wherever you are, everything you need!
+                        {t('contact.getInTouch')} <br />
+                        {t('contact.loveToHear')}
                     </Paragraph>
                 </div>
 
