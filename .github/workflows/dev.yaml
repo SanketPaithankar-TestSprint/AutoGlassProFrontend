@@ -8,18 +8,30 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
+      - name: 🚀 Notify Build Started
+        run: |
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
+          -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+          -d parse_mode=Markdown \
+          -d text="🚀 *Build Started*
+          
+          📦 Repo: ${{ github.repository }}
+          🌿 Branch: ${{ github.ref_name }}
+          👤 Actor: ${{ github.actor }}"
+
       - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'          # pins Node version — matches .nvmrc
-          cache: 'npm'                # caches node_modules between runs (faster builds)
+          node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci --legacy-peer-deps  # react-helmet-async@2 doesn't support React 19 yet
+        run: npm ci --legacy-peer-deps
 
       - name: Build project
         run: npm run build
@@ -27,17 +39,50 @@ jobs:
           VITE_JAVA_API_URL: ${{ secrets.VITE_JAVA_API_URL }}
           VITE_PYTHON_API_URL: ${{ secrets.VITE_PYTHON_API_URL }}
 
+      - name: ❌ Notify Build Failed
+        if: failure()
+        run: |
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
+          -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+          -d parse_mode=Markdown \
+          -d text="❌ *Build Failed*
+          
+          📦 Repo: ${{ github.repository }}
+          🌿 Branch: ${{ github.ref_name }}
+          🔗 Commit: https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
+
+      - name: ✅ Notify Build Success
+        if: success()
+        run: |
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
+          -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+          -d parse_mode=Markdown \
+          -d text="✅ *Build Successful*
+          
+          📦 Repo: ${{ github.repository }}
+          🌿 Branch: ${{ github.ref_name }}"
+
       - name: Upload build artifact
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist/
           retention-days: 1
 
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
+
     steps:
+      - name: 🚀 Notify Deploy Started
+        run: |
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
+          -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+          -d parse_mode=Markdown \
+          -d text="🚀 *Deployment Started*"
+
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
@@ -62,3 +107,21 @@ jobs:
           aws cloudfront create-invalidation \
             --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID_DEV }} \
             --paths "/*"
+
+      - name: ❌ Notify Deploy Failed
+        if: failure()
+        run: |
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
+          -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+          -d parse_mode=Markdown \
+          -d text="❌ *Deployment Failed*"
+
+      - name: ✅ Notify Deploy Success
+        if: success()
+        run: |
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
+          -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+          -d parse_mode=Markdown \
+          -d text="✅ *Deployment Successful*
+          
+          🌍 Environment: DEV"
