@@ -678,8 +678,8 @@ const QuotePanelContent = ({
     // ==================== RENDER ====================
     return (
         <div className="relative">
-            {/* Items Table */}
-
+            {contextHolder}
+            {vendorContextHolder}
             {/* Items Table */}
             <QuoteItemsTable
                 items={items}
