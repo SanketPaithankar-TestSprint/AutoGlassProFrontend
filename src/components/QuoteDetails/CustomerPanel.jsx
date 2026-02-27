@@ -232,7 +232,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                 isTaxExempt: false,
                 newOrganizationDetails: null,
                 // Ensure Customer Mode is valid
-                customerId: null
+                customerId: null,
+                customerType: "INDIVIDUAL"
             }));
             setCustomerMode("NEW");
             setOrgFormData(initialOrgForm);
@@ -252,7 +253,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                 state: "",
                 postalCode: "",
                 // Ensure Org Mode is valid
-                organizationId: null
+                organizationId: null,
+                customerType: "BUSINESS"
             }));
             setOrgMode("NEW");
         }
