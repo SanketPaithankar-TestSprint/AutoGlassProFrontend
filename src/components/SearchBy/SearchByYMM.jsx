@@ -63,6 +63,9 @@ export default function SearchByYMM({
   // Track the last auto-searched combination to prevent infinite loops
   const lastAutoSearch = useRef(null);
 
+  // Flow mode: 'forward' (Year->Make->Model) or 'reverse' (Model->Make->Year)
+  const [flowMode, setFlowMode] = useState('forward');
+
   // --- Reverse lookup state ---
   // allModels: full list from reverse API, used when no year/make selected
   const [allModels, setAllModels] = useState([]);
@@ -78,6 +81,9 @@ export default function SearchByYMM({
   // Sync state with value prop
   useEffect(() => {
     if (value && Object.keys(value).length > 0) {
+      // Always set flowMode to forward when restoring from external value
+      setFlowMode('forward');
+
       // Always set year
       setYear(value.year || null);
 
@@ -146,6 +152,7 @@ export default function SearchByYMM({
       setModelDescription(null);
     } else {
       // Reset all states when value is empty/null
+      setFlowMode('forward');
       setYear(null);
       setMakeId(null);
       setMakeName(null);
@@ -254,55 +261,143 @@ export default function SearchByYMM({
           model_name: m.name,
           veh_modifier_id: m.veh_modifier_id || null,
         }));
-        norm.sort((a, b) => a.model_name.localeCompare(b.model_name));
-        reverseModelsCache.current = norm;
-        setAllModels(norm);
+
+        // Group by model_name to deduplicate exact same names
+        const grouped = {};
+        norm.forEach(m => {
+          if (!grouped[m.model_name]) {
+            grouped[m.model_name] = {
+              model_name: m.model_name,
+              // Store arrays of IDs instead of single values for grouped models
+              make_model_ids: [m.make_model_id],
+              veh_modifier_ids: [m.veh_modifier_id]
+            };
+          } else {
+            // Only add if not already in the list to be safe
+            if (!grouped[m.model_name].make_model_ids.includes(m.make_model_id)) {
+              grouped[m.model_name].make_model_ids.push(m.make_model_id);
+              grouped[m.model_name].veh_modifier_ids.push(m.veh_modifier_id);
+            }
+          }
+        });
+
+        const mergedList = Object.values(grouped);
+        mergedList.sort((a, b) => a.model_name.localeCompare(b.model_name));
+
+        // IMPORTANT: The models state expects single ID props, 
+        // to not break forward flow (which uses models not allModels as much ideally),
+        // we map the first ID to the primary keys, but keep the arrays explicitly
+        const enhancedList = mergedList.map(m => ({
+          ...m,
+          make_model_id: m.make_model_ids[0],
+          veh_modifier_id: m.veh_modifier_ids[0]
+        }));
+
+        reverseModelsCache.current = enhancedList;
+        setAllModels(enhancedList);
       })
       .catch((e) => console.error("Failed to load all models (reverse):", e))
       .finally(() => setLoadingAllModels(false));
   }, []);
 
   // Load makes for a chosen model (reverse: model → makes)
-  const loadMakesReverse = async (mmId, vModId) => {
-    const cacheKey = `${mmId}|${vModId ?? 'null'}`;
+  // Now accepts arrays of IDs to fetch makes for multiple models with the same name
+  const loadMakesReverse = async (mmIds, vModIds) => {
+    // mmIds and vModIds can be arrays (from grouped models) or single values
+    const idsToFetch = Array.isArray(mmIds) ? mmIds : [mmIds];
+    const modsToFetch = Array.isArray(vModIds) ? vModIds : [vModIds];
+
+    // Create a cache key representing all IDs
+    const cacheKey = idsToFetch.map((id, index) => `${id}-${modsToFetch[index] ?? 'null'}`).join('|');
+
     if (reverseMakesCache.current.has(cacheKey)) {
       setMakes(reverseMakesCache.current.get(cacheKey));
       return;
     }
+
     setLoadingMakes(true);
     try {
-      const data = await getModelsReverse({ makeModelId: mmId, vehModifierId: vModId });
-      const list = Array.isArray(data?.makes) ? data.makes : [];
-      const norm = list.map((m) => ({ make_id: m.make_id, name: m.name }));
+      // Fire off requests for all IDs in parallel
+      const fetchPromises = idsToFetch.map((mmId, index) =>
+        getModelsReverse({ makeModelId: mmId, vehModifierId: modsToFetch[index] })
+      );
+
+      const responses = await Promise.all(fetchPromises);
+
+      // Combine all makes from all responses
+      let combinedMakes = [];
+      responses.forEach((data, index) => {
+        if (Array.isArray(data?.makes)) {
+          // Attach the source IDs so we can disambiguate later when the user clicks a Make
+          const enrichedMakes = data.makes.map(m => ({
+            ...m,
+            source_make_model_id: idsToFetch[index],
+            source_veh_modifier_id: modsToFetch[index]
+          }));
+          combinedMakes = [...combinedMakes, ...enrichedMakes];
+        }
+      });
+
+      // Deduplicate the combined makes list by make_id
+      const uniqueMakesMap = new Map();
+      combinedMakes.forEach(m => {
+        if (!uniqueMakesMap.has(m.make_id)) {
+          uniqueMakesMap.set(m.make_id, m);
+        }
+      });
+
+      const norm = Array.from(uniqueMakesMap.values());
       norm.sort((a, b) => a.name.localeCompare(b.name));
+
       reverseMakesCache.current.set(cacheKey, norm);
       setMakes(norm);
     } catch (e) {
-      console.error("Failed to load makes (reverse):", e);
+      console.error("Failed to load makes (reverse for multiple IDs):", e);
     } finally {
       setLoadingMakes(false);
     }
   };
 
   // Load years for a chosen model+make (reverse: model+make → years)
-  const loadYearsReverse = async (mmId, vModId, mId) => {
-    const cacheKey = `${mmId}|${vModId ?? 'null'}|${mId}`;
+  // Now accepts arrays of IDs to fetch years for multiple models with the same name
+  const loadYearsReverse = async (mmIds, vModIds, mId) => {
+    const idsToFetch = Array.isArray(mmIds) ? mmIds : [mmIds];
+    const modsToFetch = Array.isArray(vModIds) ? vModIds : [vModIds];
+
+    const cacheKey = idsToFetch.map((id, index) => `${id}-${modsToFetch[index] ?? 'null'}`).join('|') + `|${mId}`;
+
     if (reverseYearsCache.current.has(cacheKey)) {
       setFilteredYears(reverseYearsCache.current.get(cacheKey));
       return;
     }
+
     try {
-      const data = await getModelsReverse({ makeModelId: mmId, vehModifierId: vModId, makeId: mId });
-      const list = Array.isArray(data?.years) ? data.years : [];
-      reverseYearsCache.current.set(cacheKey, list);
-      setFilteredYears(list);
+      const fetchPromises = idsToFetch.map((mmId, index) =>
+        getModelsReverse({ makeModelId: mmId, vehModifierId: modsToFetch[index], makeId: mId })
+      );
+
+      const responses = await Promise.all(fetchPromises);
+
+      let combinedYears = [];
+      responses.forEach(data => {
+        if (Array.isArray(data?.years)) {
+          combinedYears = [...combinedYears, ...data.years];
+        }
+      });
+
+      // Deduplicate years and sort descending
+      const uniqueYears = [...new Set(combinedYears)].sort((a, b) => b - a);
+
+      reverseYearsCache.current.set(cacheKey, uniqueYears);
+      setFilteredYears(uniqueYears);
+
       // If the currently selected year is not in the valid list, clear it
-      if (year && list.length > 0 && !list.includes(year)) {
+      if (year && uniqueYears.length > 0 && !uniqueYears.includes(year)) {
         setYear(null);
         setBodyType(null);
       }
     } catch (e) {
-      console.error("Failed to load years (reverse):", e);
+      console.error("Failed to load years (reverse for multiple IDs):", e);
     }
   };
 
@@ -342,7 +437,16 @@ export default function SearchByYMM({
       if (makeModelId) {
         // Model was chosen first → use reverse makes list
         if (makes.length <= 1) {
-          loadMakesReverse(makeModelId, vehModifierId);
+          // If the model was deduplicated, we must fetch makes for ALL associated make_model_ids
+          const activeModel = allModels.find(m =>
+            m.make_model_id === makeModelId &&
+            (m.veh_modifier_id || null) === vehModifierId
+          );
+
+          const mmIdsToFetch = activeModel?.make_model_ids || [makeModelId];
+          const vModIdsToFetch = activeModel?.veh_modifier_ids || [vehModifierId];
+
+          loadMakesReverse(mmIdsToFetch, vModIdsToFetch);
         }
       } else if (year) {
         // Year was chosen first → use forward makes list
@@ -572,17 +676,25 @@ export default function SearchByYMM({
   // Handler for year selection
   const handleYear = (v) => {
     setYear(v);
-    // If model was NOT already chosen, reset makes/model downstream
-    if (!makeModelId) {
+
+    // If we are in reverse flow, changing year is the last step and doesn't invalidate Make/Model
+    if (flowMode === 'reverse') {
+      // Do nothing to make/model
+    } else {
+      // Forward flow: changing Year means we start over after Year
+      setFlowMode('forward');
       setMakeId(null);
       setMakeName(null);
+      setMakeModelId(null);
+      setModelName(null);
+      setVehModifierId(null);
+      setFilteredYears(null);
     }
+
     setBodyType(null);
     setModelId(null);
     setModelImage(null);
     setModelDescription(null);
-    // Reset filtered years when user manually picks year (not from reverse flow)
-    setFilteredYears(null);
   };
 
   // Handler for make selection - receives make_id, looks up name
@@ -590,15 +702,40 @@ export default function SearchByYMM({
     const selectedMake = makes.find(m => m.make_id === selectedMakeId);
     setMakeId(selectedMakeId);
     setMakeName(selectedMake?.name || null);
+
+    // Disambiguate grouped makeModelIds!
+    // If the make object knows exactly which model ID produced it, we adopt it as the primary selected ID
+    let activeMakeModelId = makeModelId;
+    let activeVehModifierId = vehModifierId;
+
+    if (selectedMake?.source_make_model_id) {
+      activeMakeModelId = selectedMake.source_make_model_id;
+      activeVehModifierId = selectedMake.source_veh_modifier_id || null;
+
+      setMakeModelId(activeMakeModelId);
+      setVehModifierId(activeVehModifierId);
+    }
+
     setBodyType(null);
     setModelId(null);
     setModelImage(null);
     setModelDescription(null);
-    // If model was selected first via reverse flow, load valid years for model+make
-    if (makeModelId) {
-      loadYearsReverse(makeModelId, vehModifierId, selectedMakeId);
+
+    if (flowMode === 'reverse') {
+      // Reverse flow: Model was selected first. Update the valid years for this make.
+      // If the model was deduplicated, we must fetch years for ALL associated make_model_ids
+      const activeModel = allModels.find(m =>
+        m.make_model_id === activeMakeModelId &&
+        (m.veh_modifier_id || null) === activeVehModifierId
+      );
+
+      const mmIdsToFetch = activeModel?.make_model_ids || [activeMakeModelId];
+      const vModIdsToFetch = activeModel?.veh_modifier_ids || [activeVehModifierId];
+
+      loadYearsReverse(mmIdsToFetch, vModIdsToFetch, selectedMakeId);
     } else {
       // Forward flow: clear model, reset filtered years
+      setFlowMode('forward');
       setMakeModelId(null);
       setModelName(null);
       setVehModifierId(null);
@@ -607,13 +744,32 @@ export default function SearchByYMM({
   };
 
   // Handler for model selection - receives composite key, parses both IDs
+  // In reverse flow, the composite value might contain comma-separated arrays of IDs
   const handleModel = (compositeValue) => {
-    // Parse composite value: "make_model_id|veh_modifier_id" or "make_model_id|null"
+    // Parse composite value: "make_model_id|veh_modifier_id" or "id1,id2|mod1,mod2"
     const [mmIdStr, vModIdStr] = compositeValue.split('|');
-    const selectedMakeModelId = parseInt(mmIdStr, 10);
-    const selectedVehModifierId = vModIdStr === 'null' ? null : parseInt(vModIdStr, 10);
+
+    // Check if the IDs are comma-separated (from our allModels grouping logic)
+    const isGrouped = mmIdStr.includes(',');
+
+    let selectedMakeModelId, selectedVehModifierId;
+    let makeModelIdArray, vehModifierIdArray;
+
+    if (isGrouped) {
+      makeModelIdArray = mmIdStr.split(',').map(id => parseInt(id, 10));
+      vehModifierIdArray = vModIdStr.split(',').map(id => id === 'null' ? null : parseInt(id, 10));
+      // Keep the first one as primary for state (like body type fetches that need a single ID later)
+      selectedMakeModelId = makeModelIdArray[0];
+      selectedVehModifierId = vehModifierIdArray[0];
+    } else {
+      selectedMakeModelId = parseInt(mmIdStr, 10);
+      selectedVehModifierId = vModIdStr === 'null' ? null : parseInt(vModIdStr, 10);
+      makeModelIdArray = [selectedMakeModelId];
+      vehModifierIdArray = [selectedVehModifierId];
+    }
 
     // Find the matching model — check both loaded models list and allModels
+    // We check primarily against the first ID since that's what we mapped it to for compatibility
     const selectedModel =
       models.find(m =>
         m.make_model_id === selectedMakeModelId &&
@@ -631,13 +787,22 @@ export default function SearchByYMM({
     setModelId(null);
     setModelImage(null);
     setModelDescription(null);
-    // Reset make/year when model changes in reverse flow
-    setMakeId(null);
-    setMakeName(null);
-    setFilteredYears(null);
-    setYear(null);
-    // Load makes for this model via reverse API
-    loadMakesReverse(selectedMakeModelId, selectedVehModifierId);
+
+    // Check if we are in forward flow:
+    // If we already have BOTH year and makeId, it means the user is going down the standard path
+    // Year -> Make -> Model. We should not reset year/make in this case.
+    if (flowMode === 'forward' && year && makeId) {
+      // Keep year and make, and stay in forward flow
+    } else {
+      // Reverse flow: user selected model first, or without full forward setup
+      setFlowMode('reverse');
+      setMakeId(null);
+      setMakeName(null);
+      setFilteredYears(null);
+      setYear(null);
+      // Load makes for this model via reverse API (use all IDs if grouped)
+      loadMakesReverse(makeModelIdArray, vehModifierIdArray);
+    }
   };
 
   // Generate model options with composite key (make_model_id|veh_modifier_id)
@@ -645,7 +810,16 @@ export default function SearchByYMM({
   // Otherwise (reverse flow / initial state), use allModels.
   const activeModelList = (year && makeId && models.length > 0) ? models : allModels;
   const modelOptions = activeModelList.map(m => {
-    const compositeValue = `${m.make_model_id}|${m.veh_modifier_id ?? 'null'}`;
+    // If it's a grouped model from allModels, it will have make_model_ids array
+    let compositeValue;
+    if (m.make_model_ids && m.make_model_ids.length > 1) {
+      // Safe join mapping nulls to 'null' correctly
+      const mods = m.veh_modifier_ids.map(v => v ?? 'null');
+      compositeValue = `${m.make_model_ids.join(',')}|${mods.join(',')}`;
+    } else {
+      compositeValue = `${m.make_model_id}|${m.veh_modifier_id ?? 'null'}`;
+    }
+
     return {
       label: m.model_name,
       value: compositeValue,
@@ -656,9 +830,16 @@ export default function SearchByYMM({
   const activeYears = filteredYears ? filteredYears : years;
 
   // Get current composite value for the select
-  const currentModelValue = makeModelId !== null
-    ? `${makeModelId}|${vehModifierId ?? 'null'}`
-    : null;
+  let currentModelValue = null;
+  if (makeModelId !== null) {
+    if (modelName) {
+      // Find exact match in options to correctly handle grouped comma-separated IDs visually
+      const matchedOption = modelOptions.find(opt => opt.label === modelName);
+      currentModelValue = matchedOption ? matchedOption.value : `${makeModelId}|${vehModifierId ?? 'null'}`;
+    } else {
+      currentModelValue = `${makeModelId}|${vehModifierId ?? 'null'}`;
+    }
+  }
 
   return (
     <div className={`${className} flex flex-col h-full pb-3`}>
