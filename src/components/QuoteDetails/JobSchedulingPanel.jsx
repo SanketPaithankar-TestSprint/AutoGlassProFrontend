@@ -47,7 +47,7 @@ const JobSchedulingPanel = ({
     // Helper to handle time changes
     const handleTimeChange = (field, value) => {
         if (!schedulingData.scheduledDate) return;
-        
+
         const currentDate = dayjs(schedulingData.scheduledDate);
         let newDate = currentDate;
 
@@ -73,7 +73,7 @@ const JobSchedulingPanel = ({
     // Helper to increment/decrement values
     const incrementTime = (field) => {
         if (!schedulingData.scheduledDate) return;
-        
+
         const currentDate = dayjs(schedulingData.scheduledDate);
         let newDate = currentDate;
 
@@ -91,7 +91,7 @@ const JobSchedulingPanel = ({
 
     const decrementTime = (field) => {
         if (!schedulingData.scheduledDate) return;
-        
+
         const currentDate = dayjs(schedulingData.scheduledDate);
         let newDate = currentDate;
 
@@ -147,7 +147,7 @@ const JobSchedulingPanel = ({
                     </span>
                 }
                 className="shadow-sm"
-                bodyStyle={{ overflow: 'auto', padding: '1.25rem' }}
+                styles={{ body: { overflow: 'auto', padding: '1.25rem' } }}
             >
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 pr-2">
                     {/* Status Dropdown - Only visible if documentNumber exists */}

@@ -1,12 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect, Suspense, lazy } from "react";
 import { UploadOutlined, FileTextOutlined, DeleteOutlined, EyeOutlined, DownloadOutlined, FilePdfOutlined, FileImageOutlined, FileOutlined, LoadingOutlined } from "@ant-design/icons";
 import { Modal, message, Button, Alert } from "antd";
 import { deleteAttachment } from "../../api/deleteAttachment";
 import { downloadAndSaveAttachment, getAttachmentPreviewUrl } from "../../api/downloadAttachmentFile";
 import { uploadAttachments } from "../../api/uploadAttachments";
 import { getAttachmentsByDocumentNumber } from "../../api/getAttachmentsByDocumentNumber";
-import AttachmentPreviewModal from "./AttachmentPreviewModal";
 import { validateAndCompressFile, formatFileSize, isAllowedFileType } from "../../utils/fileCompression";
+
+// Lazy load heavy modal
+const AttachmentPreviewModal = lazy(() => import("./AttachmentPreviewModal"));
 
 const AttachmentDetails = ({
     attachments = [],
@@ -17,7 +19,8 @@ const AttachmentDetails = ({
     customerData = {} // Customer data for customerId
 }) => {
     const [downloadingIds, setDownloadingIds] = useState(new Set());
-    const [previewCache, setPreviewCache] = useState(new Map()); // Cache preview URLs
+    const previewCacheRef = useRef(new Map()); // Cache preview URLs
+    const cleanupTimersRef = useRef(new Map()); // Track cleanup timeouts
     const [uploading, setUploading] = useState(false); // Upload loading state
     const [showAlert, setShowAlert] = useState(!!createdDocumentNumber); // Show alert when document number is available
 
@@ -31,14 +34,19 @@ const AttachmentDetails = ({
     });
 
     // Cleanup all cached URLs on unmount
-    React.useEffect(() => {
+    useEffect(() => {
         return () => {
             // Revoke all cached blob URLs to prevent memory leaks
-            previewCache.forEach(entry => {
+            previewCacheRef.current.forEach(entry => {
                 window.URL.revokeObjectURL(entry.url);
             });
+            previewCacheRef.current.clear();
+
+            // Clear all timeouts
+            cleanupTimersRef.current.forEach(timerId => clearTimeout(timerId));
+            cleanupTimersRef.current.clear();
         };
-    }, [previewCache]);
+    }, []);
 
     const handleFilesSelected = async (e) => {
         if (e.target.files && e.target.files.length > 0) {
@@ -129,7 +137,7 @@ const AttachmentDetails = ({
             setDownloadingIds(prev => new Set(prev).add(`view-${attachmentId}`));
 
             let previewUrl;
-            const cached = previewCache.get(attachmentId);
+            const cached = previewCacheRef.current.get(attachmentId);
 
             // Check if we have a valid cached URL
             if (cached && cached.expiresAt > Date.now()) {
@@ -141,30 +149,30 @@ const AttachmentDetails = ({
                     window.URL.revokeObjectURL(cached.url);
                 }
 
+                // Clear existing timeout if any
+                if (cleanupTimersRef.current.has(attachmentId)) {
+                    clearTimeout(cleanupTimersRef.current.get(attachmentId));
+                }
+
                 // Fetch new preview URL
                 console.log(`Fetching new preview URL for attachment ${attachmentId}`);
                 previewUrl = await getAttachmentPreviewUrl(attachmentId);
 
                 // Cache the URL with 5-minute expiration
                 const expiresAt = Date.now() + (5 * 60 * 1000); // 5 minutes
-                setPreviewCache(prev => {
-                    const newCache = new Map(prev);
-                    newCache.set(attachmentId, { url: previewUrl, expiresAt });
-                    return newCache;
-                });
+                previewCacheRef.current.set(attachmentId, { url: previewUrl, expiresAt });
 
                 // Auto-cleanup expired cache entries
-                setTimeout(() => {
-                    setPreviewCache(prev => {
-                        const newCache = new Map(prev);
-                        const entry = newCache.get(attachmentId);
-                        if (entry && entry.expiresAt <= Date.now()) {
-                            window.URL.revokeObjectURL(entry.url);
-                            newCache.delete(attachmentId);
-                        }
-                        return newCache;
-                    });
+                const timeoutId = setTimeout(() => {
+                    const entry = previewCacheRef.current.get(attachmentId);
+                    if (entry && entry.expiresAt <= Date.now()) {
+                        window.URL.revokeObjectURL(entry.url);
+                        previewCacheRef.current.delete(attachmentId);
+                    }
+                    cleanupTimersRef.current.delete(attachmentId);
                 }, 5 * 60 * 1000 + 1000); // Cleanup after 5 minutes + 1 second
+
+                cleanupTimersRef.current.set(attachmentId, timeoutId);
             }
 
             // Open in modal instead of new tab
@@ -465,15 +473,19 @@ const AttachmentDetails = ({
                 </div>
             )}
 
-            {/* Preview Modal */}
-            <AttachmentPreviewModal
-                isOpen={previewModal.isOpen}
-                onClose={closePreviewModal}
-                previewUrl={previewModal.url}
-                fileName={previewModal.fileName}
-                contentType={previewModal.contentType}
-                onDownload={handleModalDownload}
-            />
+            {/* Preview Modal - Lazy loaded only when open */}
+            {previewModal.isOpen && (
+                <Suspense fallback={null}>
+                    <AttachmentPreviewModal
+                        isOpen={previewModal.isOpen}
+                        onClose={closePreviewModal}
+                        previewUrl={previewModal.url}
+                        fileName={previewModal.fileName}
+                        contentType={previewModal.contentType}
+                        onDownload={handleModalDownload}
+                    />
+                </Suspense>
+            )}
         </div>
     );
 };

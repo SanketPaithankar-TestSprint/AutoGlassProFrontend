@@ -159,7 +159,7 @@ const MobileTaskCalendarView = ({ tasks = [], onEdit }) => {
                 onCancel={() => setShowModal(false)}
                 footer={null}
                 width={350}
-                bodyStyle={{ maxHeight: '500px', overflowY: 'auto' }}
+                styles={{ body: { maxHeight: '500px', overflowY: 'auto' } }}
             >
                 {selectedDateTasks.length === 0 ? (
                     <Empty description="No tasks" />

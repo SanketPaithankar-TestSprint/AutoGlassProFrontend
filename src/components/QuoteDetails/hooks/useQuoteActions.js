@@ -6,11 +6,6 @@ import { updateAiContactFormStatus } from "../../../api/aiContactForm";
 import { getValidToken } from "../../../api/getValidToken";
 import { getCustomers } from "../../../api/getCustomers";
 import { sendEmail } from "../../../api/sendEmail";
-import {
-    generateServiceDocumentPDF,
-    generatePDFFilename,
-    downloadPDF
-} from "../../../utils/serviceDocumentPdfGenerator";
 
 /**
  * Hook that encapsulates all quote document actions:
@@ -71,7 +66,8 @@ export function useQuoteActions({
     const [modal, contextHolder] = Modal.useModal();
 
     // --- PDF Generation ---
-    const generatePdfDoc = (options = {}) => {
+    const generatePdfDoc = async (options = {}) => {
+        const { generateServiceDocumentPDF } = await import("../../../utils/serviceDocumentPdfGenerator");
         const {
             overrideDocumentNumber = null,
             overridePayments = null,
@@ -110,13 +106,16 @@ export function useQuoteActions({
         });
     };
 
-    const getFilename = () => {
+    const getFilename = async () => {
+        const { generatePDFFilename } = await import("../../../utils/serviceDocumentPdfGenerator");
         return generatePDFFilename(currentDocType, customerData);
     };
 
-    const downloadPdf = () => {
-        const doc = generatePdfDoc();
-        downloadPDF(doc, getFilename());
+    const downloadPdf = async () => {
+        const { downloadPDF } = await import("../../../utils/serviceDocumentPdfGenerator");
+        const doc = await generatePdfDoc();
+        const filename = await getFilename();
+        downloadPDF(doc, filename);
     };
 
     // --- Validation ---
@@ -495,13 +494,14 @@ export function useQuoteActions({
                 ? backendDocType.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase())
                 : null;
 
-            const doc = generatePdfDoc({
+            const doc = await generatePdfDoc({
                 overrideDocumentNumber: documentNumber,
                 overridePayments: backendPayments,
                 overrideDocType: formattedDocType
             });
             const blob = doc.output('blob');
 
+            const { generatePDFFilename } = await import("../../../utils/serviceDocumentPdfGenerator");
             const filename = generatePDFFilename(formattedDocType || currentDocType, customerData);
             const file = new File([blob], filename, { type: 'application/pdf' });
             const url = URL.createObjectURL(file);
@@ -534,7 +534,7 @@ export function useQuoteActions({
                 : null;
             const effectiveDocType = formattedDocType || currentDocType;
 
-            const doc = generatePdfDoc({
+            const doc = await generatePdfDoc({
                 overrideDocumentNumber: documentNumber,
                 overridePayments: backendPayments,
                 overrideDocType: formattedDocType
@@ -584,7 +584,8 @@ ${shopName}`;
             setEmailLoading(true);
 
             if (pdfBlob) {
-                const file = new File([pdfBlob], getFilename(), { type: "application/pdf" });
+                const filename = await getFilename();
+                const file = new File([pdfBlob], filename, { type: "application/pdf" });
                 const emailResponse = await sendEmail(emailForm.to, emailForm.subject, emailForm.body, file);
 
                 if (emailResponse && emailResponse.status === "success") {

@@ -27,3 +27,4 @@ dist-ssr
 deployFrontEnd.sh
 .gemini
 COPILOT.md
+.agents

@@ -245,7 +245,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
           placement="right"
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
-          bodyStyle={{ padding: 0, background: "#f7f7fa", borderRadius: '16px 0 0 16px' }}
+          styles={{ body: { padding: 0, background: "#f7f7fa", borderRadius: '16px 0 0 16px' } }}
           maskClosable
           destroyOnClose
           className="ap-header-drawer"
@@ -341,7 +341,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
           placement="right"
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
-          bodyStyle={{ padding: 0, background: "#f7f7fa", borderRadius: '16px 0 0 16px' }}
+          styles={{ body: { padding: 0, background: "#f7f7fa", borderRadius: '16px 0 0 16px' } }}
           maskClosable
           destroyOnClose
           className="ap-header-drawer"

@@ -32,10 +32,10 @@ export function useUserProfileSync() {
                 if (saved) {
                     const parsed = JSON.parse(saved);
                     setUserProfile(prev => {
-                        // Deep comparison to prevent unnecessary re-renders
-                        if (JSON.stringify(prev) === JSON.stringify(parsed)) {
-                            return prev;
-                        }
+                        // Shallow compare relevant keys instead of O(n) JSON.stringify
+                        const keys = ['businessName', 'phone', 'email', 'taxRate', 'address', 'logo'];
+                        const unchanged = prev && keys.every(k => prev[k] === parsed[k]);
+                        if (unchanged) return prev;
                         return parsed;
                     });
                 }

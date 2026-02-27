@@ -269,6 +269,7 @@ const SearchByRoot = () => {
           isTaxExempt: customer.isTaxExempt || organization?.taxExempt || false,
           organizationContactId: customer.organizationContactId || serviceDocument?.organizationContactId || null,
           organizationContactName: serviceDocument?.organizationContactName || "",
+          organizationContacts: customer.organizationContacts || organization?.contacts || [],
         };
       } else if (organization) {
         // No customer, but we have organization -> Map to "Business" mode defaults
@@ -294,7 +295,10 @@ const SearchByRoot = () => {
           isTaxExempt: organization.taxExempt || false,
 
           // Map specific Org Form Data for prefill
-          companyName: organization.companyName || ""
+          companyName: organization.companyName || "",
+          organizationContacts: organization.contacts || [],
+          organizationContactId: serviceDocument?.organizationContactId || null,
+          organizationContactName: serviceDocument?.organizationContactName || ""
         };
       }
 
@@ -829,7 +833,6 @@ const SearchByRoot = () => {
 
     // Fetch Vendor Pricing in background and update when ready
     const userId = localStorage.getItem('userId');
-    debugger;
     const nagsListPrice = part.list_price || 0;
 
     if (userId && nagsId) {

@@ -1,22 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 /**
  * Hook to track whether quote items have changed since the last save.
- * Returns { hasChanges, savedItems, markAsSaved }.
+ * Uses a version counter from the store instead of JSON.stringify.
+ *
+ * @param {number} currentVersion - quoteItemsVersion from the Zustand store
+ * @returns {{ hasChanges: boolean, markAsSaved: () => void }}
  */
-export function useQuoteDirtyState(items) {
-    const [hasChanges, setHasChanges] = useState(false);
-    const [savedItems, setSavedItems] = useState(items);
+export function useQuoteDirtyState(currentVersion) {
+    const [savedVersion, setSavedVersion] = useState(currentVersion);
 
-    useEffect(() => {
-        const itemsChanged = JSON.stringify(items) !== JSON.stringify(savedItems);
-        setHasChanges(itemsChanged);
-    }, [items, savedItems]);
+    const hasChanges = currentVersion !== savedVersion;
 
-    const markAsSaved = (currentItems) => {
-        setSavedItems(currentItems);
-        setHasChanges(false);
+    const markAsSaved = () => {
+        setSavedVersion(currentVersion);
     };
 
-    return { hasChanges, savedItems, markAsSaved };
+    return { hasChanges, markAsSaved };
 }

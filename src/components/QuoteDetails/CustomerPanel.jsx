@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { notification, Select, Spin, Radio, Switch, Segmented, Button, Popconfirm, AutoComplete } from "antd";
 import { UserOutlined, ShopOutlined, EditOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import ReactSelect from "react-select";
@@ -48,13 +49,7 @@ const FormSelect = ({ label, name, value, onChange, onBlur, options, required = 
 );
 
 export default function CustomerPanel({ formData, setFormData, setCanShowQuotePanel, setPanel, isDocumentLoaded = false }) {
-    // Organizations
-    const [organizations, setOrganizations] = useState([]);
-    const [loadingOrganizations, setLoadingOrganizations] = useState(false);
-
-    // Customers  
-    const [customers, setCustomers] = useState([]);
-    const [loadingCustomers, setLoadingCustomers] = useState(false);
+    const queryClient = useQueryClient();
 
     // Vehicles
     const [vehicles, setVehicles] = useState([]);
@@ -111,8 +106,6 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
     // Initial Load & Sync
     useEffect(() => {
-        fetchOrganizations();
-        fetchCustomers();
 
         // Detect current mode based on existing data
         if (formData.organizationId || (formData.companyName && !formData.firstName)) {
@@ -133,7 +126,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                 state: formData.state || "",
                 postalCode: formData.postalCode || "",
                 country: formData.country || "USA",
-                notes: formData.notes || ""
+                notes: formData.notes || "",
+                contacts: formData.organizationContacts || []
             };
             setOrgFormData(initialOrgData);
             setLastSavedOrgData(initialOrgData);
@@ -161,61 +155,45 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
         }
     }, [formData.customerId]); // Added formData.customerId dependency to re-run if it changes (e.g. after save)
 
-    const fetchOrganizations = async () => {
-        try {
-            setLoadingOrganizations(true);
+    // --- React Query: Organizations ---
+    const { data: organizations = [], isLoading: loadingOrganizations } = useQuery({
+        queryKey: ['organizations'],
+        queryFn: async () => {
             const orgList = await getOrganizations();
-            setOrganizations(Array.isArray(orgList) ? orgList : []);
-        } catch (error) {
-            console.error("Error fetching organizations:", error);
-        } finally {
-            setLoadingOrganizations(false);
-        }
-    };
+            return Array.isArray(orgList) ? orgList : [];
+        },
+        staleTime: 1000 * 60 * 5 // Cache for 5 minutes
+    });
 
-    const fetchCustomers = async () => {
-        try {
-            setLoadingCustomers(true);
+    // --- React Query: Customers with Debounced Search ---
+    const [customerSearchTerm, setCustomerSearchTerm] = useState("");
+    const [debouncedCustomerSearch, setDebouncedCustomerSearch] = useState("");
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedCustomerSearch(customerSearchTerm);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [customerSearchTerm]);
+
+    const { data: customers = [], isFetching: loadingCustomers } = useQuery({
+        queryKey: ['customers', debouncedCustomerSearch],
+        queryFn: async () => {
             const token = await getValidToken();
-            const customerList = await getCustomers(token);
-            setCustomers(Array.isArray(customerList) ? customerList : []);
-        } catch (error) {
-            console.error("Error fetching customers:", error);
-        } finally {
-            setLoadingCustomers(false);
-        }
-    };
-
-    // Customer Search Debounce
-    const typingTimeoutRef = useRef(null);
+            if (debouncedCustomerSearch.trim()) {
+                const result = await searchCustomers(token, debouncedCustomerSearch);
+                return result?.content || (Array.isArray(result) ? result : []);
+            } else {
+                const customerList = await getCustomers(token);
+                return Array.isArray(customerList) ? customerList : [];
+            }
+        },
+        staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+        placeholderData: (previousData) => previousData // keepPreviousData replacement in v5 to prevent UI flash
+    });
 
     const handleCustomerSearch = (value) => {
-        if (typingTimeoutRef.current) {
-            clearTimeout(typingTimeoutRef.current);
-        }
-
-        if (!value || value.trim() === "") {
-            fetchCustomers(); // reset to default list
-            return;
-        }
-
-        typingTimeoutRef.current = setTimeout(async () => {
-            try {
-                setLoadingCustomers(true);
-                const token = await getValidToken();
-                const result = await searchCustomers(token, value);
-                const fetchedCustomers = result?.content || (Array.isArray(result) ? result : []);
-                setCustomers(fetchedCustomers);
-            } catch (error) {
-                console.error("Error searching customers:", error);
-                notification.error({
-                    message: "Search Error",
-                    description: "Failed to search customers."
-                });
-            } finally {
-                setLoadingCustomers(false);
-            }
-        }, 500);
+        setCustomerSearchTerm(value);
     };
 
     // --- Mode Switching Logic ---
@@ -560,8 +538,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                 });
             }
 
-            // Refresh customer list
-            await fetchCustomers();
+            // Refresh customer list via React Query
+            queryClient.invalidateQueries({ queryKey: ['customers'] });
         } catch (error) {
             console.error("Error updating customer:", error);
             if (!silent) {
@@ -698,8 +676,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                 });
             }
 
-            // Refresh organization list
-            await fetchOrganizations();
+            // Refresh organization list via React Query
+            queryClient.invalidateQueries({ queryKey: ['organizations'] });
 
             // Repopulate with the latest data from the server
             if (formData.organizationId) {

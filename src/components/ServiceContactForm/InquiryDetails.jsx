@@ -113,7 +113,7 @@ const InquiryDetails = ({ inquiryId }) => {
             title={<Title level={4} className="m-0 text-base md:text-lg">Inquiry Details #{inquiry.id}</Title>}
             bordered={false}
             className="shadow-sm w-full"
-            bodyStyle={{ padding: '12px md:24px' }}
+            styles={{ body: { padding: '12px md:24px' } }}
         >
             <Descriptions bordered column={1} size="small" layout="vertical">
                 <Descriptions.Item label="Customer Name">

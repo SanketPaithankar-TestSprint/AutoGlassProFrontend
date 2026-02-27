@@ -19,9 +19,9 @@ export default function TaxSection({
     handleAddRow,
 }) {
     return (
-        <div className="flex flex-col gap-3 w-48 min-w-[180px]">
+        <div className="flex flex-row sm:flex-col gap-3 w-full sm:w-48 sm:min-w-[180px]">
             {/* Service Location Dropdown */}
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1 flex-1 sm:flex-none w-full">
                 <label className="block text-xs font-medium text-slate-700 mb-0">
                     Service Location <span className="text-red-500">*</span>
                 </label>
@@ -43,7 +43,7 @@ export default function TaxSection({
             </div>
 
             {/* Add Item Section */}
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1 flex-1 sm:flex-none w-full">
                 <label className="block text-xs font-medium text-slate-700 mb-0">Add Item</label>
                 <Dropdown
                     menu={{

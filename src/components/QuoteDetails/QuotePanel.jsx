@@ -118,14 +118,14 @@ const QuotePanelContent = ({
     const token = getValidToken();
 
     // --- Zustand store ---
-    const { quoteItems, setQuoteItems } = useQuoteStore();
+    const { quoteItems, setQuoteItems, quoteItemsVersion } = useQuoteStore();
     const items = quoteItems;
     const setItems = setQuoteItems;
 
     // --- Extracted hooks ---
     const specialInstructions = useSpecialInstructions();
     const userProfile = useUserProfileSync();
-    const { hasChanges, savedItems, markAsSaved } = useQuoteDirtyState(items);
+    const { hasChanges, markAsSaved } = useQuoteDirtyState(quoteItemsVersion);
 
     // Ref to debounce vendor warning modal (passed to enrichment hook)
     const lastVendorWarningRef = useRef(0);
@@ -190,10 +190,14 @@ const QuotePanelContent = ({
     }, []);
 
     // --- Debounce timer for part number changes ---
-    const [debounceTimers, setDebounceTimers] = useState({});
+    const debounceTimersRef = useRef(new Map());
     useEffect(() => {
-        return () => { Object.values(debounceTimers).forEach(timer => clearTimeout(timer)); };
-    }, [debounceTimers]);
+        const timersMap = debounceTimersRef.current;
+        return () => {
+            timersMap.forEach(timer => clearTimeout(timer));
+            timersMap.clear();
+        };
+    }, []);
 
     // --- Global Labor Rate ---
     const globalLaborRate = useMemo(() => {
@@ -440,11 +444,11 @@ const QuotePanelContent = ({
 
     // --- Part number handlers ---
     const handlePartNoChange = (id, partNo) => {
-        if (debounceTimers[id]) clearTimeout(debounceTimers[id]);
+        if (debounceTimersRef.current.has(id)) clearTimeout(debounceTimersRef.current.get(id));
         const timer = setTimeout(() => {
             if (partNo && partNo.trim() !== '') handlePartNoBlur(id, partNo);
         }, 800);
-        setDebounceTimers(prev => ({ ...prev, [id]: timer }));
+        debounceTimersRef.current.set(id, timer);
     };
 
     // --- Glass / Kit modal state ---
@@ -456,9 +460,9 @@ const QuotePanelContent = ({
     });
 
     const handlePartNoBlur = async (id, partNo) => {
-        if (debounceTimers[id]) {
-            clearTimeout(debounceTimers[id]);
-            setDebounceTimers(prev => { const t = { ...prev }; delete t[id]; return t; });
+        if (debounceTimersRef.current.has(id)) {
+            clearTimeout(debounceTimersRef.current.get(id));
+            debounceTimersRef.current.delete(id);
         }
         if (!partNo || partNo.trim() === '') return;
         const trimmedPartNo = partNo.trim();
@@ -674,8 +678,7 @@ const QuotePanelContent = ({
     // ==================== RENDER ====================
     return (
         <div className="relative">
-            {contextHolder}
-            {vendorContextHolder}
+            {/* Items Table */}
 
             {/* Items Table */}
             <QuoteItemsTable

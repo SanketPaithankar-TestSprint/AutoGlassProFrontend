@@ -30,7 +30,7 @@ const DocumentCard = ({ document, onClick }) => {
             hoverable
             onClick={() => onClick(document)}
             className="w-full transition-all duration-300 hover:shadow-lg border border-slate-200 rounded-xl"
-            bodyStyle={{ padding: '16px' }}
+            styles={{ body: { padding: '16px' } }}
         >
             <div className="flex justify-between items-start mb-3">
                 <div className="flex items-center gap-2">

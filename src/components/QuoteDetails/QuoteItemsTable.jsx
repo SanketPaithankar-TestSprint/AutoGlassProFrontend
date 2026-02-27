@@ -1,9 +1,11 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, lazy, Suspense } from "react";
 import { Select, Modal, Button } from "antd";
 import { DeleteOutlined, LoadingOutlined } from "@ant-design/icons";
 import CurrencyInput from "../common/CurrencyInput";
-import KitSelectionModal from "./KitSelectionModal";
 import { ADAS_TYPES } from "../../const/adasTypes";
+
+// Lazy load heavy modal
+const KitSelectionModal = lazy(() => import("./KitSelectionModal"));
 
 const SERVICE_OPTIONS = [
     { label: "Window Regulator", value: "WINDOW_REGULATOR" },
@@ -125,13 +127,17 @@ export default function QuoteItemsTable({
             </Modal>
 
             {/* Kit Selection Modal */}
-            <KitSelectionModal
-                visible={kitSelectionModal.visible}
-                onClose={handleCloseKitSelection}
-                onSelect={handleKitSelection}
-                kits={kitSelectionModal.kits}
-                partNumber={kitSelectionModal.selectedGlass?.nags_id || ''}
-            />
+            {kitSelectionModal.visible && (
+                <Suspense fallback={null}>
+                    <KitSelectionModal
+                        visible={kitSelectionModal.visible}
+                        onClose={handleCloseKitSelection}
+                        onSelect={handleKitSelection}
+                        kits={kitSelectionModal.kits}
+                        partNumber={kitSelectionModal.selectedGlass?.nags_id || ''}
+                    />
+                </Suspense>
+            )}
 
             {/* Desktop Table View (md and up) */}
             <div className="border border-slate-100 bg-white rounded-lg max-h-[350px] sm:max-h-[400px] overflow-x-auto overflow-y-auto hidden md:block" data-quote-details-table>

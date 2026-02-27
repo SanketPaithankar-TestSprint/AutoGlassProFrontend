@@ -725,7 +725,7 @@ export default function CarGlassViewer({
                   onCancel={() => setImageModalOpen(false)}
                   width={800}
                   centered
-                  bodyStyle={{ padding: 0 }}
+                  styles={{ body: { padding: 0 } }}
                   destroyOnClose
                 >
                   <div className="p-4 flex items-center justify-center bg-white rounded-lg relative min-h-[400px]">

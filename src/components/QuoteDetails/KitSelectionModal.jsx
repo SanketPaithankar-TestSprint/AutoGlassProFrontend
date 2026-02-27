@@ -103,7 +103,7 @@ const KitSelectionModal = ({
             }}
             width={700}
             style={{ maxWidth: 'calc(100vw - 16px)', top: 20, padding: 0 }}
-            bodyStyle={{ padding: '16px' }}
+            styles={{ body: { padding: '16px' } }}
             maskClosable={false}
         >
             <div className="py-2">

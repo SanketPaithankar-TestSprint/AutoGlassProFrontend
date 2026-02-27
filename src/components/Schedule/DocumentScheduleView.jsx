@@ -171,7 +171,7 @@ const MobileDocumentCalendarView = ({ documents = [], onViewDetails }) => {
                 onCancel={() => setShowModal(false)}
                 footer={null}
                 width={350}
-                bodyStyle={{ maxHeight: '500px', overflowY: 'auto' }}
+                styles={{ body: { maxHeight: '500px', overflowY: 'auto' } }}
             >
                 {selectedDateAppointments.length === 0 ? (
                     <Empty description="No appointments" />
@@ -373,9 +373,8 @@ const DocumentStatusColumn = ({ title, docType, documents, color, onViewDetails,
 
     return (
         <div
-            className={`flex-1 min-w-[280px] md:min-w-[320px] bg-slate-50 rounded-lg p-3 md:p-4 flex flex-col h-full border transition-all ${
-                dragOver ? 'bg-slate-100 shadow-md' : 'border-slate-200'
-            }`}
+            className={`flex-1 min-w-[280px] md:min-w-[320px] bg-slate-50 rounded-lg p-3 md:p-4 flex flex-col h-full border transition-all ${dragOver ? 'bg-slate-100 shadow-md' : 'border-slate-200'
+                }`}
             style={{
                 borderColor: dragOver ? color : '#e2e8f0',
                 borderWidth: dragOver ? '3px' : '2px'

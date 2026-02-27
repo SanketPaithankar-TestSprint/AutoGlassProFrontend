@@ -187,7 +187,7 @@ const PremiumDocumentCard = ({
             onClick={() => onClick(doc)}
             className="w-full transition-all duration-300 hover:shadow-lg border border-slate-200 rounded-xl overflow-hidden"
             style={{ borderTopWidth: '4px', borderTopColor: borderColor }}
-            bodyStyle={{ padding: '12px' }}
+            styles={{ body: { padding: '12px' } }}
         >
             <div className="flex justify-between items-start mb-2">
                 <div className="flex items-center gap-1.5">
