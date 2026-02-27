@@ -223,7 +223,7 @@ function AppContent() {
         </Layout >
       ) : (
         // Public Layout: Header + Content Area
-        <Layout className="min-h-screen bg-white flex flex-col">
+        <Layout className="min-h-screen bg-[#f8fafc] flex flex-col">
           <Header onLoginSuccess={handleLoginSuccess} />
 
           <Content className="flex-1 flex flex-col relative overflow-hidden"> {/* Header is fixed provided we handle spacing in pages */}
@@ -244,7 +244,7 @@ function AppContent() {
                 />
               </div>
             )}
-            <div className={`flex flex-col relative z-10 ${location.pathname === '/auth' ? '' : 'min-h-screen'} ${(location.pathname === '/' || location.pathname === '/auth') ? '' : 'pt-20 lg:pt-24'}`}>
+            <div className={`flex flex-col relative z-10 ${location.pathname === '/auth' ? '' : 'min-h-screen'} ${(location.pathname === '/' || location.pathname === '/auth' || location.pathname === '/vin-decoder') ? '' : 'pt-16'}`}>
               <Suspense fallback={
                 <div className="flex items-center justify-center h-full">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>

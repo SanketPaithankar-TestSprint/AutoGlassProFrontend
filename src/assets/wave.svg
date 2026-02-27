@@ -1,0 +1,4 @@
+<svg viewBox="0 24 150 28" preserveAspectRatio="none"><style>@keyframes m{from{transform:translateX(-90px)}to{transform:translateX(85px)}}.l0{animation:m 8s linear infinite 0s}.l1{animation:m 11s linear infinite -2s}.l2{animation:m 14s linear infinite -4s}</style><defs><linearGradient id="g1772201433296">
+        <stop stop-color="#9078fb"></stop>
+        <stop offset="1" stop-color="#2bb6e7"></stop>
+      </linearGradient><path id="w" d="M -160 40 Q -116 18 -72 40 Q -28 62 16 40 Q 60 18 104 40 Q 148 62 192 40 L 192 80 L -160 80 Z"></path></defs><g><use href="#w" xlink:href="#w" x="48" y="0" fill="url(#g1772201433296)" opacity="0.3" class="l0"></use><use href="#w" xlink:href="#w" x="128" y="3" fill="url(#g1772201433296)" opacity="0.4" class="l1"></use><use href="#w" xlink:href="#w" x="208" y="6" fill="url(#g1772201433296)" opacity="0.5" class="l2"></use></g></svg>
