@@ -189,7 +189,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
             <Button
               type="primary"
               onClick={() => navigate('/auth', { state: { mode: 'signup' } })}
-              className="relative !h-9 !px-6 !rounded-full !border-0 !bg-gradient-to-r from-[#7E5CFE] to-[#00A8E4] hover:!from-[#6b4ce6] hover:!to-[#008dc2] !text-white shadow-lg shadow-purple-500/30 transition-all duration-300 hover:scale-105"
+              className="relative !h-9 !px-6 !rounded-full !border-0 !bg-[#7E5CFE] hover:!bg-[#6a4deb] !text-white shadow-lg shadow-[#7E5CFE]/30 transition-all duration-300 hover:scale-105"
             >
               <span className="relative font-semibold text-[1.1rem]">{t('auth.signUp')}</span>
             </Button>
@@ -320,7 +320,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
                     setDrawerOpen(false);
                     navigate('/auth', { state: { mode: 'signup' } });
                   }}
-                  className="w-full !h-10 !mt-2 !rounded-lg !bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:!from-violet-400 hover:!to-fuchsia-400 !border-0 !text-white text-base shadow-lg shadow-violet-800/40"
+                  className="w-full !h-10 !mt-2 !rounded-lg !bg-[#7E5CFE] hover:!bg-[#6a4deb] !border-0 !text-white text-base shadow-lg shadow-[#7E5CFE]/40"
                 >
                   {t('auth.signUp')}
                 </Button>
@@ -385,7 +385,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
                   setDrawerOpen(false);
                   navigate('/auth', { state: { mode: 'signup' } });
                 }}
-                className="w-full !h-10 !mt-2 !rounded-lg !bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:!from-violet-400 hover:!to-fuchsia-400 !border-0 !text-white text-base shadow-lg shadow-violet-800/40"
+                className="w-full !h-10 !mt-2 !rounded-lg !bg-[#7E5CFE] hover:!bg-[#6a4deb] !border-0 !text-white text-base shadow-lg shadow-[#7E5CFE]/40"
               >
                 {t('auth.signUp')}
               </Button>

@@ -16,7 +16,7 @@ const FeatureSectionDetail = () => {
 
     if (!data) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-white text-slate-900">
+            <div className="min-h-screen flex flex-col items-center justify-center text-slate-900">
                 <h1 className="text-3xl font-bold mb-4 font-outfit">Section Not Found</h1>
                 <p className="text-slate-500 mb-8">We couldn't find the feature details you're looking for.</p>
                 <Button type="primary" size="large" onClick={() => navigate('/features')} className="bg-violet-600">
@@ -27,7 +27,7 @@ const FeatureSectionDetail = () => {
     }
 
     return (
-        <div className="bg-white min-h-screen pb-20 relative overflow-hidden font-sans text-slate-900">
+        <div className="min-h-screen pb-20 relative overflow-hidden font-sans text-slate-900">
             <PageHead title={`${data.title} | APAI`} description={data.description} />
 
             <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 lg:px-20 pt-16 md:pt-24 pb-12">
@@ -95,12 +95,12 @@ const FeatureSectionDetail = () => {
                     ))}
                 </div>
 
-                <div className="mt-32 text-center bg-white p-12 rounded-3xl border border-slate-100">
+                <div className="mt-32 text-center p-12 rounded-3xl border border-slate-100">
                     <h2 className="text-3xl font-bold mb-4 font-outfit">Ready to upgrade your shop?</h2>
                     <p className="text-lg text-slate-600 mb-8 max-w-2xl mx-auto">
                         Join hundreds of auto glass professionals who have streamlined their workflow with APAI.
                     </p>
-                    <Button type="primary" size="large" className="bg-violet-600 h-14 px-8 text-lg font-bold rounded-xl shadow-lg shadow-violet-200" onClick={() => navigate('/auth')}>
+                    <Button type="primary" size="large" className="!bg-[#7E5CFE] !border-[#7E5CFE] hover:!bg-[#6a4deb] h-14 px-8 text-lg font-bold rounded-full shadow-lg shadow-[#7E5CFE]/30" onClick={() => navigate('/auth')}>
                         Start Your Free Trial
                     </Button>
                 </div>

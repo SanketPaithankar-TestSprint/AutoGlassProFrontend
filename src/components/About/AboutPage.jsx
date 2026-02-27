@@ -147,11 +147,8 @@ const AboutPage = () => {
                 {/* 1. Header & Mission */}
                 <div className="px-6 md:px-12 lg:px-20 py-12 md:py-16 max-w-7xl mx-auto text-center border-b border-slate-50">
                     <AnimatedSection>
-                        <span className="inline-block py-1 px-3 mt-3 rounded-full bg-violet-100 text-violet-700 text-xs font-bold tracking-wide uppercase mb-4">
-                            Our Story
-                        </span>
                         <h1 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6 font-outfit">
-                            Built by Auto Glass Experts, <br /> Powered by <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-fuchsia-600">Artificial Intelligence</span>.
+                            Built by Auto Glass Experts, <br /> Powered by <span style={{ color: '#7E5CFE' }}>Artificial Intelligence</span>.
                         </h1>
                     </AnimatedSection>
 

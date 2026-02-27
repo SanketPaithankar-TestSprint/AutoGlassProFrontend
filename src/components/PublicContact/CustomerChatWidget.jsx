@@ -143,8 +143,30 @@ const CustomerChatWidget = ({ themeColor, businessName, customerName, customerEm
         setIsOpen(!isOpen);
     };
 
+    // Helper to convert hex to rgb components for the glow effect
+    const hexToRgb = (hex) => {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || '#7E5CFE');
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : { r: 126, g: 92, b: 254 }; // Default #7E5CFE
+    };
+
+    const glowRgb = hexToRgb(themeColor);
+
     return (
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+        <div className="fixed bottom-6 left-6 z-50 flex flex-col items-start">
+            <style>{`
+                @keyframes flowingGlow {
+                    0% { box-shadow: 0 0 10px 0px rgba(var(--glow-r), var(--glow-g), var(--glow-b), 0.3); }
+                    50% { box-shadow: 0 0 25px 5px rgba(var(--glow-r), var(--glow-g), var(--glow-b), 0.5); }
+                    100% { box-shadow: 0 0 10px 0px rgba(var(--glow-r), var(--glow-g), var(--glow-b), 0.3); }
+                }
+                .glow-button {
+                    animation: flowingGlow 2.5s ease-in-out infinite;
+                }
+            `}</style>
 
             {/* Chat Window */}
             {isOpen && (
@@ -302,41 +324,42 @@ const CustomerChatWidget = ({ themeColor, businessName, customerName, customerEm
             )}
 
             {/* Floating Button */}
-            <Button
-                type="primary"
-                shape="circle"
-                size="large"
+            <button
                 onClick={handleToggle}
-                className={`shadow-xl flex items-center justify-center transition-transform hover:scale-105 ${isOpen ? 'rotate-90 opacity-0 absolute pointer-events-none' : 'rotate-0'}`}
+                className={`glow-button group flex items-center justify-center gap-2 transition-all hover:scale-105 rounded-full px-5 h-[60px] text-white font-medium text-base ${isOpen ? 'rotate-90 opacity-0 absolute pointer-events-none' : 'rotate-0'}`}
                 style={{
-                    width: '60px',
-                    height: '60px',
                     backgroundColor: themeColor || '#7E5CFE',
-                    border: 'none'
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#ffffff',
+                    '--glow-r': glowRgb.r,
+                    '--glow-g': glowRgb.g,
+                    '--glow-b': glowRgb.b
                 }}
             >
                 <Badge count={hasUnread ? 1 : 0} dot color="red" offset={[-5, 5]}>
-                    <MessageOutlined style={{ fontSize: '24px' }} />
+                    <MessageOutlined style={{ fontSize: '24px', color: '#ffffff' }} />
                 </Badge>
-            </Button>
+                <span className="block group-hover:hidden transition-all duration-300 text-white" style={{ color: '#ffffff' }}>Live Chat</span>
+                <span className="hidden group-hover:block transition-all duration-300 whitespace-nowrap text-white" style={{ color: '#ffffff' }}>Chat Now</span>
+            </button>
 
             {/* Close Button when open - Optional, can just use the X in header, or make the FAB turn into X */}
             {isOpen && (
-                <Button
-                    type="primary"
-                    shape="circle"
-                    size="large"
+                <button
                     onClick={handleToggle}
-                    className="shadow-xl flex items-center justify-center transition-transform hover:scale-105"
+                    className="shadow-xl flex items-center justify-center transition-transform hover:scale-105 rounded-full"
                     style={{
                         width: '60px',
                         height: '60px',
                         backgroundColor: '#64748b',
-                        border: 'none'
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: 'white'
                     }}
                 >
                     <CloseOutlined style={{ fontSize: '24px' }} />
-                </Button>
+                </button>
             )}
         </div>
     );

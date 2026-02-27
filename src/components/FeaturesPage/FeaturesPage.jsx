@@ -194,11 +194,10 @@ const FeatureCarousel = ({ features, color, sectionId }) => {
         <div
             className="relative select-none"
             style={{ paddingBottom: '16px' }}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => { setHovered(false); dragStartX.current = null; }}
             onMouseDown={onMouseDown}
             onMouseMove={onMouseMove}
             onMouseUp={onMouseUp}
+            onMouseLeave={() => { setHovered(false); dragStartX.current = null; }}
         >
             {/* Inject keyframes */}
             <style>{`
@@ -241,9 +240,11 @@ const FeatureCarousel = ({ features, color, sectionId }) => {
                                         ? '0 20px 60px -10px rgba(126,92,254,0.35), 0 8px 24px rgba(0,0,0,0.12)'
                                         : '0 4px 20px rgba(0,0,0,0.08)',
                                 }}
+                                onMouseEnter={() => { if (isCenter) setHovered(true); }}
+                                onMouseLeave={() => { if (isCenter) setHovered(false); }}
                                 onClick={() => { if (!dragging && !isCenter) rel > 0 ? next() : prev(); }}
                             >
-                                <div className={`flex-shrink-0 text-3xl bg-gradient-to-br ${color} p-4 rounded-xl text-white shadow-md w-fit mb-5`}>
+                                <div className="flex-shrink-0 text-3xl p-4 rounded-xl text-white shadow-md w-fit mb-5" style={{ backgroundColor: '#7E5CFE' }}>
                                     {f.icon}
                                 </div>
                                 <h4 className="text-xl font-bold text-slate-900 mb-3 font-outfit leading-snug">
@@ -421,7 +422,7 @@ const FeaturesPage = () => {
             <div className="relative pt-10 pb-16 px-6 md:px-12 lg:px-20 border-b border-transparent z-10">
                 <div className="max-w-4xl mx-auto text-center" style={{ visibility: 'visible' }}>
                     <h1 className="text-3xl md:text-5xl font-bold mb-4 font-outfit text-slate-900 leading-tight">
-                        Everything You Need to Run Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-fuchsia-600">Auto Glass Business</span>
+                        Everything You Need to Run Your <span style={{ color: '#7E5CFE' }}>Auto Glass Business</span>
                     </h1>
                     <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
                         From the first quote to the final payment, APAI provides a comprehensive suite of tools designed for speed, accuracy, and growth.
@@ -435,7 +436,7 @@ const FeaturesPage = () => {
                         <AnimatedSection>
                             <div className="mb-12 text-center md:text-left">
                                 <div className="flex items-center gap-3 mb-4 justify-center md:justify-start">
-                                    <div className={`h-1.5 w-12 rounded-full bg-gradient-to-r ${section.color}`}></div>
+                                    <div className="h-1.5 w-12 rounded-full" style={{ backgroundColor: '#7E5CFE' }}></div>
                                     <span className="text-sm font-bold uppercase tracking-widest text-slate-500">{section.category}</span>
                                 </div>
                                 <h2 className="text-3xl md:text-5xl font-extrabold mb-4 font-outfit text-slate-900">
@@ -638,7 +639,7 @@ const FeaturesPage = () => {
                                 <Button
                                     type="primary"
                                     size="large"
-                                    className="!bg-violet-600 !border-violet-600 hover:!bg-violet-500 !h-11 !px-8 !text-base !rounded-full shadow-md shadow-violet-200"
+                                    className="!bg-[#7E5CFE] !border-[#7E5CFE] hover:!bg-[#6a4deb] !h-11 !px-8 !text-base !rounded-full shadow-md shadow-[#7E5CFE]/30"
                                     onClick={handleStartTrial}
                                 >
                                     Start Your Free Trial
