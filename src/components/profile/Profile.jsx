@@ -19,6 +19,7 @@ import UserAdasPricePage from "./UserAdasPricePage";
 import SpecialInstructions from "./SpecialInstructions";
 import Shops from "./Shops";
 import EmployeeManagement from "./EmployeeManagement";
+import TerminalConfiguration from "./TerminalConfiguration";
 import SlugConfig from "../SlugConfig/SlugConfig";
 import { getStatesOrProvinces, getCities, COUNTRIES } from "../../const/locations";
 import { useSidebarStore } from '../../store/useSidebarStore';
@@ -449,6 +450,7 @@ const Profile = () => {
                             { id: 'laborRate', label: t('profile.laborRate'), icon: <CalculatorOutlined /> },
                             { id: 'taxRates', label: t('profile.taxSettings'), icon: <PercentageOutlined /> },
                             { id: 'smtp', label: t('profile.emailSettings'), icon: <MailOutlined /> },
+                            { id: 'terminalConfig', label: 'Terminal Config', icon: <ScanOutlined /> },
                             { id: 'userKitPrice', label: t('profile.standardKits'), icon: <GiftOutlined /> },
                             { id: 'userAdasPrice', label: t('profile.adasPricing'), icon: <CameraOutlined /> },
                             { id: 'slugConfig', label: t('profile.contactFormConfig'), icon: <LinkOutlined /> }
@@ -482,6 +484,7 @@ const Profile = () => {
                             {renderMenuItem('laborRate', t('profile.laborRate'), <CalculatorOutlined />)}
                             {renderMenuItem('taxRates', t('profile.taxSettings'), <PercentageOutlined />)}
                             {renderMenuItem('smtp', t('profile.emailSettings'), <MailOutlined />)}
+                            {renderMenuItem('terminalConfig', 'Terminal Config', <ScanOutlined />)}
                             {renderMenuItem('userKitPrice', t('profile.standardKits'), <GiftOutlined />)}
                             {renderMenuItem('userAdasPrice', t('profile.adasPricing'), <CameraOutlined />)}
                             {renderMenuItem('specialInstructions', t('profile.specialInstructions'), <FileTextOutlined />)}
@@ -501,6 +504,7 @@ const Profile = () => {
                     {activeTab === 'laborRate' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><LaborRateConfiguration /></div>}
                     {activeTab === 'taxRates' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><TaxRateConfiguration /></div>}
                     {activeTab === 'smtp' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><SmtpConfiguration /></div>}
+                    {activeTab === 'terminalConfig' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><TerminalConfiguration /></div>}
                     {activeTab === 'userKitPrice' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><UserKitPricePage /></div>}
                     {activeTab === 'userAdasPrice' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><UserAdasPricePage /></div>}
                     {activeTab === 'specialInstructions' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><SpecialInstructions /></div>}

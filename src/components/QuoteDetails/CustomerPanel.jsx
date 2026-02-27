@@ -919,14 +919,14 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                 {/* Contact Person Details - Last Rows */}
                                 <div className="col-span-1">
                                     <label className="block text-sm font-medium text-slate-700 mb-1">Contact Name</label>
-                                    {formData.newContactDetails ? (
+                                    {orgMode === "NEW" || formData.newContactDetails ? (
                                         <div className="flex-1 w-full">
                                             <input
                                                 type="text"
                                                 name="contactName"
                                                 value={orgFormData.contactName || ""}
                                                 onChange={handleOrgFormChange}
-                                                placeholder="Enter new contact name"
+                                                placeholder="Enter contact name"
                                                 className="border border-gray-200 rounded px-2 py-[5px] text-sm focus:ring-1 focus:ring-violet-500 focus:border-violet-500 focus:outline-none transition-all w-full h-[32px]"
                                             />
                                         </div>
@@ -1005,7 +1005,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                     )}
                                 </div>
                                 <div className="col-span-1 flex items-end">
-                                    {formData.newContactDetails ? (
+                                    {orgMode === "NEW" ? null : formData.newContactDetails ? (
                                         <Button
                                             type="text"
                                             icon={<CloseOutlined />}
