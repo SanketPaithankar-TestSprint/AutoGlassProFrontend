@@ -6,7 +6,7 @@ variable "aws_region" {
 variable "bucket_name" {
     description = "The name of the S3 bucket to create."
     type        = string
-    default = "apai-frontend-dev"
+    default = "autopaneai-frontend-dev"
 }
 variable "environment" {
     description = "The environment name (e.g., dev, staging, prod)."
