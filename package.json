@@ -8,8 +8,8 @@
   },
   "scripts": {
     "dev": "vite",
-    "dev:prod": "vite build && node scripts/inject-meta.mjs",
-    "build": "vite build && node scripts/inject-meta.mjs",
+    "dev:prod": "vite build",
+    "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
