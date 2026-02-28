@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "dev:prod": "vite --mode production",
+    "dev:prod": "vite build",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

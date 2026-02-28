@@ -1,64 +1,127 @@
-# name: Frontend Deployment Pipeline
+name: Frontend Deployment Pipeline (Production)
 
-# on:
-#   push:
-#     branches:
-#       - master
+on:
+  push:
+    branches:
+         - main
 
-# jobs:
-#   build:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout Code
-#         uses: actions/checkout@v4
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-#       - name: Set up Node.js
-#         uses: actions/setup-node@v4
-#         with:
-#           node-version: '20'          # pins Node version — matches .nvmrc
-#           cache: 'npm'                # caches node_modules between runs (faster builds)
+    steps:
+      - name: 🚀 Notify Build Started
+        run: |
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
+          -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+          -d parse_mode=Markdown \
+          -d text="🚀 *Build Started*
+          
+          📦 Repo: ${{ github.repository }}
+          🌿 Branch: ${{ github.ref_name }}
+          👤 Actor: ${{ github.actor }}"
 
-#       - name: Install dependencies
-#         run: npm ci --legacy-peer-deps  # react-helmet-async@2 doesn't support React 19 yet
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-#       - name: Build project
-#         run: npm run build
-#         env:
-#           VITE_JAVA_API_URL: ${{ secrets.VITE_JAVA_API_URL }}
-#           VITE_PYTHON_API_URL: ${{ secrets.VITE_PYTHON_API_URL }}
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
 
-#       - name: Upload build artifact
-#         uses: actions/upload-artifact@v4
-#         with:
-#           name: dist
-#           path: dist/
-#           retention-days: 1
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
 
-#   deploy:
-#     needs: build
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Download Artifact
-#         uses: actions/download-artifact@v4
-#         with:
-#           name: dist
-#           path: dist/
+      - name: Build project
+        run: npm run build
+        env:
+          VITE_JAVA_API_URL: ${{ secrets.VITE_JAVA_API_URL }}
+          VITE_PYTHON_API_URL: ${{ secrets.VITE_PYTHON_API_URL }}
 
-#       - name: Configure AWS Credentials
-#         uses: aws-actions/configure-aws-credentials@v4
-#         with:
-#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#           aws-region: us-east-1
+      - name: ❌ Notify Build Failed
+        if: failure()
+        run: |
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
+          -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+          -d parse_mode=Markdown \
+          -d text="❌ *Build Failed*
+          
+          📦 Repo: ${{ github.repository }}
+          🌿 Branch: ${{ github.ref_name }}
+          🔗 Commit: https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
 
-#       - name: Deploy to S3
-#         run: |
-#           aws s3 sync dist/ s3://${{ secrets.S3_BUCKET_NAME }}/ \
-#             --delete \
-#             --region us-east-1
+      - name: ✅ Notify Build Success
+        if: success()
+        run: |
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
+          -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+          -d parse_mode=Markdown \
+          -d text="✅ *Build Successful*
+          
+          📦 Repo: ${{ github.repository }}
+          🌿 Branch: ${{ github.ref_name }}"
 
-#       - name: Invalidate CloudFront Cache
-#         run: |
-#           aws cloudfront create-invalidation \
-#             --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
-#             --paths "/*"
+      - name: Upload build artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 1
+
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🚀 Notify Deploy Started
+        run: |
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
+          -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+          -d parse_mode=Markdown \
+          -d text="🚀 *Deployment Started*"
+
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Deploy to S3
+        run: |
+          aws s3 sync dist/ s3://${{ secrets.S3_BUCKET_NAME_PROD }}/ \
+            --delete \
+            --region us-east-1
+
+      - name: Invalidate CloudFront Cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID_PROD }} \
+            --paths "/*"
+
+      - name: ❌ Notify Deploy Failed
+        if: failure()
+        run: |
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
+          -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+          -d parse_mode=Markdown \
+          -d text="❌ *Deployment Failed*"
+
+      - name: ✅ Notify Deploy Success
+        if: success()
+        run: |
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
+          -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+          -d parse_mode=Markdown \
+          -d text="✅ *Deployment Successful*
+          
+          🌍 Environment: PRODUCTION"

@@ -10,6 +10,16 @@ resource "aws_cloudfront_origin_access_control" "this" {
   signing_protocol                  = "sigv4"   # AWS Signature Version 4
 }
 
+# ─── CloudFront Function ──────────────────────────────────────────────────────
+
+resource "aws_cloudfront_function" "append_index" {
+  name    = "${var.environment}-append-index"
+  runtime = "cloudfront-js-1.0"
+  comment = "Appends index.html to request URIs for SPA routing"
+  publish = true
+  code    = file("${path.module}/append_index.js")
+}
+
 # ─── CloudFront Distribution ───────────────────────────────────────────────────
 
 resource "aws_cloudfront_distribution" "this" {
@@ -70,6 +80,11 @@ resource "aws_cloudfront_distribution" "this" {
     min_ttl     = 0  # never cache HTML at edge
     default_ttl = 0
     max_ttl     = 0
+
+    function_association {
+      event_type   = "viewer-request"
+      function_arn = aws_cloudfront_function.append_index.arn
+    }
   }
 
   # ── SPA routing fix ───────────────────────────────────────────────────────────

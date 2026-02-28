@@ -6,10 +6,12 @@ variable "aws_region" {
 variable "bucket_name" {
     description = "The name of the S3 bucket to create."
     type        = string
+    default = "autopaneai-frontend-prod"
 }
 variable "environment" {
     description = "The environment name (e.g., dev, staging, prod)."
     type        = string
+    default = "prod"
 }
 variable "cors_allowed_origins" {
     description = "The list of allowed origins for CORS."
