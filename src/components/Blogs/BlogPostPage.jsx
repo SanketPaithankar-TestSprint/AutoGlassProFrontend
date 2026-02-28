@@ -60,7 +60,7 @@ const BlogPostPage = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-white flex justify-center items-center">
+            <div className="min-h-screen flex justify-center items-center">
                 <Spin size="large" />
             </div>
         );
@@ -68,7 +68,7 @@ const BlogPostPage = () => {
 
     if (!post) {
         return (
-            <div className="min-h-screen bg-white flex flex-col justify-center items-center gap-4">
+            <div className="min-h-screen flex flex-col justify-center items-center gap-4">
                 <Title level={3}>Post not found</Title>
                 <Link to="/blogs">
                     <Button type="primary">Back to Blogs</Button>
@@ -85,7 +85,7 @@ const BlogPostPage = () => {
         : null;
 
     return (
-        <div className="min-h-screen bg-white pt-20 pb-20 relative overflow-hidden font-sans text-slate-900">
+        <div className="min-h-screen pt-20 pb-20 relative overflow-hidden font-sans text-slate-900">
             <PageHead
                 title={post.metaTitle}
                 description={post.metaDescription}

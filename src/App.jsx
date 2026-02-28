@@ -67,6 +67,15 @@ const useIsMobile = () => {
   return isMobile;
 };
 
+// ─── Scroll to Top Component ────────────────────────────────────────────────
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
+
 function AppContent() {
   const [isAuthed, setIsAuthed] = useState(false);
   const [collapsed, setCollapsed] = useState(true); // Default collapsed
@@ -299,6 +308,7 @@ function App() {
         <AuthProvider>
           <InquiryProvider>
             <Router>
+              <ScrollToTop />
               <AppContent />
             </Router>
           </InquiryProvider>

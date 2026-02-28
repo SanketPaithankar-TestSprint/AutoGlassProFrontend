@@ -56,6 +56,12 @@ const routeMeta = [
     title: 'Sitemap | APAI Auto Glass Management Software',
     description: 'Navigate the APAI website easily. Find links to our shop management features, pricing, blog guides, and support resources for auto glass professionals.',
   },
+  {
+    route: '/vin-decoder',
+    title: 'Free VIN Decoder | Official NHTSA Vehicle Lookup | APAI',
+    description:
+      'Use APAI’s free VIN decoder to instantly identify vehicle year, make, model, and safety features. Powered by official NHTSA data for 100% accuracy.',
+  },
   // Not in CSV, keep as is
   {
     route: '/auth',

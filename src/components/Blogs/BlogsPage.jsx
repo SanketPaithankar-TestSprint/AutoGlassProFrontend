@@ -102,7 +102,7 @@ const BlogsPage = () => {
     }, []);
 
     return (
-        <div className="min-h-screen bg-white p-4 md:p-6 relative overflow-hidden font-sans text-slate-900">
+        <div className="min-h-screen p-4 md:p-6 relative overflow-hidden font-sans text-slate-900">
             <PageHead
                 title="Auto Glass Business Insights & Guides | APAI Blog"
                 description="Expert advice for auto glass shop owners. Read our latest guides on scaling your business, and using AI features to increase your shop's profitability."
