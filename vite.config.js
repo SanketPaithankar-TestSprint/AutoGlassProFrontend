@@ -17,34 +17,46 @@ const routeMeta = [
   },
   {
     route: '/features',
-    title: 'APAI Features | Auto Glass Shop Automation Tools',
+    title: 'APAI Features | VIN Decode, AI Chat, Quotes & NAGS Data',
     description:
       "Explore APAI's powerful features: AI quoting, NAGS pricing, invoicing, scheduling, customer management and more — built for auto glass shops.",
   },
   {
     route: '/pricing',
-    title: 'APAI Pricing | Affordable Plans for Auto Glass Shops',
+    title: 'APAI Pricing | Transparent Auto Glass Software for $99/mo',
     description:
-      'Simple, transparent pricing for APAI. Start automating your auto glass shop for just $99/mo. No hidden fees. Cancel anytime.',
+      'Simple, flat-rate pricing for your auto glass shop. Get full access to VIN decoding, NAGS data, and invoicing for just $99/month. No contracts, no hidden fees.',
   },
   {
     route: '/about',
-    title: 'About APAI | The Auto Glass Shop Management Platform',
+    title: 'About APAI | Empowering Independent Auto Glass Shops',
     description:
-      'Learn about APAI — the team behind the smart auto glass shop management platform helping shops grow faster with AI-powered automation.',
+      'Learn the story behind APAI. We’re empowering independent auto glass shops with AI-driven tools to automate workflows, increase profits, and simplify scaling.',
   },
   {
     route: '/contact',
-    title: 'Contact APAI | Get in Touch with Our Team',
+    title: 'Contact APAI | Sign Up for Your Auto Glass Business',
     description:
-      "Have questions about APAI? Contact our team for support, sales inquiries, or partnerships. We're here to help your auto glass shop succeed.",
+      'Have questions about APAI? Contact our team today for support, demos, or sign up for 30 days trial. We’re here to help your auto glass shop succeed.',
+  },
+  {
+    route: '/privacy-policy',
+    title: 'Privacy Policy | APAI Auto Glass Management Software',
+    description:
+      'Read the APAI Privacy Policy. Learn how we protect your auto glass shop’s data, ensure secure transactions, and maintain your business confidentiality.',
   },
   {
     route: '/blogs',
-    title: 'APAI Blog | Auto Glass Business Tips & Industry News',
+    title: 'Auto Glass Business Insights & Guides | APAI Blog',
     description:
-      'Read the latest articles on auto glass shop management, industry trends, NAGS pricing tips, and business growth strategies from the APAI team.',
+      "Expert advice for auto glass shop owners. Read our latest guides on scaling your business, and using AI features to increase your shop's profitability.",
   },
+  {
+    route: '/sitemap',
+    title: 'Sitemap | APAI Auto Glass Management Software',
+    description: 'Navigate the APAI website easily. Find links to our shop management features, pricing, blog guides, and support resources for auto glass professionals.',
+  },
+  // Not in CSV, keep as is
   {
     route: '/auth',
     title: 'Sign In or Sign Up | APAI',
@@ -52,21 +64,10 @@ const routeMeta = [
       'Sign in to your APAI account or create a new account to start managing your auto glass shop smarter.',
   },
   {
-    route: '/privacy-policy',
-    title: 'Privacy Policy | APAI',
-    description:
-      'Read the APAI Privacy Policy to understand how we collect, use, and protect your personal information.',
-  },
-  {
     route: '/terms-of-service',
     title: 'Terms of Service | APAI Auto Glass Management Software',
     description:
       "Review the terms and conditions for using APAI's AI-powered auto glass platform. Learn about subscriptions, usage rights, and our $99 service.",
-  },
-  {
-    route: '/sitemap',
-    title: 'Sitemap | APAI',
-    description: 'Browse all pages on the APAI platform.',
   },
 ]
 // ─────────────────────────────────────────────────────────────────────────────

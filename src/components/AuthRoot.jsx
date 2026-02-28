@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import Login from "./login";
 import SignUpForm from "./SignUpForm";
 import ForgotPasswordForm from "./ForgotPasswordForm";
+import PageHead from "./PageHead";
 import { useAuth } from '../context/auth/useAuth';
 import { useProfileDataPrefetch } from '../hooks/useProfileDataPrefetch';
 import useInquiryNotifications from "../hooks/useInquiryNotifications";
@@ -59,15 +60,14 @@ export default function AuthRoot() {
         setAuthMode('LOGIN');
     };
 
-    // Derived state for layout matching AuthPage logic
-    // isSignUpMode was boolean. Here we map: 
-    // SIGNUP -> isSignUpMode = true (Overlay Right)
-    // LOGIN / FORGOT -> isSignUpMode = false (Overlay Left)
     const isSignUpMode = authMode === 'SIGNUP';
 
     return (
         <div className="w-full bg-white flex items-start justify-center p-4 pt-24 md:pt-32 pb-24 relative overflow-hidden">
-
+            <PageHead
+                title="Login / Sign Up | APAI"
+                description="Sign in to your APAI dashboard or create a new account to scale your auto glass shop."
+            />
 
             <div
                 className="bg-white/90 backdrop-blur-md rounded-[24px] shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)] relative overflow-hidden w-full max-w-[800px] lg:max-w-[900px] min-h-[450px] md:min-h-[550px] flex flex-col md:block z-10 border border-white/20"
