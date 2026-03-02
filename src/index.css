@@ -292,61 +292,83 @@ input[type=number] {
 }
 
 /* --- Sidebar Active Tab Cut-out Effect --- */
-.ant-menu-dark.ant-menu-root {
-  padding-right: 0 !important;
+
+/* Nuke ALL Ant Design menu animations/transitions */
+.ant-menu-dark,
+.ant-menu-dark *,
+.ant-menu-dark *::before,
+.ant-menu-dark *::after {
+  transition: none !important;
+  animation: none !important;
+  transition-duration: 0s !important;
+  animation-duration: 0s !important;
 }
 
+/* Hide Ant Design's built-in active indicator bar */
+.ant-menu-dark .ant-menu-item::after {
+  display: none !important;
+}
+
+.ant-menu-dark.ant-menu-root {
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+.ant-menu-dark.ant-menu-root > li {
+  overflow: visible !important;
+}
+
+/* All menu items: same fixed shape, never changes */
 .ant-menu-dark .ant-menu-item {
-  margin-right: 0 !important;
-  width: calc(100% - 20px) !important;
+  margin: 0 !important;
   margin-left: 12px !important;
-  border-radius: 20px 0 0 20px !important;
-  margin-top: 0px !important;
-  margin-bottom: 0px !important;
+  width: calc(100% - 8px) !important;
+  border-radius: 30px 0 0 31px !important;
   position: relative;
   padding-inline: 20px !important;
+  overflow: visible !important;
+  background: transparent !important;
 }
 
-/* Element above the selected tab gets a rounded bottom-right */
-.ant-menu-dark .ant-menu-item:has(+ .ant-menu-item-selected) {
-  border-bottom-right-radius: 20px !important;
+/* Adjacent item above selected: rounded bottom-right (applied by React) */
+.ant-menu-dark .ant-menu-item.ant-menu-item-above-selected {
+  border-bottom-right-radius: 31px !important;
 }
 
-/* Element below the selected tab gets a rounded top-right */
-.ant-menu-dark .ant-menu-item-selected+.ant-menu-item {
-  border-top-right-radius: 20px !important;
+/* Adjacent item below selected: rounded top-right (applied by React) */
+.ant-menu-dark .ant-menu-item.ant-menu-item-below-selected {
+  border-top-right-radius: 31px !important;
 }
 
+/* Selected item: only change background + color, NO width/position change */
 .ant-menu-dark .ant-menu-item-selected {
   background-color: var(--active-bg, #F1F5F9) !important;
-  /* Matches main app background */
   color: #4f46e5 !important;
-  width: calc(100% - 12px + 2px) !important;
-  position: relative;
-  right: -2px;
   z-index: 10;
 }
 
-/* Smooth outer curves (scooped corners) */
-.ant-menu-dark .ant-menu-item-selected::before,
-.ant-menu-dark .ant-menu-item-selected::after {
-  content: "";
+/* --- Concave curve scallops on the active tab --- */
+
+.sidebar-curve-top {
   position: absolute;
+  top: -31px;
   right: 0;
-  width: 20px;
-  height: 20px;
-  background-color: transparent;
+  width: 31px;
+  height: 31px;
+  background: transparent;
+  background-image: radial-gradient(circle at top left, transparent 31px, var(--active-bg, #F1F5F9) 31.5px);
   pointer-events: none;
+  z-index: 10;
 }
 
-/* Top curved corner bridging into the sidebar above the tab */
-.ant-menu-dark .ant-menu-item-selected::before {
-  top: -20px;
-  background-image: radial-gradient(circle at top left, transparent 20px, var(--active-bg, #F1F5F9) 21px);
-}
-
-/* Bottom curved corner bridging into the sidebar below the tab */
-.ant-menu-dark .ant-menu-item-selected::after {
-  bottom: -20px;
-  background-image: radial-gradient(circle at bottom left, transparent 20px, var(--active-bg, #F1F5F9) 21px);
+.sidebar-curve-bottom {
+  position: absolute;
+  bottom: -31px;
+  right: 0;
+  width: 31px;
+  height: 31px;
+  background: transparent;
+  background-image: radial-gradient(circle at bottom left, transparent 31px, var(--active-bg, #F1F5F9) 31.5px);
+  pointer-events: none;
+  z-index: 10;
 }
