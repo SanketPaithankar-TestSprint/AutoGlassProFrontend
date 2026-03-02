@@ -4,16 +4,44 @@ import { ReloadOutlined, EyeOutlined, DeleteOutlined, UserOutlined, CarOutlined,
 import { getValidToken } from '../../api/getValidToken';
 import urls from '../../config';
 import InquiryDetails from './InquiryDetails';
+import useServiceInquiries from './hooks/useServiceInquiries';
+import useInquiryDetails from './hooks/useInquiryDetails';
 
 const { Title } = Typography;
 
+// Helper component to fetch and render full details inside the modal
+const ModalInquiryDetails = ({ inquiryId }) => {
+    const { inquiry, loading, error } = useInquiryDetails(inquiryId);
+
+    if (loading) {
+        return (
+            <div className="flex justify-center flex-col items-center h-40">
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-violet-600 mb-4"></div>
+                <div className="text-gray-500">Loading details...</div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="p-6">
+                <div className="bg-red-50 text-red-600 p-4 rounded-md shadow-sm border border-red-100">
+                    {error}
+                </div>
+            </div>
+        );
+    }
+
+    return <InquiryDetails inquiry={inquiry} />;
+};
+
 const ServiceContactFormRoot = () => {
-    const [inquiries, setInquiries] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [total, setTotal] = useState(0);
     const [viewDetailsModalOpen, setViewDetailsModalOpen] = useState(false);
     const [selectedInquiryId, setSelectedInquiryId] = useState(null);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [currentPage, setCurrentPage] = useState(1);
+
+    const { inquiries, loading, total, fetchInquiries, deleteInquiry, markAsRead } = useServiceInquiries();
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -21,39 +49,12 @@ const ServiceContactFormRoot = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    const fetchInquiries = async () => {
-        setLoading(true);
-        try {
-            const token = getValidToken();
-            const response = await fetch(`${urls.javaApiUrl}/v1/service-inquiries/my?page=0&size=20&sort=createdAt,desc`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': '*/*'
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                // API returns paginated response with 'content' array
-                const safeData = data.content || [];
-                setInquiries(safeData);
-                setTotal(data.totalElements || safeData.length);
-            } else {
-                console.error("Failed to fetch inquiries");
-            }
-        } catch (error) {
-            console.error("Error fetching inquiries:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
-        fetchInquiries();
+        fetchInquiries(currentPage - 1);
 
         const handleNewInquiry = () => {
             message.info('New inquiry received. Refreshing list...');
-            fetchInquiries();
+            fetchInquiries(currentPage - 1);
         };
 
         window.addEventListener('INQUIRY_RECEIVED', handleNewInquiry);
@@ -61,32 +62,10 @@ const ServiceContactFormRoot = () => {
         return () => {
             window.removeEventListener('INQUIRY_RECEIVED', handleNewInquiry);
         };
-    }, []);
+    }, [fetchInquiries]);
 
     const handleDelete = async (id) => {
-        try {
-            const token = getValidToken();
-            const response = await fetch(`${urls.javaApiUrl}/v1/service-inquiries/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': '*/*'
-                }
-            });
-
-            if (response.ok) {
-                message.success('Inquiry deleted successfully');
-                fetchInquiries(); // Refetch the list to update the UI
-
-                // Dispatch event to notify sidebar to refresh badge count
-                window.dispatchEvent(new CustomEvent('INQUIRY_STATUS_CHANGED'));
-            } else {
-                message.error('Failed to delete inquiry');
-            }
-        } catch (error) {
-            console.error("Error deleting inquiry:", error);
-            message.error('An error occurred while deleting');
-        }
+        await deleteInquiry(id);
     };
 
 
@@ -177,26 +156,7 @@ const ServiceContactFormRoot = () => {
     const handleViewDetails = async (record) => {
         // Update status to READ if it's NEW
         if (record.status !== 'READ') {
-            try {
-                const token = getValidToken();
-                await fetch(`${urls.javaApiUrl}/v1/service-inquiries/${record.id}/status?status=READ`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Accept': '*/*'
-                    }
-                });
-
-                // Update local state
-                setInquiries(prev => prev.map(item =>
-                    item.id === record.id ? { ...item, status: 'READ' } : item
-                ));
-
-                // Dispatch event to notify sidebar to refresh badge count
-                window.dispatchEvent(new CustomEvent('INQUIRY_STATUS_CHANGED'));
-            } catch (error) {
-                console.error("Failed to update status", error);
-            }
+            await markAsRead(record.id);
         }
 
         if (isMobile) {
@@ -228,7 +188,10 @@ const ServiceContactFormRoot = () => {
                 </div>
                 <Button
                     icon={<ReloadOutlined />}
-                    onClick={fetchInquiries}
+                    onClick={() => {
+                        setCurrentPage(1);
+                        fetchInquiries(0);
+                    }}
                     loading={loading}
                     className="w-full sm:w-auto"
                 >
@@ -250,13 +213,14 @@ const ServiceContactFormRoot = () => {
                     dataSource={inquiries}
                     loading={loading}
                     pagination={{
+                        current: currentPage,
                         total: total,
                         pageSize: 20,
                         position: 'bottom',
                         align: 'center',
                         onChange: (page) => {
-                            // If implement server-side pagination, would call fetchInquiries with new page
-                            // Current implementation fetches page 0 hardcoded in fetchInquiries
+                            setCurrentPage(page);
+                            fetchInquiries(page - 1);
                         }
                     }}
                     renderItem={item => (
@@ -308,10 +272,15 @@ const ServiceContactFormRoot = () => {
                     rowKey="id"
                     loading={loading}
                     pagination={{
+                        current: currentPage,
                         total: total,
                         pageSize: 20,
                         showSizeChanger: false,
                         position: ['bottomCenter']
+                    }}
+                    onChange={(pagination) => {
+                        setCurrentPage(pagination.current);
+                        fetchInquiries(pagination.current - 1);
                     }}
                 />
             )}
@@ -327,7 +296,7 @@ const ServiceContactFormRoot = () => {
                 centered
                 destroyOnClose
             >
-                {selectedInquiryId && <InquiryDetails inquiryId={selectedInquiryId} />}
+                {selectedInquiryId && <ModalInquiryDetails inquiryId={selectedInquiryId} />}
             </Modal>
         </div>
     );
