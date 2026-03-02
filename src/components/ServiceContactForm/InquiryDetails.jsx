@@ -1,113 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { Descriptions, Card, Tag, Typography, Spin, Alert, Image } from 'antd';
-import { getValidToken } from '../../api/getValidToken';
-import urls from '../../config';
+import React from 'react';
+import { Descriptions, Card, Tag, Typography, Spin, Image } from 'antd';
+import useSecureImage from './hooks/useSecureImage';
 
 const { Title } = Typography;
 
-const InquiryDetails = ({ inquiryId }) => {
-    const [inquiry, setInquiry] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+const SecureImage = ({ attachment }) => {
+    const { imageUrl, loading } = useSecureImage(attachment?.id);
 
-    // Secure Image Component to fetch image with auth token
-    const SecureImage = ({ attachment }) => {
-        const [imageUrl, setImageUrl] = useState(null);
-        const [loading, setLoading] = useState(true);
+    if (loading) return <Spin size="small" />;
 
-        useEffect(() => {
-            let active = true;
-            const fetchImage = async () => {
-                try {
-                    const token = getValidToken();
-                    const response = await fetch(`${urls.javaApiUrl}/v1/service-inquiries/attachments/${attachment.id}/download`, {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Accept': '*/*'
-                        }
-                    });
+    return (
+        <div className="mr-2 mb-2">
+            <Image
+                width={100}
+                src={imageUrl || 'error_placeholder'}
+                alt={attachment?.fileName}
+                fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQ7_8HAAABjElEQVR4nO3BMQEAAADCoPVPbQ0PoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPwZkAAAAEAA="
+            />
+        </div>
+    );
+};
 
-                    if (response.ok && active) {
-                        const blob = await response.blob();
-                        const imageBlob = blob.type ? blob : new Blob([blob], { type: 'image/jpeg' });
-                        const url = URL.createObjectURL(imageBlob);
-                        setImageUrl(url);
-                    }
-                } catch (err) {
-                    console.error("Error loading image:", err);
-                } finally {
-                    if (active) setLoading(false);
-                }
-            };
-
-            fetchImage();
-            return () => { active = false; };
-        }, [attachment.id]);
-
-        if (loading) return <Spin size="small" />;
-
-        return (
-            <div className="mr-2 mb-2">
-                <Image
-                    width={100}
-                    src={imageUrl || 'error_placeholder'}
-                    alt={attachment.fileName}
-                    fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQ7_8HAAABjElEQVR4nO3BMQEAAADCoPVPbQ0PoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPwZkAAAAEAA="
-                />
-            </div>
-        );
-    };
-
-    useEffect(() => {
-        const fetchInquiry = async () => {
-            if (!inquiryId) return;
-            setLoading(true);
-            try {
-                const token = getValidToken();
-                const response = await fetch(`${urls.javaApiUrl}/v1/service-inquiries/${inquiryId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Accept': '*/*'
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    setInquiry(data);
-                } else {
-                    setError('Failed to fetch inquiry details');
-                }
-            } catch (err) {
-                setError('An error occurred while fetching details');
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchInquiry();
-    }, [inquiryId]);
-
-    if (loading) {
-        return (
-            <div className="flex justify-center items-center h-40">
-                <Spin size="large" />
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="p-6">
-                <Alert message="Error" description={error} type="error" showIcon />
-            </div>
-        );
-    }
-
-    if (!inquiry) {
-        return null;
-    }
-
+const InquiryDetails = ({ inquiry }) => {
+    if (!inquiry) return null;
     return (
         <Card
             title={<Title level={4} className="m-0 text-base md:text-lg">Inquiry Details #{inquiry.id}</Title>}
@@ -165,7 +80,7 @@ const InquiryDetails = ({ inquiryId }) => {
                         inquiry?.city,
                         inquiry?.state,
                         inquiry?.postalCode
-                    ].filter(Boolean).join(', ') || '-'}
+                    ].filter(val => val && val.trim() !== '').join(', ') || '-'}
                 </Descriptions.Item>
                 <Descriptions.Item label="Created At">
                     {new Date(inquiry.createdAt).toLocaleString()}
