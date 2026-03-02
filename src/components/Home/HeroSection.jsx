@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import Logo from "../logo";
 import VideoModal from "../VideoModal/VideoModal";
 import BrowserMockup from "../../assets/browser_mockup.png";
+import IpadMockup from "../../assets/ipad_landing_page_mockup.png";
 
 const HeroSection = () => {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
@@ -17,24 +18,14 @@ const HeroSection = () => {
       style={{ minHeight: 'calc(var(--vh, 1vh) * 100)' }}
     >
 
-
       {/* Content */}
       <div className="relative max-w-7xl mx-auto py-8 md:py-24 lg:py-32 px-3 sm:px-4 md:px-6 grid lg:grid-cols-12 gap-6 md:gap-12 items-center pt-4 md:pt-20 lg:pt-32 w-full">
         {/* Left Column: Content */}
         <div className="text-center lg:text-left lg:col-span-5 w-full">
-          {/* Logo */}
-          {/* <motion.div
-            className="flex justify-center lg:justify-center mb-3 sm:mb-4 md:mb-6"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-          >
-            <Logo className="w-24 xs:w-28 sm:w-32 md:w-36 lg:w-40 h-auto" />
-          </motion.div> */}
 
           {/* Tagline */}
           <motion.h1
-            className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold mb-3 sm:mb-4 md:mb-6 leading-tight px-2 sm:px-0"
+            className="text-lg xs:text-xl sm:text-2xl md:text-3xl lg:text-5xl font-extrabold mb-2 sm:mb-3 md:mb-6 leading-tight px-2 sm:px-0"
             style={{
               color: '#7E5CFE',
             }}
@@ -47,7 +38,7 @@ const HeroSection = () => {
 
           {/* Subheading */}
           <motion.p
-            className="text-xs xs:text-sm sm:text-base md:text-lg text-slate-600 mb-5 sm:mb-6 md:mb-8 max-w-2xl mx-auto lg:mx-0 px-2 sm:px-0 leading-relaxed"
+            className="text-xs xs:text-xs sm:text-sm md:text-base text-slate-600 mb-4 sm:mb-5 md:mb-8 max-w-2xl mx-auto lg:mx-0 px-2 sm:px-0 leading-relaxed"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
@@ -71,7 +62,7 @@ const HeroSection = () => {
             >
               <Button
                 type="primary"
-                className="w-full !text-white !rounded-full !px-4 sm:!px-6 md:!px-6 !h-10 sm:!h-11 md:!h-11 !text-xs sm:!text-sm md:!text-base shadow-lg transition-all duration-200"
+                className="w-full !text-white !rounded-full !px-4 sm:!px-6 md:!px-6 !h-9 sm:!h-10 md:!h-11 !text-xs sm:!text-sm md:!text-base shadow-lg transition-all duration-200"
                 style={{
                   backgroundColor: '#7E5CFE',
                   borderColor: '#7E5CFE',
@@ -103,7 +94,7 @@ const HeroSection = () => {
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
               <Button
-                className="w-full !bg-transparent !border-violet-600 !text-violet-600 hover:!bg-violet-100 !rounded-full !px-4 sm:!px-6 md:!px-6 !h-10 sm:!h-11 md:!h-11 !text-xs sm:!text-sm md:!text-base shadow-sm hover:shadow-md transition-all duration-200"
+                className="w-full !bg-transparent !border-violet-600 !text-violet-600 hover:!bg-violet-100 !rounded-full !px-4 sm:!px-6 md:!px-6 !h-9 sm:!h-10 md:!h-11 !text-xs sm:!text-sm md:!text-base shadow-sm hover:shadow-md transition-all duration-200"
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-2px)';
                 }}
@@ -118,11 +109,27 @@ const HeroSection = () => {
           </motion.div>
         </div>
 
-        {/* Right Column: Image */}
+        {/* Mobile/Tablet: iPad mockup (shown below text on small screens) */}
+        <div className="flex lg:hidden justify-center w-full mt-2">
+          <motion.div
+            className="relative w-full max-w-sm sm:max-w-md"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut", delay: 0.4 }}
+          >
+            <motion.img
+              src={IpadMockup}
+              alt="AutoGlassPro Dashboard on iPad"
+              className="w-full h-auto object-contain drop-shadow-2xl relative z-10"
+            />
+          </motion.div>
+        </div>
+
+        {/* Desktop: Browser mockup (unchanged, slightly larger) */}
         <div className="hidden lg:flex relative lg:col-span-7 justify-center lg:justify-end">
           {/* Gradient Background - Animated separately */}
           <motion.div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-[100px] pointer-events-none"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full blur-[100px] pointer-events-none"
             style={{
               background: 'linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)',
               willChange: 'transform, opacity'
@@ -134,7 +141,7 @@ const HeroSection = () => {
 
           {/* Image with slide animation */}
           <motion.div
-            className="relative w-full max-w-5xl"
+            className="relative w-full max-w-6xl"
             initial={{ opacity: 0, x: 100 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}

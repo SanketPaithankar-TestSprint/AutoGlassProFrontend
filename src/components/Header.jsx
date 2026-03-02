@@ -209,7 +209,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
 
         {/* Mobile menu button */}
         {isMobile && (
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px', marginRight: '1rem' }}>
             <Button
               type="text"
               aria-label="Open navigation"
@@ -217,6 +217,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
               onClick={() => setDrawerOpen(true)}
               className="!flex lg:!hidden !items-center !justify-center !h-9 !w-9 !rounded-full !text-slate-700 !bg-white hover:!bg-slate-100 !border border-slate-200 shadow-sm focus:!outline-none focus:!ring-0 focus:!shadow-none"
             />
+            <LanguageToggle compact />
           </div>
         )}
       </AntHeader>
@@ -251,10 +252,6 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
           className="ap-header-drawer"
         >
           <nav className="p-4 text-slate-700">
-            {/* Language Toggle in mobile drawer */}
-            <div className="flex items-center justify-center py-3 mb-2 border-b border-slate-200">
-              <LanguageToggle />
-            </div>
 
             <ul className="space-y-2 pl-0 m-0 list-none">
               {menuItems.filter(item => item.key !== 'home').map((item) => (
@@ -305,8 +302,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
             {!isAuthed && (
               <div className="px-4 pt-4 border-t border-slate-200 mt-4">
                 <Button
-                  type="text"
-                  className="w-full !h-10 !text-slate-700 !bg-transparent hover:!bg-violet-100 !border-0 text-base"
+                  className="w-full !h-10 !text-violet-600 !bg-white hover:!bg-violet-50 !border !border-violet-400 !rounded-lg text-base font-semibold"
                   onClick={() => {
                     setDrawerOpen(false);
                     navigate('/auth', { state: { mode: 'signin' } });
@@ -320,7 +316,8 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
                     setDrawerOpen(false);
                     navigate('/auth', { state: { mode: 'signup' } });
                   }}
-                  className="w-full !h-10 !mt-2 !rounded-lg !bg-[#7E5CFE] hover:!bg-[#6a4deb] !border-0 !text-white text-base shadow-lg shadow-[#7E5CFE]/40"
+                  className="w-full !h-10 !mt-2 !rounded-lg !bg-[#7E5CFE] hover:!bg-[#6a4deb] !border-0 !text-white text-base font-semibold shadow-lg"
+                  style={{ boxShadow: '0 4px 14px 0 rgba(126,92,254,0.4)' }}
                 >
                   {t('auth.signUp')}
                 </Button>
@@ -347,10 +344,6 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
           className="ap-header-drawer"
         >
           <nav className="p-4 text-slate-700">
-            {/* Language Toggle in mobile drawer */}
-            <div className="flex items-center justify-center py-3 mb-2 border-b border-slate-200">
-              <LanguageToggle />
-            </div>
 
             <ul className="space-y-2 pl-0 m-0 list-none">
               {menuItems.filter(item => item.key !== 'home').map((item) => (
@@ -370,8 +363,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
 
             <div className="px-4 pt-4 border-t border-slate-200 mt-4">
               <Button
-                type="text"
-                className="w-full !h-10 !text-slate-700 !bg-transparent hover:!bg-violet-100 !border-0 text-base"
+                className="w-full !h-10 !text-violet-600 !bg-white hover:!bg-violet-50 !border !border-violet-400 !rounded-lg text-base font-semibold"
                 onClick={() => {
                   setDrawerOpen(false);
                   navigate('/auth', { state: { mode: 'signin' } });
@@ -385,7 +377,8 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
                   setDrawerOpen(false);
                   navigate('/auth', { state: { mode: 'signup' } });
                 }}
-                className="w-full !h-10 !mt-2 !rounded-lg !bg-[#7E5CFE] hover:!bg-[#6a4deb] !border-0 !text-white text-base shadow-lg shadow-[#7E5CFE]/40"
+                className="w-full !h-10 !mt-2 !rounded-lg !bg-[#7E5CFE] hover:!bg-[#6a4deb] !border-0 !text-white text-base font-semibold shadow-lg"
+                style={{ boxShadow: '0 4px 14px 0 rgba(126,92,254,0.4)' }}
               >
                 {t('auth.signUp')}
               </Button>

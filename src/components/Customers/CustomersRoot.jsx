@@ -479,19 +479,23 @@ const CustomersRoot = () => {
                         </div>
                         <div>
                             {activeTab === 'individuals' ? (
-                                <button
+                                <Button
+                                    type="primary"
+                                    icon={<PlusOutlined />}
                                     onClick={handleAddCustomer}
-                                    className="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm"
+                                    className="bg-gradient-to-r from-violet-600 to-indigo-600 border-0 hover:from-violet-500 hover:to-indigo-500 shadow-md"
                                 >
-                                    <PlusOutlined /> {t('customers.addCustomer')}
-                                </button>
+                                    {t('customers.addCustomer')}
+                                </Button>
                             ) : (
-                                <button
+                                <Button
+                                    type="primary"
+                                    icon={<PlusOutlined />}
                                     onClick={handleAddOrg}
-                                    className="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm"
+                                    className="bg-gradient-to-r from-violet-600 to-indigo-600 border-0 hover:from-violet-500 hover:to-indigo-500 shadow-md"
                                 >
-                                    <PlusOutlined /> {t('customers.addOrganization')}
-                                </button>
+                                    {t('customers.addOrganization')}
+                                </Button>
                             )}
                         </div>
                     </div>

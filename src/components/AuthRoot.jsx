@@ -63,7 +63,16 @@ export default function AuthRoot() {
     const isSignUpMode = authMode === 'SIGNUP';
 
     return (
-        <div className="w-full bg-white flex items-start justify-center p-4 pt-24 md:pt-32 pb-24 relative overflow-hidden">
+        <div className="w-full min-h-screen flex items-start justify-center p-4 pt-24 md:pt-32 pb-24 relative overflow-hidden"
+            style={{ background: 'linear-gradient(135deg, #f5f3ff 0%, #fdf4ff 50%, #eff6ff 100%)' }}
+        >
+            {/* Decorative gradient orbs */}
+            <div className="absolute top-[-80px] left-[-80px] w-[350px] h-[350px] rounded-full opacity-30 pointer-events-none blur-[80px]"
+                style={{ background: 'radial-gradient(circle, #7c3aed, transparent)' }} />
+            <div className="absolute bottom-[-60px] right-[-60px] w-[300px] h-[300px] rounded-full opacity-25 pointer-events-none blur-[80px]"
+                style={{ background: 'radial-gradient(circle, #c026d3, transparent)' }} />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full opacity-10 pointer-events-none blur-[120px]"
+                style={{ background: 'radial-gradient(circle, #7E5CFE, transparent)' }} />
             <PageHead
                 title="Login / Sign Up | APAI"
                 description="Sign in to your APAI dashboard or create a new account to scale your auto glass shop."
