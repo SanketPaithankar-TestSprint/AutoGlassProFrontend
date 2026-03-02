@@ -298,12 +298,23 @@ input[type=number] {
 
 .ant-menu-dark .ant-menu-item {
   margin-right: 0 !important;
-  width: calc(100% - 12px) !important;
+  width: calc(100% - 20px) !important;
   margin-left: 12px !important;
   border-radius: 20px 0 0 20px !important;
-  margin-top: 8px !important;
-  margin-bottom: 8px !important;
+  margin-top: 0px !important;
+  margin-bottom: 0px !important;
   position: relative;
+  padding-inline: 20px !important;
+}
+
+/* Element above the selected tab gets a rounded bottom-right */
+.ant-menu-dark .ant-menu-item:has(+ .ant-menu-item-selected) {
+  border-bottom-right-radius: 20px !important;
+}
+
+/* Element below the selected tab gets a rounded top-right */
+.ant-menu-dark .ant-menu-item-selected+.ant-menu-item {
+  border-top-right-radius: 20px !important;
 }
 
 .ant-menu-dark .ant-menu-item-selected {

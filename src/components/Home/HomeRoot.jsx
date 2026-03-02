@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import { Button } from "antd";
 import VideoModal from "../VideoModal/VideoModal";
 import BrowserMockup from "../../assets/browser_mockup.png";
+import IpadMockup from "../../assets/ipad_landing_page_mockup.png";
 import gsap from "gsap";
 import { SplitText } from "gsap/SplitText";
 import { useGSAP } from "@gsap/react";
@@ -84,7 +85,7 @@ const Home = () => {
                     className="relative bg-transparent text-slate-900 py-0 flex justify-center items-center"
                     style={{ minHeight: 'calc(var(--vh, 1vh) * 100)' }}
                 >
-                    <div className="relative max-w-7xl mx-auto py-8 md:py-24 lg:py-32 px-3 sm:px-4 md:px-6 grid lg:grid-cols-12 gap-6 md:gap-12 items-center pt-16 md:pt-20 lg:pt-32 w-full">
+                    <div className="relative max-w-9xl mx-auto py-8 md:py-24 lg:py-32 px-3 sm:px-4 md:px-6 grid lg:grid-cols-12 gap-6 md:gap-12 items-center pt-16 md:pt-20 lg:pt-32 w-full">
 
                         {/* Left Column */}
                         <div className="text-center lg:text-left lg:col-span-5 w-full">
@@ -92,7 +93,7 @@ const Home = () => {
                             {/* Heading */}
                             <h1
                                 ref={heroTitleRef}
-                                className="font-extrabold mb-3 sm:mb-4 md:mb-6 leading-tight px-2 sm:px-0 text-2xl sm:text-3xl md:text-4xl lg:text-3xl xl:text-4xl 2xl:text-5xl"
+                                className="font-extrabold mb-2 sm:mb-4 md:mb-6 leading-tight px-2 sm:px-0 text-lg sm:text-2xl md:text-3xl lg:text-3xl xl:text-4xl 2xl:text-5xl"
                                 style={{ color: '#7E5CFE' }}
                             >
                                 The Smartest Way to Run Your Auto Glass Business.
@@ -101,7 +102,7 @@ const Home = () => {
                             {/* Description */}
                             <p
                                 ref={heroDescRef}
-                                className="text-sm sm:text-base md:text-lg text-slate-600 mb-5 sm:mb-6 md:mb-8 max-w-2xl mx-auto lg:mx-0 px-2 sm:px-0 leading-relaxed"
+                                className="text-xs sm:text-base md:text-base text-slate-600 mb-4 sm:mb-6 md:mb-8 max-w-2xl mx-auto lg:mx-0 px-2 sm:px-0 leading-relaxed"
                                 style={{ opacity: 1 }} // GSAP controls opacity on chars
                             >
                                 Generate Instant, 100% Accurate Quotes through NAGS data, Streamline Field Service, and Manage Every Invoice—All in One Platform.
@@ -158,17 +159,29 @@ const Home = () => {
                             </motion.div>
                         </div>
 
-                        {/* Right Column: Image */}
+                        {/* Mobile/Tablet: iPad mockup */}
+                        <div className="flex lg:hidden justify-center w-full col-span-full mt-4 sm:mt-8 px-4 sm:px-8">
+                            <motion.img
+                                src={IpadMockup}
+                                alt="AutoGlassPro Dashboard on iPad"
+                                className="w-full max-w-xs sm:max-w-md object-contain drop-shadow-2xl rounded-2xl"
+                                initial={{ opacity: 0, y: 40 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.8, ease: "easeOut", delay: 0.5 }}
+                            />
+                        </div>
+
+                        {/* Right Column: Browser Mockup (desktop only) */}
                         <div className="hidden lg:flex relative lg:col-span-6 justify-center lg:justify-end">
                             <motion.div
-                                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-[100px] pointer-events-none"
+                                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full blur-[100px] pointer-events-none"
                                 style={{ background: 'linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)', willChange: 'transform, opacity' }}
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 0.4 }}
                                 transition={{ duration: 1.2, ease: "easeOut" }}
                             />
                             <motion.div
-                                className="relative w-full max-w-5xl"
+                                className="relative w-full max-w-7xl"
                                 initial={{ opacity: 0, x: 100 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}

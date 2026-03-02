@@ -53,7 +53,7 @@ const CustomerHeaderBar = ({
                         icon={<FilterOutlined />}
                         onClick={onOpenFilters}
                     >
-                        {sidebarOpen ? t('common.filter') : t('common.filter')}
+                        {sidebarOpen ? 'Hide Filters' : 'Show Filters'}
                     </Button>
                 </div>
 
