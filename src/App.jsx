@@ -85,18 +85,23 @@ function AppContent() {
   const isMobile = useIsMobile();
   const { isAuthenticated, setIsAuthenticated } = useAuth();
 
+  const isContactPage = /^\/contact\/[^/]+$/.test(location.pathname);
+  const isChatPage = /^\/contact\/[^/]+\/chat$/.test(location.pathname);
+  const isServiceView = location.pathname.startsWith('/service-inquiry-view/');
+  const isSetPasswordPage = location.pathname.startsWith('/set-password');
+  const isStandalonePage = isContactPage || isChatPage || isServiceView || isSetPasswordPage;
+
   // Prefetch data when authenticated
-  useProfileDataPrefetch(isAuthed);
+  useProfileDataPrefetch(isAuthed && !isStandalonePage);
 
   // Listen for inquiry notifications
-  useInquiryNotifications();
+  useInquiryNotifications(isAuthed && !isStandalonePage);
 
   // Show schedule notifications on login (yellow = today, green = tomorrow)
-  useScheduleNotifications(isAuthed);
+  useScheduleNotifications(isAuthed && !isStandalonePage);
 
   // Subscription Restriction Check
-  const { showModal } = useSubscriptionRestriction(isAuthed);
-
+  const { showModal } = useSubscriptionRestriction(isAuthed && !isStandalonePage);
 
   useEffect(() => {
     const token = getValidToken();
@@ -136,12 +141,7 @@ function AppContent() {
   // Only treat /contact/:slug as the standalone public shop contact form.
   // The plain /contact page is a normal marketing page — do NOT intercept it here.
   // Tightened regex: only single-segment slugs (not /contact/:slug/chat)
-  const isContactPage = /^\/contact\/[^/]+$/.test(location.pathname);
-  const isChatPage = /^\/contact\/[^/]+\/chat$/.test(location.pathname);
-  const isServiceView = location.pathname.startsWith('/service-inquiry-view/');
-  const isSetPasswordPage = location.pathname.startsWith('/set-password');
-
-  if (isContactPage || isChatPage || isServiceView || isSetPasswordPage) {
+  if (isStandalonePage) {
     return (
       <ErrorBoundary>
         <Suspense fallback={
