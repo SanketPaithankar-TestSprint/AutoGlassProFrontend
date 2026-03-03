@@ -372,15 +372,96 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
                     overflow: hidden !important;
                 }
                 .ant-layout-sider-trigger {
-                    background: #0f172a !important; /* matches the base siding background */
-                    color: #cbd5e1 !important; /* slate-300 */
+                    background: #0f172a !important;
+                    color: #cbd5e1 !important;
                     border-top: 1px solid rgba(255,255,255,0.05) !important;
                     border-bottom-right-radius: 32px !important;
                     transition: all 0.2s;
                 }
                 .ant-layout-sider-trigger:hover {
                     color: #fff !important;
-                    background: #1e293b !important; /* slate-800 */
+                    background: #1e293b !important;
+                }
+
+                /* ========================================= */
+                /* CURVED ACTIVE TAB EFFECT            */
+                /* ========================================= */
+
+                /* 0. Remove Ant Design native borders that cause vertical ghost lines */
+                .ant-layout-sider,
+                .ant-menu,
+                .ant-menu-dark,
+                .ant-menu-item {
+                    border-right: none !important;
+                    border-inline-end: none !important;
+                }
+
+                /* 1. Base styling for the active tab */
+                .ant-menu-dark .ant-menu-item-selected {
+                    /* Use your existing dynamic background variable */
+                    background-color: var(--active-bg, #f0f2f5) !important;
+                    
+                    /* Round the left side, keep right side flat */
+                    border-radius: 30px 0 0 30px !important; 
+                    
+                    /* Overlap the edge slightly to perfectly hide any vertical subpixel gaps */
+                    margin-right: -1px !important; 
+                    margin-left: 12px !important;
+                    width: calc(100% - 11px) !important;
+                    position: relative;
+                    
+                    /* Remove any native shadows or borders */
+                    border: none !important;
+
+                    /* CRITICAL: Allow the ::before and ::after to be seen outside the bounds */
+                    overflow: visible !important;
+                    z-index: 2 !important; 
+                }
+
+                /* 2. Invert text/icon colors for contrast on light background */
+                .ant-menu-dark .ant-menu-item-selected .ant-menu-title-content,
+                .ant-menu-dark .ant-menu-item-selected .ant-menu-title-content a,
+                .ant-menu-dark .ant-menu-item-selected .anticon {
+                    color: #1e293b !important; /* Dark color for readability */
+                    font-weight: 500;
+                    position: relative;
+                    z-index: 10 !important; /* Force icons above everything */
+                }
+
+                /* 3. Setup invisible bounding boxes for the curves */
+                .ant-menu-dark .ant-menu-item-selected::before,
+                .ant-menu-dark .ant-menu-item-selected::after {
+                    content: '';
+                    position: absolute;
+                    right: 0;
+                    width: 30px;
+                    height: 30px; /* STRICTLY 30px so it doesn't overlap the icon */
+                    background-color: transparent;
+                    pointer-events: none; /* Prevents blocking clicks */
+                    z-index: 1;
+                }
+
+                /* 4. Top Inverted Curve */
+                .ant-menu-dark .ant-menu-item-selected::before {
+                    top: -30px;
+                    /* Draws a transparent circle from top-left, filling the rest with active-bg */
+                    background-image: radial-gradient(circle at 0 0, transparent 30px, var(--active-bg, #f0f2f5) 30.5px);
+                }
+
+                /* 5. Bottom Inverted Curve */
+                .ant-menu-dark .ant-menu-item-selected::after {
+                    bottom: -30px;
+                    /* Draws a transparent circle from bottom-left, filling the rest with active-bg */
+                    background-image: radial-gradient(circle at 0 100%, transparent 30px, var(--active-bg, #f0f2f5) 30.5px);
+                }
+
+                /* 6. Hover state for unselected menu items (bonus) */
+                .ant-menu-dark .ant-menu-item:not(.ant-menu-item-selected):hover {
+                    border-radius: 30px 0 0 30px !important;
+                    margin-right: 0 !important;
+                    margin-left: 12px !important;
+                    width: calc(100% - 12px) !important;
+                    background-color: rgba(255, 255, 255, 0.08) !important;
                 }
             `}</style>
         </Sider>
