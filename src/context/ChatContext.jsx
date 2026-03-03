@@ -267,6 +267,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
             let newUnread = existing.unreadCount;
             const isFromCustomer = senderType !== 'SHOP';
             const isCurrentlyOpen = activeConversationIdRef.current === conversationId;
+
             if (isFromCustomer && !isCurrentlyOpen && !isPublic) {
                 newUnread += 1;
             }
@@ -296,62 +297,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
 
     // ─── Actions ─────────────────────────────────────────────────────────────
 
-    /**
-     * SHOP: Disconnect current socket → open new socket with conversationId → getHistory.
-     * This enforces "one socket per conversation" for the shop.
-     */
-    const switchConversation = useCallback((id) => {
-        if (!id) return;
-
-        // Disconnect previous socket
-        if (socketRef.current) {
-            socketRef.current.disconnect();
-        }
-
-        const token = getValidToken();
-        let userId = sessionStorage.getItem('userId');
-        if (!userId) {
-            try {
-                const stored = localStorage.getItem("ApiToken") || sessionStorage.getItem("ApiToken");
-                if (stored) {
-                    const parsed = JSON.parse(stored);
-                    userId = parsed?.data?.userId || parsed?.data?.id;
-                }
-            } catch (e) {
-                console.error("[ChatContext] Failed to parse user ID", e);
-            }
-        }
-
-        if (!token || !userId) {
-            console.warn("[ChatContext] Cannot switch conversation: missing token or userId");
-            return;
-        }
-
-        const newSocket = new ChatSocket({
-            url: WS_URL,
-            token: token,
-            userId: userId,
-            role: 'SHOP',
-            conversationId: id,
-        });
-
-        newSocket.connect();
-        attachListeners(newSocket, { requestHistory: true, conversationId: id });
-
-        setSocket(newSocket);
-        socketRef.current = newSocket;
-        setActiveConversationId(id);
-        setConnectionStatus('connecting');
-
-        // Mark as read
-        setConversations(prev => {
-            if (!prev[id]) return prev;
-            return {
-                ...prev,
-                [id]: { ...prev[id], unreadCount: 0 },
-            };
-        });
-    }, [attachListeners]);
+    // switchConversation removed: Shop now uses a single socket and just calls loadHistory(id) 
 
     const sendMessage = (conversationId, messageText) => {
         const currentSocket = socketRef.current;
@@ -454,7 +400,6 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
             markAsRead,
             deleteConversation,
             setActiveConversationId,
-            switchConversation,
         }}>
             {children}
         </ChatContext.Provider>
