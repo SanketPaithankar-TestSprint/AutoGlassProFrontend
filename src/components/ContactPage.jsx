@@ -85,8 +85,8 @@ ${userMessage || 'No message provided'}
                 {/* Main Content Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full max-w-6xl">
 
-                    {/* Left Column: Images Only (Hidden on Mobile) */}
-                    <div className="relative h-full hidden lg:flex flex-col items-center justify-center gap-12">
+                    {/* Left Column: Images Only */}
+                    <div className="relative h-full flex flex-col items-center justify-center gap-12">
                         <img
                             src={contactImage2}
                             alt="Contact Support Primary"

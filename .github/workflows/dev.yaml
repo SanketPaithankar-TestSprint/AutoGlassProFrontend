@@ -154,7 +154,7 @@ jobs:
           -d parse_mode=Markdown \
           -d text="✅ *Deployment Successful*
           
-          🌍 Environment: DEV"
+          🌍 Environment: DEV- https://d3f9p46i81h600.cloudfront.net"
 
           curl -s -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
           -H "Content-Type: application/json" \
