@@ -396,6 +396,12 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
                     border-inline-end: none !important;
                 }
 
+                /* Add margin/padding between tab menu items */
+                .ant-menu-item {
+                    margin-top: 8px !important;
+                    margin-bottom: 8px !important;
+                }
+
                 /* 1. Base styling for the active tab */
                 .ant-menu-dark .ant-menu-item-selected {
                     /* Use your existing dynamic background variable */

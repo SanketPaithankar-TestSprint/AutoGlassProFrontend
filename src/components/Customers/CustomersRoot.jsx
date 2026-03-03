@@ -418,8 +418,8 @@ const CustomersRoot = () => {
                             <div key={c.customerId || Math.random()} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                                 <div className="flex justify-between items-start">
                                     <div className="flex-1 min-w-0">
-                                        <div className="text-xs text-gray-500 font-mono mb-1">ID: {c.customerId || "-"}</div>
                                         <div className="font-semibold text-gray-900 text-base truncate">{c.firstName} {c.lastName}</div>
+                                        <div className="text-xs text-gray-500 mt-1">{c.email || "No Email"} | {c.phone || "No Phone"}</div>
                                     </div>
                                     <div className="flex gap-2 ml-2">
                                         <Button type="text" size="small" className="text-blue-600 bg-blue-50 hover:bg-blue-100" icon={<EyeOutlined />} onClick={() => handleViewCustomerDetails(c)} />
@@ -444,16 +444,18 @@ const CustomersRoot = () => {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-gray-50/80 border-b border-gray-100">
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider pl-6">ID</th>
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">{t('customers.name')}</th>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider pl-6">{t('customers.name')}</th>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">{t('customers.email')}</th>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">{t('customers.phone')}</th>
                                     <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right pr-6">{t('common.actions')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
                                 {filteredCustomers.map((c) => (
                                     <tr key={c.customerId || Math.random()} className="hover:bg-violet-50/50 transition-colors group">
-                                        <td className="p-4 pl-6 text-sm text-gray-600 font-mono">{c.customerId || "-"}</td>
-                                        <td className="p-4 text-sm font-semibold text-gray-900">{c.firstName} {c.lastName}</td>
+                                        <td className="p-4 pl-6 text-sm font-semibold text-gray-900">{c.firstName} {c.lastName}</td>
+                                        <td className="p-4 text-sm text-gray-600">{c.email || "-"}</td>
+                                        <td className="p-4 text-sm text-gray-600 font-mono">{c.phone || "-"}</td>
                                         <td className="p-4 text-right pr-6">
                                             <div className="flex items-center justify-end gap-2">
                                                 <Button type="text" size="small" className="text-blue-600 hover:bg-blue-50" icon={<EyeOutlined />} onClick={() => handleViewCustomerDetails(c)} />
@@ -482,7 +484,6 @@ const CustomersRoot = () => {
                             <div key={org.organizationId} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                                 <div className="flex justify-between items-start">
                                     <div className="flex-1 min-w-0">
-                                        <div className="text-xs text-gray-500 font-mono mb-1">ID: {org.organizationId || "-"}</div>
                                         <div className="font-semibold text-gray-900 text-base truncate">
                                             {org.companyName}
                                             {org.taxExempt && <Tag color="green" className="ml-2 text-[10px]">{t('customers.taxExempt')}</Tag>}
@@ -510,16 +511,14 @@ const CustomersRoot = () => {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-gray-50/80 border-b border-gray-100">
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider pl-6">ID</th>
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">{t('customers.companyName')}</th>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider pl-6">{t('customers.companyName')}</th>
                                     <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right pr-6">{t('common.actions')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
                                 {filteredOrgs.map((org) => (
                                     <tr key={org.organizationId} className="hover:bg-violet-50/50 transition-colors group">
-                                        <td className="p-4 pl-6 text-sm text-gray-600 font-mono">{org.organizationId || "-"}</td>
-                                        <td className="p-4 text-sm font-semibold text-gray-900">
+                                        <td className="p-4 pl-6 text-sm font-semibold text-gray-900">
                                             {org.companyName}
                                             {org.taxExempt && <Tag color="green" className="ml-2">{t('customers.taxExempt')}</Tag>}
                                         </td>
@@ -752,9 +751,6 @@ const CustomersRoot = () => {
                         <div className="mt-4 space-y-5">
                             {/* Company Info */}
                             <Descriptions column={2} bordered size="small">
-                                <Descriptions.Item label="Organization ID" span={2}>
-                                    <span className="font-mono text-gray-600">{orgDetailData.organizationId || "-"}</span>
-                                </Descriptions.Item>
                                 <Descriptions.Item label="Company Name" span={2}>
                                     <span className="font-semibold">{orgDetailData.companyName || "-"}</span>
                                     {orgDetailData.taxExempt && <Tag color="green" className="ml-2">Tax Exempt</Tag>}
@@ -835,9 +831,6 @@ const CustomersRoot = () => {
                     {customerDetailData ? (
                         <div className="mt-4 space-y-5">
                             <Descriptions column={2} bordered size="small">
-                                <Descriptions.Item label="Customer ID" span={2}>
-                                    <span className="font-mono text-gray-600">{customerDetailData.customerId || "-"}</span>
-                                </Descriptions.Item>
                                 <Descriptions.Item label="Name" span={2}>
                                     <span className="font-semibold">{customerDetailData.firstName} {customerDetailData.lastName}</span>
                                 </Descriptions.Item>

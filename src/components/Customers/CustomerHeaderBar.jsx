@@ -14,11 +14,11 @@ const CustomerHeaderBar = ({
     const { t } = useTranslation();
 
     return (
-        <div className="bg-slate-100 border-b border-slate-200 px-6 py-6">
+        <div className="bg-white border-b border-slate-200 px-6 py-6">
             {/* Title Section */}
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
                 <div className="flex items-center gap-2">
-                    <h1 className="!text-[30px] font-extrabold text-slate-800 m-0">
+                    <h1 className="!text-[30px] font-bold text-slate-900 m-0">
                         {t('nav.customers')}
                     </h1>
                     <Tooltip title="Manage individual contacts and organizations" placement="right">

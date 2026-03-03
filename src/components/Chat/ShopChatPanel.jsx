@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useChat } from '../../context/ChatContext';
 import { Input, Button, List, Avatar, Badge, Empty, Spin } from 'antd';
-import { SendOutlined, UserOutlined, DeleteOutlined } from '@ant-design/icons';
+import { SendOutlined, UserOutlined, DeleteOutlined, MessageOutlined, CloseOutlined } from '@ant-design/icons';
 import moment from 'moment';
 
 // Deterministic blue/violet shade from conversation id
@@ -150,16 +150,26 @@ const ShopChatPanel = () => {
                                         </p>
                                     </div>
                                 </div>
-                                <Button
-                                    type="text"
-                                    danger
-                                    icon={<DeleteOutlined />}
-                                    onClick={() => {
-                                        if (window.confirm('Are you sure you want to delete this conversation?')) {
-                                            deleteConversation(activeConversationId);
-                                        }
-                                    }}
-                                />
+                                <div className="flex items-center gap-1">
+                                    <Button
+                                        type="text"
+                                        danger
+                                        icon={<DeleteOutlined />}
+                                        onClick={() => {
+                                            if (window.confirm('Are you sure you want to delete this conversation?')) {
+                                                deleteConversation(activeConversationId);
+                                            }
+                                        }}
+                                        title="Delete Conversation"
+                                    />
+                                    <Button
+                                        type="text"
+                                        icon={<CloseOutlined className="text-slate-400" />}
+                                        onClick={() => setActiveConversationId(null)}
+                                        className="hover:bg-slate-100"
+                                        title="Close Chat"
+                                    />
+                                </div>
                             </div>
 
                             {/* Messages */}
@@ -218,9 +228,12 @@ const ShopChatPanel = () => {
                             </div>
                         </>
                     ) : (
-                        <div className="h-full flex flex-col items-center justify-center text-slate-300">
-                            <UserOutlined className="text-6xl mb-4 opacity-50" />
-                            <p className="text-lg">Select a conversation to start chatting</p>
+                        <div className="h-full flex flex-col items-center justify-center text-slate-500 bg-white">
+                            <div className="w-24 h-24 bg-violet-50 rounded-full flex items-center justify-center mb-6">
+                                <MessageOutlined className="text-4xl text-violet-600" />
+                            </div>
+                            <h2 className="text-xl font-semibold text-slate-700 mb-2">Select a conversation to start chatting</h2>
+                            <p className="text-sm text-slate-500">Choose a customer from the list to view and send messages</p>
                         </div>
                     )}
                 </div>
