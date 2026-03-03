@@ -30,7 +30,8 @@ const ShopChatPanel = () => {
         connectionStatus,
         markAsRead,
         deleteConversation,
-        switchConversation,
+        loadHistory,
+        setActiveConversationId
     } = useChat();
 
     const [inputText, setInputText] = useState('');
@@ -61,7 +62,9 @@ const ShopChatPanel = () => {
     };
 
     const handleSelectConversation = (id) => {
-        switchConversation(id);
+        setActiveConversationId(id);
+        markAsRead(id);
+        loadHistory(id);
     };
 
     return (
