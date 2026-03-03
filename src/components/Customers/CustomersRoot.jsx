@@ -68,6 +68,10 @@ const CustomersRoot = () => {
     const [orgDetailData, setOrgDetailData] = useState(null);
     const [orgDetailLoading, setOrgDetailLoading] = useState(false);
 
+    // Customer detail view state
+    const [customerDetailVisible, setCustomerDetailVisible] = useState(false);
+    const [customerDetailData, setCustomerDetailData] = useState(null);
+
     // Resize Handler
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 1024);
@@ -176,6 +180,11 @@ const CustomersRoot = () => {
 
     // ------------------- HANDLERS ------------------- //
     // Customer
+    const handleViewCustomerDetails = (c) => {
+        setCustomerDetailVisible(true);
+        setCustomerDetailData(c);
+    };
+
     const handleAddCustomer = () => {
         setEditingItem(null);
         customerForm.resetFields();
@@ -407,19 +416,16 @@ const CustomersRoot = () => {
                     ) : (
                         filteredCustomers.map((c) => (
                             <div key={c.customerId || Math.random()} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                                <div className="flex justify-between items-start mb-3">
+                                <div className="flex justify-between items-start">
                                     <div className="flex-1 min-w-0">
+                                        <div className="text-xs text-gray-500 font-mono mb-1">ID: {c.customerId || "-"}</div>
                                         <div className="font-semibold text-gray-900 text-base truncate">{c.firstName} {c.lastName}</div>
-                                        <div className="text-sm text-gray-500 truncate">{c.email || "-"}</div>
                                     </div>
                                     <div className="flex gap-2 ml-2">
+                                        <Button type="text" size="small" className="text-blue-600 bg-blue-50 hover:bg-blue-100" icon={<EyeOutlined />} onClick={() => handleViewCustomerDetails(c)} />
                                         <Button type="text" size="small" className="text-violet-600 bg-violet-50 hover:bg-violet-100" icon={<EditOutlined />} onClick={() => handleEditCustomer(c)} />
                                         <Button type="text" size="small" danger className="bg-red-50 hover:bg-red-100" icon={<DeleteOutlined />} onClick={() => handleDeleteCustomer(c)} />
                                     </div>
-                                </div>
-                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                    <ShopOutlined className="text-gray-400" />
-                                    <span className="truncate">{c.phone || "-"}</span>
                                 </div>
                             </div>
                         ))
@@ -438,20 +444,19 @@ const CustomersRoot = () => {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-gray-50/80 border-b border-gray-100">
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider pl-6">{t('customers.name')}</th>
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">{t('customers.email')}</th>
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">{t('customers.phone')}</th>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider pl-6">ID</th>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">{t('customers.name')}</th>
                                     <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right pr-6">{t('common.actions')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
                                 {filteredCustomers.map((c) => (
                                     <tr key={c.customerId || Math.random()} className="hover:bg-violet-50/50 transition-colors group">
-                                        <td className="p-4 pl-6 text-sm font-semibold text-gray-900">{c.firstName} {c.lastName}</td>
-                                        <td className="p-4 text-sm text-gray-600">{c.email || "-"}</td>
-                                        <td className="p-4 text-sm text-gray-600">{c.phone || "-"}</td>
+                                        <td className="p-4 pl-6 text-sm text-gray-600 font-mono">{c.customerId || "-"}</td>
+                                        <td className="p-4 text-sm font-semibold text-gray-900">{c.firstName} {c.lastName}</td>
                                         <td className="p-4 text-right pr-6">
                                             <div className="flex items-center justify-end gap-2">
+                                                <Button type="text" size="small" className="text-blue-600 hover:bg-blue-50" icon={<EyeOutlined />} onClick={() => handleViewCustomerDetails(c)} />
                                                 <Button type="text" size="small" className="text-violet-600 hover:bg-violet-100" icon={<EditOutlined />} onClick={() => handleEditCustomer(c)} />
                                                 <Button type="text" size="small" danger className="hover:bg-red-50" icon={<DeleteOutlined />} onClick={() => handleDeleteCustomer(c)} />
                                             </div>
@@ -475,31 +480,19 @@ const CustomersRoot = () => {
                     ) : (
                         filteredOrgs.map((org) => (
                             <div key={org.organizationId} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                                <div className="flex justify-between items-start mb-3">
+                                <div className="flex justify-between items-start">
                                     <div className="flex-1 min-w-0">
+                                        <div className="text-xs text-gray-500 font-mono mb-1">ID: {org.organizationId || "-"}</div>
                                         <div className="font-semibold text-gray-900 text-base truncate">
                                             {org.companyName}
                                             {org.taxExempt && <Tag color="green" className="ml-2 text-[10px]">{t('customers.taxExempt')}</Tag>}
                                         </div>
-                                        <div className="text-sm text-gray-500 truncate">{org.email || "-"}</div>
                                     </div>
                                     <div className="flex gap-2 ml-2">
                                         <Button type="text" size="small" className="text-blue-600 bg-blue-50 hover:bg-blue-100" icon={<EyeOutlined />} onClick={() => handleViewOrgDetails(org)} />
                                         <Button type="text" size="small" className="text-violet-600 bg-violet-50 hover:bg-violet-100" icon={<EditOutlined />} onClick={() => handleEditOrg(org)} />
                                         <Button type="text" size="small" danger className="bg-red-50 hover:bg-red-100" icon={<DeleteOutlined />} onClick={() => handleDeleteOrg(org)} />
                                     </div>
-                                </div>
-                                <div className="space-y-1 text-sm text-gray-600">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-gray-400 text-xs flex-shrink-0">{t('customers.contactName')}:</span>
-                                        <span className="truncate">{org.contactName || "-"}</span>
-                                    </div>
-                                    {org.taxId && (
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-gray-400 text-xs flex-shrink-0">{t('customers.taxId')}:</span>
-                                            <span className="font-mono truncate">{org.taxId}</span>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
                         ))
@@ -517,31 +510,19 @@ const CustomersRoot = () => {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-gray-50/80 border-b border-gray-100">
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider pl-6">{t('customers.companyName')}</th>
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">{t('customers.email')}</th>
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">{t('customers.phone')}</th>
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">{t('customers.contactName')}</th>
-                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">{t('customers.taxId')}</th>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider pl-6">ID</th>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">{t('customers.companyName')}</th>
                                     <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right pr-6">{t('common.actions')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
                                 {filteredOrgs.map((org) => (
                                     <tr key={org.organizationId} className="hover:bg-violet-50/50 transition-colors group">
-                                        <td className="p-4 pl-6 text-sm font-semibold text-gray-900">
+                                        <td className="p-4 pl-6 text-sm text-gray-600 font-mono">{org.organizationId || "-"}</td>
+                                        <td className="p-4 text-sm font-semibold text-gray-900">
                                             {org.companyName}
                                             {org.taxExempt && <Tag color="green" className="ml-2">{t('customers.taxExempt')}</Tag>}
                                         </td>
-                                        <td className="p-4 text-sm text-gray-600">
-                                            {org.email || org.companyEmail || org.contactEmail || "-"}
-                                        </td>
-                                        <td className="p-4 text-sm text-gray-600">
-                                            {org.phone || org.companyPhone || org.contactPhone || org.phoneNumber || "-"}
-                                        </td>
-                                        <td className="p-4 text-sm text-gray-600">
-                                            {org.contactName || "-"}
-                                        </td>
-                                        <td className="p-4 text-sm text-gray-600 font-mono">{org.taxId || "-"}</td>
                                         <td className="p-4 text-right pr-6">
                                             <div className="flex items-center justify-end gap-2">
                                                 <Button type="text" size="small" className="text-blue-600 hover:bg-blue-50" icon={<EyeOutlined />} onClick={() => handleViewOrgDetails(org)} />
@@ -771,6 +752,9 @@ const CustomersRoot = () => {
                         <div className="mt-4 space-y-5">
                             {/* Company Info */}
                             <Descriptions column={2} bordered size="small">
+                                <Descriptions.Item label="Organization ID" span={2}>
+                                    <span className="font-mono text-gray-600">{orgDetailData.organizationId || "-"}</span>
+                                </Descriptions.Item>
                                 <Descriptions.Item label="Company Name" span={2}>
                                     <span className="font-semibold">{orgDetailData.companyName || "-"}</span>
                                     {orgDetailData.taxExempt && <Tag color="green" className="ml-2">Tax Exempt</Tag>}
@@ -834,6 +818,43 @@ const CustomersRoot = () => {
                             <div className="flex justify-between text-xs text-gray-400 pt-2 border-t border-gray-100">
                                 <span>Created: {orgDetailData.createdAt ? new Date(orgDetailData.createdAt).toLocaleDateString() : "-"}</span>
                                 <span>Last Updated: {orgDetailData.updatedAt ? new Date(orgDetailData.updatedAt).toLocaleDateString() : "-"}</span>
+                            </div>
+                        </div>
+                    ) : null}
+                </Modal>
+
+                {/* Customer Detail View Modal */}
+                <Modal
+                    title={customerDetailData ? `${customerDetailData.firstName} ${customerDetailData.lastName}` : "Customer Details"}
+                    open={customerDetailVisible}
+                    onCancel={() => { setCustomerDetailVisible(false); setCustomerDetailData(null); }}
+                    footer={null}
+                    centered
+                    width={700}
+                >
+                    {customerDetailData ? (
+                        <div className="mt-4 space-y-5">
+                            <Descriptions column={2} bordered size="small">
+                                <Descriptions.Item label="Customer ID" span={2}>
+                                    <span className="font-mono text-gray-600">{customerDetailData.customerId || "-"}</span>
+                                </Descriptions.Item>
+                                <Descriptions.Item label="Name" span={2}>
+                                    <span className="font-semibold">{customerDetailData.firstName} {customerDetailData.lastName}</span>
+                                </Descriptions.Item>
+                                <Descriptions.Item label="Email">{customerDetailData.email || "-"}</Descriptions.Item>
+                                <Descriptions.Item label="Phone" span={2}>{customerDetailData.phone || "-"}</Descriptions.Item>
+                            </Descriptions>
+
+                            <Descriptions column={2} bordered size="small" title={<span className="text-xs font-bold text-gray-400 uppercase">Address</span>}>
+                                <Descriptions.Item label="Address Line 1" span={2}>{customerDetailData.addressLine1 || "-"}</Descriptions.Item>
+                                <Descriptions.Item label="City">{customerDetailData.city || "-"}</Descriptions.Item>
+                                <Descriptions.Item label="State">{customerDetailData.state || "-"}</Descriptions.Item>
+                                <Descriptions.Item label="Postal Code">{customerDetailData.postalCode || "-"}</Descriptions.Item>
+                                <Descriptions.Item label="Country">{customerDetailData.country || "-"}</Descriptions.Item>
+                            </Descriptions>
+
+                            <div className="flex justify-between text-xs text-gray-400 pt-2 border-t border-gray-100">
+                                <span>Created: {customerDetailData.createdAt ? new Date(customerDetailData.createdAt).toLocaleDateString() : "-"}</span>
                             </div>
                         </div>
                     ) : null}
