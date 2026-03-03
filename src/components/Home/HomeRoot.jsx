@@ -109,7 +109,7 @@ const Home = () => {
                             </p>
 
                             <motion.div
-                                className="flex flex-col sm:flex-row justify-center lg:justify-start gap-3 w-full px-4 sm:px-0"
+                                className="flex flex-col sm:flex-row justify-center lg:justify-start gap-3 w-full max-w-sm mx-auto lg:mx-0 px-4 sm:px-0"
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: 0.9 }}

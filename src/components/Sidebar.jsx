@@ -441,18 +441,25 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
                     z-index: 1;
                 }
 
-                /* 4. Top Inverted Curve */
+                /* 4. Top Inverted Curve via Box-Shadow (smooth anti-aliased perfectly) */
                 .ant-menu-dark .ant-menu-item-selected::before {
                     top: -30px;
-                    /* Draws a transparent circle from top-left, filling the rest with active-bg */
-                    background-image: radial-gradient(circle at 0 0, transparent 30px, var(--active-bg, #f0f2f5) 30.5px);
+                    border-radius: 0 0 30px 0;
+                    box-shadow: 15px 15px 0 15px var(--active-bg, #f0f2f5);
                 }
 
-                /* 5. Bottom Inverted Curve */
+                /* 5. Bottom Inverted Curve via Box-Shadow (smooth anti-aliased perfectly) */
                 .ant-menu-dark .ant-menu-item-selected::after {
                     bottom: -30px;
-                    /* Draws a transparent circle from bottom-left, filling the rest with active-bg */
-                    background-image: radial-gradient(circle at 0 100%, transparent 30px, var(--active-bg, #f0f2f5) 30.5px);
+                    border-radius: 0 30px 0 0;
+                    box-shadow: 15px -15px 0 15px var(--active-bg, #f0f2f5);
+                }
+
+                /* Increase Icon Size */
+                .ant-menu-dark .ant-menu-item .anticon, 
+                .ant-menu-dark .ant-menu-item svg {
+                    font-size: 1.25rem !important;
+                    transition: all 0.2s;
                 }
 
                 /* 6. Hover state for unselected menu items (bonus) */

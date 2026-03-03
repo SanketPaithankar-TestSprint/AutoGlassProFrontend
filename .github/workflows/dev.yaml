@@ -159,5 +159,5 @@ jobs:
           curl -s -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
           -H "Content-Type: application/json" \
           -d '{
-            "content": "✅ **Deployment Successful**\n\n🌍 Environment: DEV"
+            "content": "✅ **Deployment Successful**\n\n🌍 Environment: DEV - https://d3f9p46i81h600.cloudfront.net"
           }'
