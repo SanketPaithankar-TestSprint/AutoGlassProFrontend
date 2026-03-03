@@ -26,12 +26,11 @@ const ShopChatPanel = () => {
     const {
         conversations,
         activeConversationId,
-        setActiveConversationId,
         sendMessage,
         connectionStatus,
         markAsRead,
         deleteConversation,
-        loadHistory
+        switchConversation,
     } = useChat();
 
     const [inputText, setInputText] = useState('');
@@ -62,9 +61,7 @@ const ShopChatPanel = () => {
     };
 
     const handleSelectConversation = (id) => {
-        setActiveConversationId(id);
-        markAsRead(id);
-        loadHistory(id); // Fetch history when selecting a conversation
+        switchConversation(id);
     };
 
     return (
@@ -108,8 +105,8 @@ const ShopChatPanel = () => {
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center justify-between mb-0.5">
                                                         <span className={`text-sm truncate pr-2 ${item.unreadCount > 0
-                                                                ? 'font-bold text-slate-800'
-                                                                : 'font-medium text-slate-600'
+                                                            ? 'font-bold text-slate-800'
+                                                            : 'font-medium text-slate-600'
                                                             }`}>
                                                             {item.customerName || `Customer ${item.id.substring(0, 6)}...`}
                                                         </span>
