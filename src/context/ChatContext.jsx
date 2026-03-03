@@ -10,14 +10,15 @@ export const useChat = () => {
 
 export const ChatProvider = ({ children, isPublic = false, publicUserId = null }) => {
     const [socket, setSocket] = useState(null);
-    const [connectionStatus, setConnectionStatus] = useState('disconnected'); // disconnected, connected, reconnecting
-    const [conversations, setConversations] = useState({}); // Map: conversationId -> conversationObj
+    const socketRef = useRef(null);
+    const [connectionStatus, setConnectionStatus] = useState('disconnected');
+    const [conversations, setConversations] = useState({});
     const [activeConversationId, setActiveConversationId] = useState(null);
-    const activeConversationIdRef = useRef(null); // always current, avoids stale closures
+    const activeConversationIdRef = useRef(null);
     const [visitorId, setVisitorId] = useState(null);
     const [unreadTotal, setUnreadTotal] = useState(0);
 
-    // Keep ref in sync with state
+    // Keep refs in sync
     useEffect(() => {
         activeConversationIdRef.current = activeConversationId;
     }, [activeConversationId]);
@@ -25,7 +26,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
     // Configuration
     const WS_URL = "wss://y3rxp208gj.execute-api.us-east-1.amazonaws.com/prod/";
 
-    // Initialize Visitor ID for customers
+    // ─── Initialize Visitor ID for customers ─────────────────────────────────
     useEffect(() => {
         if (isPublic) {
             let vId = localStorage.getItem("visitorId");
@@ -37,81 +38,27 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
         }
     }, [isPublic]);
 
-    const connect = useCallback(() => {
-        let chatSocket;
-        // Cleanup previous socket if exists ???
-        // Usually handled by the effect return, but here we might be reconnecting.
-
-        if (isPublic) {
-            // --- CUSTOMER MODE ---
-            // publicUserId passed as prop is the Tenant/Shop ID we are visiting.
-            if (!publicUserId) return;
-
-            // Wait for visitorId initialization (state must be set)
-            if (!visitorId) return;
-            const vId = visitorId;
-
-            chatSocket = new ChatSocket({
-                url: WS_URL,
-                userId: publicUserId, // Tenant ID
-                role: 'CUSTOMER'
-            });
-        } else {
-            // --- SHOP MODE ---
-            const token = getValidToken();
-            if (!token) {
-                console.warn("[ChatContext] No token available for shop connection");
-                return;
-            }
-
-            // Extract User ID (Tenant ID) from storage
-            let userId = sessionStorage.getItem('userId');
-            if (!userId) {
-                // ... fallback logic ...
-                try {
-                    const stored = localStorage.getItem("ApiToken") || sessionStorage.getItem("ApiToken");
-                    if (stored) {
-                        const parsed = JSON.parse(stored);
-                        userId = parsed?.data?.userId || parsed?.data?.id;
-                    }
-                } catch (e) {
-                    console.error("Failed to parse user ID", e);
-                }
-            }
-
-            if (!userId) {
-                console.warn("[ChatContext] Could not determine userId (TenantId)");
-                return;
-            }
-
-            chatSocket = new ChatSocket({
-                url: WS_URL,
-                token: token,
-                userId: userId, // Tenant ID
-                role: 'SHOP'
-            });
-        }
-
-        chatSocket.connect();
-        setSocket(chatSocket);
-        setConnectionStatus('connecting');
-
-        // Event Listeners
+    // ─── Shared: wire up socket event listeners ──────────────────────────────
+    const attachListeners = useCallback((chatSocket, { requestConversations = false, requestHistory = false, conversationId = null }) => {
         chatSocket.on('open', () => {
             setConnectionStatus('connected');
-            // Immediate Actions on Connect
+
+            if (requestConversations) {
+                // Shop initial connect → fetch conversation list
+                chatSocket.send('getConversations', {});
+            }
+
+            if (requestHistory && conversationId) {
+                // Shop selected a conversation → load its history
+                chatSocket.send('getHistory', { conversationId });
+            }
+
             if (isPublic) {
-                // Customer: Get History using visitorId from state
+                // Customer: request history using visitorId
                 const vId = localStorage.getItem("visitorId");
-                console.log('[ChatContext] Connected as CUSTOMER, requesting history for visitorId:', vId);
                 if (vId) {
                     chatSocket.send('getHistory', { visitorId: vId });
-                } else {
-                    console.warn('[ChatContext] No visitorId found in localStorage, cannot request history');
                 }
-            } else {
-                // Shop: Get Conversations
-                chatSocket.send('getConversations', {});
             }
         });
 
@@ -124,14 +71,75 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
         });
 
         chatSocket.on('message', (data) => {
-            handleIncomingMessage(data, chatSocket); // Pass socket ref if needed, or use state
+            handleIncomingMessage(data);
         });
+    }, [isPublic]);
+
+    // ─── Initial Connection ──────────────────────────────────────────────────
+    const connect = useCallback(() => {
+        let chatSocket;
+
+        if (isPublic) {
+            // ── CUSTOMER MODE ──
+            if (!publicUserId || !visitorId) return;
+
+            const storedConversationId = localStorage.getItem("chat_conversationId");
+
+            chatSocket = new ChatSocket({
+                url: WS_URL,
+                userId: publicUserId,
+                role: 'CUSTOMER',
+                conversationId: storedConversationId || undefined,
+            });
+
+            chatSocket.connect();
+            attachListeners(chatSocket, {});
+
+        } else {
+            // ── SHOP MODE ── (initial connect, no conversationId)
+            const token = getValidToken();
+            if (!token) {
+                console.warn("[ChatContext] No token available for shop connection");
+                return;
+            }
+
+            let userId = sessionStorage.getItem('userId');
+            if (!userId) {
+                try {
+                    const stored = localStorage.getItem("ApiToken") || sessionStorage.getItem("ApiToken");
+                    if (stored) {
+                        const parsed = JSON.parse(stored);
+                        userId = parsed?.data?.userId || parsed?.data?.id;
+                    }
+                } catch (e) {
+                    console.error("[ChatContext] Failed to parse user ID", e);
+                }
+            }
+
+            if (!userId) {
+                console.warn("[ChatContext] Could not determine userId (TenantId)");
+                return;
+            }
+
+            chatSocket = new ChatSocket({
+                url: WS_URL,
+                token: token,
+                userId: userId,
+                role: 'SHOP',
+                // No conversationId → fetch conversation list
+            });
+
+            chatSocket.connect();
+            attachListeners(chatSocket, { requestConversations: true });
+        }
+
+        setSocket(chatSocket);
+        socketRef.current = chatSocket;
+        setConnectionStatus('connecting');
 
         return chatSocket;
+    }, [isPublic, publicUserId, visitorId, attachListeners]);
 
-    }, [isPublic, publicUserId, visitorId]);
-
-    // Initial Connection
     useEffect(() => {
         const socketInstance = connect();
 
@@ -142,82 +150,66 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
         };
     }, [connect]);
 
-
+    // ─── Message Router ──────────────────────────────────────────────────────
     const handleIncomingMessage = (data) => {
-        // Dispatch based on 'type'
-        // Contract Types: CONVERSATIONS_LIST, HISTORY, NEW_MESSAGE
-
         switch (data.type) {
             case "CONVERSATIONS_LIST":
                 handleConversationsList(data.data);
                 break;
             case "HISTORY":
-                // data = { type, conversationId, messages: [] }
-                // For customer, conversationId might be implied or sent. 
                 handleHistory(data);
                 break;
             case "NEW_MESSAGE":
                 handleNewMessage(data);
                 break;
             default:
-                // console.warn("Unknown message type:", data);
-                // Fallback for raw arrays or different structures if any
-                if (Array.isArray(data)) {
-                    // Assume history if array?
-                }
                 break;
         }
     };
 
-    // --- HANDLERS ---
+    // ─── Handlers ────────────────────────────────────────────────────────────
 
     const handleConversationsList = (list) => {
         if (!Array.isArray(list)) return;
 
-        const newMap = {};
-        list.forEach(c => {
-            newMap[c.conversationId] = {
-                id: c.conversationId,
-                customerName: c.visitorName || `Visitor ${c.visitorId?.slice(0, 4)}`, // fallback
-                visitorId: c.visitorId,
-                lastMessage: c.lastMessage,
-                updatedAt: c.updatedAt,
-                unreadCount: 0, // Backend doesn't seem to send unread count yet? Default to 0 or logic needed.
-                messages: [] // Don't wipe messages if we already have them? 
-                // Optimized: merge if exists, but for now simplest is restart or keep messages.
-            };
+        setConversations(prev => {
+            const newMap = {};
+            list.forEach(c => {
+                newMap[c.conversationId] = {
+                    id: c.conversationId,
+                    customerName: c.visitorName || `Visitor ${c.visitorId?.slice(0, 4)}`,
+                    visitorId: c.visitorId,
+                    lastMessage: c.lastMessage,
+                    updatedAt: c.updatedAt,
+                    unreadCount: 0,
+                    messages: [],
+                };
 
-            // Preserve existing messages if we have them
-            if (conversations[c.conversationId]) {
-                newMap[c.conversationId].messages = conversations[c.conversationId].messages;
-                newMap[c.conversationId].unreadCount = conversations[c.conversationId].unreadCount;
-            }
+                // Preserve existing messages if we already have them
+                if (prev[c.conversationId]) {
+                    newMap[c.conversationId].messages = prev[c.conversationId].messages;
+                    newMap[c.conversationId].unreadCount = prev[c.conversationId].unreadCount;
+                }
+            });
+            return newMap;
         });
-
-        setConversations(newMap);
     };
 
     const handleHistory = (data) => {
-        // Backend may send conversationId directly, or it may be nested.
-        // For customer/visitor-based lookups, conversationId might be absent.
         let { conversationId, messages } = data;
 
-        console.log('[ChatContext] handleHistory received:', { conversationId, messageCount: messages?.length, rawData: data });
+        console.log('[ChatContext] handleHistory received:', { conversationId, messageCount: messages?.length });
 
         if (!Array.isArray(messages)) {
-            console.warn('[ChatContext] handleHistory: messages is not an array, ignoring', data);
+            console.warn('[ChatContext] handleHistory: messages is not an array, ignoring');
             return;
         }
 
-        // If no conversationId in response (common for customer/visitor history),
-        // generate a fallback key using visitorId so we can still store messages.
         if (!conversationId) {
             const vId = localStorage.getItem("visitorId");
             if (vId) {
                 conversationId = `visitor_${vId}`;
-                console.log('[ChatContext] No conversationId in history response, using fallback:', conversationId);
             } else {
-                console.warn('[ChatContext] handleHistory: No conversationId and no visitorId, ignoring');
                 return;
             }
         }
@@ -226,7 +218,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
             const existing = prev[conversationId] || {
                 id: conversationId,
                 unreadCount: 0,
-                updatedAt: Date.now()
+                updatedAt: Date.now(),
             };
 
             const sortedMessages = [...messages].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
@@ -236,32 +228,31 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
                 [conversationId]: {
                     ...existing,
                     messages: sortedMessages,
-                }
+                },
             };
         });
 
-        // Auto-set activeConversationId for customer
-        if (isPublic && !activeConversationId) {
+        // Auto-set active for customer
+        if (isPublic && !activeConversationIdRef.current) {
             setActiveConversationId(conversationId);
         }
     };
 
     const handleNewMessage = (msg) => {
-        // data has message details. 
-        // Structure from prompt: { type: 'NEW_MESSAGE', ... } -> implies flat fields?
-        // Or { type: 'NEW_MESSAGE', data: { ... } }?
-        // Prompt says "Server pushes... { type: 'NEW_MESSAGE', ... }" implying fields are mixed in.
-        // Let's assume common fields: conversationId, message, senderType, timestamp
-
         const { conversationId, message, senderType, timestamp } = msg;
         if (!conversationId) return;
+
+        // ── Customer: persist conversationId on first response ──
+        if (isPublic && !localStorage.getItem("chat_conversationId")) {
+            localStorage.setItem("chat_conversationId", conversationId);
+        }
 
         setConversations(prev => {
             const existing = prev[conversationId] || {
                 id: conversationId,
                 messages: [],
                 unreadCount: 0,
-                updatedAt: Date.now()
+                updatedAt: Date.now(),
             };
 
             // Deduplicate
@@ -270,19 +261,17 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
                 return prev;
             }
 
-            const newMsg = { ...msg }; // Keep all fields
+            const newMsg = { ...msg };
 
-            // Only increment unread for CUSTOMER messages, and only if this conversation is not currently open
+            // Increment unread only for customer messages when Shop is viewing another conversation
             let newUnread = existing.unreadCount;
             const isFromCustomer = senderType !== 'SHOP';
             const isCurrentlyOpen = activeConversationIdRef.current === conversationId;
+
             if (isFromCustomer && !isCurrentlyOpen && !isPublic) {
                 newUnread += 1;
             }
 
-            // Extract customer details if present in the message payload
-            // The backend might send 'name', 'senderName', 'visitorName', etc.
-            // Especially strictly for the shop view
             const potentialName = msg.name || msg.senderName || msg.visitorName || msg.customerName;
             const updatedCustomerName = existing.customerName || potentialName;
 
@@ -295,88 +284,75 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
                     updatedAt: timestamp || Date.now(),
                     unreadCount: newUnread,
                     customerName: updatedCustomerName,
-                    visitorId: existing.visitorId || msg.visitorId
-                }
+                    visitorId: existing.visitorId || msg.visitorId,
+                },
             };
         });
-    };
 
-    // --- ACTIONS ---
-
-    const sendMessage = (conversationId, messageText) => {
-        if (!socket || connectionStatus !== 'connected') return;
-
-        if (isPublic) {
-            // Customer: Needs visitorId, name, email (for first message)
-            // Or just visitorId if conversation exists?
-            // Prompt: "Send First Message... { action:'sendMessage', visitorId, name, email, message }"
-            // "Send Message Later... Same as step 2".
-            // So always send visitorId?
-
-            const vId = localStorage.getItem("visitorId");
-            // For now hardcode name/email or get from form?
-            // The prompt says "Customer must generate visitorId... Store permanently".
-            // It also says "Send First Message... { name: 'Rahul', email:... }"
-            // We might need a way to pass these if it's the very first message.
-            // For now, let's assume we can pass specific payload if provided, or default.
-
-            // We'll overload sendMessage to accept extra args if needed or handle internal state?
-            // Simplest: just send standard payload, let UI handle the 'first message' fields if technically possible.
-            // BUT, the context `sendMessage` is usually generic.
-
-            const payload = {
-                action: 'sendMessage',
-                visitorId: vId,
-                message: messageText,
-                // Add default name/email if not present? 
-                // Maybe the backend handles it if missing for subsequent?
-                // The prompt says "Send Message Later -> Same as step 2".
-                // I will include them if I have them, or generic strings. 
-                // Ideally UI asks for Name/Email first.
-            };
-            socket.send('sendMessage', payload);
-
-        } else {
-            // Shop
-            const payload = {
-                action: 'sendMessage',
-                conversationId: conversationId,
-                message: messageText
-            };
-            socket.send('sendMessage', payload);
+        // Auto-set active for customer if not already set
+        if (isPublic && !activeConversationIdRef.current) {
+            setActiveConversationId(conversationId);
         }
     };
 
-    // For Customer to send specialized first message with name/email
+    // ─── Actions ─────────────────────────────────────────────────────────────
+
+    // switchConversation removed: Shop now uses a single socket and just calls loadHistory(id) 
+
+    const sendMessage = (conversationId, messageText) => {
+        const currentSocket = socketRef.current;
+        if (!currentSocket || connectionStatus !== 'connected') return;
+
+        if (isPublic) {
+            // Customer: send with visitorId; do NOT include conversationId on first message
+            const vId = localStorage.getItem("visitorId");
+            const payload = {
+                visitorId: vId,
+                message: messageText,
+            };
+            currentSocket.send('sendMessage', payload);
+        } else {
+            // Shop: always include conversationId
+            const payload = {
+                conversationId: conversationId,
+                message: messageText,
+            };
+            currentSocket.send('sendMessage', payload);
+        }
+    };
+
+    // For Customer: specialized first message with name/email
     const sendCustomerMessage = (text, name, email) => {
-        if (!socket || connectionStatus !== 'connected' || !isPublic) return;
+        const currentSocket = socketRef.current;
+        if (!currentSocket || connectionStatus !== 'connected' || !isPublic) return;
+
         const vId = localStorage.getItem("visitorId");
         const payload = {
-            action: 'sendMessage',
             visitorId: vId,
             message: text,
             name: name || "Visitor",
-            email: email || "no-email@test.com"
+            email: email || "no-email@test.com",
         };
-        socket.send('sendMessage', payload);
+        currentSocket.send('sendMessage', payload);
     };
 
     const loadHistory = (conversationId) => {
-        if (!socket || connectionStatus !== 'connected') return;
+        const currentSocket = socketRef.current;
+        if (!currentSocket || connectionStatus !== 'connected') return;
 
-        // Shop uses conversationId. Customer uses visitorId.
         if (isPublic) {
             const vId = localStorage.getItem("visitorId");
-            socket.send('getHistory', { visitorId: vId });
+            currentSocket.send('getHistory', { visitorId: vId });
         } else {
-            socket.send('getHistory', { conversationId });
+            currentSocket.send('getHistory', { conversationId });
         }
     };
 
     const deleteConversation = (conversationId) => {
-        if (!socket || connectionStatus !== 'connected' || isPublic) return;
+        const currentSocket = socketRef.current;
+        if (!currentSocket || connectionStatus !== 'connected' || isPublic) return;
 
-        socket.send('deleteConversation', { conversationId });
+        currentSocket.send('deleteConversation', { conversationId });
         // Optimistic removal
         setConversations(prev => {
             const newMap = { ...prev };
@@ -397,8 +373,8 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
                 ...prev,
                 [conversationId]: {
                     ...prev[conversationId],
-                    unreadCount: 0
-                }
+                    unreadCount: 0,
+                },
             };
         });
     };
@@ -423,7 +399,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
             loadHistory,
             markAsRead,
             deleteConversation,
-            setActiveConversationId
+            setActiveConversationId,
         }}>
             {children}
         </ChatContext.Provider>

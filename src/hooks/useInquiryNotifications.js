@@ -5,10 +5,12 @@ import { getValidToken } from '../api/getValidToken';
 import urls from '../config';
 import { playNotificationSound } from '../utils/playNotificationSound';
 
-const useInquiryNotifications = () => {
+const useInquiryNotifications = (isAuthed) => {
     const { notification } = App.useApp();
 
     useEffect(() => {
+        if (!isAuthed) return;
+
         let eventSource = null;
         let retryTimeout = null;
 

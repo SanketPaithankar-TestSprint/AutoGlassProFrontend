@@ -59,6 +59,52 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
         setActiveTabBg(pageBg);
     }, [location.pathname, setActiveTabBg]);
 
+    // GFG-inspired: inject curve elements into the active tab + add classes to adjacent items
+    useEffect(() => {
+        const updateCurves = () => {
+            // Clean up previous curve elements and adjacent classes
+            document.querySelectorAll('.sidebar-curve-top, .sidebar-curve-bottom').forEach(el => el.remove());
+            document.querySelectorAll('.ant-menu-item-above-selected, .ant-menu-item-below-selected').forEach(el => {
+                el.classList.remove('ant-menu-item-above-selected', 'ant-menu-item-below-selected');
+            });
+
+            const selectedItem = document.querySelector('.ant-menu-dark .ant-menu-item-selected');
+            if (!selectedItem) return;
+
+            // Inject top curve span
+            const topCurve = document.createElement('span');
+            topCurve.className = 'sidebar-curve-top';
+            selectedItem.appendChild(topCurve);
+
+            // Inject bottom curve span
+            const bottomCurve = document.createElement('span');
+            bottomCurve.className = 'sidebar-curve-bottom';
+            selectedItem.appendChild(bottomCurve);
+
+            // Add border-radius classes to adjacent menu items
+            const selectedLi = selectedItem.closest('li');
+            if (!selectedLi) return;
+
+            const prevLi = selectedLi.previousElementSibling;
+            if (prevLi?.querySelector('.ant-menu-item')) {
+                prevLi.querySelector('.ant-menu-item').classList.add('ant-menu-item-above-selected');
+            }
+
+            const nextLi = selectedLi.nextElementSibling;
+            if (nextLi?.querySelector('.ant-menu-item')) {
+                nextLi.querySelector('.ant-menu-item').classList.add('ant-menu-item-below-selected');
+            }
+        };
+
+        // Run immediately, then again after Ant Design re-renders
+        updateCurves();
+        const raf = requestAnimationFrame(updateCurves);
+        return () => {
+            cancelAnimationFrame(raf);
+            document.querySelectorAll('.sidebar-curve-top, .sidebar-curve-bottom').forEach(el => el.remove());
+        };
+    }, [location.pathname]);
+
     // Fetch logo on mount and when route changes (to catch post-login state)
     useEffect(() => {
         const fetchLogoIfNeeded = async () => {
@@ -270,12 +316,12 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
             collapsed={collapsed}
             onCollapse={onCollapse}
             theme="dark"
-            className="h-full z-50"
+            className="h-full z-50 rounded-tr-2xl rounded-br-2xl overflow-hidden"
             style={{ background: '#203a78ff', '--active-bg': activeTabBg }}
             width={200}
             collapsedWidth={80}
         >
-            <div className="flex flex-col h-full bg-gradient-to-b from-slate-900 to-indigo-950">
+            <div className="flex flex-col h-full bg-gradient-to-b from-slate-900 to-indigo-950" style={{ '--sidebar-bg': '#0f172a' }}>
                 {/* Top: Logo */}
                 <div className={`p-4 flex items-center ${collapsed ? 'justify-center' : 'justify-start'} transition-all duration-200 border-b border-white/5`}>
                     <Link to="/">
@@ -284,7 +330,7 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
                 </div>
 
                 {/* Middle: Navigation */}
-                <div className="flex-1 py-4 overflow-y-auto custom-scrollbar">
+                <div className="flex-1 pt-6 pb-4 overflow-y-auto custom-scrollbar">
                     <Menu
                         theme="dark"
                         mode="inline"
@@ -320,15 +366,102 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
             </div>
             {/* Custom style to override the collapse trigger matching the new dark theme */}
             <style>{`
+                .ant-layout-sider {
+                    border-top-right-radius: 32px !important;
+                    border-bottom-right-radius: 32px !important;
+                    overflow: hidden !important;
+                }
                 .ant-layout-sider-trigger {
-                    background: #0f172a !important; /* matches the base siding background */
-                    color: #cbd5e1 !important; /* slate-300 */
+                    background: #0f172a !important;
+                    color: #cbd5e1 !important;
                     border-top: 1px solid rgba(255,255,255,0.05) !important;
+                    border-bottom-right-radius: 32px !important;
                     transition: all 0.2s;
                 }
                 .ant-layout-sider-trigger:hover {
                     color: #fff !important;
-                    background: #1e293b !important; /* slate-800 */
+                    background: #1e293b !important;
+                }
+
+                /* ========================================= */
+                /* CURVED ACTIVE TAB EFFECT            */
+                /* ========================================= */
+
+                /* 0. Remove Ant Design native borders that cause vertical ghost lines */
+                .ant-layout-sider,
+                .ant-menu,
+                .ant-menu-dark,
+                .ant-menu-item {
+                    border-right: none !important;
+                    border-inline-end: none !important;
+                }
+
+                /* 1. Base styling for the active tab */
+                .ant-menu-dark .ant-menu-item-selected {
+                    /* Use your existing dynamic background variable */
+                    background-color: var(--active-bg, #f0f2f5) !important;
+                    
+                    /* Round the left side, keep right side flat */
+                    border-radius: 30px 0 0 30px !important; 
+                    
+                    /* Overlap the edge slightly to perfectly hide any vertical subpixel gaps */
+                    margin-right: -1px !important; 
+                    margin-left: 12px !important;
+                    width: calc(100% - 11px) !important;
+                    position: relative;
+                    
+                    /* Remove any native shadows or borders */
+                    border: none !important;
+
+                    /* CRITICAL: Allow the ::before and ::after to be seen outside the bounds */
+                    overflow: visible !important;
+                    z-index: 2 !important; 
+                }
+
+                /* 2. Invert text/icon colors for contrast on light background */
+                .ant-menu-dark .ant-menu-item-selected .ant-menu-title-content,
+                .ant-menu-dark .ant-menu-item-selected .ant-menu-title-content a,
+                .ant-menu-dark .ant-menu-item-selected .anticon {
+                    color: #1e293b !important; /* Dark color for readability */
+                    font-weight: 500;
+                    position: relative;
+                    z-index: 10 !important; /* Force icons above everything */
+                }
+
+                /* 3. Setup invisible bounding boxes for the curves */
+                .ant-menu-dark .ant-menu-item-selected::before,
+                .ant-menu-dark .ant-menu-item-selected::after {
+                    content: '';
+                    position: absolute;
+                    right: 0;
+                    width: 30px;
+                    height: 30px; /* STRICTLY 30px so it doesn't overlap the icon */
+                    background-color: transparent;
+                    pointer-events: none; /* Prevents blocking clicks */
+                    z-index: 1;
+                }
+
+                /* 4. Top Inverted Curve */
+                .ant-menu-dark .ant-menu-item-selected::before {
+                    top: -30px;
+                    /* Draws a transparent circle from top-left, filling the rest with active-bg */
+                    background-image: radial-gradient(circle at 0 0, transparent 30px, var(--active-bg, #f0f2f5) 30.5px);
+                }
+
+                /* 5. Bottom Inverted Curve */
+                .ant-menu-dark .ant-menu-item-selected::after {
+                    bottom: -30px;
+                    /* Draws a transparent circle from bottom-left, filling the rest with active-bg */
+                    background-image: radial-gradient(circle at 0 100%, transparent 30px, var(--active-bg, #f0f2f5) 30.5px);
+                }
+
+                /* 6. Hover state for unselected menu items (bonus) */
+                .ant-menu-dark .ant-menu-item:not(.ant-menu-item-selected):hover {
+                    border-radius: 30px 0 0 30px !important;
+                    margin-right: 0 !important;
+                    margin-left: 12px !important;
+                    width: calc(100% - 12px) !important;
+                    background-color: rgba(255, 255, 255, 0.08) !important;
                 }
             `}</style>
         </Sider>
