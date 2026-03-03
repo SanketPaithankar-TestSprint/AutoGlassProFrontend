@@ -28,3 +28,4 @@ deployFrontEnd.sh
 .gemini
 COPILOT.md
 .agents
+.github/agents/executor.agent.md

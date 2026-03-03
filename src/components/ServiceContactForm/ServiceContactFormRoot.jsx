@@ -6,7 +6,8 @@ import urls from '../../config';
 import InquiryDetails from './InquiryDetails';
 import useServiceInquiries from './hooks/useServiceInquiries';
 import useInquiryDetails from './hooks/useInquiryDetails';
-import serviceNotificationSound from '../../assets/NotificationForServiceEnquiery.m4a';
+import { playNotificationSound } from '../../utils/playNotificationSound';
+import { App as AntApp } from 'antd';
 
 const { Title } = Typography;
 
@@ -47,18 +48,13 @@ const ServiceContactFormRoot = () => {
     const { inquiries, loading, total, fetchInquiries, deleteInquiry, markAsRead } = useServiceInquiries();
 
     const hasNewInquiry = inquiries.some(inquiry => inquiry.status === 'NEW');
+    const [initialFetchDone, setInitialFetchDone] = useState(false);
+    const { notification } = AntApp.useApp();
 
     useEffect(() => {
         let intervalId;
 
-        const playNotificationSound = () => {
-            const now = Date.now();
-            if (now - lastSoundPlayedAt < 2000) return;
-            lastSoundPlayedAt = now;
-            const audio = new Audio(serviceNotificationSound);
-            audio.play().catch(e => console.error("Error playing notification sound:", e));
-        };
-
+        // Play sound once after login/initial fetch if there are new inquiries
         if (hasNewInquiry) {
             playNotificationSound();
             intervalId = setInterval(() => {
@@ -70,6 +66,45 @@ const ServiceContactFormRoot = () => {
             if (intervalId) clearInterval(intervalId);
         };
     }, [hasNewInquiry]);
+
+    // Show notification and play sound immediately after first fetch if there are new inquiries
+    useEffect(() => {
+        if (!initialFetchDone && inquiries.length > 0) {
+            setInitialFetchDone(true);
+            const newInquiry = inquiries.find(inquiry => inquiry.status === 'NEW');
+            if (newInquiry) {
+                playNotificationSound();
+                notification.info({
+                    message: `New Inquiry${newInquiry.name ? ` from ${newInquiry.name}` : ''}`,
+                    description: newInquiry.vehicle ? `Vehicle: ${newInquiry.vehicle}` : undefined,
+                    duration: 0,
+                    placement: 'topRight',
+                    style: { cursor: 'pointer' },
+                    onClick: () => {
+                        window.location.href = '/service-contact-form';
+                    }
+                });
+            }
+        }
+    }, [inquiries, initialFetchDone, notification]);
+
+    // Listen for event stream notification and play sound robustly
+    useEffect(() => {
+        const handleNewInquiry = () => {
+            message.info('New inquiry received. Refreshing list...');
+            const now = Date.now();
+            if (now - lastSoundPlayedAt > 2000) {
+                lastSoundPlayedAt = now;
+                const audio = new Audio(serviceNotificationSound);
+                audio.play().catch(e => console.error("Error playing notification sound:", e));
+            }
+            fetchInquiries(currentPage - 1);
+        };
+        window.addEventListener('INQUIRY_RECEIVED', handleNewInquiry);
+        return () => {
+            window.removeEventListener('INQUIRY_RECEIVED', handleNewInquiry);
+        };
+    }, [fetchInquiries, currentPage]);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);

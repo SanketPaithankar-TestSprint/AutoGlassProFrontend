@@ -1,11 +1,7 @@
 import urls from "../config";
 import { getValidToken } from "./getValidToken";
 
-/**
- * Tests SMTP connection.
- * @param {number} configId - The SMTP configuration ID to test.
- * @returns {Promise<Object>} - Test result with success status and message.
- */
+
 export const testSmtpConnection = async (configId) => {
     try {
         const token = await getValidToken();

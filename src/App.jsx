@@ -94,14 +94,12 @@ function AppContent() {
   // Prefetch data when authenticated
   useProfileDataPrefetch(isAuthed && !isStandalonePage);
 
-  // Listen for inquiry notifications
-  useInquiryNotifications(isAuthed && !isStandalonePage);
-
-  // Show schedule notifications on login (yellow = today, green = tomorrow)
-  useScheduleNotifications(isAuthed && !isStandalonePage);
-
   // Subscription Restriction Check
   const { showModal } = useSubscriptionRestriction(isAuthed && !isStandalonePage);
+
+  // Only run notification hooks when authenticated and not loading
+  useInquiryNotifications(isAuthed && !isStandalonePage && !loading);
+  useScheduleNotifications(isAuthed && !isStandalonePage && !loading);
 
   useEffect(() => {
     const token = getValidToken();

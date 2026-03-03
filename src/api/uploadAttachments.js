@@ -13,7 +13,7 @@ import urls from "../config";
 export const uploadAttachments = async (documentNumber, files, descriptions = [], customerId = null, userId = null) => {
     try {
         const token = await getValidToken();
-        debugger;
+       
 
         if (!token) {
             throw new Error("Authentication token not found. Please log in.");
@@ -68,7 +68,7 @@ export const uploadAttachments = async (documentNumber, files, descriptions = []
             },
             body: formData
         });
-        debugger;
+    
         if (!response.ok) {
             const errorData = await response.json().catch(() => null);
             throw new Error(

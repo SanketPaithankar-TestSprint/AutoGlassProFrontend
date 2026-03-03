@@ -6,11 +6,13 @@ import urls from '../config';
 import { playNotificationSound } from '../utils/playNotificationSound';
 
 const useInquiryNotifications = (isAuthed) => {
+
     const { notification } = App.useApp();
 
     useEffect(() => {
-        if (!isAuthed) return;
 
+        if (!isAuthed) return;
+    
         let eventSource = null;
         let retryTimeout = null;
 
