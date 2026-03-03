@@ -247,11 +247,11 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
             <div className="flex flex-col items-center justify-center p-8 h-full">
                 <Result
                     status="success"
-                    title="Registration Successful!"
-                    subTitle="Please check your email to set your password and activate your account."
+                    title={t('auth.registrationSuccessful')}
+                    subTitle={t('auth.registrationSubTitle')}
                     extra={[
                         <Button type="primary" key="login" onClick={onCancel}>
-                            Back to Login
+                            {t('auth.backToLogin')}
                         </Button>,
                     ]}
                 />
@@ -326,7 +326,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                     <Col xs={24} sm={12}>
                         <Form.Item
                             name="businessLicenseNumber"
-                            label="Business License Number"
+                            label={t('auth.businessLicenseNumber')}
                             rules={[{ required: true, message: 'Please input business license number!' }]}
                             style={formItemStyle}
                         >
@@ -336,7 +336,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                     <Col xs={24} sm={12}>
                         <Form.Item
                             name="businessLicenseDocument"
-                            label="Business License Document"
+                            label={t('auth.businessLicenseDocument')}
                             valuePropName="file"
                             getValueFromEvent={(e) => {
                                 if (Array.isArray(e)) {
@@ -351,7 +351,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                                 maxCount={1}
                                 accept=".pdf,.png,.jpg,.jpeg"
                             >
-                                <Button icon={<UploadOutlined />}>Click to Upload</Button>
+                                <Button icon={<UploadOutlined />}>{t('auth.clickToUpload')}</Button>
                             </Upload>
                         </Form.Item>
                     </Col>
@@ -382,7 +382,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                     <Col xs={24} sm={12}>
                         <Form.Item
                             name="alternatePhone"
-                            label="Alternate Phone"
+                            label={t('auth.alternatePhone')}
                             rules={[
                                 {
                                     validator: (_, value) => {
@@ -417,7 +417,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
 
                 <Form.Item
                     name="addressLine2"
-                    label="Address Line 2"
+                    label={t('auth.addressLine2')}
                     style={formItemStyle}
                 >
                     <Input className="custom-api-input" />
@@ -450,7 +450,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                     <Col xs={24} sm={12}>
                         <Form.Item
                             name="state"
-                            label={selectedCountry === 'Canada' ? 'Province' : 'State'}
+                            label={selectedCountry === 'Canada' ? t('customers.provinceLabel') : t('customers.stateLabel')}
                             rules={[{ required: true, message: `Please select ${selectedCountry === 'Canada' ? 'province' : 'state'}!` }]}
                             style={formItemStyle}
                         >
@@ -482,7 +482,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                                 showSearch
                                 optionFilterProp="label"
                                 className="custom-api-input"
-                                placeholder="Select City"
+                                placeholder={t('auth.selectCity')}
                             >
                                 {availableCities.map(city => (
                                     <Select.Option key={city.value} value={city.value}>
@@ -507,23 +507,23 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                 {selectedCity === 'Other' && (
                     <Form.Item
                         name="customCity"
-                        label="Enter City Name"
+                        label={t('auth.enterCityName')}
                         rules={[{ required: true, message: 'Please enter your city!' }]}
                         style={formItemStyle}
                     >
-                        <Input className="custom-api-input" placeholder="Type your city name" />
+                        <Input className="custom-api-input" placeholder={t('auth.typeCityName')} />
                     </Form.Item>
                 )}
 
                 <Form.Item
                     name="userType"
-                    label="User Type"
+                    label={t('auth.userType')}
                     rules={[{ required: true, message: 'Please select user type!' }]}
                     style={formItemStyle}
                 >
                     <Select className="custom-api-input">
-                        <Select.Option value="SHOP_OWNER">Shop Owner</Select.Option>
-                        <Select.Option value="MOBILE_TECHNICIAN">Mobile Technician</Select.Option>
+                        <Select.Option value="SHOP_OWNER">{t('auth.shopOwner')}</Select.Option>
+                        <Select.Option value="MOBILE_TECHNICIAN">{t('auth.mobileTechnician')}</Select.Option>
                     </Select>
                 </Form.Item>
                 <Form.Item style={{ marginBottom: 0, marginTop: '24px' }}>
@@ -545,7 +545,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             }}
                             loading={loading}
                         >
-                            Continue
+                            {t('auth.continue')}
                         </Button>
                     </Space>
                 </Form.Item>

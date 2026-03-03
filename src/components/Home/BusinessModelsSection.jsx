@@ -1,45 +1,47 @@
 import React, { useEffect, useRef, useState } from "react";
 import { CheckOutlined } from "@ant-design/icons";
-
-const models = [
-    {
-        icon: "🏪",
-        title: "Shop Owners",
-        description: "Manage your brick-and-mortar location with multiple staff members, handle billing, and scale your business.",
-        features: [
-            "Full platform access",
-            "Unlimited employee management",
-            "Multi-location support",
-            "Advanced reporting"
-        ]
-    },
-    {
-        icon: "🚐",
-        title: "Mobile Installers",
-        description: "Work independently or lead a mobile team. Generate quotes on-the-go and manage service delivery.",
-        features: [
-            "Mobile-responsive design",
-            "Job scheduling",
-            "Photo documentation",
-            "Customer communication"
-        ]
-    },
-    {
-        icon: "👨‍💼",
-        title: "Repair Shops",
-        description: "Streamline auto glass repairs with professional documentation, team coordination, and customer management.",
-        features: [
-            "Customer tracking",
-            "Vehicle history",
-            "Team workflows",
-            "Payment management"
-        ]
-    }
-];
+import { useTranslation } from "react-i18next";
 
 const BusinessModelsSection = () => {
+    const { t } = useTranslation();
     const [isVisible, setIsVisible] = useState(false);
     const sectionRef = useRef(null);
+
+    const models = [
+        {
+            icon: "🏪",
+            title: t('businessModels.shopOwners.title'),
+            description: t('businessModels.shopOwners.desc'),
+            features: [
+                t('businessModels.shopOwners.f1'),
+                t('businessModels.shopOwners.f2'),
+                t('businessModels.shopOwners.f3'),
+                t('businessModels.shopOwners.f4')
+            ]
+        },
+        {
+            icon: "🚐",
+            title: t('businessModels.mobileInstallers.title'),
+            description: t('businessModels.mobileInstallers.desc'),
+            features: [
+                t('businessModels.mobileInstallers.f1'),
+                t('businessModels.mobileInstallers.f2'),
+                t('businessModels.mobileInstallers.f3'),
+                t('businessModels.mobileInstallers.f4')
+            ]
+        },
+        {
+            icon: "👨‍💼",
+            title: t('businessModels.repairShops.title'),
+            description: t('businessModels.repairShops.desc'),
+            features: [
+                t('businessModels.repairShops.f1'),
+                t('businessModels.repairShops.f2'),
+                t('businessModels.repairShops.f3'),
+                t('businessModels.repairShops.f4')
+            ]
+        }
+    ];
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -76,7 +78,7 @@ const BusinessModelsSection = () => {
                         backgroundImage: 'linear-gradient(90deg, #00A8E4 0%, #33c3f0 100%)'
                     } : {}}
                 >
-                    Built for Different Business Models
+                    {t('businessModels.title')}
                 </h2>
             </div>
 

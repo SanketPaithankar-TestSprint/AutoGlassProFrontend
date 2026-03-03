@@ -93,35 +93,36 @@ const Home = () => {
                             {/* Heading */}
                             <h1
                                 ref={heroTitleRef}
-                                className="font-extrabold mb-2 sm:mb-4 md:mb-6 leading-tight px-2 sm:px-0 text-lg sm:text-2xl md:text-3xl lg:text-3xl xl:text-4xl 2xl:text-5xl"
+                                className="font-extrabold mb-2 sm:mb-4 md:mb-6 leading-tight px-4 sm:px-0 text-base sm:text-2xl md:text-3xl lg:text-3xl xl:text-4xl 2xl:text-5xl break-words"
                                 style={{ color: '#7E5CFE' }}
                             >
-                                The Smartest Way to Run Your Auto Glass Business.
+                                {t('home.heroMainTitle')}
                             </h1>
 
                             {/* Description */}
                             <p
                                 ref={heroDescRef}
-                                className="text-xs sm:text-base md:text-base text-slate-600 mb-4 sm:mb-6 md:mb-8 max-w-2xl mx-auto lg:mx-0 px-2 sm:px-0 leading-relaxed"
+                                className="text-xs sm:text-base md:text-base text-slate-600 mb-4 sm:mb-6 md:mb-8 max-w-2xl mx-auto lg:mx-0 px-4 sm:px-0 leading-relaxed"
                                 style={{ opacity: 1 }} // GSAP controls opacity on chars
                             >
-                                Generate Instant, 100% Accurate Quotes through NAGS data, Streamline Field Service, and Manage Every Invoice—All in One Platform.
+                                {t('home.heroDescription')}
                             </p>
 
                             <motion.div
-                                className="flex flex-row justify-center gap-3 w-full mr-6"
+                                className="flex flex-col sm:flex-row justify-center lg:justify-start gap-3 w-full max-w-sm mx-auto lg:mx-0 px-4 sm:px-0"
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: 0.9 }}
                             >
                                 <motion.div
+                                    className="w-full sm:w-auto"
                                     whileHover={{ scale: 1.04 }}
                                     whileTap={{ scale: 0.97 }}
                                     transition={{ type: "spring", stiffness: 400, damping: 10 }}
                                 >
                                     <Button
                                         type="primary"
-                                        className="!text-white !rounded-full !px-8 !h-11 !text-sm shadow-lg transition-all duration-200"
+                                        className="w-full !text-white !rounded-full !px-6 sm:!px-8 !h-auto !py-2 sm:!py-3 !text-xs sm:!text-sm shadow-lg transition-all duration-200 !whitespace-normal"
                                         style={{
                                             backgroundColor: '#7E5CFE',
                                             borderColor: '#7E5CFE',
@@ -143,17 +144,18 @@ const Home = () => {
                                 </motion.div>
 
                                 <motion.div
+                                    className="w-full sm:w-auto"
                                     whileHover={{ scale: 1.04 }}
                                     whileTap={{ scale: 0.97 }}
                                     transition={{ type: "spring", stiffness: 400, damping: 10 }}
                                 >
                                     <Button
-                                        className="!bg-transparent !border-violet-600 !text-violet-600 hover:!bg-violet-100 !rounded-full !px-8 !h-11 !text-sm shadow-sm hover:shadow-md transition-all duration-200"
+                                        className="w-full !bg-transparent !border-violet-600 !text-violet-600 hover:!bg-violet-100 !rounded-full !px-6 sm:!px-8 !h-auto !py-2 sm:!py-3 !text-xs sm:!text-sm shadow-sm hover:shadow-md transition-all duration-200 !whitespace-normal"
                                         onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
                                         onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
                                         onClick={() => setIsVideoOpen(true)}
                                     >
-                                        <span className="font-medium">Watch a Demo</span>
+                                        <span className="font-medium">{t('home.watchDemo')}</span>
                                     </Button>
                                 </motion.div>
                             </motion.div>

@@ -3,12 +3,14 @@ import { Button } from "antd";
 import { LinkOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import Logo from "../logo";
 import VideoModal from "../VideoModal/VideoModal";
 import BrowserMockup from "../../assets/browser_mockup.png";
 import IpadMockup from "../../assets/ipad_landing_page_mockup.png";
 
 const HeroSection = () => {
+  const { t } = useTranslation();
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -25,7 +27,7 @@ const HeroSection = () => {
 
           {/* Tagline */}
           <motion.h1
-            className="text-lg xs:text-xl sm:text-2xl md:text-3xl lg:text-5xl font-extrabold mb-2 sm:mb-3 md:mb-6 leading-tight px-2 sm:px-0"
+            className="text-base sm:text-2xl md:text-3xl lg:text-5xl font-extrabold mb-2 sm:mb-3 md:mb-6 leading-tight px-4 sm:px-0 break-words"
             style={{
               color: '#7E5CFE',
             }}
@@ -33,36 +35,35 @@ const HeroSection = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            The Smartest Way to Run Your Auto  Glass Business.
+            {t('home.heroMainTitle')}
           </motion.h1>
 
           {/* Subheading */}
           <motion.p
-            className="text-xs xs:text-xs sm:text-sm md:text-base text-slate-600 mb-4 sm:mb-5 md:mb-8 max-w-2xl mx-auto lg:mx-0 px-2 sm:px-0 leading-relaxed"
+            className="text-xs sm:text-sm md:text-base text-slate-600 mb-4 sm:mb-5 md:mb-8 max-w-2xl mx-auto lg:mx-0 px-4 sm:px-0 leading-relaxed"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            Generate Instant, 100% Accurate Quotes through NAGS data, Streamline Field
-            Service, and Manage Every Invoice—All in One Platform.
+            {t('home.heroDescription')}
           </motion.p>
 
           {/* CTA Buttons */}
           <motion.div
-            className="flex flex-col xs:flex-row justify-center lg:justify-start gap-2 sm:gap-3 md:gap-4 w-full sm:max-w-sm lg:max-w-none mx-auto lg:mx-0"
+            className="flex flex-col sm:flex-row justify-center lg:justify-start gap-3 w-full max-w-xs sm:max-w-md lg:max-w-none mx-auto lg:mx-0 px-4 sm:px-0"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
             <motion.div
-              className="flex-1"
+              className="flex-1 w-full"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
               <Button
                 type="primary"
-                className="w-full !text-white !rounded-full !px-4 sm:!px-6 md:!px-6 !h-9 sm:!h-10 md:!h-11 !text-xs sm:!text-sm md:!text-base shadow-lg transition-all duration-200"
+                className="w-full !text-white !rounded-full !px-4 sm:!px-6 md:!px-6 !h-10 md:!h-11 !text-xs sm:!text-sm md:!text-base shadow-lg transition-all duration-200 !whitespace-normal !h-auto !py-2"
                 style={{
                   backgroundColor: '#7E5CFE',
                   borderColor: '#7E5CFE',
@@ -83,18 +84,18 @@ const HeroSection = () => {
                   navigate('/auth', { state: { mode: 'signup' } });
                 }}
               >
-                <span className="font-medium">Start Free Trial</span>
+                <span className="font-medium">{t('pricing.startFreeTrial')}</span>
               </Button>
             </motion.div>
 
             <motion.div
-              className="flex-1"
+              className="flex-1 w-full"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
               <Button
-                className="w-full !bg-transparent !border-violet-600 !text-violet-600 hover:!bg-violet-100 !rounded-full !px-4 sm:!px-6 md:!px-6 !h-9 sm:!h-10 md:!h-11 !text-xs sm:!text-sm md:!text-base shadow-sm hover:shadow-md transition-all duration-200"
+                className="w-full !bg-transparent !border-violet-600 !text-violet-600 hover:!bg-violet-100 !rounded-full !px-4 sm:!px-6 md:!px-6 !h-10 md:!h-11 !text-xs sm:!text-sm md:!text-base shadow-sm hover:shadow-md transition-all duration-200 !whitespace-normal !h-auto !py-2"
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-2px)';
                 }}
@@ -103,7 +104,7 @@ const HeroSection = () => {
                 }}
                 onClick={() => setIsVideoOpen(true)}
               >
-                <span className="font-medium">Watch a Demo</span>
+                <span className="font-medium">{t('home.watchDemo')}</span>
               </Button>
             </motion.div>
           </motion.div>

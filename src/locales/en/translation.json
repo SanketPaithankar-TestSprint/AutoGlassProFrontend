@@ -21,6 +21,106 @@
         "terms": "Terms",
         "termsOfService": "Terms of Service"
     },
+    "featuresPage": {
+        "title": "APAI Features | VIN Decode, AI Chat, Quotes & NAGS Data",
+        "description": "Discover APAI's powerful features: Instant VIN decoding, AI Chat, professional PDF quotes, and real-time NAGS data. Scale your glass shop for just $99/mo.",
+        "headerTitlePrefix": "Everything You Need to Run Your ",
+        "headerTitleHighlight": "Auto Glass Business",
+        "headerDescription": "From the first quote to the final payment, APAI provides a comprehensive suite of tools designed for speed, accuracy, and growth.",
+        "readMore": "Read More",
+        "sections": {
+            "quoting": {
+                "category": "Quoting & Pricing",
+                "title": "Precision Quoting: Win the Job and Maximize Profit.",
+                "subHeadline": "Generate professional, accurate estimates instantly, reducing administrative time and eliminating costly errors.",
+                "feature1Title": "VIN Decoder & Search",
+                "feature1Desc": "Utilize the NHTSA VPIC API for guaranteed accurate vehicle glass search by Year, Make, Model, Style, or VIN. We classify parts using industry-standard NAGS codes (DB, DD, DQ, DR, DV, DW).",
+                "feature2Title": "Real-Time Price Engine",
+                "feature2Desc": "Integrate real-time pricing from NAGS database and define custom labor cost entries to ensure your quote always reflects current market values and your required margins.",
+                "feature3Title": "Automatic Calculations",
+                "feature3Desc": "Automatically apply custom labor rates, tax percentages, and discounts, presenting the customer with a clear, professional final price.",
+                "feature4Title": "Professional Documents",
+                "feature4Desc": "Generate branded, easy-to-read Quote documents that customers can approve quickly via email or SMS."
+            },
+            "workOrder": {
+                "category": "Work Order & Field Service",
+                "title": "Mobile Management: Empower Your Technicians, Anywhere.",
+                "subHeadline": "APAI is built for the mobile service economy, giving remote installers and shop technicians the tools they need to complete jobs efficiently.",
+                "feature1Title": "Digital Work Order",
+                "feature1Desc": "Quotes instantly convert to detailed Work Orders, pre-populated with customer and vehicle data. Technicians access all details on their mobile device.",
+                "feature2Title": "Time and Labor Tracking",
+                "feature2Desc": "Technicians log start and end times right in the app, automatically tracking and logging labor hours against the job.",
+                "feature3Title": "Photo & Signature Capture",
+                "feature3Desc": "Capture mandatory Before/After photos of the vehicle glass and collect the customer's signature electronically upon job completion, securing your records.",
+                "feature4Title": "Role-Based Access",
+                "feature4Desc": "Customize access for every team member, from Shop Owner and Admin to Mobile Technician and Technician, ensuring everyone has the right level of control."
+            },
+            "invoicing": {
+                "category": "Invoicing & Payments",
+                "title": "Financial Control: Simplify Billing and Accelerate Cash Flow.",
+                "subHeadline": "Turn completed jobs into paid invoices with robust tracking, insurance management, and automated follow-up.",
+                "feature1Title": "Insurance Claim Tracking",
+                "feature1Desc": "Easily log and track critical details like the insurance claim number and customer deductible directly on the invoice.",
+                "feature2Title": "Status Management",
+                "feature2Desc": "Clearly track the status of every invoice: Partial Paid, Paid, or Overdue. Set custom payment terms (e.g., Net 30) for clarity.",
+                "feature3Title": "Automated Reminders",
+                "feature3Desc": "When an invoice reaches the Overdue status, APAI automatically sends payment reminder emails, significantly reducing late payments.",
+                "feature4Title": "Comprehensive Reporting",
+                "feature4Desc": "Access reports that analyze job profitability, technician performance, and revenue trends, helping you make data-driven decisions."
+            },
+            "engagement": {
+                "category": "Customer Engagement & Contact",
+                "title": "Seamless Booking: Capture Leads and Chat Live.",
+                "subHeadline": "Provide your customers with a modern, branded experience from their first inquiry to the final job.",
+                "feature1Title": "Embeddable Custom Form",
+                "feature1Desc": "Easily embed our clean, optimized quote request widget directly onto your shop's existing website to capture high-intent visual quote requests instantly.",
+                "feature2Title": "Live Customer Chat",
+                "feature2Desc": "Engage with visitors in real-time through an integrated live chat service that connects straight to your APAI dashboard for instant lead conversion.",
+                "feature3Title": "Full Theme Customization",
+                "feature3Desc": "Make the widget yours by customizing colors, maps, and styling to perfectly match your brand's aesthetic and website design."
+            }
+        },
+        "faq": {
+            "title": "Frequently Asked Questions",
+            "description": "Find answers to common questions about APAI features and functionality",
+            "q1": "What document types does APAI support?",
+            "a1": "APAI supports multiple document types including Quotes, Invoices, Work Orders, and Composite Service Documents. Each document type includes customizable fields, automatic calculations, and export capabilities to PDF format.",
+            "q2": "Can I manage multiple customers and vehicles?",
+            "a2": "Yes! APAI features a comprehensive Customer Management system where you can store unlimited customer profiles with contact information, phone numbers, emails, vehicles, and service history. Quickly search and filter customers by name, phone, or email for easy access.",
+            "q3": "How does the scheduling system work?",
+            "a3": "The integrated scheduling system allows you to manage appointments, assign tasks to employees, and track service dates. View your schedule in Calendar, Kanban Board, or Table view. Never miss a scheduled appointment with built-in notifications.",
+            "q4": "Can I track payments and invoices?",
+            "a4": "Absolutely! APAI includes advanced payment tracking with payment history, multiple payment methods, overdue tracking, and sales reports. Easily monitor which invoices are paid, pending, or overdue. Generate comprehensive sales reports for any date range.",
+            "q5": "Is there mobile support or do I need a desktop?",
+            "a5": "APAI is web-based and responsive, working on both desktop and mobile devices. You can access quotes, customer information, and schedules from your phone or tablet on the job site, making it perfect for on-the-go business management.",
+            "q6": "Who is APAI designed for?",
+            "a6": "The platform is built for the auto glass industry in the USA, specifically serving auto glass shop owners, repair shop owners, and technicians. Whether you are a one-man mobile operation or a multi-location enterprise, APAI scales to fit your needs.",
+            "q7": "How much does APAI cost?",
+            "a7": "APAI is currently offered at a straightforward, flat rate of $99 per month/per user. We believe in simple pricing with no hidden fees or \"per-lead\" charges.",
+            "q8": "What is SmartVIN technology and how does it help me?",
+            "a8": "SmartVIN is our proprietary AI decoding technology. Unlike basic VIN deciphering, SmartVIN automatically identifies the exact glass, specific sensors (like rain or light sensors), and ADAS requirements for a vehicle. This eliminates manual cross-referencing and ensures you never show up to a job site with the wrong part.",
+            "q9": "Does APAI include NAGS data?",
+            "a9": "Yes. APAI provides instant access to National Auto Glass Specifications (NAGS) data, allowing you to generate 100% accurate quotes with current part numbers and industry-standard labor hours.",
+            "q10": "Can I see live pricing from my glass distributors?",
+            "a10": "Absolutely. APAI integrates with major distributors like Pilkington, giving you real-time access to parts availability and your specific wholesale pricing directly inside the quote builder.",
+            "q11": "Is there a mobile app for my technicians?",
+            "a11": "Yes, APAI is a mobile-first platform. Technicians can use the mobile interface on the road to view job details, capture \"before and after\" photos, collect digital signatures, and update job status in real-time.",
+            "q12": "How does APAI handle insurance billing?",
+            "a12": "APAI features instant EDI (Electronic Data Interchange) billing. You can manage every invoice and submit insurance claims directly through the platform, automating the communication loop and helping you get paid faster.",
+            "q13": "Can I customize the contact form on my own website?",
+            "a13": "Yes! APAI provides a custom contact form feature that you can embed on your website. This form allows customers to enter their VIN and select their glass type directly, flowing that lead data straight into your APAI dashboard for one-click quoting.",
+            "q14": "How long does it take to get started?",
+            "a14": "You can start a free trial and begin exploring the platform immediately. Because our system is cloud-based and intuitive, most shops are up and running within a single day.",
+            "q15": "How do I get support if I have a question?",
+            "a15": "Our dedicated support team is ready to help. You can reach us anytime at support@autopaneai.com for assistance with your account, technical questions, or training needs."
+        },
+        "cta": {
+            "title": "Ready to Transform Your Business?",
+            "description": "Join the auto glass professionals who are saving time and increasing profits with APAI.",
+            "startTrial": "Start Your Free Trial",
+            "watchDemo": "Watch a Demo"
+        }
+    },
     "auth": {
         "login": "Login",
         "signUp": "Sign Up",
@@ -49,7 +149,22 @@
         "signingIn": "Signing in...",
         "loginFailed": "Log In Failed",
         "signedInSuccess": "Signed in successfully.",
-        "welcome": "Welcome"
+        "welcome": "Welcome",
+        "businessLicenseNumber": "Business License Number",
+        "businessLicenseDocument": "Business License Document",
+        "alternatePhone": "Alternate Phone",
+        "addressLine2": "Address Line 2",
+        "selectCity": "Select City",
+        "userType": "User Type",
+        "clickToUpload": "Click to Upload",
+        "continue": "Continue",
+        "backToLogin": "Back to Login",
+        "registrationSuccessful": "Registration Successful!",
+        "registrationSubTitle": "Please check your email to set your password and activate your account.",
+        "shopOwner": "Shop Owner",
+        "mobileTechnician": "Mobile Technician",
+        "enterCityName": "Enter City Name",
+        "typeCityName": "Type your city name"
     },
     "footer": {
         "tagline": "Professional auto glass pricing & quoting platform built for modern repair shops.",
@@ -58,9 +173,268 @@
         "followUs": "Follow Us",
         "allRightsReserved": "All rights reserved."
     },
+    "aboutPage": {
+        "heroTitle1": "Built by Auto Glass Experts,",
+        "heroTitle2": "Powered by ",
+        "heroTitle3": "Artificial Intelligence",
+        "missionTitle": "Our Mission",
+        "missionText": "APAI was founded to solve the core inefficiencies that plague the auto glass industry: inaccurate quotes, paper-based work orders, and slow payment cycles. We provide a single, cloud-based platform that handles the entire service flow, allowing shop owners and remote installers to focus on service delivery, not paperwork.",
+        "foundersTitle": "Meet the Founders",
+        "foundersSubtitle": "The visionary team combining industry experience with cutting-edge technology.",
+        "founders": [
+            {
+                "name": "Suyog Khedekar",
+                "role": "Founder & Industry Visionary",
+                "description": "With over six years of experience owning and operating GlassFixit in the competitive California market, Suyog is the \"voice of the customer.\" He understands the nuances of NAGS codes, insurance deductibles, and the daily headaches of shop management. His mission is to solve the pricing issues and operational gaps that prevent glass shops from reaching their full potential."
+            },
+            {
+                "name": "Priyank Acharekar",
+                "role": "Co-founder, AI & Cloud Engineer",
+                "description": "Priyank is the architect behind APAI’s intelligence. An expert AI and Cloud Engineer, he brings hands-on experience in designing and deploying end-to-end Generative AI applications. With a background at TestSprint360, Priyank leverages AWS, Bedrock, and Python to ensure APAI’s backend is not only scalable and secure but also utilizes cutting-edge ML and data automation to make our quoting engine the smartest in the industry."
+            },
+            {
+                "name": "Sanket Paithankar",
+                "role": "Co-founder, Full-Stack & Product",
+                "description": "Sanket is the engine behind the APAI product experience. He owns the core engineering of the platform—from database and API design to the frontend interface. With a focus on clean architecture and high reliability, Sanket ensures that the software is fast, stable, and intuitive. He bridges the gap between complex technical requirements and the simple, easy-to-use features that shop owners and technicians rely on every day."
+            }
+        ],
+        "whoWeServeTitle": "Who We Serve",
+        "whoWeServeSubtitle": "Empowering professionals across the entire automotive glass sector.",
+        "whoWeServe": [
+            {
+                "title": "Shop Owners",
+                "desc": "Full control over multi-location operations, team management, and financial oversight."
+            },
+            {
+                "title": "Remote Installers/Mobile Service",
+                "desc": "The ability to run an entire job, from quote generation to payment collection, from their truck or remote location."
+            },
+            {
+                "title": "Employee Teams",
+                "desc": "Role-based access ensures Sales, CSRs, Managers, and Technicians have tools tailored to their specific daily needs."
+            }
+        ],
+        "whyChooseTitle": "Why Choose APAI?",
+        "whyChooseSubtitle1": "Most software companies build for \"the industry.\" We build for ",
+        "whyChooseSubtitle2": "you",
+        "whyChooseSubtitle3": ", because we come from your world.",
+        "whyChoose": [
+            {
+                "title": "Real-World Roots",
+                "desc": "Designed based on years of actual shop-owner experience. We build for you, because we come from your world."
+            },
+            {
+                "title": "Enterprise-Grade Tech",
+                "desc": "Built with the same AI and Cloud infrastructure used by global tech leaders."
+            },
+            {
+                "title": "Reliability First",
+                "desc": "A platform that is fast, stable, and evolves with your business needs."
+            }
+        ],
+        "securityTag": "Security & Reliability",
+        "dataPriorityTitle": "Your Business Data is Our Top Priority",
+        "dataPriorityDesc": "All data is encrypted, securely stored in the cloud, and automatically backed up. Our role-based access control protects sensitive information, giving you peace of mind.",
+        "getStartedToday": "Get Started Today"
+    },
+    "workflowSection": {
+        "title": "Workflow from Quote to Invoice",
+        "subtitle": "Complete lifecycle management of every automotive glass service",
+        "steps": [
+            {
+                "title": "Create Quote",
+                "desc": "Generate professional quotes with customer info, vehicle details, glass parts, labor costs, and automatic pricing calculations in minutes."
+            },
+            {
+                "title": "Approve & Convert",
+                "desc": "Customer reviews and accepts quote. System automatically converts to work order and schedules service with assigned technician."
+            },
+            {
+                "title": "Execute Service",
+                "desc": "Technicians complete work in field with before/after photo documentation, time logging, and customer signature confirmation."
+            },
+            {
+                "title": "Invoice & Track",
+                "desc": "Automatically generate invoices with payment tracking. Monitor partial payments, overdue invoices, and late fees all in one dashboard."
+            }
+        ]
+    },
+    "whyChooseSection": {
+        "title": "Why Choose APAI?",
+        "desc": "APAI is purpose-built for the automotive glass industry. We understand your business challenges and provide solutions tailored to your success.",
+        "benefits": [
+            {
+                "title": "Instant Accuracy",
+                "desc": "VIN lookup eliminates data entry errors and ensures correct parts matching."
+            },
+            {
+                "title": "Time Savings",
+                "desc": "Automated quote generation and calculations reduce admin work by 70%."
+            },
+            {
+                "title": "Revenue Growth",
+                "desc": "Professional quotes and follow-up improve conversion rates and customer retention."
+            },
+            {
+                "title": "Better Control",
+                "desc": "Track every job from quote to invoice with complete visibility and reporting."
+            },
+            {
+                "title": "Scalability",
+                "desc": "Manage growing teams and multiple locations without complexity."
+            }
+        ]
+    },
+    "valuePropSection": {
+        "title": "The APAI Difference",
+        "subtitle": "Stop Juggling Systems. Start Growing.",
+        "desc": "APAI is a specialized B2B SaaS platform designed exclusively for auto glass repair shops and mobile technicians to streamline the entire service lifecycle, turning quotes into paid invoices effortlessly.",
+        "coreFocus": "Core Focus",
+        "keyBenefitsTitle": "Key Benefits",
+        "pillars": {
+            "quote": {
+                "title": "Quote with Precision",
+                "focus": "Instant, VIN-driven NAGS part identification built specifically for auto glass professionals.",
+                "detail": "APAI eliminates guesswork during quoting by automatically matching vehicle VINs to the correct NAGS glass part, features, and specifications. No more manual cross-checks, outdated catalogs, or incorrect part selection that leads to rework or losses.",
+                "b1": "Accurate windshield, back glass, and side glass identification every time",
+                "b2": "Real-time NAGS data ensures correct pricing and part compatibility",
+                "b3": "Reduces quoting time from minutes to seconds",
+                "b4": "Prevents costly ordering and installation errors"
+            },
+            "execute": {
+                "title": "Execute with Confidence",
+                "focus": "End-to-end digital work order management with full mobile support.",
+                "detail": "Move away from paper, WhatsApp notes, and fragmented systems. APAI provides a structured digital workflow from job approval to completion, accessible on mobile, tablet, or desktop \u2014 ideal for field technicians and shop managers alike.",
+                "b1": "Create and assign work orders instantly",
+                "b2": "Dispatch technicians with clear job details",
+                "b3": "Track labor hours, job status, and technician progress",
+                "b4": "Capture photos, signatures, and compliance documents on-site"
+            },
+            "paid": {
+                "title": "Get Paid Faster",
+                "focus": "Automated billing, insurance tracking, and payment follow-ups.",
+                "detail": "APAI streamlines the most painful part of auto glass operations \u2014 payments. From invoice generation to insurance coordination and customer reminders, everything is tracked and automated so nothing slips through the cracks.",
+                "b1": "Generate accurate invoices directly from completed work orders",
+                "b2": "Track insurance claims and approval status",
+                "b3": "Monitor outstanding balances in real time",
+                "b4": "Send automatic payment and overdue reminders"
+            }
+        },
+        "accuracy": {
+            "title": "Unmatched Accuracy from the Ground Up",
+            "subtitle": "Everything you need to run your business efficiently",
+            "kf1": {
+                "title": "100% VIN Accuracy",
+                "desc": "Our integration with the NHTSA VPIC API ensures perfect vehicle identification every time, matching Year, Make, Model, and Style to the correct glass part."
+            },
+            "kf2": {
+                "title": "NAGS Code Integration",
+                "desc": "Access the absolute complete National Auto Glass Specifications (NAGS) catalog for real-time pricing and labor hours, ensuring maximum profitability on every job."
+            },
+            "kf3": {
+                "title": "Quote-to-Invoice Flow",
+                "desc": "Effortlessly convert an approved quote into a Work Order and finally an Invoice with a single click\u2014no duplicate data entry."
+            }
+        },
+        "cta": "See All Features",
+        "contactForm": {
+            "title": "Custom Contact Form",
+            "bullets": [
+                "Personalized Page for each user",
+                "Auto-Fill YMM Fields",
+                "Secure database storage",
+                "Automatic AI response"
+            ]
+        },
+        "aiChatbot": {
+            "title": "AI Chatbot",
+            "badge": "New",
+            "desc": "An AI Chatbot integrated into your website allowing visitors to interact with the system in real time, answering queries and capturing leads 24/7."
+        },
+        "security": {
+            "title": "Security & Reliability: Your Business Data is Our Top Priority",
+            "desc": "All data is encrypted, securely stored in the cloud, and automatically backed up. Our role-based access control protects sensitive information, giving you peace of mind."
+        }
+    },
+    "processSection": {
+        "title": "Simple 4-Step Process",
+        "step1": {
+            "title": "Enter Customer & Vehicle",
+            "desc": "Select or create customer, lookup vehicle by VIN or manual entry. All info auto-populated for accuracy."
+        },
+        "step2": {
+            "title": "Select Glass Parts",
+            "desc": "Browse NAGS-classified glass parts by vehicle compatibility. See real-time pricing and available inventory."
+        },
+        "step3": {
+            "title": "Add Labor & Calculate",
+            "desc": "Enter hourly rate and estimated hours. System auto-calculates totals with tax and discounts applied."
+        },
+        "step4": {
+            "title": "Send or Convert",
+            "desc": "Send professional quote to customer or convert directly to work order. Track status until invoice paid."
+        }
+    },
+    "featuresSection": {
+        "title": "Powerful Features Built for Your Business",
+        "vinLookup": {
+            "title": "VIN-Based Vehicle Lookup",
+            "desc": "Instantly identify vehicles using 17-character VINs. Auto-populates year, make, model, and style for 100% accuracy through NHTSA VPIC API integration."
+        },
+        "realTimePricing": {
+            "title": "Real-Time Pricing",
+            "desc": "Access up-to-date glass part pricing integrated with supplier databases. Automatic calculations for parts, labor, tax, and discounts in seconds."
+        },
+        "professionalDocs": {
+            "title": "Professional Documents",
+            "desc": "Generate branded quotes, work orders, and invoices with customized pricing breakdowns, terms, and professional formatting ready to send to customers."
+        },
+        "teamCollab": {
+            "title": "Team Collaboration",
+            "desc": "Manage unlimited employees with role-based access control. Technicians, managers, sales teams, and administrators all work from one platform."
+        },
+        "customerMgmt": {
+            "title": "Customer Management",
+            "desc": "Maintain detailed customer profiles, vehicle history, and service records. Track quotes, work orders, and invoices per customer for relationship management."
+        },
+        "enterpriseSecurity": {
+            "title": "Enterprise Security",
+            "desc": "All data encrypted and stored securely in the cloud. Automatic backups, role-based access control, and compliance-ready infrastructure."
+        }
+    },
+    "businessModels": {
+        "title": "Built for Different Business Models",
+        "shopOwners": {
+            "title": "Shop Owners",
+            "desc": "Manage your brick-and-mortar location with multiple staff members, handle billing, and scale your business.",
+            "f1": "Full platform access",
+            "f2": "Unlimited employee management",
+            "f3": "Multi-location support",
+            "f4": "Advanced reporting"
+        },
+        "mobileInstallers": {
+            "title": "Mobile Installers",
+            "desc": "Work independently or lead a mobile team. Generate quotes on-the-go and manage service delivery.",
+            "f1": "Mobile-responsive design",
+            "f2": "Job scheduling",
+            "f3": "Photo documentation",
+            "f4": "Customer communication"
+        },
+        "repairShops": {
+            "title": "Repair Shops",
+            "desc": "Streamline auto glass repairs with professional documentation, team coordination, and customer management.",
+            "f1": "Customer tracking",
+            "f2": "Vehicle history",
+            "f3": "Team workflows",
+            "f4": "Payment management"
+        }
+    },
     "home": {
         "heroTitle": "Auto Glass Pro AI",
         "heroSubtitle": "The smartest way to manage your auto glass business",
+        "heroMainTitle": "The Smartest Way to Run Your Auto Glass Business.",
+        "heroDescription": "Generate Instant, 100% Accurate Quotes through NAGS data, Streamline Field Service, and Manage Every Invoice\u2014All in One Platform.",
+        "watchDemo": "Watch a Demo",
         "ctaButton": "Get Started",
         "learnMore": "Learn More",
         "whyChoose": "Why Choose Us",
@@ -102,8 +476,9 @@
         "customerCreated": "Customer created",
         "organizationUpdated": "Organization updated",
         "organizationCreated": "Organization created",
-        "failedToSaveCustomer": "Failed to save customer",
-        "failedToSaveOrganization": "Failed to save organization"
+        "failedToSaveOrganization": "Failed to save organization",
+        "stateLabel": "State",
+        "provinceLabel": "Province"
     },
     "analytics": {
         "title": "Analytics",
@@ -337,7 +712,92 @@
         "contactSales": "Contact Sales",
         "needHelp": "Need help choosing?",
         "freeTrialDays": "30 days",
-        "getStartedFree": "get started on our free plan and upgrade when you are ready."
+        "getStartedFree": "get started on our free plan and upgrade when you are ready.",
+        "features": {
+            "common": [
+                {
+                    "label": "NAGS Data & VIN Decoding",
+                    "desc": "Access US NAGS Database, decode VINs instantly, and generate accurate auto glass quotes."
+                },
+                {
+                    "label": "Job Dashboard & Invoices",
+                    "desc": "Manage all your jobs in one dashboard, track service status, and generate professional invoices."
+                },
+                {
+                    "label": "Live Pricing Integration",
+                    "desc": "Connect directly with glass distributors for real-time pricing and availability checks."
+                },
+                {
+                    "label": "AI Contact Chat",
+                    "desc": "Smart contact chat that use AI to follow up with leads and schedule appointments automatically."
+                },
+                {
+                    "label": "Analytics & ADAS Reports",
+                    "desc": "View shop performance analytics and manage ADAS calibration reports efficiently."
+                }
+            ],
+            "free": [
+                {
+                    "label": "Full Professional Access",
+                    "desc": "Try the full Professional experience free for 30 days. No credit card required to start."
+                },
+                {
+                    "label": "VIN & Vehicle Search",
+                    "desc": "Search parts by VIN or Year/Make/Model to find the exact glass needed."
+                },
+                {
+                    "label": "Real Quotes & Live Pricing",
+                    "desc": "Create actionable quotes for customers using live pricing data from your suppliers."
+                },
+                {
+                    "label": "Team Access & Requests",
+                    "desc": "Invite team members and use custom request forms to streamline your workflow."
+                },
+                {
+                    "label": "Keep Data on Upgrade",
+                    "desc": "All your data, settings, and history are preserved when you upgrade to a paid plan."
+                }
+            ],
+            "pro": [
+                {
+                    "label": "Unlimited Vehicle Search",
+                    "desc": "Unlimited access to VIN decoding and Year/Make/Model lookups for all your jobs."
+                },
+                {
+                    "label": "AI-Assisted Quoting",
+                    "desc": "Let AI help you build quotes faster by suggesting parts and labor times."
+                },
+                {
+                    "label": "Custom Request Forms",
+                    "desc": "Embed custom quote request forms on your own website to capture leads directly."
+                },
+                {
+                    "label": "Branded Quotes",
+                    "desc": "Send professional, branded quotes featuring your shop's logo and custom terms."
+                },
+                {
+                    "label": "Team Roles & Employee Management",
+                    "desc": "Add employees ($49.99/user/mo) and grant specific access rights (managed by superuser)."
+                }
+            ],
+            "enterprise": [
+                {
+                    "label": "Dedicated Account Manager",
+                    "desc": "Your own personal point of contact for priority support and onboarding."
+                },
+                {
+                    "label": "SSO & Advanced Security",
+                    "desc": "Single Sign-On (SSO) integration and advanced security controls for your team."
+                },
+                {
+                    "label": "Custom Contracts & SLA",
+                    "desc": "Tailored contracts with guaranteed Service Level Agreements (SLA)."
+                }
+            ],
+            "unlimitedDashboard": {
+                "label": "Unlimited Job Dashboard & Invoices"
+            }
+        }
     },
     "features": {
         "title": "Features",
@@ -369,7 +829,14 @@
         "messageSentDesc": "We'll get back to you shortly.",
         "sendAnother": "Send another message",
         "getInTouch": "Get in Touch",
-        "loveToHear": "We'd love to hear from you"
+        "loveToHear": "We'd love to hear from you",
+        "tellUsAboutYourself": "Tell us a bit about yourself",
+        "testOutPrompt": "Want to test out APAI? We'll show you around, or you can drive the bus!",
+        "newBusinessPrompt": "New Business?",
+        "newBusiness": "New",
+        "existingBusiness": "Existing",
+        "emailUs": "E-mail Us",
+        "emailUsDesc": "For any inquiries, support, or feedback, feel free to email us. Our team will get back to you within 24\u201348 hours."
     },
     "blogs": {
         "title": "Blogs",
@@ -433,7 +900,8 @@
         "all": "All",
         "phoneRequired": "Phone is required",
         "searchPlaceholder": "Search...",
-        "noResults": "No results found"
+        "noResults": "No results found",
+        "optional": "(optional)"
     },
     "language": {
         "en": "EN",

@@ -8,6 +8,7 @@ import {
     CheckCircleFilled
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import PageHead from '../PageHead';
 
 // Reusing the AnimatedSection logic for consistent animations
@@ -76,64 +77,53 @@ const FounderCard = ({ name, role, description, delay }) => (
 
 const AboutPage = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
 
-    const founders = [
-        {
-            name: "Suyog Khedekar",
-            role: "Founder & Industry Visionary",
-            description: "With over six years of experience owning and operating GlassFixit in the competitive California market, Suyog is the \"voice of the customer.\" He understands the nuances of NAGS codes, insurance deductibles, and the daily headaches of shop management. His mission is to solve the pricing issues and operational gaps that prevent glass shops from reaching their full potential."
-        },
-        {
-            name: "Priyank Acharekar",
-            role: "Co-founder, AI & Cloud Engineer",
-            description: "Priyank is the architect behind APAI’s intelligence. An expert AI and Cloud Engineer, he brings hands-on experience in designing and deploying end-to-end Generative AI applications. With a background at TestSprint360, Priyank leverages AWS, Bedrock, and Python to ensure APAI’s backend is not only scalable and secure but also utilizes cutting-edge ML and data automation to make our quoting engine the smartest in the industry."
-        },
-        {
-            name: "Sanket Paithankar",
-            role: "Co-founder, Full-Stack & Product",
-            description: "Sanket is the engine behind the APAI product experience. He owns the core engineering of the platform—from database and API design to the frontend interface. With a focus on clean architecture and high reliability, Sanket ensures that the software is fast, stable, and intuitive. He bridges the gap between complex technical requirements and the simple, easy-to-use features that shop owners and technicians rely on every day."
-        }
-    ];
+    const founders = t('aboutPage.founders', { returnObjects: true }) || [];
 
+    const targetUsersTranslations = t('aboutPage.whoWeServe', { returnObjects: true }) || [];
     const targetUsers = [
         {
-            title: "Shop Owners",
-            desc: "Full control over multi-location operations, team management, and financial oversight.",
+            title: targetUsersTranslations[0]?.title || '',
+            desc: targetUsersTranslations[0]?.desc || '',
             icon: <GlobalOutlined />
         },
         {
-            title: "Remote Installers/Mobile Service",
-            desc: "The ability to run an entire job, from quote generation to payment collection, from their truck or remote location.",
+            title: targetUsersTranslations[1]?.title || '',
+            desc: targetUsersTranslations[1]?.desc || '',
             icon: <RocketOutlined />
         },
         {
-            title: "Employee Teams",
-            desc: "Role-based access ensures Sales, CSRs, Managers, and Technicians have tools tailored to their specific daily needs.",
+            title: targetUsersTranslations[2]?.title || '',
+            desc: targetUsersTranslations[2]?.desc || '',
             icon: <UserOutlined />
         }
     ];
 
+    const whyChooseTranslations = t('aboutPage.whyChoose', { returnObjects: true }) || [];
     const whyChoose = [
         {
-            title: "Real-World Roots",
-            desc: "Designed based on years of actual shop-owner experience. We build for you, because we come from your world.",
+            title: whyChooseTranslations[0]?.title || '',
+            desc: whyChooseTranslations[0]?.desc || '',
             color: "bg-blue-50 text-blue-600"
         },
         {
-            title: "Enterprise-Grade Tech",
-            desc: "Built with the same AI and Cloud infrastructure used by global tech leaders.",
+            title: whyChooseTranslations[1]?.title || '',
+            desc: whyChooseTranslations[1]?.desc || '',
             color: "bg-purple-50 text-purple-600"
         },
         {
-            title: "Reliability First",
-            desc: "A platform that is fast, stable, and evolves with your business needs.",
+            title: whyChooseTranslations[2]?.title || '',
+            desc: whyChooseTranslations[2]?.desc || '',
             color: "bg-fuchsia-50 text-fuchsia-600"
         }
     ];
+
+
 
     return (
         <div className="min-h-screen pt-10 pb-20 relative overflow-hidden">
@@ -148,15 +138,15 @@ const AboutPage = () => {
                 <div className="px-6 md:px-12 lg:px-20 py-12 md:py-16 max-w-7xl mx-auto text-center border-b border-slate-50">
                     <AnimatedSection>
                         <h1 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6 font-outfit">
-                            Built by Auto Glass Experts, <br /> Powered by <span style={{ color: '#7E5CFE' }}>Artificial Intelligence</span>.
+                            {t('aboutPage.heroTitle1')} <br /> {t('aboutPage.heroTitle2')}<span style={{ color: '#7E5CFE' }}>{t('aboutPage.heroTitle3')}</span>.
                         </h1>
                     </AnimatedSection>
 
                     <AnimatedSection delay="0.2s">
                         <div className="max-w-4xl mx-auto bg-white border border-violet-100 p-6 md:p-10 rounded-3xl mt-6 shadow-sm">
-                            <h2 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-3">Our Mission</h2>
+                            <h2 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-3">{t('aboutPage.missionTitle')}</h2>
                             <p className="text-lg md:text-xl text-slate-800 leading-relaxed font-medium">
-                                APAI was founded to solve the core inefficiencies that plague the auto glass industry: inaccurate quotes, paper-based work orders, and slow payment cycles. We provide a single, cloud-based platform that handles the entire service flow, allowing shop owners and remote installers to focus on service delivery, not paperwork.
+                                {t('aboutPage.missionText')}
                             </p>
                         </div>
                     </AnimatedSection>
@@ -167,8 +157,8 @@ const AboutPage = () => {
                     <div className="max-w-7xl mx-auto">
                         <AnimatedSection>
                             <div className="text-center mb-12">
-                                <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3 font-outfit">Meet the Founders</h2>
-                                <p className="text-slate-600 max-w-2xl mx-auto">The visionary team combining industry experience with cutting-edge technology.</p>
+                                <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3 font-outfit">{t('aboutPage.foundersTitle')}</h2>
+                                <p className="text-slate-600 max-w-2xl mx-auto">{t('aboutPage.foundersSubtitle')}</p>
                             </div>
                         </AnimatedSection>
 
@@ -190,8 +180,8 @@ const AboutPage = () => {
                         <div className="px-6 md:px-12 lg:px-20 py-20 bg-white rounded-[2.5rem] relative overflow-hidden border border-violet-100">
                             <div className="relative z-10 max-w-7xl mx-auto">
                                 <div className="text-center mb-16">
-                                    <h2 className="text-3xl md:text-4xl font-bold mb-4 font-outfit text-slate-900">Who We Serve</h2>
-                                    <p className="text-slate-600 max-w-2xl mx-auto text-lg">Empowering professionals across the entire automotive glass sector.</p>
+                                    <h2 className="text-3xl md:text-4xl font-bold mb-4 font-outfit text-slate-900">{t('aboutPage.whoWeServeTitle')}</h2>
+                                    <p className="text-slate-600 max-w-2xl mx-auto text-lg">{t('aboutPage.whoWeServeSubtitle')}</p>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -216,9 +206,9 @@ const AboutPage = () => {
                 <div className="px-6 md:px-12 lg:px-20 py-10 max-w-7xl mx-auto">
                     <AnimatedSection>
                         <div className="text-center mb-10">
-                            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4 font-outfit">Why Choose APAI?</h2>
+                            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4 font-outfit">{t('aboutPage.whyChooseTitle')}</h2>
                             <p className="text-lg text-slate-600 max-w-3xl mx-auto">
-                                Most software companies build for "the industry." We build for <span className="font-bold text-violet-600">you</span>, because we come from your world.
+                                {t('aboutPage.whyChooseSubtitle1')} <span className="font-bold text-violet-600">{t('aboutPage.whyChooseSubtitle2')}</span>{t('aboutPage.whyChooseSubtitle3')}
                             </p>
                         </div>
                     </AnimatedSection>
@@ -246,13 +236,13 @@ const AboutPage = () => {
                         <div className="bg-violet-50 rounded-3xl p-10 md:p-14 text-center border border-violet-100 relative overflow-hidden">
                             <div className="relative z-10">
                                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full text-violet-700 font-bold text-sm mb-6 shadow-sm">
-                                    <SafetyCertificateOutlined /> Security & Reliability
+                                    <SafetyCertificateOutlined /> {t('aboutPage.securityTag')}
                                 </div>
                                 <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4 font-outfit">
-                                    Your Business Data is Our Top Priority
+                                    {t('aboutPage.dataPriorityTitle')}
                                 </h2>
                                 <p className="text-slate-600 mb-8 max-w-2xl mx-auto">
-                                    All data is encrypted, securely stored in the cloud, and automatically backed up. Our role-based access control protects sensitive information, giving you peace of mind.
+                                    {t('aboutPage.dataPriorityDesc')}
                                 </p>
                                 <Button
                                     type="primary"
@@ -260,7 +250,7 @@ const AboutPage = () => {
                                     onClick={() => { window.scrollTo(0, 0); window.scroll({ top: 0, left: 0, behavior: 'smooth' }); navigate('/auth', { state: { mode: 'signup' } }); }}
                                     className="!bg-violet-600 !border-violet-600 hover:!bg-violet-500 !h-12 !px-8 !text-base !rounded-full shadow-lg shadow-violet-200"
                                 >
-                                    Get Started Today
+                                    {t('aboutPage.getStartedToday')}
                                 </Button>
                             </div>
                         </div>

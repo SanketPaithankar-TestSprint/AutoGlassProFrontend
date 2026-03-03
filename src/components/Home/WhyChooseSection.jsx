@@ -1,32 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { CheckOutlined } from "@ant-design/icons";
-
-const benefits = [
-    {
-        title: "Instant Accuracy",
-        description: "VIN lookup eliminates data entry errors and ensures correct parts matching."
-    },
-    {
-        title: "Time Savings",
-        description: "Automated quote generation and calculations reduce admin work by 70%."
-    },
-    {
-        title: "Revenue Growth",
-        description: "Professional quotes and follow-up improve conversion rates and customer retention."
-    },
-    {
-        title: "Better Control",
-        description: "Track every job from quote to invoice with complete visibility and reporting."
-    },
-    {
-        title: "Scalability",
-        description: "Manage growing teams and multiple locations without complexity."
-    }
-];
+import { useTranslation } from "react-i18next";
 
 const WhyChooseSection = () => {
+    const { t } = useTranslation();
     const [isVisible, setIsVisible] = useState(false);
     const sectionRef = useRef(null);
+
+    const benefits = t('whyChooseSection.benefits', { returnObjects: true }) || [];
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -66,7 +47,7 @@ const WhyChooseSection = () => {
                                 backgroundImage: 'linear-gradient(90deg, #7E5CFE 0%, #00A8E4 100%)'
                             } : {}}
                         >
-                            Why Choose APAI?
+                            {t('whyChooseSection.title')}
                         </h2>
                         <p
                             className="text-lg text-slate-600 leading-relaxed opacity-0"
@@ -74,7 +55,7 @@ const WhyChooseSection = () => {
                                 animation: `fadeInUp 0.6s ease-out 0.4s forwards`
                             } : {}}
                         >
-                            APAI is purpose-built for the automotive glass industry. We understand your business challenges and provide solutions tailored to your success.
+                            {t('whyChooseSection.desc')}
                         </p>
                     </div>
 
@@ -93,7 +74,7 @@ const WhyChooseSection = () => {
                                 </div>
                                 <div>
                                     <span className="font-bold text-slate-800">{benefit.title}: </span>
-                                    <span className="text-slate-600">{benefit.description}</span>
+                                    <span className="text-slate-600">{benefit.desc}</span>
                                 </div>
                             </div>
                         ))}

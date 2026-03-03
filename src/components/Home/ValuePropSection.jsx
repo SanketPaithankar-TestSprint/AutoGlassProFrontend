@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Button } from "antd";
 import { useNavigate } from "react-router-dom";
 import { CheckCircleFilled, MessageOutlined, FormOutlined, ArrowRightOutlined, LockOutlined } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 
 import PrecisionImage from "../../assets/2.1.png";
 import ExecuteImage from "../../assets/2.2.png";
@@ -58,40 +59,42 @@ const AnimatedSection = ({ children, delay = "0s", className = "" }) => {
 
 const ValuePropSection = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
+
     const pillars = [
         {
-            title: "Quote with Precision",
-            focus: "Instant, VIN-driven NAGS part identification built specifically for auto glass professionals.",
-            expandedDetail: "APAI eliminates guesswork during quoting by automatically matching vehicle VINs to the correct NAGS glass part, features, and specifications. No more manual cross-checks, outdated catalogs, or incorrect part selection that leads to rework or losses.",
+            title: t('valuePropSection.pillars.quote.title'),
+            focus: t('valuePropSection.pillars.quote.focus'),
+            expandedDetail: t('valuePropSection.pillars.quote.detail'),
             keyBenefits: [
-                "Accurate windshield, back glass, and side glass identification every time",
-                "Real-time NAGS data ensures correct pricing and part compatibility",
-                "Reduces quoting time from minutes to seconds",
-                "Prevents costly ordering and installation errors"
+                t('valuePropSection.pillars.quote.b1'),
+                t('valuePropSection.pillars.quote.b2'),
+                t('valuePropSection.pillars.quote.b3'),
+                t('valuePropSection.pillars.quote.b4')
             ],
             image: PrecisionImage
         },
         {
-            title: "Execute with Confidence",
-            focus: "End-to-end digital work order management with full mobile support.",
-            expandedDetail: "Move away from paper, WhatsApp notes, and fragmented systems. APAI provides a structured digital workflow from job approval to completion, accessible on mobile, tablet, or desktop — ideal for field technicians and shop managers alike.",
+            title: t('valuePropSection.pillars.execute.title'),
+            focus: t('valuePropSection.pillars.execute.focus'),
+            expandedDetail: t('valuePropSection.pillars.execute.detail'),
             keyBenefits: [
-                "Create and assign work orders instantly",
-                "Dispatch technicians with clear job details",
-                "Track labor hours, job status, and technician progress",
-                "Capture photos, signatures, and compliance documents on-site"
+                t('valuePropSection.pillars.execute.b1'),
+                t('valuePropSection.pillars.execute.b2'),
+                t('valuePropSection.pillars.execute.b3'),
+                t('valuePropSection.pillars.execute.b4')
             ],
             image: ExecuteImage
         },
         {
-            title: "Get Paid Faster",
-            focus: "Automated billing, insurance tracking, and payment follow-ups.",
-            expandedDetail: "APAI streamlines the most painful part of auto glass operations — payments. From invoice generation to insurance coordination and customer reminders, everything is tracked and automated so nothing slips through the cracks.",
+            title: t('valuePropSection.pillars.paid.title'),
+            focus: t('valuePropSection.pillars.paid.focus'),
+            expandedDetail: t('valuePropSection.pillars.paid.detail'),
             keyBenefits: [
-                "Generate accurate invoices directly from completed work orders",
-                "Track insurance claims and approval status",
-                "Monitor outstanding balances in real time",
-                "Send automatic payment and overdue reminders"
+                t('valuePropSection.pillars.paid.b1'),
+                t('valuePropSection.pillars.paid.b2'),
+                t('valuePropSection.pillars.paid.b3'),
+                t('valuePropSection.pillars.paid.b4')
             ],
             image: PaidImage
         }
@@ -99,16 +102,16 @@ const ValuePropSection = () => {
 
     const keyFeatures = [
         {
-            title: "100% VIN Accuracy",
-            desc: "Our integration with the NHTSA VPIC API ensures perfect vehicle identification every time, matching Year, Make, Model, and Style to the correct glass part."
+            title: t('valuePropSection.accuracy.kf1.title'),
+            desc: t('valuePropSection.accuracy.kf1.desc')
         },
         {
-            title: "NAGS Code Integration",
-            desc: "Access the absolute complete National Auto Glass Specifications (NAGS) catalog for real-time pricing and labor hours, ensuring maximum profitability on every job."
+            title: t('valuePropSection.accuracy.kf2.title'),
+            desc: t('valuePropSection.accuracy.kf2.desc')
         },
         {
-            title: "Quote-to-Invoice Flow",
-            desc: "Effortlessly convert an approved quote into a Work Order and finally an Invoice with a single click—no duplicate data entry."
+            title: t('valuePropSection.accuracy.kf3.title'),
+            desc: t('valuePropSection.accuracy.kf3.desc')
         }
     ];
 
@@ -119,14 +122,13 @@ const ValuePropSection = () => {
             <AnimatedSection>
                 <div className="max-w-4xl mx-auto text-center mb-20 lg:mb-24">
                     <h2 className="text-3xl md:text-5xl font-bold mb-6 font-outfit text-slate-900">
-                        The APAI Difference
+                        {t('valuePropSection.title')}
                     </h2>
                     <p className="text-xl md:text-2xl text-violet-600 font-semibold mb-6">
-                        Stop Juggling Systems. Start Growing.
+                        {t('valuePropSection.subtitle')}
                     </p>
                     <p className="text-lg text-slate-600 leading-relaxed max-w-3xl mx-auto">
-                        APAI is a specialized B2B SaaS platform designed exclusively for auto glass repair shops
-                        and mobile technicians to streamline the entire service lifecycle, turning quotes into paid invoices effortlessly.
+                        {t('valuePropSection.desc')}
                     </p>
                 </div>
             </AnimatedSection>
@@ -149,7 +151,7 @@ const ValuePropSection = () => {
                                     <div className="flex gap-4 items-start">
                                         <CheckCircleFilled className="text-2xl mt-1 text-violet-600 shrink-0" />
                                         <div>
-                                            <h4 className="text-xl font-bold text-slate-800 mb-2">Core Focus</h4>
+                                            <h4 className="text-xl font-bold text-slate-800 mb-2">{t('valuePropSection.coreFocus')}</h4>
                                             <p className="text-lg text-slate-600 leading-relaxed">
                                                 {pillar.focus}
                                             </p>
@@ -167,7 +169,7 @@ const ValuePropSection = () => {
                                     <div className="flex gap-4 items-start">
                                         <CheckCircleFilled className="text-2xl mt-1 text-violet-600 shrink-0" />
                                         <div>
-                                            <h4 className="text-xl font-bold text-slate-800 mb-2">Key Benefits</h4>
+                                            <h4 className="text-xl font-bold text-slate-800 mb-2">{t('valuePropSection.keyBenefitsTitle')}</h4>
                                             {pillar.keyBenefits ? (
                                                 <ul className="space-y-2 mt-2">
                                                     {pillar.keyBenefits.map((benefit, i) => (
@@ -207,9 +209,9 @@ const ValuePropSection = () => {
                 <AnimatedSection>
                     <div className="text-center mb-20 pt-16">
                         <h2 className="text-3xl md:text-4xl font-bold mb-4 font-outfit text-slate-900">
-                            Unmatched Accuracy from the Ground Up
+                            {t('valuePropSection.accuracy.title')}
                         </h2>
-                        <p className="text-slate-500 text-lg">Everything you need to run your business efficiently</p>
+                        <p className="text-slate-500 text-lg">{t('valuePropSection.accuracy.subtitle')}</p>
                     </div>
                 </AnimatedSection>
 
@@ -303,7 +305,7 @@ const ValuePropSection = () => {
                             boxShadow: '0 4px 14px 0 rgba(126, 92, 254, 0.39)'
                         }}
                     >
-                        See All Features
+                        {t('valuePropSection.cta')}
                     </Button>
                 </div>
 
@@ -315,12 +317,12 @@ const ValuePropSection = () => {
                             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                                 <FormOutlined style={{ fontSize: '120px', color: '#7c3aed' }} />
                             </div>
-                            <h3 className="text-2xl font-bold mb-6 font-outfit text-slate-900">Custom Contact Form</h3>
+                            <h3 className="text-2xl font-bold mb-6 font-outfit text-slate-900">{t('valuePropSection.contactForm.title')}</h3>
                             <ul className="space-y-4 text-slate-600 text-lg">
-                                <li className="flex gap-3 items-center"><div className="w-2 h-2 rounded-full bg-violet-500" /> Personalized Page for each user</li>
-                                <li className="flex gap-3 items-center"><div className="w-2 h-2 rounded-full bg-violet-500" /> Auto-Fill YMM Fields</li>
-                                <li className="flex gap-3 items-center"><div className="w-2 h-2 rounded-full bg-violet-500" /> Secure database storage</li>
-                                <li className="flex gap-3 items-center"><div className="w-2 h-2 rounded-full bg-violet-500" /> Automatic AI response</li>
+                                <li className="flex gap-3 items-center"><div className="w-2 h-2 rounded-full bg-violet-500" /> {t('valuePropSection.contactForm.bullets.0', 'Personalized Page for each user')}</li>
+                                <li className="flex gap-3 items-center"><div className="w-2 h-2 rounded-full bg-violet-500" /> {t('valuePropSection.contactForm.bullets.1', 'Auto-Fill YMM Fields')}</li>
+                                <li className="flex gap-3 items-center"><div className="w-2 h-2 rounded-full bg-violet-500" /> {t('valuePropSection.contactForm.bullets.2', 'Secure database storage')}</li>
+                                <li className="flex gap-3 items-center"><div className="w-2 h-2 rounded-full bg-violet-500" /> {t('valuePropSection.contactForm.bullets.3', 'Automatic AI response')}</li>
                             </ul>
                         </div>
                     </AnimatedSection>
@@ -332,10 +334,10 @@ const ValuePropSection = () => {
                                 <MessageOutlined style={{ fontSize: '120px', color: '#7c3aed' }} />
                             </div>
                             <h3 className="text-2xl font-bold mb-6 font-outfit text-slate-900 flex items-center gap-3">
-                                AI Chatbot <span className="bg-violet-100 text-violet-700 text-sm px-3 py-1 rounded-full">New</span>
+                                {t('valuePropSection.aiChatbot.title')} <span className="bg-violet-100 text-violet-700 text-sm px-3 py-1 rounded-full">{t('valuePropSection.aiChatbot.badge')}</span>
                             </h3>
                             <p className="text-slate-600 text-lg leading-relaxed">
-                                An AI Chatbot integrated into your website allowing visitors to interact with the system in real time, answering queries and capturing leads 24/7.
+                                {t('valuePropSection.aiChatbot.desc')}
                             </p>
                         </div>
                     </AnimatedSection>
@@ -348,10 +350,10 @@ const ValuePropSection = () => {
                             <LockOutlined style={{ fontSize: '150px', color: '#7c3aed' }} />
                         </div>
                         <h3 className="text-2xl md:text-3xl font-bold mb-4 font-outfit text-slate-900 relative z-10">
-                            Security & Reliability: Your Business Data is Our Top Priority
+                            {t('valuePropSection.security.title')}
                         </h3>
                         <p className="text-lg text-slate-600 leading-relaxed relative z-10">
-                            All data is encrypted, securely stored in the cloud, and automatically backed up. Our role-based access control protects sensitive information, giving you peace of mind.
+                            {t('valuePropSection.security.desc')}
                         </p>
                     </div>
                 </AnimatedSection>
