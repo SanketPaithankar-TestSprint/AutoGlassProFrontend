@@ -21,6 +21,12 @@ jobs:
           🌿 Branch: ${{ github.ref_name }}
           👤 Actor: ${{ github.actor }}"
 
+          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "content": "🚀 **Build Started**\n\n📦 Repo: ${{ github.repository }}\n🌿 Branch: ${{ github.ref_name }}\n👤 Actor: ${{ github.actor }}"
+          }'
+
       - name: Checkout Code
         uses: actions/checkout@v4
 
@@ -51,6 +57,12 @@ jobs:
           🌿 Branch: ${{ github.ref_name }}
           🔗 Commit: https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
 
+          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "content": "❌ **Build Failed**\n\n📦 Repo: ${{ github.repository }}\n🌿 Branch: ${{ github.ref_name }}\n🔗 Commit: https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
+          }'
+
       - name: ✅ Notify Build Success
         if: success()
         run: |
@@ -61,6 +73,12 @@ jobs:
           
           📦 Repo: ${{ github.repository }}
           🌿 Branch: ${{ github.ref_name }}"
+
+          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "content": "✅ **Build Successful**\n\n📦 Repo: ${{ github.repository }}\n🌿 Branch: ${{ github.ref_name }}"
+          }'
 
       - name: Upload build artifact
         if: success()
@@ -82,6 +100,12 @@ jobs:
           -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
           -d parse_mode=Markdown \
           -d text="🚀 *Deployment Started*"
+
+          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "content": "🚀 **Deployment Started**"
+          }'
 
       - name: Download Artifact
         uses: actions/download-artifact@v4
@@ -116,6 +140,12 @@ jobs:
           -d parse_mode=Markdown \
           -d text="❌ *Deployment Failed*"
 
+          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "content": "❌ **Deployment Failed**"
+          }'
+
       - name: ✅ Notify Deploy Success
         if: success()
         run: |
@@ -125,3 +155,9 @@ jobs:
           -d text="✅ *Deployment Successful*
           
           🌍 Environment: DEV"
+
+          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "content": "✅ **Deployment Successful**\n\n🌍 Environment: DEV"
+          }'

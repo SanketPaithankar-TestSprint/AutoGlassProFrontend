@@ -5,33 +5,37 @@ import {
     ToolOutlined,
     CreditCardOutlined
 } from "@ant-design/icons";
-
-const steps = [
-    {
-        icon: <FormOutlined className="text-4xl" style={{ color: '#00A8E4' }} />,
-        title: "Create Quote",
-        description: "Generate professional quotes with customer info, vehicle details, glass parts, labor costs, and automatic pricing calculations in minutes."
-    },
-    {
-        icon: <CheckSquareOutlined className="text-4xl" style={{ color: '#00A8E4' }} />,
-        title: "Approve & Convert",
-        description: "Customer reviews and accepts quote. System automatically converts to work order and schedules service with assigned technician."
-    },
-    {
-        icon: <ToolOutlined className="text-4xl" style={{ color: '#00A8E4' }} />,
-        title: "Execute Service",
-        description: "Technicians complete work in field with before/after photo documentation, time logging, and customer signature confirmation."
-    },
-    {
-        icon: <CreditCardOutlined className="text-4xl" style={{ color: '#00A8E4' }} />,
-        title: "Invoice & Track",
-        description: "Automatically generate invoices with payment tracking. Monitor partial payments, overdue invoices, and late fees all in one dashboard."
-    }
-];
+import { useTranslation } from "react-i18next";
 
 const WorkflowSection = () => {
+    const { t } = useTranslation();
     const [isVisible, setIsVisible] = useState(false);
     const sectionRef = useRef(null);
+
+    const stepsTranslations = t('workflowSection.steps', { returnObjects: true }) || [];
+
+    const steps = [
+        {
+            icon: <FormOutlined className="text-4xl" style={{ color: '#00A8E4' }} />,
+            title: stepsTranslations[0]?.title || '',
+            description: stepsTranslations[0]?.desc || ''
+        },
+        {
+            icon: <CheckSquareOutlined className="text-4xl" style={{ color: '#00A8E4' }} />,
+            title: stepsTranslations[1]?.title || '',
+            description: stepsTranslations[1]?.desc || ''
+        },
+        {
+            icon: <ToolOutlined className="text-4xl" style={{ color: '#00A8E4' }} />,
+            title: stepsTranslations[2]?.title || '',
+            description: stepsTranslations[2]?.desc || ''
+        },
+        {
+            icon: <CreditCardOutlined className="text-4xl" style={{ color: '#00A8E4' }} />,
+            title: stepsTranslations[3]?.title || '',
+            description: stepsTranslations[3]?.desc || ''
+        }
+    ];
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -68,10 +72,10 @@ const WorkflowSection = () => {
                         backgroundImage: 'linear-gradient(90deg, #00A8E4 0%, #33c3f0 100%)'
                     } : {}}
                 >
-                    Workflow from Quote to Invoice
+                    {t('workflowSection.title')}
                 </h2>
                 <p className="text-slate-500 text-lg">
-                    Complete lifecycle management of every automotive glass service
+                    {t('workflowSection.subtitle')}
                 </p>
             </div>
 

@@ -4,14 +4,29 @@ import { Layout, Button, Tooltip } from "antd";
 import { CheckOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import PageHead from "./PageHead";
-import { freeTierFeatures, professionalTierFeatures, enterpriseTierFeatures } from "../const/pricingPage";
-
 
 const { Content } = Layout;
 
 const PricingPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+
+  const commonTierFeatures = t('pricing.features.common', { returnObjects: true }) || [];
+  const freeTierFeaturesRaw = t('pricing.features.free', { returnObjects: true }) || [];
+  const proTierFeaturesRaw = t('pricing.features.pro', { returnObjects: true }) || [];
+  const enterpriseTierFeatures = t('pricing.features.enterprise', { returnObjects: true }) || [];
+
+  const freeTierFeatures = [
+    ...freeTierFeaturesRaw,
+    ...commonTierFeatures,
+  ];
+
+  const professionalTierFeatures = [
+    ...proTierFeaturesRaw,
+    ...commonTierFeatures.map((f, i) =>
+      i === 1 ? { ...f, label: t('pricing.features.unlimitedDashboard.label') } : f
+    )
+  ];
 
   return (
     <Layout className="flex-grow font-sans text-slate-900 flex flex-col justify-center relative overflow-hidden">

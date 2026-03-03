@@ -124,12 +124,12 @@ ${userMessage || 'No message provided'}
                                         <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white text-lg shadow-md">
                                             <UserOutlined />
                                         </div>
-                                        <Title level={3} className="!mb-0 !text-xl">Tell us a bit about yourself</Title>
+                                        <Title level={3} className="!mb-0 !text-xl">{t('contact.tellUsAboutYourself')}</Title>
                                     </div>
 
                                     <div className="mb-6">
                                         <Paragraph className="text-slate-600">
-                                            Want to test out APAI? We'll show you around, or you can drive the bus!
+                                            {t('contact.testOutPrompt')}
                                         </Paragraph>
                                     </div>
 
@@ -221,18 +221,18 @@ ${userMessage || 'No message provided'}
 
                                         <Form.Item
                                             name="businessType"
-                                            label={<span className="font-medium text-slate-700">New Business?</span>}
+                                            label={<span className="font-medium text-slate-700">{t('contact.newBusinessPrompt')} <span className="font-normal text-slate-400 text-sm">{t('common.optional')}</span></span>}
                                             className="mb-3"
                                         >
                                             <Radio.Group className="flex gap-6">
-                                                <Radio value="new">New</Radio>
-                                                <Radio value="existing">Existing</Radio>
+                                                <Radio value="new">{t('contact.newBusiness')}</Radio>
+                                                <Radio value="existing">{t('contact.existingBusiness')}</Radio>
                                             </Radio.Group>
                                         </Form.Item>
 
                                         <Form.Item
                                             name="message"
-                                            label={<span className="font-medium text-slate-700">{t('contact.message')}</span>}
+                                            label={<span className="font-medium text-slate-700">{t('contact.message')} <span className="font-normal text-slate-400 text-sm">{t('common.optional')}</span></span>}
                                             className="mb-6"
                                         >
                                             <Input.TextArea
@@ -266,10 +266,10 @@ ${userMessage || 'No message provided'}
                             <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center text-white text-lg shadow-lg shadow-blue-500/30">
                                 <MailOutlined />
                             </div>
-                            <h3 className="text-lg font-bold font-outfit text-slate-900 m-0">E-mail Us</h3>
+                            <h3 className="text-lg font-bold font-outfit text-slate-900 m-0">{t('contact.emailUs')}</h3>
                         </div>
                         <p className="text-slate-600 m-0 leading-relaxed max-w-md">
-                            For any inquiries, support, or feedback, feel free to email us. Our team will get back to you within 24–48 hours.
+                            {t('contact.emailUsDesc')}
                         </p>
                     </div>
                     <div className="bg-blue-50 px-8 py-4 rounded-xl border border-blue-100 whitespace-nowrap">

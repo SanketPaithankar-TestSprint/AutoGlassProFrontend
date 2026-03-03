@@ -21,6 +21,106 @@
         "terms": "T\u00e9rminos",
         "termsOfService": "T\u00e9rminos de Servicio"
     },
+    "featuresPage": {
+        "title": "Características de APAI | Decodificación VIN, Chat IA, Cotizaciones y Datos NAGS",
+        "description": "Descubra las potentes funciones de APAI: Decodificación VIN instantánea, Chat de IA, cotizaciones profesionales en PDF y datos NAGS en tiempo real. Escale su taller por solo $99/mes.",
+        "headerTitlePrefix": "Todo Lo Que Necesita Para Ejecutar Su ",
+        "headerTitleHighlight": "Negocio de Vidrios Automotrices",
+        "headerDescription": "Desde la primera cotización hasta el pago final, APAI proporciona un conjunto completo de herramientas diseñadas para velocidad, precisión y crecimiento.",
+        "readMore": "Leer Más",
+        "sections": {
+            "quoting": {
+                "category": "Cotización y Precios",
+                "title": "Cotización de Precisión: Gane el Trabajo y Maximice las Ganancias.",
+                "subHeadline": "Genere estimaciones precisas y profesionales instantáneamente, reduciendo el tiempo administrativo y eliminando errores costosos.",
+                "feature1Title": "Búsqueda y Decodificador VIN",
+                "feature1Desc": "Utilice la API VPIC de la NHTSA para una búsqueda garantizada y precisa de vidrios por Año, Marca, Modelo, Estilo o VIN. Clasificamos las piezas usando códigos estándar de la industria NAGS.",
+                "feature2Title": "Motor de Precios en Tiempo Real",
+                "feature2Desc": "Integre precios en tiempo real de la base de datos NAGS y defina costos laborales personalizados para asegurar que su cotización siempre refleje los valores de mercado y sus márgenes.",
+                "feature3Title": "Cálculos Automáticos",
+                "feature3Desc": "Aplique automáticamente tarifas laborales personalizadas, porcentajes de impuestos y descuentos, presentando al cliente un precio final claro y profesional.",
+                "feature4Title": "Documentos Profesionales",
+                "feature4Desc": "Genere documentos de Cotización profesionales y fáciles de leer que los clientes pueden aprobar rápidamente por correo electrónico o SMS."
+            },
+            "workOrder": {
+                "category": "Orden de Trabajo y Servicio de Campo",
+                "title": "Gestión Móvil: Empodere a Sus Técnicos en Cualquier Lugar.",
+                "subHeadline": "APAI está construido para la economía de servicios móviles, brindando a los instaladores remotos las herramientas que necesitan para completar el trabajo.",
+                "feature1Title": "Orden de Trabajo Digital",
+                "feature1Desc": "Las cotizaciones se convierten instantáneamente en Órdenes de Trabajo detalladas, pre-pobladas con datos del cliente y vehículo. Los técnicos acceden a esto en su dispositivo móvil.",
+                "feature2Title": "Seguimiento de Tiempo y Mano de Obra",
+                "feature2Desc": "Los técnicos registran los tiempos de inicio y fin directamente en la aplicación, haciendo un seguimiento automático de las horas de trabajo contra el trabajo.",
+                "feature3Title": "Captura de Fotos y Firma",
+                "feature3Desc": "Capture fotos obligatorias de Antes/Después de los vidrios del vehículo y recopile la firma del cliente de forma electrónica al completar el trabajo.",
+                "feature4Title": "Acceso Basado en Roles",
+                "feature4Desc": "Personalice el acceso para cada miembro del equipo, desde el Dueño del Taller y Administrador hasta el Técnico Móvil, asegurando el nivel adecuado de control."
+            },
+            "invoicing": {
+                "category": "Facturación y Pagos",
+                "title": "Control Financiero: Simplifique la Facturación y Acelere el Flujo de Efectivo.",
+                "subHeadline": "Convierta trabajos completados en facturas pagadas con seguimiento robusto, gestión de seguros y seguimiento automatizado.",
+                "feature1Title": "Seguimiento de Reclamos de Seguros",
+                "feature1Desc": "Registre y rastree fácilmente detalles críticos como el número de reclamo del seguro y el deducible del cliente directamente en la factura.",
+                "feature2Title": "Gestión de Estados",
+                "feature2Desc": "Maneje claramente el estado de cada factura: Pago Parcial, Pagado o Atrasado. Establezca términos de pago personalizados (ej. Net 30).",
+                "feature3Title": "Recordatorios Automatizados",
+                "feature3Desc": "Cuando una factura alcanza el estado de Atrasada, APAI envía automáticamente recordatorios de pago por correo electrónico, reduciendo los pagos atrasados.",
+                "feature4Title": "Reportes Completos",
+                "feature4Desc": "Acceda a informes que analizan la rentabilidad del trabajo, el desempeño técnico y las tendencias de ingresos, para tomar decisiones basadas en datos."
+            },
+            "engagement": {
+                "category": "Compromiso y Contacto del Cliente",
+                "title": "Reservas Perfectas: Capture Clientes y Chatee en Vivo.",
+                "subHeadline": "Proporcione a sus clientes una experiencia de marca moderna desde su primera consulta hasta el trabajo final.",
+                "feature1Title": "Formulario Personalizado Integrable",
+                "feature1Desc": "Integre fácilmente nuestro widget de solicitud de cotizaciones en el sitio web de su taller para capturar de inmediato solicitudes de alta intención.",
+                "feature2Title": "Chat de Cliente en Vivo",
+                "feature2Desc": "Interactúe con los visitantes en tiempo real a través de un chat en vivo integrado que se conecta directamente a su panel APAI para conversión instantánea.",
+                "feature3Title": "Personalización Completa del Tema",
+                "feature3Desc": "Adapte el widget haciendo colores, mapas y estilos a su gusto para que coincidan perfectamente con la estética y el diseño web de su marca."
+            }
+        },
+        "faq": {
+            "title": "Preguntas Frecuentes",
+            "description": "Encuentre respuestas a preguntas comunes sobre las funciones y funcionalidad de APAI",
+            "q1": "¿Qué tipos de documentos soporta APAI?",
+            "a1": "APAI soporta Cotizaciones, Facturas, Órdenes de Trabajo y Documentos Compuestos. Cada tipo incluye campos personalizables, cálculos y exportación en PDF.",
+            "q2": "¿Puedo administrar múltiples clientes y vehículos?",
+            "a2": "¡Sí! Puede tener perfiles ilimitados con su información e historial, y buscarlos o filtrarlos rápidamente.",
+            "q3": "¿Cómo funciona el sistema de programación?",
+            "a3": "El sistema le permite gestionar citas y asignaciones en vistas de Calendario, Tablero Kanban o Tabla con notificaciones automáticas.",
+            "q4": "¿Puedo rastrear pagos y facturas?",
+            "a4": "APAI incluye seguimiento de pagos avanzado. Gestione recibos, facturas pendientes, vencidas y genere reportes detallados.",
+            "q5": "¿Hay soporte móvil o necesito una computadora?",
+            "a5": "APAI funciona tanto en computadoras como en dispositivos móviles y tabletas siendo perfecto para operaciones en movimiento.",
+            "q6": "¿Para quién está diseñado APAI?",
+            "a6": "La plataforma está construida para talleres de vidrios en los EE. UU., ya sean operaciones móviles de una persona o de múltiples ubicaciones.",
+            "q7": "¿Cuánto cuesta APAI?",
+            "a7": "APAI se ofrece a una tarifa de $99 por mes/usuario sin tarifas adicionales o cobros sorpresa por prospectos adicionales.",
+            "q8": "¿Qué es SmartVIN y cómo me ayuda?",
+            "a8": "Es nuestra tecnología de decodificación IA que identifica automáticamente los vidrios y sensores correspondientes sin búsquedas manuales.",
+            "q9": "¿APAI incluye datos NAGS?",
+            "a9": "Sí. APAI proporciona acceso instantáneo a datos NAGS y tarifas para cotizar piezas con la mayor precisión.",
+            "q10": "¿Puedo ver los precios de mis distribuidores en vivo?",
+            "a10": "Sí. APAI se integra con los principales distribuidores permitiéndote tener acceso al inventario y precios de su lista directos.",
+            "q11": "¿Hay una aplicación móvil para mis técnicos?",
+            "a11": "Sí, APAI funciona perfecto en móvil. Los técnicos pueden acceder a todo su material y tomar fotos desde su interfaz adaptada.",
+            "q12": "¿Cómo maneja APAI la facturación de seguros?",
+            "a12": "APAI incluye facturación EDI instantánea. Envíe reclamos directamente con toda la información, ahorrando tiempo y recibiendo pagos velozmente.",
+            "q13": "¿Puedo personalizar el formulario de contacto en mi sitio?",
+            "a13": "¡Sí! Le proporcionamos un formulario personalizable para insertar en su página web, ayudándolo a que cada cliente cuente.",
+            "q14": "¿Cuánto tiempo se tarda en empezar?",
+            "a14": "Puede comenzar una prueba gratuita y la mayoría de los usuarios se adaptan en menos de un día debido a lo intuitivo de nuestro entorno.",
+            "q15": "¿Cómo obtengo soporte en caso de problemas?",
+            "a15": "Estamos siempre buscando ayudar en support@autopaneai.com."
+        },
+        "cta": {
+            "title": "¿Listo para Transformar su Negocio?",
+            "description": "Únase a los profesionales de vidrios automotrices que están ahorrando tiempo e incrementando sus ganancias.",
+            "startTrial": "Comience su Prueba Gratuita",
+            "watchDemo": "Ver una Demostración"
+        }
+    },
     "auth": {
         "login": "Iniciar Sesi\u00f3n",
         "signUp": "Registrarse",
@@ -49,7 +149,22 @@
         "signingIn": "Iniciando sesi\u00f3n...",
         "loginFailed": "Error al Iniciar Sesi\u00f3n",
         "signedInSuccess": "Sesi\u00f3n iniciada exitosamente.",
-        "welcome": "Bienvenido"
+        "welcome": "Bienvenido",
+        "businessLicenseNumber": "N\u00famero de Licencia Comercial",
+        "businessLicenseDocument": "Documento de Licencia Comercial",
+        "alternatePhone": "Tel\u00e9fono Alternativo",
+        "addressLine2": "L\u00ednea de Direcci\u00f3n 2",
+        "selectCity": "Seleccionar Ciudad",
+        "userType": "Tipo de Usuario",
+        "clickToUpload": "Hacer Clic para Subir",
+        "continue": "Continuar",
+        "backToLogin": "Volver al Inicio de Sesi\u00f3n",
+        "registrationSuccessful": "\u00a1Registro Exitoso!",
+        "registrationSubTitle": "Por favor, revise su correo electr\u00f3nico para establecer su contrase\u00f1a y activar su cuenta.",
+        "shopOwner": "Due\u00f1o de Taller",
+        "mobileTechnician": "T\u00e9cnico M\u00f3vil",
+        "enterCityName": "Ingresar Nombre de Ciudad",
+        "typeCityName": "Escriba el nombre de su ciudad"
     },
     "footer": {
         "tagline": "Plataforma profesional de cotizaci\u00f3n y precios para vidrios automotrices, dise\u00f1ada para talleres modernos.",
@@ -58,9 +173,268 @@
         "followUs": "S\u00edguenos",
         "allRightsReserved": "Todos los derechos reservados."
     },
+    "aboutPage": {
+        "heroTitle1": "Creado por expertos en vidrio automotriz,",
+        "heroTitle2": "Impulsado por ",
+        "heroTitle3": "Inteligencia Artificial",
+        "missionTitle": "Nuestra Misi\u00f3n",
+        "missionText": "APAI fue fundada para resolver las ineficiencias centrales que plagan la industria del vidrio automotriz: cotizaciones inexactas, \u00f3rdenes de trabajo en papel y ciclos de pago lentos. Proporcionamos una plataforma \u00fanica basada en la nube que maneja todo el flujo de servicio, lo que permite a los propietarios de talleres e instaladores remotos enfocarse en la prestaci\u00f3n de servicios, no en el papeleo.",
+        "foundersTitle": "Conozca a los Fundadores",
+        "foundersSubtitle": "El equipo visionario que combina experiencia en la industria con tecnolog\u00eda de punta.",
+        "founders": [
+            {
+                "name": "Suyog Khedekar",
+                "role": "Fundador y Visionario de la Industria",
+                "description": "Con m\u00e1s de seis a\u00f1os de experiencia poseyendo y operando GlassFixit en el competitivo mercado de California, Suyog es la \"voz del cliente.\" \u00c9l entiende los matices de los c\u00f3digos NAGS, deducibles de seguros y los dolores de cabeza diarios de la gesti\u00f3n del taller. Su misi\u00f3n es resolver los problemas de precios y brechas operativas que impiden que los talleres de vidrio alcancen su m\u00e1ximo potencial."
+            },
+            {
+                "name": "Priyank Acharekar",
+                "role": "Cofundador, Ingeniero de IA y Nube",
+                "description": "Priyank es el arquitecto detr\u00e1s de la inteligencia de APAI. Ingeniero experto en IA y Nube, aporta experiencia pr\u00e1ctica en el dise\u00f1o e implementaci\u00f3n de aplicaciones de IA generativa de extremo a extremo. Con su experiencia en TestSprint360, Priyank aprovecha AWS, Bedrock y Python para asegurar que el backend de APAI no solo sea escalable y seguro, sino que tambi\u00e9n utilice el ML avanzado y automatizaci\u00f3n de datos para hacer nuestro motor de cotizaci\u00f3n el m\u00e1s inteligente de la industria."
+            },
+            {
+                "name": "Sanket Paithankar",
+                "role": "Cofundador, Full-Stack y Producto",
+                "description": "Sanket es el motor detr\u00e1s de la experiencia del producto de APAI. Posee la ingenier\u00eda central de la plataforma, desde el dise\u00f1o de la base de datos y API hasta la interfaz frontend. Con un enfoque en arquitectura limpia y alta confiabilidad, Sanket garantiza que el software sea r\u00e1pido, estable e intuitivo. \u00c9l acorta la brecha entre requisitos t\u00e9cnicos complejos y caracter\u00edsticas simples y f\u00e1ciles de usar de las que dependen los propietarios de talleres y t\u00e9cnicos cada d\u00eda."
+            }
+        ],
+        "whoWeServeTitle": "A Qui\u00e9n Servimos",
+        "whoWeServeSubtitle": "Empoderando a profesionales en todo el sector de vidrios automotrices.",
+        "whoWeServe": [
+            {
+                "title": "Propietarios de Talleres",
+                "desc": "Control total sobre operaciones de m\u00faltiples ubicaciones, gesti\u00f3n de equipos y supervisi\u00f3n financiera."
+            },
+            {
+                "title": "Instaladores Remotos/Servicio M\u00f3vil",
+                "desc": "La capacidad de ejecutar un trabajo completo, desde la generaci\u00f3n de la cotizaci\u00f3n hasta el cobro del pago, desde su cami\u00f3n o ubicaci\u00f3n remota."
+            },
+            {
+                "title": "Equipos de Empleados",
+                "desc": "El acceso basado en roles asegura que Ventas, CSR, Gerentes y T\u00e9cnicos tengan herramientas adaptadas a sus necesidades diarias espec\u00edficas."
+            }
+        ],
+        "whyChooseTitle": "\u00bfPor Qu\u00e9 Elegir APAI?",
+        "whyChooseSubtitle1": "La mayor\u00eda de las empresas de software construyen para \"la industria.\" Nosotros construimos para ",
+        "whyChooseSubtitle2": "usted",
+        "whyChooseSubtitle3": ", porque venimos de su mundo.",
+        "whyChoose": [
+            {
+                "title": "Ra\u00edces del Mundo Real",
+                "desc": "Dise\u00f1ado basado en a\u00f1os de experiencia real como due\u00f1o de taller. Construimos para usted, porque venimos de su mundo."
+            },
+            {
+                "title": "Tecnolog\u00eda de Grado Empresarial",
+                "desc": "Construido con la misma infraestructura de IA y Nube utilizada por l\u00edderes tecnol\u00f3gicos mundiales."
+            },
+            {
+                "title": "Confiabilidad Primero",
+                "desc": "Una plataforma que es r\u00e1pida, estable y evoluciona con las necesidades de su negocio."
+            }
+        ],
+        "securityTag": "Seguridad y Confiabilidad",
+        "dataPriorityTitle": "Los Datos de Su Negocio son Nuestra Prioridad Principal",
+        "dataPriorityDesc": "Todos los datos est\u00e1n encriptados, almacenados de forma segura en la nube y respaldados autom\u00e1ticamente. Nuestro control de acceso basado en roles protege la informaci\u00f3n confidencial, d\u00e1ndole tranquilidad.",
+        "getStartedToday": "Comience Hoy Mismo"
+    },
+    "workflowSection": {
+        "title": "Flujo de Trabajo de la Cotizaci\u00f3n a la Factura",
+        "subtitle": "Gesti\u00f3n completa del ciclo de vida de cada servicio de vidrio automotriz",
+        "steps": [
+            {
+                "title": "Crear Cotizaci\u00f3n",
+                "desc": "Genere cotizaciones profesionales con informaci\u00f3n del cliente, detalles del veh\u00edculo, piezas de vidrio, costos de mano de obra y c\u00e1lculos de precios autom\u00e1ticos en minutos."
+            },
+            {
+                "title": "Aprobar y Convertir",
+                "desc": "El cliente revisa y acepta la cotizaci\u00f3n. El sistema se convierte autom\u00e1ticamente en una orden de trabajo y programa el servicio con el t\u00e9cnico asignado."
+            },
+            {
+                "title": "Ejecutar Servicio",
+                "desc": "Los t\u00e9cnicos completan el trabajo en el campo con documentaci\u00f3n fotogr\u00e1fica del antes y el despu\u00e9s, registro de tiempo y confirmaci\u00f3n de la firma del cliente."
+            },
+            {
+                "title": "Facturar y Rastrear",
+                "desc": "Genere facturas autom\u00e1ticamente con seguimiento de pagos. Monitoree pagos parciales, facturas vencidas y cargos por mora todo en un solo tablero."
+            }
+        ]
+    },
+    "whyChooseSection": {
+        "title": "\u00bfPor Qu\u00e9 Elegir APAI?",
+        "desc": "APAI est\u00e1 dise\u00f1ado espec\u00edficamente para la industria del vidrio automotriz. Entendemos los desaf\u00edos de su negocio y brindamos soluciones adaptadas a su \u00e9xito.",
+        "benefits": [
+            {
+                "title": "Precisi\u00f3n Instant\u00e1nea",
+                "desc": "La b\u00fasqueda de VIN elimina los errores de entrada de datos y garantiza la coincidencia correcta de las piezas."
+            },
+            {
+                "title": "Ahorro de Tiempo",
+                "desc": "La generaci\u00f3n de cotizaciones y c\u00e1lculos automatizados reducen el trabajo administrativo en un 70%."
+            },
+            {
+                "title": "Crecimiento de Ingresos",
+                "desc": "Las cotizaciones profesionales y el seguimiento mejoran las tasas de conversi\u00f3n y la retenci\u00f3n de clientes."
+            },
+            {
+                "title": "Mejor Control",
+                "desc": "Haga un seguimiento de cada trabajo desde la cotizaci\u00f3n hasta la factura con visibilidad y reportes completos."
+            },
+            {
+                "title": "Escalabilidad",
+                "desc": "Gestione equipos en crecimiento y m\u00faltiples ubicaciones sin complejidad."
+            }
+        ]
+    },
+    "valuePropSection": {
+        "title": "La Diferencia APAI",
+        "subtitle": "Deje de Malabarismos con Sistemas. Empiece a Crecer.",
+        "desc": "APAI es una plataforma B2B SaaS especializada dise\u00f1ada exclusivamente para talleres de reparaci\u00f3n de vidrios automotrices y t\u00e9cnicos m\u00f3viles para agilizar todo el ciclo de vida del servicio, convirtiendo cotizaciones en facturas pagadas sin esfuerzo.",
+        "coreFocus": "Enfoque Principal",
+        "keyBenefitsTitle": "Beneficios Clave",
+        "pillars": {
+            "quote": {
+                "title": "Cotice con Precisi\u00f3n",
+                "focus": "Identificaci\u00f3n instant\u00e1nea de piezas NAGS basada en VIN, construida espec\u00edficamente para profesionales de vidrios automotrices.",
+                "detail": "APAI elimina las suposiciones durante la cotizaci\u00f3n al relacionar autom\u00e1ticamente los VIN de los veh\u00edculos con la pieza de vidrio NAGS correcta, caracter\u00edsticas y especificaciones. No m\u00e1s revisiones cruzadas manuales, cat\u00e1logos obsoletos o selecci\u00f3n de piezas incorrectas que provocan retrabajos o p\u00e9rdidas.",
+                "b1": "Identificaci\u00f3n precisa de parabrisas, vidrio trasero y vidrio lateral en todo momento",
+                "b2": "Los datos NAGS en tiempo real garantizan precios correctos y compatibilidad de piezas",
+                "b3": "Reduce el tiempo de cotizaci\u00f3n de minutos a segundos",
+                "b4": "Previene costosos errores de pedido e instalaci\u00f3n"
+            },
+            "execute": {
+                "title": "Ejecute con Confianza",
+                "focus": "Gesti\u00f3n integral de \u00f3rdenes de trabajo digitales con soporte m\u00f3vil completo.",
+                "detail": "Al\u00e9jese del papel, las notas de WhatsApp y los sistemas fragmentados. APAI proporciona un flujo de trabajo digital estructurado desde la aprobaci\u00f3n del trabajo hasta su finalizaci\u00f3n, accesible en dispositivos m\u00f3viles, tabletas o escritorios, ideal tanto para t\u00e9cnicos de campo como para gerentes de taller.",
+                "b1": "Cree y asigne \u00f3rdenes de trabajo al instante",
+                "b2": "Env\u00ede a los t\u00e9cnicos con detalles claros del trabajo",
+                "b3": "Realice un seguimiento de las horas de mano de obra, el estado del trabajo y el progreso del t\u00e9cnico",
+                "b4": "Capture fotos, firmas y documentos de cumplimiento in situ"
+            },
+            "paid": {
+                "title": "Cobre M\u00e1s R\u00e1pido",
+                "focus": "Facturaci\u00f3n automatizada, seguimiento de seguros y seguimiento de pagos.",
+                "detail": "APAI agiliza la parte m\u00e1s dolorosa de las operaciones de vidrios automotrices: los pagos. Desde la generaci\u00f3n de facturas hasta la coordinaci\u00f3n de seguros y recordatorios de clientes, todo se rastrea y automatiza para que nada se escape.",
+                "b1": "Genere facturas precisas directamente a partir de \u00f3rdenes de trabajo completadas",
+                "b2": "Haga un seguimiento de las reclamaciones de seguros y el estado de aprobaci\u00f3n",
+                "b3": "Monitoree saldos pendientes en tiempo real",
+                "b4": "Env\u00ede recordatorios autom\u00e1ticos de pago y de vencimiento"
+            }
+        },
+        "accuracy": {
+            "title": "Precisi\u00f3n Inigualable Desde el Principio",
+            "subtitle": "Todo lo que necesita para administrar su negocio de manera eficiente",
+            "kf1": {
+                "title": "100% Precisi\u00f3n de VIN",
+                "desc": "Nuestra integraci\u00f3n con la API VPIC de NHTSA garantiza una identificaci\u00f3n perfecta del veh\u00edculo en todo momento, relacionando A\u00f1o, Marca, Modelo y Estilo con la pieza de vidrio correcta."
+            },
+            "kf2": {
+                "title": "Integraci\u00f3n de C\u00f3digo NAGS",
+                "desc": "Acceda al cat\u00e1logo completo de Especificaciones Nacionales de Vidrios Automotrices (NAGS) para precios y horas de mano de obra en tiempo real, garantizando la m\u00e1xima rentabilidad en cada trabajo."
+            },
+            "kf3": {
+                "title": "Flujo de Cotizaci\u00f3n a Factura",
+                "desc": "Convierta sin esfuerzo una cotizaci\u00f3n aprobada en una Orden de Trabajo y finalmente en una Factura con un solo clic, sin entrada duplicada de datos."
+            }
+        },
+        "cta": "Ver Todas las Caracter\u00edsticas",
+        "contactForm": {
+            "title": "Formulario de Contacto Personalizado",
+            "bullets": [
+                "P\u00e1gina personalizada para cada usuario",
+                "Autocompletar campos YMM",
+                "Almacenamiento seguro en base de datos",
+                "Respuesta autom\u00e1tica de IA"
+            ]
+        },
+        "aiChatbot": {
+            "title": "Chatbot con IA",
+            "badge": "Nuevo",
+            "desc": "Un chatbot con IA integrado en su sitio web que permite a los visitantes interactuar con el sistema en tiempo real, respondiendo consultas y captando prospectos 24 horas al d\u00eda, 7 d\u00edas a la semana."
+        },
+        "security": {
+            "title": "Seguridad y Fiabilidad: Sus Datos Comerciales son Nuestra Principal Prioridad",
+            "desc": "Todos los datos est\u00e1n encriptados, almacenados de forma segura en la nube y respaldados autom\u00e1ticamente. Nuestro control de acceso basado en roles protege la informaci\u00f3n sensible, brind\u00e1ndole tranquilidad."
+        }
+    },
+    "processSection": {
+        "title": "Proceso Simple de 4 Pasos",
+        "step1": {
+            "title": "Ingresar Cliente y Veh\u00edculo",
+            "desc": "Seleccione o cree un cliente, busque el veh\u00edculo por VIN o entrada manual. Toda la informaci\u00f3n se completa autom\u00e1ticamente para mayor precisi\u00f3n."
+        },
+        "step2": {
+            "title": "Seleccionar Piezas de Vidrio",
+            "desc": "Explore las piezas de vidrio clasificadas por NAGS por compatibilidad con el veh\u00edculo. Vea precios en tiempo real y el inventario disponible."
+        },
+        "step3": {
+            "title": "Agregar Mano de Obra y Calcular",
+            "desc": "Ingrese la tarifa por hora y las horas estimadas. El sistema calcula autom\u00e1ticamente los totales con impuestos y descuentos aplicados."
+        },
+        "step4": {
+            "title": "Enviar o Convertir",
+            "desc": "Env\u00ede una cotizaci\u00f3n profesional al cliente o convi\u00e9rtala directamente en una orden de trabajo. Rastree el estado hasta que se pague la factura."
+        }
+    },
+    "featuresSection": {
+        "title": "Potentes Caracter\u00edsticas Dise\u00f1adas para su Negocio",
+        "vinLookup": {
+            "title": "B\u00fasqueda de Veh\u00edculos Basada en VIN",
+            "desc": "Identifique instant\u00e1neamente veh\u00edculos usando el VIN de 17 caracteres. Autocompleta a\u00f1o, marca, modelo y estilo con 100% de precisi\u00f3n a trav\u00e9s de la integraci\u00f3n con la API de NHTSA VPIC."
+        },
+        "realTimePricing": {
+            "title": "Precios en Tiempo Real",
+            "desc": "Acceda a precios actualizados de piezas de vidrio integrados con bases de datos de proveedores. C\u00e1lculos autom\u00e1ticos de piezas, mano de obra, impuestos y descuentos en segundos."
+        },
+        "professionalDocs": {
+            "title": "Documentos Profesionales",
+            "desc": "Genere cotizaciones, \u00f3rdenes de trabajo y facturas de marca con desgloses de precios personalizados, t\u00e9rminos y formato profesional listos para enviar a los clientes."
+        },
+        "teamCollab": {
+            "title": "Colaboraci\u00f3n en Equipo",
+            "desc": "Gestione empleados ilimitados con control de acceso basado en roles. T\u00e9cnicos, gerentes, equipos de ventas y administradores trabajan desde una sola plataforma."
+        },
+        "customerMgmt": {
+            "title": "Gesti\u00f3n de Clientes",
+            "desc": "Mantenga perfiles de clientes detallados, historial de veh\u00edculos y registros de servicio. Haga un seguimiento de cotizaciones, \u00f3rdenes de trabajo y facturas por cliente para la gesti\u00f3n de relaciones."
+        },
+        "enterpriseSecurity": {
+            "title": "Seguridad Empresarial",
+            "desc": "Todos los datos est\u00e1n encriptados y almacenados de forma segura en la nube. Copias de seguridad autom\u00e1ticas, control de acceso basado en roles e infraestructura lista para el cumplimiento."
+        }
+    },
+    "businessModels": {
+        "title": "Dise\u00f1ado para Diferentes Modelos de Negocio",
+        "shopOwners": {
+            "title": "Due\u00f1os de Talleres",
+            "desc": "Gestione su ubicaci\u00f3n f\u00edsica con personal m\u00faltiple, maneje la facturaci\u00f3n y escale su negocio.",
+            "f1": "Acceso completo a la plataforma",
+            "f2": "Gesti\u00f3n ilimitada de empleados",
+            "f3": "Soporte para m\u00faltiples ubicaciones",
+            "f4": "Informes avanzados"
+        },
+        "mobileInstallers": {
+            "title": "Instaladores M\u00f3viles",
+            "desc": "Trabaje de forma independiente o dirija un equipo m\u00f3vil. Genere cotizaciones sobre la marcha y gestione la prestaci\u00f3n de servicios.",
+            "f1": "Dise\u00f1o adaptable a dispositivos m\u00f3viles",
+            "f2": "Programaci\u00f3n de trabajos",
+            "f3": "Documentaci\u00f3n fotogr\u00e1fica",
+            "f4": "Comunicaci\u00f3n con el cliente"
+        },
+        "repairShops": {
+            "title": "Talleres de Reparaci\u00f3n",
+            "desc": "Optimice las reparaciones de vidrios de autom\u00f3viles con documentaci\u00f3n profesional, coordinaci\u00f3n en equipo y gesti\u00f3n de clientes.",
+            "f1": "Seguimiento de clientes",
+            "f2": "Historial de veh\u00edculos",
+            "f3": "Flujos de trabajo en equipo",
+            "f4": "Gesti\u00f3n de pagos"
+        }
+    },
     "home": {
         "heroTitle": "Auto Glass Pro AI",
         "heroSubtitle": "La forma m\u00e1s inteligente de gestionar su negocio de vidrios automotrices",
+        "heroMainTitle": "La Forma M\u00e1s Inteligente de Gestionar su Negocio de Vidrios Automotrices.",
+        "heroDescription": "Genere cotizaciones instant\u00e1neas y 100% precisas a trav\u00e9s de datos de NAGS, optimice el servicio en campo y gestione cada factura, todo en una sola plataforma.",
+        "watchDemo": "Ver una Demostraci\u00f3n",
         "ctaButton": "Comenzar",
         "learnMore": "M\u00e1s Informaci\u00f3n",
         "whyChoose": "\u00bfPor Qu\u00e9 Elegirnos?",
@@ -102,8 +476,9 @@
         "customerCreated": "Cliente creado",
         "organizationUpdated": "Organizaci\u00f3n actualizada",
         "organizationCreated": "Organizaci\u00f3n creada",
-        "failedToSaveCustomer": "Error al guardar el cliente",
-        "failedToSaveOrganization": "Error al guardar la organizaci\u00f3n"
+        "failedToSaveOrganization": "Error al guardar la organizaci\u00f3n",
+        "stateLabel": "Estado",
+        "provinceLabel": "Provincia"
     },
     "analytics": {
         "title": "An\u00e1lisis",
@@ -337,7 +712,92 @@
         "contactSales": "Contactar Ventas",
         "needHelp": "\u00bfNecesita ayuda para elegir?",
         "freeTrialDays": "30 d\u00edas",
-        "getStartedFree": "comience con nuestro plan gratuito y actualice cuando est\u00e9 listo."
+        "getStartedFree": "comience con nuestro plan gratuito y actualice cuando est\u00e9 listo.",
+        "features": {
+            "common": [
+                {
+                    "label": "Datos NAGS y Decodificaci\u00f3n de VIN",
+                    "desc": "Acceda a la base de datos NAGS de EE. UU., decodifique VIN al instante y genere cotizaciones precisas de vidrios automotrices."
+                },
+                {
+                    "label": "Panel de Trabajos y Facturas",
+                    "desc": "Gestione todos sus trabajos en un solo panel, rastree el estado del servicio y genere facturas profesionales."
+                },
+                {
+                    "label": "Integraci\u00f3n de Precios en Vivo",
+                    "desc": "Con\u00e9ctese directamente con los distribuidores de vidrio para obtener precios en tiempo real y verificaciones de disponibilidad."
+                },
+                {
+                    "label": "Chat de Contacto con IA",
+                    "desc": "Chat de contacto inteligente que usa IA para hacer seguimiento de clientes potenciales y programar citas autom\u00e1ticamente."
+                },
+                {
+                    "label": "Informes de An\u00e1lisis y ADAS",
+                    "desc": "Vea an\u00e1lisis de rendimiento del taller y gestione informes de calibraci\u00f3n ADAS de manera eficiente."
+                }
+            ],
+            "free": [
+                {
+                    "label": "Acceso Profesional Completo",
+                    "desc": "Pruebe la experiencia Profesional completa gratis por 30 d\u00edas. No se requiere tarjeta de cr\u00e9dito para comenzar."
+                },
+                {
+                    "label": "B\u00fasqueda de Veh\u00edculos y VIN",
+                    "desc": "Busque piezas por VIN o A\u00f1o/Marca/Modelo para encontrar el vidrio exacto necesario."
+                },
+                {
+                    "label": "Cotizaciones Reales y Precios en Vivo",
+                    "desc": "Cree cotizaciones procesables para clientes utilizando datos de precios en vivo de sus proveedores."
+                },
+                {
+                    "label": "Acceso de Equipo y Solicitudes",
+                    "desc": "Invite a miembros del equipo y use formularios de solicitud personalizados para optimizar su flujo de trabajo."
+                },
+                {
+                    "label": "Mantenga sus Datos al Mejorar",
+                    "desc": "Todos sus datos, configuraciones e historial se conservan al actualizar a un plan pago."
+                }
+            ],
+            "pro": [
+                {
+                    "label": "B\u00fasqueda Ilimitada de Veh\u00edculos",
+                    "desc": "Acceso ilimitado a decodificaci\u00f3n de VIN y b\u00fasquedas por A\u00f1o/Marca/Modelo para todos sus trabajos."
+                },
+                {
+                    "label": "Cotizaci\u00f3n Asistida por IA",
+                    "desc": "Deje que la IA le ayude a crear cotizaciones m\u00e1s r\u00e1pido sugiriendo piezas y tiempos de mano de obra."
+                },
+                {
+                    "label": "Formularios de Solicitud Personalizados",
+                    "desc": "Integre formularios de solicitud de cotizaci\u00f3n personalizados en su propio sitio web para capturar clientes potenciales directamente."
+                },
+                {
+                    "label": "Cotizaciones con su Marca",
+                    "desc": "Env\u00ede cotizaciones profesionales con la marca de su taller, el logotipo y t\u00e9rminos personalizados."
+                },
+                {
+                    "label": "Roles de Equipo y Gesti\u00f3n de Empleados",
+                    "desc": "A\u00f1ada empleados ($49.99/usuario/mes) y otorgue derechos de acceso espec\u00edficos (gestionados por superusuario)."
+                }
+            ],
+            "enterprise": [
+                {
+                    "label": "Gerente de Cuenta Dedicado",
+                    "desc": "Su propio punto de contacto personal para soporte prioritario e incorporaci\u00f3n."
+                },
+                {
+                    "label": "SSO y Seguridad Avanzada",
+                    "desc": "Integraci\u00f3n de Single Sign-On (SSO) y controles de seguridad avanzados para su equipo."
+                },
+                {
+                    "label": "Contratos Personalizados y SLA",
+                    "desc": "Contratos personalizados con Acuerdos de Nivel de Servicio (SLA) garantizados."
+                }
+            ],
+            "unlimitedDashboard": {
+                "label": "Panel de Trabajos y Facturas Ilimitado"
+            }
+        }
     },
     "features": {
         "title": "Caracter\u00edsticas",
@@ -369,7 +829,14 @@
         "messageSentDesc": "Le responderemos en breve.",
         "sendAnother": "Enviar otro mensaje",
         "getInTouch": "Cont\u00e1ctenos",
-        "loveToHear": "Nos encantar\u00eda saber de usted"
+        "loveToHear": "Nos encantar\u00eda saber de usted",
+        "tellUsAboutYourself": "Cu\u00e9ntanos un poco sobre ti",
+        "testOutPrompt": "\u00bfQuieres probar APAI? \u00a1Te mostraremos c\u00f3mo funciona, o puedes tomar el volante!",
+        "newBusinessPrompt": "\u00bfNegocio Nuevo?",
+        "newBusiness": "Nuevo",
+        "existingBusiness": "Existente",
+        "emailUs": "Env\u00edanos un Correo",
+        "emailUsDesc": "Para cualquier consulta, soporte o comentario, no dude en enviarnos un correo electr\u00f3nico. Nuestro equipo le responder\u00e1 en 24\u201348 horas."
     },
     "blogs": {
         "title": "Blogs",
@@ -433,7 +900,8 @@
         "all": "Todos",
         "phoneRequired": "El tel\u00e9fono es obligatorio",
         "searchPlaceholder": "Buscar...",
-        "noResults": "No se encontraron resultados"
+        "noResults": "No se encontraron resultados",
+        "optional": "(opcional)"
     },
     "language": {
         "en": "EN",

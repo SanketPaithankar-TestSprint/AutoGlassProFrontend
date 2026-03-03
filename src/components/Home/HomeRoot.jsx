@@ -96,7 +96,7 @@ const Home = () => {
                                 className="font-extrabold mb-2 sm:mb-4 md:mb-6 leading-tight px-2 sm:px-0 text-lg sm:text-2xl md:text-3xl lg:text-3xl xl:text-4xl 2xl:text-5xl"
                                 style={{ color: '#7E5CFE' }}
                             >
-                                The Smartest Way to Run Your Auto Glass Business.
+                                {t('home.heroMainTitle')}
                             </h1>
 
                             {/* Description */}
@@ -105,7 +105,7 @@ const Home = () => {
                                 className="text-xs sm:text-base md:text-base text-slate-600 mb-4 sm:mb-6 md:mb-8 max-w-2xl mx-auto lg:mx-0 px-2 sm:px-0 leading-relaxed"
                                 style={{ opacity: 1 }} // GSAP controls opacity on chars
                             >
-                                Generate Instant, 100% Accurate Quotes through NAGS data, Streamline Field Service, and Manage Every Invoice—All in One Platform.
+                                {t('home.heroDescription')}
                             </p>
 
                             <motion.div
@@ -153,7 +153,7 @@ const Home = () => {
                                         onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
                                         onClick={() => setIsVideoOpen(true)}
                                     >
-                                        <span className="font-medium">Watch a Demo</span>
+                                        <span className="font-medium">{t('home.watchDemo')}</span>
                                     </Button>
                                 </motion.div>
                             </motion.div>

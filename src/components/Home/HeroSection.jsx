@@ -3,12 +3,14 @@ import { Button } from "antd";
 import { LinkOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import Logo from "../logo";
 import VideoModal from "../VideoModal/VideoModal";
 import BrowserMockup from "../../assets/browser_mockup.png";
 import IpadMockup from "../../assets/ipad_landing_page_mockup.png";
 
 const HeroSection = () => {
+  const { t } = useTranslation();
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -33,7 +35,7 @@ const HeroSection = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            The Smartest Way to Run Your Auto  Glass Business.
+            {t('home.heroMainTitle')}
           </motion.h1>
 
           {/* Subheading */}
@@ -43,8 +45,7 @@ const HeroSection = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            Generate Instant, 100% Accurate Quotes through NAGS data, Streamline Field
-            Service, and Manage Every Invoice—All in One Platform.
+            {t('home.heroDescription')}
           </motion.p>
 
           {/* CTA Buttons */}
@@ -83,7 +84,7 @@ const HeroSection = () => {
                   navigate('/auth', { state: { mode: 'signup' } });
                 }}
               >
-                <span className="font-medium">Start Free Trial</span>
+                <span className="font-medium">{t('pricing.startFreeTrial')}</span>
               </Button>
             </motion.div>
 
@@ -103,7 +104,7 @@ const HeroSection = () => {
                 }}
                 onClick={() => setIsVideoOpen(true)}
               >
-                <span className="font-medium">Watch a Demo</span>
+                <span className="font-medium">{t('home.watchDemo')}</span>
               </Button>
             </motion.div>
           </motion.div>

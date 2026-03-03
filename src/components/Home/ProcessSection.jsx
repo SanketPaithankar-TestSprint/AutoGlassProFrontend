@@ -1,31 +1,33 @@
 import React, { useEffect, useRef, useState } from "react";
-
-const steps = [
-    {
-        number: "1",
-        title: "Enter Customer & Vehicle",
-        description: "Select or create customer, lookup vehicle by VIN or manual entry. All info auto-populated for accuracy."
-    },
-    {
-        number: "2",
-        title: "Select Glass Parts",
-        description: "Browse NAGS-classified glass parts by vehicle compatibility. See real-time pricing and available inventory."
-    },
-    {
-        number: "3",
-        title: "Add Labor & Calculate",
-        description: "Enter hourly rate and estimated hours. System auto-calculates totals with tax and discounts applied."
-    },
-    {
-        number: "4",
-        title: "Send or Convert",
-        description: "Send professional quote to customer or convert directly to work order. Track status until invoice paid."
-    }
-];
+import { useTranslation } from "react-i18next";
 
 const ProcessSection = () => {
+    const { t } = useTranslation();
     const [isVisible, setIsVisible] = useState(false);
     const sectionRef = useRef(null);
+
+    const steps = [
+        {
+            number: "1",
+            title: t('processSection.step1.title'),
+            description: t('processSection.step1.desc')
+        },
+        {
+            number: "2",
+            title: t('processSection.step2.title'),
+            description: t('processSection.step2.desc')
+        },
+        {
+            number: "3",
+            title: t('processSection.step3.title'),
+            description: t('processSection.step3.desc')
+        },
+        {
+            number: "4",
+            title: t('processSection.step4.title'),
+            description: t('processSection.step4.desc')
+        }
+    ];
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -62,7 +64,7 @@ const ProcessSection = () => {
                         backgroundImage: 'linear-gradient(90deg, #7E5CFE 0%, #d946ef 100%)'
                     } : {}}
                 >
-                    Simple 4-Step Process
+                    {t('processSection.title')}
                 </h2>
             </div>
 

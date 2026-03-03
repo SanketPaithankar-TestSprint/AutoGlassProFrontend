@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Layout, Button, Collapse } from 'antd';
 import { useNavigate, Link } from 'react-router-dom';
 import PageHead from '../PageHead';
@@ -150,7 +151,7 @@ const FeatureBlock = ({ icon, title, description }) => {
     );
 };
 // Coverflow carousel — 3 cards visible, portrait, direction-aware animation, drag-enabled
-const FeatureCarousel = ({ features, color, sectionId }) => {
+const FeatureCarousel = ({ features, color, sectionId, readMoreText }) => {
     const [current, setCurrent] = useState(0);
     const [dir, setDir] = useState(1); // 1 = going right/next, -1 = going left/prev
     const [gen, setGen] = useState(0); // bumped on each transition to force re-key
@@ -260,7 +261,7 @@ const FeatureCarousel = ({ features, color, sectionId }) => {
                                             onClick={(e) => e.stopPropagation()} // prevent card drag/click
                                             className="text-violet-600 font-bold hover:text-violet-700 transition-colors flex items-center group/btn"
                                         >
-                                            Read More
+                                            {readMoreText}
                                             <span className="ml-1 group-hover/btn:translate-x-1 transition-transform">→</span>
                                         </Link>
                                     )}
@@ -286,6 +287,7 @@ const FeatureCarousel = ({ features, color, sectionId }) => {
 };
 
 const FeaturesPage = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [isVideoOpen, setIsVideoOpen] = useState(false);
 
@@ -296,112 +298,112 @@ const FeaturesPage = () => {
     const sections = [
         {
             id: "quoting-and-pricing",
-            category: "Quoting & Pricing",
-            title: "Precision Quoting: Win the Job and Maximize Profit.",
-            subHeadline: "Generate professional, accurate estimates instantly, reducing administrative time and eliminating costly errors.",
+            category: t('featuresPage.sections.quoting.category'),
+            title: t('featuresPage.sections.quoting.title'),
+            subHeadline: t('featuresPage.sections.quoting.subHeadline'),
             color: "from-blue-500 to-cyan-500",
             features: [
                 {
                     icon: <FileSearchOutlined />,
-                    title: "VIN Decoder & Search",
-                    desc: "Utilize the NHTSA VPIC API for guaranteed accurate vehicle glass search by Year, Make, Model, Style, or VIN. We classify parts using industry-standard NAGS codes (DB, DD, DQ, DR, DV, DW)."
+                    title: t('featuresPage.sections.quoting.feature1Title'),
+                    desc: t('featuresPage.sections.quoting.feature1Desc')
                 },
                 {
                     icon: <FundProjectionScreenOutlined />,
-                    title: "Real-Time Price Engine",
-                    desc: "Integrate real-time pricing from NAGS database and define custom labor cost entries to ensure your quote always reflects current market values and your required margins."
+                    title: t('featuresPage.sections.quoting.feature2Title'),
+                    desc: t('featuresPage.sections.quoting.feature2Desc')
                 },
                 {
                     icon: <CalculatorOutlined />,
-                    title: "Automatic Calculations",
-                    desc: "Automatically apply custom labor rates, tax percentages, and discounts, presenting the customer with a clear, professional final price."
+                    title: t('featuresPage.sections.quoting.feature3Title'),
+                    desc: t('featuresPage.sections.quoting.feature3Desc')
                 },
                 {
                     icon: <FileTextOutlined />,
-                    title: "Professional Documents",
-                    desc: "Generate branded, easy-to-read Quote documents that customers can approve quickly via email or SMS."
+                    title: t('featuresPage.sections.quoting.feature4Title'),
+                    desc: t('featuresPage.sections.quoting.feature4Desc')
                 }
             ]
         },
         {
             id: "work-order-and-field-service",
-            category: "Work Order & Field Service",
-            title: "Mobile Management: Empower Your Technicians, Anywhere.",
-            subHeadline: "APAI is built for the mobile service economy, giving remote installers and shop technicians the tools they need to complete jobs efficiently.",
+            category: t('featuresPage.sections.workOrder.category'),
+            title: t('featuresPage.sections.workOrder.title'),
+            subHeadline: t('featuresPage.sections.workOrder.subHeadline'),
             color: "from-violet-500 to-fuchsia-500",
             features: [
                 {
                     icon: <ToolOutlined />,
-                    title: "Digital Work Order",
-                    desc: "Quotes instantly convert to detailed Work Orders, pre-populated with customer and vehicle data. Technicians access all details on their mobile device."
+                    title: t('featuresPage.sections.workOrder.feature1Title'),
+                    desc: t('featuresPage.sections.workOrder.feature1Desc')
                 },
                 {
                     icon: <ClockCircleOutlined />,
-                    title: "Time and Labor Tracking",
-                    desc: "Technicians log start and end times right in the app, automatically tracking and logging labor hours against the job."
+                    title: t('featuresPage.sections.workOrder.feature2Title'),
+                    desc: t('featuresPage.sections.workOrder.feature2Desc')
                 },
                 {
                     icon: <CameraOutlined />,
-                    title: "Photo & Signature Capture",
-                    desc: "Capture mandatory Before/After photos of the vehicle glass and collect the customer's signature electronically upon job completion, securing your records."
+                    title: t('featuresPage.sections.workOrder.feature3Title'),
+                    desc: t('featuresPage.sections.workOrder.feature3Desc')
                 },
                 {
                     icon: <TeamOutlined />,
-                    title: "Role-Based Access",
-                    desc: "Customize access for every team member, from Shop Owner and Admin to Mobile Technician and Technician, ensuring everyone has the right level of control."
+                    title: t('featuresPage.sections.workOrder.feature4Title'),
+                    desc: t('featuresPage.sections.workOrder.feature4Desc')
                 }
             ]
         },
         {
             id: "invoicing-and-payments",
-            category: "Invoicing & Payments",
-            title: "Financial Control: Simplify Billing and Accelerate Cash Flow.",
-            subHeadline: "Turn completed jobs into paid invoices with robust tracking, insurance management, and automated follow-up.",
+            category: t('featuresPage.sections.invoicing.category'),
+            title: t('featuresPage.sections.invoicing.title'),
+            subHeadline: t('featuresPage.sections.invoicing.subHeadline'),
             color: "from-emerald-500 to-teal-500",
             features: [
                 {
                     icon: <FileProtectOutlined />,
-                    title: "Insurance Claim Tracking",
-                    desc: "Easily log and track critical details like the insurance claim number and customer deductible directly on the invoice."
+                    title: t('featuresPage.sections.invoicing.feature1Title'),
+                    desc: t('featuresPage.sections.invoicing.feature1Desc')
                 },
                 {
                     icon: <UnorderedListOutlined />,
-                    title: "Status Management",
-                    desc: "Clearly track the status of every invoice: Partial Paid, Paid, or Overdue. Set custom payment terms (e.g., Net 30) for clarity."
+                    title: t('featuresPage.sections.invoicing.feature2Title'),
+                    desc: t('featuresPage.sections.invoicing.feature2Desc')
                 },
                 {
                     icon: <MailOutlined />,
-                    title: "Automated Reminders",
-                    desc: "When an invoice reaches the Overdue status, APAI automatically sends payment reminder emails, significantly reducing late payments."
+                    title: t('featuresPage.sections.invoicing.feature3Title'),
+                    desc: t('featuresPage.sections.invoicing.feature3Desc')
                 },
                 {
                     icon: <BarChartOutlined />,
-                    title: "Comprehensive Reporting",
-                    desc: "Access reports that analyze job profitability, technician performance, and revenue trends, helping you make data-driven decisions."
+                    title: t('featuresPage.sections.invoicing.feature4Title'),
+                    desc: t('featuresPage.sections.invoicing.feature4Desc')
                 }
             ]
         },
         {
             id: "customer-engagement-and-contact",
-            category: "Customer Engagement & Contact",
-            title: "Seamless Booking: Capture Leads and Chat Live.",
-            subHeadline: "Provide your customers with a modern, branded experience from their first inquiry to the final job.",
+            category: t('featuresPage.sections.engagement.category'),
+            title: t('featuresPage.sections.engagement.title'),
+            subHeadline: t('featuresPage.sections.engagement.subHeadline'),
             color: "from-amber-500 to-orange-500",
             features: [
                 {
                     icon: <AppstoreAddOutlined />,
-                    title: "Embeddable Custom Form",
-                    desc: "Easily embed our clean, optimized quote request widget directly onto your shop's existing website to capture high-intent visual quote requests instantly."
+                    title: t('featuresPage.sections.engagement.feature1Title'),
+                    desc: t('featuresPage.sections.engagement.feature1Desc')
                 },
                 {
                     icon: <MessageOutlined />,
-                    title: "Live Customer Chat",
-                    desc: "Engage with visitors in real-time through an integrated live chat service that connects straight to your APAI dashboard for instant lead conversion."
+                    title: t('featuresPage.sections.engagement.feature2Title'),
+                    desc: t('featuresPage.sections.engagement.feature2Desc')
                 },
                 {
                     icon: <BgColorsOutlined />,
-                    title: "Full Theme Customization",
-                    desc: "Make the widget yours by customizing colors, maps, and styling to perfectly match your brand's aesthetic and website design."
+                    title: t('featuresPage.sections.engagement.feature3Title'),
+                    desc: t('featuresPage.sections.engagement.feature3Desc')
                 }
             ]
         }
@@ -414,18 +416,18 @@ const FeaturesPage = () => {
     return (
         <div className="min-h-screen pb-20 relative overflow-hidden font-sans text-slate-900">
             <PageHead
-                title="APAI Features | VIN Decode, AI Chat, Quotes & NAGS Data"
-                description="Discover APAI's powerful features: Instant VIN decoding, AI Chat, professional PDF quotes, and real-time NAGS data. Scale your glass shop for just $99/mo."
+                title={t('featuresPage.title')}
+                description={t('featuresPage.description')}
             />
 
             {/* Page Header */}
             <div className="relative pt-10 pb-16 px-6 md:px-12 lg:px-20 border-b border-transparent z-10">
                 <div className="max-w-4xl mx-auto text-center" style={{ visibility: 'visible' }}>
                     <h1 className="text-3xl md:text-5xl font-bold mb-4 font-outfit text-slate-900 leading-tight">
-                        Everything You Need to Run Your <span style={{ color: '#7E5CFE' }}>Auto Glass Business</span>
+                        {t('featuresPage.headerTitlePrefix')} <span style={{ color: '#7E5CFE' }}>{t('featuresPage.headerTitleHighlight')}</span>
                     </h1>
                     <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-                        From the first quote to the final payment, APAI provides a comprehensive suite of tools designed for speed, accuracy, and growth.
+                        {t('featuresPage.headerDescription')}
                     </p>
                 </div>
             </div>
@@ -447,7 +449,7 @@ const FeaturesPage = () => {
 
                         {/* Cards: mapped to carousel for all sections */}
                         <AnimatedSection>
-                            <FeatureCarousel features={section.features} color={section.color} sectionId={section.id} />
+                            <FeatureCarousel features={section.features} color={section.color} sectionId={section.id} readMoreText={t('featuresPage.readMore')} />
                         </AnimatedSection>
                     </div>
                 ))}
@@ -457,158 +459,102 @@ const FeaturesPage = () => {
             <AnimatedSection>
                 <div className="relative z-10 max-w-4xl mx-auto mt-24 px-5">
                     <div className="text-center mb-12">
-                        <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3">Frequently Asked Questions</h2>
-                        <p className="text-slate-600">Find answers to common questions about APAI features and functionality</p>
+                        <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3">{t('featuresPage.faq.title')}</h2>
+                        <p className="text-slate-600">{t('featuresPage.faq.description')}</p>
                     </div>
 
                     <Collapse
                         items={[
                             {
                                 key: '1',
-                                label: <span className="font-semibold text-slate-900">What document types does APAI support?</span>,
-                                children: (
-                                    <p className="text-slate-700 leading-relaxed">
-                                        APAI supports multiple document types including Quotes, Invoices, Work Orders, and Composite Service Documents. Each document type includes customizable fields, automatic calculations, and export capabilities to PDF format.
-                                    </p>
-                                ),
+                                label: <span className="font-semibold text-slate-900">{t('featuresPage.faq.q1')}</span>,
+                                children: <p className="text-slate-700 leading-relaxed">{t('featuresPage.faq.a1')}</p>,
                                 style: { borderRadius: '8px', marginBottom: '8px' }
                             },
                             {
                                 key: '2',
-                                label: <span className="font-semibold text-slate-900">Can I manage multiple customers and vehicles?</span>,
-                                children: (
-                                    <p className="text-slate-700 leading-relaxed">
-                                        Yes! APAI features a comprehensive Customer Management system where you can store unlimited customer profiles with contact information, phone numbers, emails, vehicles, and service history. Quickly search and filter customers by name, phone, or email for easy access.
-                                    </p>
-                                ),
+                                label: <span className="font-semibold text-slate-900">{t('featuresPage.faq.q2')}</span>,
+                                children: <p className="text-slate-700 leading-relaxed">{t('featuresPage.faq.a2')}</p>,
                                 style: { borderRadius: '8px', marginBottom: '8px' }
                             },
                             {
                                 key: '3',
-                                label: <span className="font-semibold text-slate-900">How does the scheduling system work?</span>,
-                                children: (
-                                    <p className="text-slate-700 leading-relaxed">
-                                        The integrated scheduling system allows you to manage appointments, assign tasks to employees, and track service dates. View your schedule in Calendar, Kanban Board, or Table view. Never miss a scheduled appointment with built-in notifications.
-                                    </p>
-                                ),
+                                label: <span className="font-semibold text-slate-900">{t('featuresPage.faq.q3')}</span>,
+                                children: <p className="text-slate-700 leading-relaxed">{t('featuresPage.faq.a3')}</p>,
                                 style: { borderRadius: '8px', marginBottom: '8px' }
                             },
                             {
                                 key: '4',
-                                label: <span className="font-semibold text-slate-900">Can I track payments and invoices?</span>,
-                                children: (
-                                    <p className="text-slate-700 leading-relaxed">
-                                        Absolutely! APAI includes advanced payment tracking with payment history, multiple payment methods, overdue tracking, and sales reports. Easily monitor which invoices are paid, pending, or overdue. Generate comprehensive sales reports for any date range.
-                                    </p>
-                                ),
+                                label: <span className="font-semibold text-slate-900">{t('featuresPage.faq.q4')}</span>,
+                                children: <p className="text-slate-700 leading-relaxed">{t('featuresPage.faq.a4')}</p>,
                                 style: { borderRadius: '8px', marginBottom: '8px' }
                             },
                             {
                                 key: '5',
-                                label: <span className="font-semibold text-slate-900">Is there mobile support or do I need a desktop?</span>,
-                                children: (
-                                    <p className="text-slate-700 leading-relaxed">
-                                        APAI is web-based and responsive, working on both desktop and mobile devices. You can access quotes, customer information, and schedules from your phone or tablet on the job site, making it perfect for on-the-go business management.
-                                    </p>
-                                ),
+                                label: <span className="font-semibold text-slate-900">{t('featuresPage.faq.q5')}</span>,
+                                children: <p className="text-slate-700 leading-relaxed">{t('featuresPage.faq.a5')}</p>,
                                 style: { borderRadius: '8px', marginBottom: '8px' }
                             },
                             {
                                 key: '6',
-                                label: <span className="font-semibold text-slate-900">Who is APAI designed for?</span>,
-                                children: (
-                                    <p className="text-slate-700 leading-relaxed">
-                                        The platform is built for the auto glass industry in the USA, specifically serving auto glass shop owners, repair shop owners, and technicians. Whether you are a one-man mobile operation or a multi-location enterprise, APAI scales to fit your needs.
-                                    </p>
-                                ),
+                                label: <span className="font-semibold text-slate-900">{t('featuresPage.faq.q6')}</span>,
+                                children: <p className="text-slate-700 leading-relaxed">{t('featuresPage.faq.a6')}</p>,
                                 style: { borderRadius: '8px', marginBottom: '8px' }
                             },
                             {
                                 key: '7',
-                                label: <span className="font-semibold text-slate-900">How much does APAI cost?</span>,
-                                children: (
-                                    <p className="text-slate-700 leading-relaxed">
-                                        APAI is currently offered at a straightforward, flat rate of $99 per month/per user. We believe in simple pricing with no hidden fees or "per-lead" charges.
-                                    </p>
-                                ),
+                                label: <span className="font-semibold text-slate-900">{t('featuresPage.faq.q7')}</span>,
+                                children: <p className="text-slate-700 leading-relaxed">{t('featuresPage.faq.a7')}</p>,
                                 style: { borderRadius: '8px', marginBottom: '8px' }
                             },
                             {
                                 key: '8',
-                                label: <span className="font-semibold text-slate-900">What is SmartVIN technology and how does it help me?</span>,
-                                children: (
-                                    <p className="text-slate-700 leading-relaxed">
-                                        SmartVIN is our proprietary AI decoding technology. Unlike basic VIN deciphering, SmartVIN automatically identifies the exact glass, specific sensors (like rain or light sensors), and ADAS requirements for a vehicle. This eliminates manual cross-referencing and ensures you never show up to a job site with the wrong part.
-                                    </p>
-                                ),
+                                label: <span className="font-semibold text-slate-900">{t('featuresPage.faq.q8')}</span>,
+                                children: <p className="text-slate-700 leading-relaxed">{t('featuresPage.faq.a8')}</p>,
                                 style: { borderRadius: '8px', marginBottom: '8px' }
                             },
                             {
                                 key: '9',
-                                label: <span className="font-semibold text-slate-900">Does APAI include NAGS data?</span>,
-                                children: (
-                                    <p className="text-slate-700 leading-relaxed">
-                                        Yes. APAI provides instant access to National Auto Glass Specifications (NAGS) data, allowing you to generate 100% accurate quotes with current part numbers and industry-standard labor hours.
-                                    </p>
-                                ),
+                                label: <span className="font-semibold text-slate-900">{t('featuresPage.faq.q9')}</span>,
+                                children: <p className="text-slate-700 leading-relaxed">{t('featuresPage.faq.a9')}</p>,
                                 style: { borderRadius: '8px', marginBottom: '8px' }
                             },
                             {
                                 key: '10',
-                                label: <span className="font-semibold text-slate-900">Can I see live pricing from my glass distributors?</span>,
-                                children: (
-                                    <p className="text-slate-700 leading-relaxed">
-                                        Absolutely. APAI integrates with major distributors like Pilkington, giving you real-time access to parts availability and your specific wholesale pricing directly inside the quote builder.
-                                    </p>
-                                ),
+                                label: <span className="font-semibold text-slate-900">{t('featuresPage.faq.q10')}</span>,
+                                children: <p className="text-slate-700 leading-relaxed">{t('featuresPage.faq.a10')}</p>,
                                 style: { borderRadius: '8px', marginBottom: '8px' }
                             },
                             {
                                 key: '11',
-                                label: <span className="font-semibold text-slate-900">Is there a mobile app for my technicians?</span>,
-                                children: (
-                                    <p className="text-slate-700 leading-relaxed">
-                                        Yes, APAI is a mobile-first platform. Technicians can use the mobile interface on the road to view job details, capture "before and after" photos, collect digital signatures, and update job status in real-time.
-                                    </p>
-                                ),
+                                label: <span className="font-semibold text-slate-900">{t('featuresPage.faq.q11')}</span>,
+                                children: <p className="text-slate-700 leading-relaxed">{t('featuresPage.faq.a11')}</p>,
                                 style: { borderRadius: '8px', marginBottom: '8px' }
                             },
                             {
                                 key: '12',
-                                label: <span className="font-semibold text-slate-900">How does APAI handle insurance billing?</span>,
-                                children: (
-                                    <p className="text-slate-700 leading-relaxed">
-                                        APAI features instant EDI (Electronic Data Interchange) billing. You can manage every invoice and submit insurance claims directly through the platform, automating the communication loop and helping you get paid faster.
-                                    </p>
-                                ),
+                                label: <span className="font-semibold text-slate-900">{t('featuresPage.faq.q12')}</span>,
+                                children: <p className="text-slate-700 leading-relaxed">{t('featuresPage.faq.a12')}</p>,
                                 style: { borderRadius: '8px', marginBottom: '8px' }
                             },
                             {
                                 key: '13',
-                                label: <span className="font-semibold text-slate-900">Can I customize the contact form on my own website?</span>,
-                                children: (
-                                    <p className="text-slate-700 leading-relaxed">
-                                        Yes! APAI provides a custom contact form feature that you can embed on your website. This form allows customers to enter their VIN and select their glass type directly, flowing that lead data straight into your APAI dashboard for one-click quoting.
-                                    </p>
-                                ),
+                                label: <span className="font-semibold text-slate-900">{t('featuresPage.faq.q13')}</span>,
+                                children: <p className="text-slate-700 leading-relaxed">{t('featuresPage.faq.a13')}</p>,
                                 style: { borderRadius: '8px', marginBottom: '8px' }
                             },
                             {
                                 key: '14',
-                                label: <span className="font-semibold text-slate-900">How long does it take to get started?</span>,
-                                children: (
-                                    <p className="text-slate-700 leading-relaxed">
-                                        You can start a free trial and begin exploring the platform immediately. Because our system is cloud-based and intuitive, most shops are up and running within a single day.
-                                    </p>
-                                ),
+                                label: <span className="font-semibold text-slate-900">{t('featuresPage.faq.q14')}</span>,
+                                children: <p className="text-slate-700 leading-relaxed">{t('featuresPage.faq.a14')}</p>,
                                 style: { borderRadius: '8px', marginBottom: '8px' }
                             },
                             {
                                 key: '15',
-                                label: <span className="font-semibold text-slate-900">How do I get support if I have a question?</span>,
+                                label: <span className="font-semibold text-slate-900">{t('featuresPage.faq.q15')}</span>,
                                 children: (
                                     <p className="text-slate-700 leading-relaxed">
-                                        Our dedicated support team is ready to help. You can reach us anytime at <a href="mailto:support@autopaneai.com" className="text-violet-600 hover:underline">support@autopaneai.com</a> for assistance with your account, technical questions, or training needs.
+                                        {t('featuresPage.faq.a15')} <a href="mailto:support@autopaneai.com" className="text-violet-600 hover:underline">support@autopaneai.com</a>
                                     </p>
                                 ),
                                 style: { borderRadius: '8px', marginBottom: '8px' }
@@ -630,10 +576,10 @@ const FeaturesPage = () => {
                         <div className="absolute top-0 left-0 w-full h-full opacity-5 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
                         <div className="relative z-10">
                             <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4 font-outfit">
-                                Ready to Transform Your Business?
+                                {t('featuresPage.cta.title')}
                             </h2>
                             <p className="text-base text-slate-600 mb-8 max-w-xl mx-auto">
-                                Join the auto glass professionals who are saving time and increasing profits with APAI.
+                                {t('featuresPage.cta.description')}
                             </p>
                             <div className="flex flex-col sm:flex-row gap-3 justify-center">
                                 <Button
@@ -642,14 +588,14 @@ const FeaturesPage = () => {
                                     className="!bg-[#7E5CFE] !border-[#7E5CFE] hover:!bg-[#6a4deb] !h-11 !px-8 !text-base !rounded-full shadow-md shadow-[#7E5CFE]/30"
                                     onClick={handleStartTrial}
                                 >
-                                    Start Your Free Trial
+                                    {t('featuresPage.cta.startTrial')}
                                 </Button>
                                 <Button
                                     size="large"
                                     className="!bg-transparent !border-violet-600 !text-violet-600 hover:!bg-violet-100 !h-11 !px-8 !text-base !rounded-full"
                                     onClick={() => setIsVideoOpen(true)}
                                 >
-                                    Watch a Demo
+                                    {t('featuresPage.cta.watchDemo')}
                                 </Button>
                             </div>
                         </div>

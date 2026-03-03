@@ -7,43 +7,45 @@ import {
     UserOutlined,
     LockOutlined
 } from "@ant-design/icons";
-
-const features = [
-    {
-        icon: <CarOutlined className="text-2xl" style={{ color: '#7E5CFE' }} />,
-        title: "VIN-Based Vehicle Lookup",
-        description: "Instantly identify vehicles using 17-character VINs. Auto-populates year, make, model, and style for 100% accuracy through NHTSA VPIC API integration."
-    },
-    {
-        icon: <DollarOutlined className="text-2xl" style={{ color: '#d946ef' }} />, // fuchsia-500
-        title: "Real-Time Pricing",
-        description: "Access up-to-date glass part pricing integrated with supplier databases. Automatic calculations for parts, labor, tax, and discounts in seconds."
-    },
-    {
-        icon: <FileTextOutlined className="text-2xl" style={{ color: '#7E5CFE' }} />,
-        title: "Professional Documents",
-        description: "Generate branded quotes, work orders, and invoices with customized pricing breakdowns, terms, and professional formatting ready to send to customers."
-    },
-    {
-        icon: <TeamOutlined className="text-2xl" style={{ color: '#c026d3' }} />, // fuchsia-600
-        title: "Team Collaboration",
-        description: "Manage unlimited employees with role-based access control. Technicians, managers, sales teams, and administrators all work from one platform."
-    },
-    {
-        icon: <UserOutlined className="text-2xl" style={{ color: '#7E5CFE' }} />,
-        title: "Customer Management",
-        description: "Maintain detailed customer profiles, vehicle history, and service records. Track quotes, work orders, and invoices per customer for relationship management."
-    },
-    {
-        icon: <LockOutlined className="text-2xl" style={{ color: '#d946ef' }} />, // fuchsia-500
-        title: "Enterprise Security",
-        description: "All data encrypted and stored securely in the cloud. Automatic backups, role-based access control, and compliance-ready infrastructure."
-    }
-];
+import { useTranslation } from "react-i18next";
 
 const FeaturesSection = () => {
+    const { t } = useTranslation();
     const [isVisible, setIsVisible] = useState(false);
     const sectionRef = useRef(null);
+
+    const features = [
+        {
+            icon: <CarOutlined className="text-2xl" style={{ color: '#7E5CFE' }} />,
+            title: t('featuresSection.vinLookup.title'),
+            description: t('featuresSection.vinLookup.desc')
+        },
+        {
+            icon: <DollarOutlined className="text-2xl" style={{ color: '#d946ef' }} />, // fuchsia-500
+            title: t('featuresSection.realTimePricing.title'),
+            description: t('featuresSection.realTimePricing.desc')
+        },
+        {
+            icon: <FileTextOutlined className="text-2xl" style={{ color: '#7E5CFE' }} />,
+            title: t('featuresSection.professionalDocs.title'),
+            description: t('featuresSection.professionalDocs.desc')
+        },
+        {
+            icon: <TeamOutlined className="text-2xl" style={{ color: '#c026d3' }} />, // fuchsia-600
+            title: t('featuresSection.teamCollab.title'),
+            description: t('featuresSection.teamCollab.desc')
+        },
+        {
+            icon: <UserOutlined className="text-2xl" style={{ color: '#7E5CFE' }} />,
+            title: t('featuresSection.customerMgmt.title'),
+            description: t('featuresSection.customerMgmt.desc')
+        },
+        {
+            icon: <LockOutlined className="text-2xl" style={{ color: '#d946ef' }} />, // fuchsia-500
+            title: t('featuresSection.enterpriseSecurity.title'),
+            description: t('featuresSection.enterpriseSecurity.desc')
+        }
+    ];
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -80,7 +82,7 @@ const FeaturesSection = () => {
                         backgroundImage: 'linear-gradient(90deg, #7E5CFE 0%, #9d7eff 100%)'
                     } : {}}
                 >
-                    Powerful Features Built for Your Business
+                    {t('featuresSection.title')}
                 </h2>
             </div>
 
