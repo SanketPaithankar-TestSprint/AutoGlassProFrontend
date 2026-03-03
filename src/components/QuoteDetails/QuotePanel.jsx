@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import { useQuoteStore } from "../../store";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
-import { Modal, Input, Button, message, notification, Select } from "antd";
+import { Modal, Input, Button, message, notification, Select, App } from "antd";
 import { useNavigate } from "react-router-dom";
 import { getActiveTaxRates, getDefaultTaxRate } from "../../api/taxRateApi";
 import { getValidToken } from "../../api/getValidToken";
@@ -116,6 +116,7 @@ const QuotePanelContent = ({
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const token = getValidToken();
+    const { message, notification } = App.useApp();
 
     // --- Zustand store ---
     const { quoteItems, setQuoteItems, quoteItemsVersion } = useQuoteStore();
@@ -330,6 +331,8 @@ const QuotePanelContent = ({
         attachments, docMetadata, isSaved, onClear, onDocumentCreated,
         aiContactFormId, paymentData, existingPayments,
         schedulingData, globalTaxRate, taxSettings, markAsSaved,
+        message, // pass the contextual message instance
+        notification, // pass the contextual notification instance
     });
 
     // --- Save handler with zero-price confirmation (JSX lives here, not in hook) ---
@@ -678,8 +681,8 @@ const QuotePanelContent = ({
     // ==================== RENDER ====================
     return (
         <div className="relative">
-            {contextHolder}
-            {vendorContextHolder}
+            <React.Fragment key="actions-modal-holder">{contextHolder}</React.Fragment>
+            <React.Fragment key="vendor-modal-holder">{vendorContextHolder}</React.Fragment>
             {/* Items Table */}
             <QuoteItemsTable
                 items={items}

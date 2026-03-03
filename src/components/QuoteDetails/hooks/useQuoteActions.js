@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Modal, message, notification } from "antd";
+import { Modal, notification } from "antd";
 import { createCompositeServiceDocument } from "../../../api/createCompositeServiceDocument";
 import { updateCompositeServiceDocument } from "../../../api/updateCompositeServiceDocument";
 import { updateAiContactFormStatus } from "../../../api/aiContactForm";
@@ -42,8 +42,9 @@ export function useQuoteActions({
     existingPayments,
     schedulingData,
     globalTaxRate,
-    taxSettings,
     markAsSaved, // from useQuoteDirtyState
+    message, // injected from App.useApp() in QuotePanel
+    notification, // injected from App.useApp()
 }) {
     const token = getValidToken();
 
@@ -428,20 +429,24 @@ export function useQuoteActions({
             if (isSaved && docMetadata?.documentNumber) {
                 response = await updateCompositeServiceDocument(docMetadata.documentNumber, compositePayload);
                 createdDocNumber = response?.documentNumber || response?.serviceDocument?.documentNumber || docMetadata.documentNumber;
+                console.log("[useQuoteActions] PUT Success message to be shown:", response?.message || `Document saved with number ${createdDocNumber}`);
                 notification.success({
                     message: "Success",
-                    description: `Document save with the ${createdDocNumber}`,
-                    placement: "topRight"
+                    description: response?.message || `Document saved with number ${createdDocNumber}`,
+                    placement: "topRight",
+                    duration: 4,
+                    style: { zIndex: 99999 } // Ensure it sits above modals and headers
                 });
             } else {
                 response = await createCompositeServiceDocument(compositePayload, files);
                 createdDocNumber = response?.documentNumber || response?.serviceDocument?.documentNumber;
+                console.log("[useQuoteActions] POST Success message to be shown:", response?.message || (createdDocNumber ? `Document saved with number ${createdDocNumber}` : "Document saved successfully!"));
                 notification.success({
                     message: "Success",
-                    description: createdDocNumber
-                        ? `Document save with the ${createdDocNumber}`
-                        : "Document save successfully!",
-                    placement: "topRight"
+                    description: response?.message || (createdDocNumber ? `Document saved with number ${createdDocNumber}` : "Document saved successfully!"),
+                    placement: "topRight",
+                    duration: 4,
+                    style: { zIndex: 99999 }
                 });
             }
 
@@ -456,15 +461,15 @@ export function useQuoteActions({
             return { success: true, documentNumber: createdDocNumber, responseData: response };
         } catch (err) {
             console.error(err);
-            let errorMessage = err.message || "An unexpected error occurred.";
-            if (err.response && err.response.data) {
-                const backendError = err.response.data;
-                if (backendError.message) errorMessage = backendError.message;
-                else if (backendError.error) errorMessage = backendError.error;
-            }
-            modal.error({
-                title: 'Save Failed',
-                content: errorMessage,
+            const errorMessage = err.message || "An unexpected error occurred.";
+
+            console.log("[useQuoteActions] Save error:", errorMessage);
+            notification.error({
+                message: "Save Failed",
+                description: errorMessage,
+                placement: "topRight",
+                duration: 4,
+                style: { zIndex: 99999 }
             });
             return { success: false };
         } finally {

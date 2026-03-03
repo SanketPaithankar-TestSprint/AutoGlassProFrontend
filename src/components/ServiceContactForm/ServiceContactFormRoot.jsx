@@ -6,6 +6,7 @@ import urls from '../../config';
 import InquiryDetails from './InquiryDetails';
 import useServiceInquiries from './hooks/useServiceInquiries';
 import useInquiryDetails from './hooks/useInquiryDetails';
+import serviceNotificationSound from '../../assets/NotificationForServiceEnquiery.m4a';
 
 const { Title } = Typography;
 
@@ -35,6 +36,8 @@ const ModalInquiryDetails = ({ inquiryId }) => {
     return <InquiryDetails inquiry={inquiry} />;
 };
 
+let lastSoundPlayedAt = 0;
+
 const ServiceContactFormRoot = () => {
     const [viewDetailsModalOpen, setViewDetailsModalOpen] = useState(false);
     const [selectedInquiryId, setSelectedInquiryId] = useState(null);
@@ -42,6 +45,31 @@ const ServiceContactFormRoot = () => {
     const [currentPage, setCurrentPage] = useState(1);
 
     const { inquiries, loading, total, fetchInquiries, deleteInquiry, markAsRead } = useServiceInquiries();
+
+    const hasNewInquiry = inquiries.some(inquiry => inquiry.status === 'NEW');
+
+    useEffect(() => {
+        let intervalId;
+
+        const playNotificationSound = () => {
+            const now = Date.now();
+            if (now - lastSoundPlayedAt < 2000) return;
+            lastSoundPlayedAt = now;
+            const audio = new Audio(serviceNotificationSound);
+            audio.play().catch(e => console.error("Error playing notification sound:", e));
+        };
+
+        if (hasNewInquiry) {
+            playNotificationSound();
+            intervalId = setInterval(() => {
+                playNotificationSound();
+            }, 60000); // 1 minute delay
+        }
+
+        return () => {
+            if (intervalId) clearInterval(intervalId);
+        };
+    }, [hasNewInquiry]);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -54,6 +82,14 @@ const ServiceContactFormRoot = () => {
 
         const handleNewInquiry = () => {
             message.info('New inquiry received. Refreshing list...');
+
+            const now = Date.now();
+            if (now - lastSoundPlayedAt > 2000) {
+                lastSoundPlayedAt = now;
+                const audio = new Audio(serviceNotificationSound);
+                audio.play().catch(e => console.error("Error playing notification sound:", e));
+            }
+
             fetchInquiries(currentPage - 1);
         };
 

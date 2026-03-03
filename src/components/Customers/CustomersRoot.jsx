@@ -4,11 +4,12 @@ import { useTranslation } from "react-i18next";
 import { getCustomers } from "../../api/getCustomers";
 import { createCustomer } from "../../api/createCustomer";
 import { updateCustomer } from "../../api/updateCustomer";
+import { deleteCustomer } from "../../api/deleteCustomer";
 
-import { getOrganizations, createOrganization, updateOrganization, getOrganizationById } from "../../api/organizationApi";
+import { getOrganizations, createOrganization, updateOrganization, getOrganizationById, deleteOrganization } from "../../api/organizationApi";
 import { getValidToken } from "../../api/getValidToken";
-import { TeamOutlined, EditOutlined, PlusOutlined, ShopOutlined, UserOutlined, FilterOutlined } from "@ant-design/icons";
-import { Modal, Form, Input, Button, notification, Tabs, Tag, Empty, Pagination } from "antd";
+import { TeamOutlined, EditOutlined, DeleteOutlined, EyeOutlined, PlusOutlined, MinusCircleOutlined, ShopOutlined, UserOutlined, FilterOutlined } from "@ant-design/icons";
+import { Modal, Form, Input, Button, notification, Tabs, Tag, Empty, Pagination, Spin, Descriptions } from "antd";
 import { getProfile } from "../../api/getProfile";
 
 // Imports for Filter/Layout
@@ -60,6 +61,12 @@ const CustomersRoot = () => {
 
     const [customerForm] = Form.useForm();
     const [orgForm] = Form.useForm();
+    const [modal, contextHolder] = Modal.useModal();
+
+    // Organization detail view state
+    const [orgDetailVisible, setOrgDetailVisible] = useState(false);
+    const [orgDetailData, setOrgDetailData] = useState(null);
+    const [orgDetailLoading, setOrgDetailLoading] = useState(false);
 
     // Resize Handler
     useEffect(() => {
@@ -78,7 +85,9 @@ const CustomersRoot = () => {
             const res = await getProfile(token);
             localStorage.setItem("agp_profile_data", JSON.stringify(res));
             return res;
-        }
+        },
+        staleTime: 10 * 60 * 1000, // 10 minutes
+        refetchOnWindowFocus: false,
     });
 
     const { data: customers = [], isLoading: loadingCustomers } = useQuery({
@@ -100,34 +109,20 @@ const CustomersRoot = () => {
         },
         enabled: !!token,
         keepPreviousData: true,
+        staleTime: 5 * 60 * 1000, // 5 minutes — only refetch on create/edit/delete
+        refetchOnWindowFocus: false,
     });
 
     const { data: organizations = [], isLoading: loadingOrgs, refetch: refetchOrgs } = useQuery({
         queryKey: ['organizations'],
         queryFn: async () => {
             if (!token) throw new Error("No token found.");
-            const basicOrgs = await getOrganizations();
-
-            // Fetch details for each organization to get email/phone/address which are missing in list view
-            if (Array.isArray(basicOrgs) && basicOrgs.length > 0) {
-                const detailedOrgs = await Promise.all(
-                    basicOrgs.map(async (org) => {
-                        try {
-                            const details = await getOrganizationById(org.organizationId);
-                            // Merge basic info with details (details usually contain everything, but safe to merge)
-                            return { ...org, ...details };
-                        } catch (err) {
-                            console.error(`Failed to fetch details for org ID ${org.organizationId}`, err);
-                            return org; // Return basic info if details fetch fails
-                        }
-                    })
-                );
-                return detailedOrgs;
-            }
-
-            return [];
+            const orgs = await getOrganizations();
+            return Array.isArray(orgs) ? orgs : [];
         },
-        enabled: !!token
+        enabled: !!token,
+        staleTime: 5 * 60 * 1000, // 5 minutes — only refetch on create/edit/delete
+        refetchOnWindowFocus: false,
     });
 
     // ------------------- FILTER LOGIC ------------------- //
@@ -223,10 +218,36 @@ const CustomersRoot = () => {
         orgForm.resetFields();
         setIsOrgModalVisible(true);
     };
-    const handleEditOrg = (org) => {
-        setEditingItem(org);
-        orgForm.setFieldsValue(org);
-        setIsOrgModalVisible(true);
+    const handleEditOrg = async (org) => {
+        setOrgDetailLoading(true);
+        try {
+            const details = await getOrganizationById(org.organizationId);
+            const fullOrg = { ...org, ...details };
+            setEditingItem(fullOrg);
+            orgForm.setFieldsValue(fullOrg);
+            setIsOrgModalVisible(true);
+        } catch (err) {
+            setEditingItem(org);
+            orgForm.setFieldsValue(org);
+            setIsOrgModalVisible(true);
+        } finally {
+            setOrgDetailLoading(false);
+        }
+    };
+
+    const handleViewOrgDetails = async (org) => {
+        setOrgDetailVisible(true);
+        setOrgDetailData(null);
+        setOrgDetailLoading(true);
+        try {
+            const details = await getOrganizationById(org.organizationId);
+            setOrgDetailData({ ...org, ...details });
+        } catch (err) {
+            notification.error({ message: 'Failed to load organization details' });
+            setOrgDetailVisible(false);
+        } finally {
+            setOrgDetailLoading(false);
+        }
     };
 
     const handleSaveOrg = async () => {
@@ -237,7 +258,7 @@ const CustomersRoot = () => {
                 const payload = {
                     ...values,
                     userId: editingItem.userId,
-                    contacts: editingItem.contacts || [], // Preserve existing contacts
+                    contacts: values.contacts || editingItem.contacts || [],
                     contactName: values.contactName || ""
                 };
 
@@ -275,6 +296,105 @@ const CustomersRoot = () => {
         }
     };
 
+    const handleDeleteCustomer = (customer) => {
+        modal.confirm({
+            title: 'Delete Customer',
+            content: `Are you sure you want to delete ${customer.firstName || ''} ${customer.lastName || ''}? This action cannot be undone.`,
+            okText: 'Yes, Delete',
+            okType: 'danger',
+            cancelText: 'Cancel',
+            onOk: async () => {
+                await performDeleteCustomer(customer.customerId, false, customer);
+            }
+        });
+    };
+
+    const performDeleteCustomer = async (id, force, customer) => {
+        try {
+            const res = await deleteCustomer(token, id, force);
+            if (res && res.requiresConfirmation) {
+                modal.confirm({
+                    title: 'This customer is linked to existing documents',
+                    content: (
+                        <div>
+                            <p className="mb-2 text-red-600">This customer cannot be removed because they are linked to the following documents:</p>
+                            {res.associatedDocuments && res.associatedDocuments.length > 0 && (
+                                <ul className="list-disc pl-5 mb-2 text-gray-600 text-sm max-h-32 overflow-y-auto">
+                                    {res.associatedDocuments.map(doc => <li key={doc}>{doc}</li>)}
+                                </ul>
+                            )}
+                            <p className="font-semibold">Would you like to remove the customer anyway? The customer will be unlinked from these documents.</p>
+                        </div>
+                    ),
+                    okText: 'Yes, Delete Anyway',
+                    okType: 'danger',
+                    cancelText: 'Cancel',
+                    width: 500,
+                    onOk: async () => {
+                        await performDeleteCustomer(id, true, customer);
+                    }
+                });
+            } else if (res && res.success) {
+                notification.success({ message: 'Customer deleted successfully' });
+                queryClient.invalidateQueries({ queryKey: ['customers'] });
+            } else {
+                throw new Error("Failed to delete");
+            }
+        } catch (err) {
+            notification.error({ message: 'Failed to delete customer', description: err.message });
+        }
+    };
+
+    const handleDeleteOrg = (org) => {
+        modal.confirm({
+            title: 'Delete Organization',
+            content: `Are you sure you want to delete "${org.companyName || ''}"? This action cannot be undone.`,
+            okText: 'Yes, Delete',
+            okType: 'danger',
+            cancelText: 'Cancel',
+            onOk: async () => {
+                await performDeleteOrg(org.organizationId, false);
+            }
+        });
+    };
+
+    const performDeleteOrg = async (id, force) => {
+        try {
+            const res = await deleteOrganization(id, force);
+            if (res && res.requiresConfirmation) {
+                modal.confirm({
+                    title: 'This organization is linked to existing documents',
+                    content: (
+                        <div>
+                            <p className="mb-2 text-red-600">This organization cannot be removed because it is linked to the following documents:</p>
+                            {res.associatedDocuments && res.associatedDocuments.length > 0 && (
+                                <ul className="list-disc pl-5 mb-2 text-gray-600 text-sm max-h-32 overflow-y-auto">
+                                    {res.associatedDocuments.map(doc => <li key={doc}>{doc}</li>)}
+                                </ul>
+                            )}
+                            <p className="font-semibold">Would you like to remove the organization anyway? It will be unlinked from these documents.</p>
+                        </div>
+                    ),
+                    okText: 'Yes, Delete Anyway',
+                    okType: 'danger',
+                    cancelText: 'Cancel',
+                    width: 500,
+                    onOk: async () => {
+                        await performDeleteOrg(id, true);
+                    }
+                });
+            } else if (res && res.success) {
+                notification.success({ message: 'Organization deleted successfully' });
+                await queryClient.invalidateQueries({ queryKey: ['organizations'] });
+                refetchOrgs();
+            } else {
+                throw new Error(res?.message || "Failed to delete");
+            }
+        } catch (err) {
+            notification.error({ message: 'Failed to delete organization', description: err.message });
+        }
+    };
+
 
     // ------------------- UI COMPONENTS ------------------- //
     const renderCustomersTable = () => {
@@ -294,7 +414,7 @@ const CustomersRoot = () => {
                                     </div>
                                     <div className="flex gap-2 ml-2">
                                         <Button type="text" size="small" className="text-violet-600 bg-violet-50 hover:bg-violet-100" icon={<EditOutlined />} onClick={() => handleEditCustomer(c)} />
-
+                                        <Button type="text" size="small" danger className="bg-red-50 hover:bg-red-100" icon={<DeleteOutlined />} onClick={() => handleDeleteCustomer(c)} />
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -333,7 +453,7 @@ const CustomersRoot = () => {
                                         <td className="p-4 text-right pr-6">
                                             <div className="flex items-center justify-end gap-2">
                                                 <Button type="text" size="small" className="text-violet-600 hover:bg-violet-100" icon={<EditOutlined />} onClick={() => handleEditCustomer(c)} />
-
+                                                <Button type="text" size="small" danger className="hover:bg-red-50" icon={<DeleteOutlined />} onClick={() => handleDeleteCustomer(c)} />
                                             </div>
                                         </td>
                                     </tr>
@@ -364,8 +484,9 @@ const CustomersRoot = () => {
                                         <div className="text-sm text-gray-500 truncate">{org.email || "-"}</div>
                                     </div>
                                     <div className="flex gap-2 ml-2">
+                                        <Button type="text" size="small" className="text-blue-600 bg-blue-50 hover:bg-blue-100" icon={<EyeOutlined />} onClick={() => handleViewOrgDetails(org)} />
                                         <Button type="text" size="small" className="text-violet-600 bg-violet-50 hover:bg-violet-100" icon={<EditOutlined />} onClick={() => handleEditOrg(org)} />
-
+                                        <Button type="text" size="small" danger className="bg-red-50 hover:bg-red-100" icon={<DeleteOutlined />} onClick={() => handleDeleteOrg(org)} />
                                     </div>
                                 </div>
                                 <div className="space-y-1 text-sm text-gray-600">
@@ -423,8 +544,9 @@ const CustomersRoot = () => {
                                         <td className="p-4 text-sm text-gray-600 font-mono">{org.taxId || "-"}</td>
                                         <td className="p-4 text-right pr-6">
                                             <div className="flex items-center justify-end gap-2">
+                                                <Button type="text" size="small" className="text-blue-600 hover:bg-blue-50" icon={<EyeOutlined />} onClick={() => handleViewOrgDetails(org)} />
                                                 <Button type="text" size="small" className="text-violet-600 hover:bg-violet-100" icon={<EditOutlined />} onClick={() => handleEditOrg(org)} />
-
+                                                <Button type="text" size="small" danger className="hover:bg-red-50" icon={<DeleteOutlined />} onClick={() => handleDeleteOrg(org)} />
                                             </div>
                                         </td>
                                     </tr>
@@ -461,6 +583,7 @@ const CustomersRoot = () => {
             sidebarOpen={sidebarOpen}
             setSidebarOpen={setSidebarOpen}
         >
+            {contextHolder}
             <div className="min-h-screen bg-slate-100">
                 <CustomerHeaderBar
                     viewMode={viewMode}
@@ -597,7 +720,123 @@ const CustomersRoot = () => {
                                 <Form.Item name="country" label={t('customers.country')}><Input /></Form.Item>
                             </div>
                         </div>
+
+                        {/* Contacts Section - only show when editing */}
+                        {editingItem && (
+                            <div className="border-t pt-4 mt-2">
+                                <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">Contact Persons</h4>
+                                <Form.List name="contacts">
+                                    {(fields, { add, remove }) => (
+                                        <>
+                                            {fields.map(({ key, name, ...restField }) => (
+                                                <div key={key} className="flex items-start gap-2 mb-3 p-3 bg-gray-50 rounded-lg">
+                                                    <div className="flex-1 grid grid-cols-3 gap-2">
+                                                        <Form.Item {...restField} name={[name, 'name']} className="mb-0" rules={[{ required: true, message: 'Name required' }]}>
+                                                            <Input placeholder="Name" size="small" />
+                                                        </Form.Item>
+                                                        <Form.Item {...restField} name={[name, 'phone']} className="mb-0">
+                                                            <Input placeholder="Phone" size="small" />
+                                                        </Form.Item>
+                                                        <Form.Item {...restField} name={[name, 'email']} className="mb-0" rules={[{ type: 'email', message: 'Invalid email' }]}>
+                                                            <Input placeholder="Email" size="small" />
+                                                        </Form.Item>
+                                                    </div>
+                                                    <Form.Item {...restField} name={[name, 'id']} hidden><Input /></Form.Item>
+                                                    <Button type="text" danger icon={<MinusCircleOutlined />} onClick={() => remove(name)} className="mt-0.5" size="small" />
+                                                </div>
+                                            ))}
+                                            <Button type="dashed" onClick={() => add({ id: crypto.randomUUID(), name: '', phone: '', email: '' })} block icon={<PlusOutlined />} size="small">
+                                                Add Contact
+                                            </Button>
+                                        </>
+                                    )}
+                                </Form.List>
+                            </div>
+                        )}
                     </Form>
+                </Modal>
+
+                {/* Organization Detail View Modal */}
+                <Modal
+                    title={orgDetailData ? orgDetailData.companyName : "Organization Details"}
+                    open={orgDetailVisible}
+                    onCancel={() => { setOrgDetailVisible(false); setOrgDetailData(null); }}
+                    footer={null}
+                    centered
+                    width={700}
+                >
+                    {orgDetailLoading ? (
+                        <div className="flex justify-center py-12"><Spin size="large" /></div>
+                    ) : orgDetailData ? (
+                        <div className="mt-4 space-y-5">
+                            {/* Company Info */}
+                            <Descriptions column={2} bordered size="small">
+                                <Descriptions.Item label="Company Name" span={2}>
+                                    <span className="font-semibold">{orgDetailData.companyName || "-"}</span>
+                                    {orgDetailData.taxExempt && <Tag color="green" className="ml-2">Tax Exempt</Tag>}
+                                </Descriptions.Item>
+                                <Descriptions.Item label="Contact Name">{orgDetailData.contactName || "-"}</Descriptions.Item>
+                                <Descriptions.Item label="Tax ID"><span className="font-mono">{orgDetailData.taxId || "-"}</span></Descriptions.Item>
+                                <Descriptions.Item label="Email">{orgDetailData.email || "-"}</Descriptions.Item>
+                                <Descriptions.Item label="Phone">{orgDetailData.phone || "-"}</Descriptions.Item>
+                                {orgDetailData.alternatePhone && (
+                                    <Descriptions.Item label="Alt. Phone" span={2}>{orgDetailData.alternatePhone}</Descriptions.Item>
+                                )}
+                            </Descriptions>
+
+                            {/* Address */}
+                            <Descriptions column={2} bordered size="small" title={<span className="text-xs font-bold text-gray-400 uppercase">Address</span>}>
+                                <Descriptions.Item label="Address Line 1" span={2}>{orgDetailData.addressLine1 || "-"}</Descriptions.Item>
+                                {orgDetailData.addressLine2 && (
+                                    <Descriptions.Item label="Address Line 2" span={2}>{orgDetailData.addressLine2}</Descriptions.Item>
+                                )}
+                                <Descriptions.Item label="City">{orgDetailData.city || "-"}</Descriptions.Item>
+                                <Descriptions.Item label="State">{orgDetailData.state || "-"}</Descriptions.Item>
+                                <Descriptions.Item label="Postal Code">{orgDetailData.postalCode || "-"}</Descriptions.Item>
+                                <Descriptions.Item label="Country">{orgDetailData.country || "-"}</Descriptions.Item>
+                            </Descriptions>
+
+                            {/* Notes */}
+                            {orgDetailData.notes && (
+                                <Descriptions column={1} bordered size="small">
+                                    <Descriptions.Item label="Notes">{orgDetailData.notes}</Descriptions.Item>
+                                </Descriptions>
+                            )}
+
+                            {/* Contacts */}
+                            {orgDetailData.contacts && orgDetailData.contacts.length > 0 && (
+                                <div>
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">Contacts ({orgDetailData.contacts.length})</h4>
+                                    <div className="border border-gray-200 rounded-lg overflow-hidden">
+                                        <table className="w-full text-left text-sm">
+                                            <thead>
+                                                <tr className="bg-gray-50 border-b border-gray-200">
+                                                    <th className="p-2.5 text-xs font-bold text-gray-500 uppercase">Name</th>
+                                                    <th className="p-2.5 text-xs font-bold text-gray-500 uppercase">Phone</th>
+                                                    <th className="p-2.5 text-xs font-bold text-gray-500 uppercase">Email</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-100">
+                                                {orgDetailData.contacts.map((contact) => (
+                                                    <tr key={contact.id} className="hover:bg-gray-50">
+                                                        <td className="p-2.5 font-medium text-gray-900">{contact.name || "-"}</td>
+                                                        <td className="p-2.5 text-gray-600">{contact.phone || "-"}</td>
+                                                        <td className="p-2.5 text-gray-600">{contact.email || "-"}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Timestamps */}
+                            <div className="flex justify-between text-xs text-gray-400 pt-2 border-t border-gray-100">
+                                <span>Created: {orgDetailData.createdAt ? new Date(orgDetailData.createdAt).toLocaleDateString() : "-"}</span>
+                                <span>Last Updated: {orgDetailData.updatedAt ? new Date(orgDetailData.updatedAt).toLocaleDateString() : "-"}</span>
+                            </div>
+                        </div>
+                    ) : null}
                 </Modal>
             </div>
 

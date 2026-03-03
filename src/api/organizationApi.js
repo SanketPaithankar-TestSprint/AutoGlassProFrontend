@@ -242,10 +242,10 @@ export const updateOrganization = async (organizationId, organizationData) => {
  * @param {number} organizationId - Organization ID
  * @returns {Promise<Object>} - Delete response
  */
-export const deleteOrganization = async (organizationId) => {
+export const deleteOrganization = async (organizationId, force = false) => {
     try {
         const token = await getValidToken();
-        const response = await fetch(`${urls.javaApiUrl}/v1/organizations/${organizationId}`, {
+        const response = await fetch(`${urls.javaApiUrl}/v1/organizations/${organizationId}?force=${force}`, {
             method: 'DELETE',
             headers: {
                 'accept': '*/*',
@@ -254,6 +254,9 @@ export const deleteOrganization = async (organizationId) => {
         });
 
         if (!response.ok) {
+            if (response.status === 409) {
+                return await response.json();
+            }
             throw new Error(`Failed to delete organization: ${response.status}`);
         }
 
