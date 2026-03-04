@@ -9,7 +9,6 @@ import { motion } from "framer-motion";
 import { Button } from "antd";
 import VideoModal from "../VideoModal/VideoModal";
 import BrowserMockup from "../../assets/browser_mockup.png";
-import IpadMockup from "../../assets/ipad_landing_page_mockup.png";
 import gsap from "gsap";
 import { SplitText } from "gsap/SplitText";
 import { useGSAP } from "@gsap/react";
@@ -85,113 +84,95 @@ const Home = () => {
                     className="relative bg-transparent text-slate-900 py-0 flex justify-center items-center"
                     style={{ minHeight: 'calc(var(--vh, 1vh) * 100)' }}
                 >
-                    <div className="relative max-w-9xl mx-auto py-8 md:py-24 lg:py-32 px-3 sm:px-4 md:px-6 grid lg:grid-cols-12 gap-6 md:gap-12 lg:gap-16 items-center pt-16 md:pt-20 lg:pt-32 w-full">
+                    <div className="relative max-w-7xl mx-auto py-8 md:py-24 lg:py-32 px-3 sm:px-4 md:px-6 grid lg:grid-cols-12 gap-6 md:gap-12 items-center pt-16 md:pt-20 lg:pt-32 w-full">
 
                         {/* Left Column */}
-                        <div className="text-center lg:ml-6 lg:p-10 lg:pr-16 lg:col-span-5 w-full flex flex-col items-center justify-center">
+                        <div className="text-center lg:text-left lg:col-span-5 w-full">
 
-                            <div className="w-full mx-auto">
-                                {/* Heading */}
-                                <h1
-                                    key={`title-${i18n.language}`}
-                                    ref={heroTitleRef}
-                                    className="font-extrabold mb-2 sm:mb-4 md:mb-6 leading-tight text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl text-center w-full"
-                                    style={{ color: '#7E5CFE' }}
-                                >
-                                    <span className="block">{t('home.heroTitleLine1')}</span>
-                                    <span className="block">{t('home.heroTitleLine2')}</span>
-                                    <span className="block">{t('home.heroTitleLine3')}</span>
-                                </h1>
+                            {/* Heading */}
+                            <h1
+                                key={`title-${i18n.language}`}
+                                ref={heroTitleRef}
+                                className="font-extrabold mb-3 sm:mb-4 md:mb-6 leading-tight px-2 sm:px-0 text-2xl sm:text-3xl md:text-4xl lg:text-3xl xl:text-4xl 2xl:text-5xl"
+                                style={{ color: '#7E5CFE' }}
+                            >
+                                <span className="block">{t('home.heroTitleLine1')}</span>
+                                <span className="block">{t('home.heroTitleLine2')}</span>
+                                <span className="block">{t('home.heroTitleLine3')}</span>
+                            </h1>
 
-                                {/* Description */}
-                                <p
-                                    key={`desc-${i18n.language}`}
-                                    ref={heroDescRef}
-                                    className="text-xs sm:text-sm md:text-base text-slate-600 mb-4 sm:mb-6 md:mb-8 px-4 sm:px-0 leading-relaxed text-center"
-                                    style={{ opacity: 1 }}
-                                >
-                                    {t('home.heroDescription')}
-                                </p>
-                            </div>
+                            {/* Description */}
+                            <p
+                                key={`desc-${i18n.language}`}
+                                ref={heroDescRef}
+                                className="text-sm sm:text-base md:text-lg text-slate-600 mb-5 sm:mb-6 md:mb-8 max-w-2xl mx-auto lg:mx-0 px-2 sm:px-0 leading-relaxed"
+                                style={{ opacity: 1 }} // GSAP controls opacity on chars
+                            >
+                                {t('home.heroDescription')}
+                            </p>
 
-                            <div className="w-full flex justify-center mt-6">
-                                <motion.div
-                                    className="flex flex-col sm:flex-row justify-center gap-3 w-full max-w-sm mx-auto px-4 sm:px-0"
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.5, delay: 0.9 }}
-                                >
-                                    <motion.div
-                                        className="w-full sm:w-auto"
-                                        whileHover={{ scale: 1.04 }}
-                                        whileTap={{ scale: 0.97 }}
-                                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                                    >
-                                        <Button
-                                            type="primary"
-                                            className="w-full !text-white !rounded-full !px-6 sm:!px-8 !h-auto !py-2 sm:!py-3 !text-xs sm:!text-sm shadow-lg transition-all duration-200 !whitespace-normal"
-                                            style={{
-                                                backgroundColor: '#7E5CFE',
-                                                borderColor: '#7E5CFE',
-                                                boxShadow: '0 4px 14px 0 rgba(126, 92, 254, 0.39)',
-                                                border: 'none'
-                                            }}
-                                            onMouseEnter={(e) => {
-                                                e.currentTarget.style.backgroundColor = '#6b47e8';
-                                                e.currentTarget.style.transform = 'translateY(-2px)';
-                                            }}
-                                            onMouseLeave={(e) => {
-                                                e.currentTarget.style.backgroundColor = '#7E5CFE';
-                                                e.currentTarget.style.transform = 'translateY(0)';
-                                            }}
-                                            onClick={() => navigate('/auth', { state: { mode: 'signup' } })}
-                                        >
-                                            <span className="font-medium">{t('pricing.startFreeTrial')}</span>
-                                        </Button>
-                                    </motion.div>
-
-                                    <motion.div
-                                        className="w-full sm:w-auto"
-                                        whileHover={{ scale: 1.04 }}
-                                        whileTap={{ scale: 0.97 }}
-                                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                                    >
-                                        <Button
-                                            className="w-full !bg-transparent !border-violet-600 !text-violet-600 hover:!bg-violet-100 !rounded-full !px-6 sm:!px-8 !h-auto !py-2 sm:!py-3 !text-xs sm:!text-sm shadow-sm hover:shadow-md transition-all duration-200 !whitespace-normal"
-                                            onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                                            onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
-                                            onClick={() => setIsVideoOpen(true)}
-                                        >
-                                            <span className="font-medium">{t('home.watchDemo')}</span>
-                                        </Button>
-                                    </motion.div>
-                                </motion.div>
-                            </div>
-                        </div>
-
-                        {/* Mobile/Tablet: iPad mockup */}
-                        <div className="flex lg:hidden justify-center w-full col-span-full mt-4 sm:mt-8 px-4 sm:px-8">
-                            <motion.img
-                                src={IpadMockup}
-                                alt="AutoGlassPro Dashboard on iPad"
-                                className="w-full max-w-xs sm:max-w-md object-contain drop-shadow-2xl rounded-2xl"
-                                initial={{ opacity: 0, y: 40 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.8, ease: "easeOut", delay: 0.5 }}
-                            />
-                        </div>
-
-                        {/* Right Column: Browser Mockup (desktop only) */}
-                        <div className="hidden lg:flex relative lg:col-span-6 justify-center items-center">
                             <motion.div
-                                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full blur-[100px] pointer-events-none"
+                                className="flex flex-row justify-center gap-3 w-full mr-6"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5, delay: 0.9 }}
+                            >
+                                <motion.div
+                                    whileHover={{ scale: 1.04 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                                >
+                                    <Button
+                                        type="primary"
+                                        className="!text-white !rounded-full !px-8 !h-11 !text-sm shadow-lg transition-all duration-200"
+                                        style={{
+                                            backgroundColor: '#7E5CFE',
+                                            borderColor: '#7E5CFE',
+                                            boxShadow: '0 4px 14px 0 rgba(126, 92, 254, 0.39)',
+                                            border: 'none'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.backgroundColor = '#6b47e8';
+                                            e.currentTarget.style.transform = 'translateY(-2px)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.backgroundColor = '#7E5CFE';
+                                            e.currentTarget.style.transform = 'translateY(0)';
+                                        }}
+                                        onClick={() => navigate('/auth', { state: { mode: 'signup' } })}
+                                    >
+                                        <span className="font-medium">{t('pricing.startFreeTrial')}</span>
+                                    </Button>
+                                </motion.div>
+
+                                <motion.div
+                                    whileHover={{ scale: 1.04 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                                >
+                                    <Button
+                                        className="!bg-transparent !border-violet-600 !text-violet-600 hover:!bg-violet-100 !rounded-full !px-8 !h-11 !text-sm shadow-sm hover:shadow-md transition-all duration-200"
+                                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
+                                        onClick={() => setIsVideoOpen(true)}
+                                    >
+                                        <span className="font-medium">Watch a Demo</span>
+                                    </Button>
+                                </motion.div>
+                            </motion.div>
+                        </div>
+
+                        {/* Right Column: Image */}
+                        <div className="hidden lg:flex relative lg:col-span-6 justify-center lg:justify-end">
+                            <motion.div
+                                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-[100px] pointer-events-none"
                                 style={{ background: 'linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)', willChange: 'transform, opacity' }}
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 0.4 }}
                                 transition={{ duration: 1.2, ease: "easeOut" }}
                             />
                             <motion.div
-                                className="relative w-[85%] max-w-4xl"
+                                className="relative w-full max-w-5xl"
                                 initial={{ opacity: 0, x: 100 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}

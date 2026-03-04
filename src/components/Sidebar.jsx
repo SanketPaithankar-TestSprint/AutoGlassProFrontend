@@ -49,8 +49,8 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
     const location = useLocation();
     const [userLogo, setUserLogo] = useState(localStorage.getItem('userLogo'));
     const { badgeCount } = useInquiry(); // Get badge count from context
-    const { notifications } = useChat() || {};
-    const unreadChatCount = Array.isArray(notifications) ? notifications.filter(n => !n.read).length : 0;
+    const { unreadTotal } = useChat() || {};
+    const unreadChatCount = unreadTotal || 0;
     const [localBadgeCount, setLocalBadgeCount] = useState(0);
     const { t } = useTranslation();
     const activeTabBg = useSidebarStore(state => state.activeTabBg);

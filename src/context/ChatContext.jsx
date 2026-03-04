@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useRef, useCallb
 import ChatSocket from '../services/ChatSocket';
 import { getValidToken } from '../api/getValidToken';
 import chatNotificationSound from '../assets/NotificationForChat.mp3';
-import { notification } from 'antd';
+import { App } from 'antd';
 
 const ChatContext = createContext(null);
 
@@ -11,6 +11,7 @@ export const useChat = () => {
 };
 
 export const ChatProvider = ({ children, isPublic = false, publicUserId = null }) => {
+    const { notification } = App.useApp();
     const [socket, setSocket] = useState(null);
     const socketRef = useRef(null);
     const [connectionStatus, setConnectionStatus] = useState('disconnected');
@@ -89,6 +90,8 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
 
             const storedConversationId = localStorage.getItem("chat_conversationId");
 
+            console.log("[ChatContext] Initializing PUBLIC connection for visitor:", visitorId);
+
             chatSocket = new ChatSocket({
                 url: WS_URL,
                 userId: publicUserId,
@@ -103,8 +106,8 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
             // ── SHOP MODE ── (initial connect, no conversationId)
             const token = getValidToken();
             if (!token) {
-                console.warn("[ChatContext] No token available for shop connection");
-                return;
+                console.log("[ChatContext] Shop connection skipped: No token available (User not logged in)");
+                return null;
             }
 
             let userId = sessionStorage.getItem('userId');
@@ -121,9 +124,11 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
             }
 
             if (!userId) {
-                console.warn("[ChatContext] Could not determine userId (TenantId)");
-                return;
+                console.log("[ChatContext] Shop connection skipped: Could not determine userId (TenantId)");
+                return null;
             }
+
+            console.log("[ChatContext] Connecting SHOP socket for user:", userId);
 
             chatSocket = new ChatSocket({
                 url: WS_URL,
@@ -145,10 +150,24 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
     }, [isPublic, publicUserId, visitorId, attachListeners]);
 
     useEffect(() => {
+        // Run connect when component mounts OR when tokens in localStorage change
         const socketInstance = connect();
 
+        const handleStorageChange = (e) => {
+            if (e.key === 'ApiToken' || e.key === 'userId') {
+                console.log("[ChatContext] Auth storage changed, attempting to connect socket...");
+                if (!socketRef.current) {
+                    connect();
+                }
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+
         return () => {
+            window.removeEventListener('storage', handleStorageChange);
             if (socketInstance) {
+                console.log("[ChatContext] Disconnecting socket...");
                 socketInstance.disconnect();
             }
         };
@@ -156,6 +175,8 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
 
     // ─── Message Router ──────────────────────────────────────────────────────
     const handleIncomingMessage = (data) => {
+        console.log(`[ChatContext] Incoming notification type: "${data.type}"`);
+
         switch (data.type) {
             case "CONVERSATIONS_LIST":
                 handleConversationsList(data.data);
@@ -203,7 +224,9 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
     };
 
     const handleHistory = (data) => {
-        let { conversationId, messages } = data;
+        // Backend might send { type: "HISTORY", data: { conversationId, messages } }
+        const payload = data.data && data.data.messages ? data.data : data;
+        let { conversationId, messages } = payload;
 
         console.log('[ChatContext] handleHistory received:', { conversationId, messageCount: messages?.length });
 
@@ -246,12 +269,43 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
     };
 
     const handleNewMessage = (msg) => {
-        const { conversationId, message, senderType, timestamp } = msg;
+        const payload = msg.data || msg;
+        console.log("[ChatContext] NEW_MESSAGE payload:", JSON.stringify(payload, null, 2));
+        const { conversationId, message, senderType, timestamp } = payload;
         if (!conversationId) return;
 
         // ── Customer: persist conversationId on first response ──
         if (isPublic && !localStorage.getItem("chat_conversationId")) {
             localStorage.setItem("chat_conversationId", conversationId);
+        }
+
+        const isFromCustomer = senderType !== 'SHOP';
+        const isCurrentlyOpen = activeConversationIdRef.current === conversationId;
+
+        // Execute side effects outside of the setState callback
+        if (isFromCustomer && !isPublic && !isCurrentlyOpen) {
+            const senderName = payload.senderName || payload.name || payload.visitorName || payload.customerName || 'Customer';
+            console.log("[ChatContext] Triggering persistent toast for new message from:", senderName);
+
+            // Play chat notification sound
+            try {
+                const audio = new Audio(chatNotificationSound);
+                audio.volume = 0.5;
+                audio.play().catch(() => { });
+            } catch (e) { }
+
+            // Show top-right toast notification (same style as inquiry)
+            notification.info({
+                key: 'unread-chat-toast',
+                message: '💬 New Chat Message',
+                description: `You have unread message(s) waiting.`,
+                placement: 'topRight',
+                duration: 0,
+                onClick: () => {
+                    window.location.href = '/chat';
+                },
+                style: { cursor: 'pointer' }
+            });
         }
 
         setConversations(prev => {
@@ -268,34 +322,16 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
                 return prev;
             }
 
-            const newMsg = { ...msg };
+            const newMsg = { ...payload };
 
-            // Increment unread only for customer messages when Shop is viewing another conversation
+            // Increment unread 
             let newUnread = existing.unreadCount;
-            const isFromCustomer = senderType !== 'SHOP';
-            const isCurrentlyOpen = activeConversationIdRef.current === conversationId;
 
-            if (isFromCustomer && !isCurrentlyOpen && !isPublic) {
+            if (isFromCustomer && !isPublic && !isCurrentlyOpen) {
                 newUnread += 1;
-
-                // Play notification sound
-                try {
-                    const audio = new Audio(chatNotificationSound);
-                    audio.volume = 0.5;
-                    audio.play().catch(() => { });
-                } catch (e) { }
-
-                // Show top-right toast notification
-                const senderName = msg.senderName || msg.name || msg.visitorName || 'Customer';
-                notification.info({
-                    message: `💬 New message from ${senderName}`,
-                    description: message?.length > 80 ? message.slice(0, 80) + '…' : message,
-                    placement: 'topRight',
-                    duration: 4,
-                });
             }
 
-            const potentialName = msg.name || msg.senderName || msg.visitorName || msg.customerName;
+            const potentialName = payload.name || payload.senderName || payload.visitorName || payload.customerName;
             const updatedCustomerName = existing.customerName || potentialName;
 
             return {
@@ -307,7 +343,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
                     updatedAt: timestamp || Date.now(),
                     unreadCount: newUnread,
                     customerName: updatedCustomerName,
-                    visitorId: existing.visitorId || msg.visitorId,
+                    visitorId: existing.visitorId || payload.visitorId,
                 },
             };
         });
@@ -408,6 +444,39 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
         Object.values(conversations).forEach(c => total += (c.unreadCount || 0));
         setUnreadTotal(total);
     }, [conversations]);
+
+    // Loop notification sound every 10 seconds if there are unread messages (Shop only)
+    useEffect(() => {
+        let intervalId;
+        if (!isPublic && unreadTotal > 0) {
+            // Show a persistent toast that matches the red dot exactly
+            notification.info({
+                key: 'unread-chat-toast',
+                message: '💬 New Chat Message',
+                description: `You have ${unreadTotal} unread message(s) waiting.`,
+                placement: 'topRight',
+                duration: 0,
+            });
+
+            // Start looping chat notification sound
+            intervalId = setInterval(() => {
+                try {
+                    const audio = new Audio(chatNotificationSound);
+                    audio.volume = 0.5;
+                    audio.play().catch(() => { });
+                } catch (e) { }
+            }, 10000);
+        } else if (!isPublic && unreadTotal === 0) {
+            // Close the persistent toast if all messages are fully read
+            notification.destroy('unread-chat-toast');
+        }
+
+        return () => {
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+        };
+    }, [unreadTotal, isPublic]);
 
     return (
         <ChatContext.Provider value={{
