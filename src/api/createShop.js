@@ -2,8 +2,9 @@
 import urls from "../config";
 
 const AGP_API_URL = urls.javaApiUrl;
-
-export const createShop = async (token, shopData) => {
+import { getValidToken } from "./getValidToken";
+export const createShop = async (shopData) => {
+    const token = getValidToken();
     const response = await fetch(`${AGP_API_URL}/shops`, {
         method: "POST",
         headers: {

@@ -6,8 +6,9 @@ import { createShop } from "../../api/createShop";
 import { updateShop } from "../../api/updateShop";
 import { deleteShop } from "../../api/deleteShop";
 import { getValidToken } from "../../api/getValidToken";
-import { ShopOutlined, PlusOutlined, EditOutlined, DeleteOutlined, EnvironmentOutlined, PhoneOutlined, MailOutlined, GlobalOutlined, ReloadOutlined } from "@ant-design/icons";
-import { Modal, Form, Input, Button, notification, Popconfirm, Card, Empty, Tag } from "antd";
+import { ShopOutlined, PlusOutlined, EditOutlined, DeleteOutlined, EnvironmentOutlined, PhoneOutlined, MailOutlined, GlobalOutlined, ReloadOutlined, ClockCircleOutlined, InfoCircleOutlined, PushpinOutlined } from "@ant-design/icons";
+import { Modal, Form, Input, Button, notification, Popconfirm, Card, Empty, Tag, Switch, TimePicker, Tooltip, Divider } from "antd";
+import dayjs from "dayjs";
 import { useTranslation } from 'react-i18next';
 
 const formatPhoneNumber = (value) => {
@@ -70,12 +71,43 @@ const Shops = ({ userProfile }) => {
 
     const handleEdit = (shop) => {
         setEditingShop(shop);
+
+        let openHours = {};
+        try {
+            if (shop.openHoursJson) {
+                openHours = typeof shop.openHoursJson === 'string'
+                    ? JSON.parse(shop.openHoursJson)
+                    : shop.openHoursJson;
+            }
+        } catch (e) {
+            console.error("Error parsing openHoursJson:", e);
+        }
+
+        const formattedOpenHours = {};
+        ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].forEach(day => {
+            const dayData = openHours[day] || {};
+            if (dayData.closed || !dayData.intervals || dayData.intervals.length === 0) {
+                formattedOpenHours[`${day}_status`] = 'closed';
+            } else {
+                formattedOpenHours[`${day}_status`] = 'open';
+                const interval = dayData.intervals[0];
+                formattedOpenHours[`${day}_time`] = [
+                    dayjs(interval.from, "HH:mm"),
+                    dayjs(interval.to, "HH:mm")
+                ];
+            }
+        });
+
         form.setFieldsValue({
             name: shop.name,
             address: shop.address,
             phone: shop.phone,
+            alternatePhone: shop.alternatePhone,
             email: shop.email,
-            website: shop.website
+            website: shop.website,
+            maps: shop.maps,
+            isActive: shop.isActive !== false,
+            ...formattedOpenHours
         });
         setIsModalVisible(true);
     };
@@ -88,12 +120,47 @@ const Shops = ({ userProfile }) => {
             const token = getValidToken();
             if (!token) throw new Error("No token found");
 
+            const openHoursObj = {};
+            ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].forEach(day => {
+                const status = values[`${day}_status`];
+                const timeRange = values[`${day}_time`];
+
+                if (status === 'closed') {
+                    openHoursObj[day] = { closed: true };
+                } else {
+                    if (timeRange && timeRange.length === 2) {
+                        openHoursObj[day] = {
+                            intervals: [{
+                                from: timeRange[0].format("HH:mm"),
+                                to: timeRange[1].format("HH:mm")
+                            }]
+                        };
+                    } else {
+                        openHoursObj[day] = {
+                            intervals: [{ from: "09:00", to: "17:00" }]
+                        };
+                    }
+                }
+            });
+
+            const payload = {
+                name: values.name,
+                address: values.address,
+                phone: values.phone,
+                alternatePhone: values.alternatePhone,
+                email: values.email,
+                website: values.website,
+                maps: values.maps,
+                isActive: values.isActive,
+                openHoursJson: JSON.stringify(openHoursObj)
+            };
+
             if (editingShop) {
-                await updateShop(token, editingShop.id, values);
+                // Backend requires shopId in the body for updates
+                await updateShop(editingShop.shopId, payload);
                 notification.success({ message: "Shop updated successfully" });
             } else {
-                // userId is handled by backend from token
-                await createShop(token, values);
+                await createShop(token, payload);
                 notification.success({ message: "Shop created successfully" });
             }
 
@@ -189,8 +256,14 @@ const Shops = ({ userProfile }) => {
                             ]}
                         >
                             <Card.Meta
-                                avatar={<div className="bg-violet-100 p-2 rounded-lg"><ShopOutlined className="text-violet-600 text-xl" /></div>}
-                                title={<span className="text-lg font-semibold">{shop.name}</span>}
+                                title={
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-lg font-semibold">{shop.name}</span>
+                                        <Tag color={shop.isActive ? "green" : "gray"}>
+                                            {shop.isActive ? "Active" : "Inactive"}
+                                        </Tag>
+                                    </div>
+                                }
                                 description={
                                     <div className="space-y-2 mt-2">
                                         {shop.address && (
@@ -199,26 +272,44 @@ const Shops = ({ userProfile }) => {
                                                 <span className="text-sm">{shop.address}</span>
                                             </div>
                                         )}
-                                        {shop.phone && (
-                                            <div className="flex items-center gap-2 text-gray-600">
-                                                <PhoneOutlined className="flex-shrink-0" />
-                                                <span className="text-sm">{shop.phone}</span>
-                                            </div>
-                                        )}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                            {shop.phone && (
+                                                <div className="flex items-center gap-2 text-gray-600">
+                                                    <PhoneOutlined className="flex-shrink-0" />
+                                                    <span className="text-sm">{shop.phone}</span>
+                                                </div>
+                                            )}
+                                            {shop.alternatePhone && (
+                                                <div className="flex items-center gap-2 text-gray-600">
+                                                    <PhoneOutlined className="flex-shrink-0 opacity-70" />
+                                                    <span className="text-sm">{shop.alternatePhone}</span>
+                                                </div>
+                                            )}
+                                        </div>
                                         {shop.email && (
                                             <div className="flex items-center gap-2 text-gray-600">
                                                 <MailOutlined className="flex-shrink-0" />
                                                 <span className="text-sm">{shop.email}</span>
                                             </div>
                                         )}
-                                        {shop.website && (
-                                            <div className="flex items-center gap-2 text-gray-600">
-                                                <GlobalOutlined className="flex-shrink-0" />
-                                                <a href={shop.website} target="_blank" rel="noopener noreferrer" className="text-sm text-violet-600 hover:underline truncate block">
-                                                    {shop.website}
-                                                </a>
-                                            </div>
-                                        )}
+                                        <div className="flex flex-wrap gap-3">
+                                            {shop.website && (
+                                                <div className="flex items-center gap-2 text-gray-600">
+                                                    <GlobalOutlined className="flex-shrink-0" />
+                                                    <a href={shop.website} target="_blank" rel="noopener noreferrer" className="text-sm text-violet-600 hover:underline truncate max-w-[150px]">
+                                                        Website
+                                                    </a>
+                                                </div>
+                                            )}
+                                            {shop.maps && (
+                                                <div className="flex items-center gap-2 text-gray-600">
+                                                    <PushpinOutlined className="flex-shrink-0" />
+                                                    <a href={shop.maps} target="_blank" rel="noopener noreferrer" className="text-sm text-violet-600 hover:underline">
+                                                        Maps
+                                                    </a>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 }
                             />
@@ -291,6 +382,22 @@ const Shops = ({ userProfile }) => {
                         </Form.Item>
 
                         <Form.Item
+                            name="alternatePhone"
+                            label="Alternate Phone"
+                        >
+                            <Input
+                                placeholder="(555) 987-6543"
+                                size="large"
+                                onChange={(e) => {
+                                    const formatted = formatPhoneNumber(e.target.value);
+                                    form.setFieldValue('alternatePhone', formatted);
+                                }}
+                            />
+                        </Form.Item>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Form.Item
                             name="email"
                             label={t('auth.email')}
                             rules={[
@@ -308,15 +415,84 @@ const Shops = ({ userProfile }) => {
                         >
                             <Input placeholder="contact@shop.com" size="large" />
                         </Form.Item>
+
+                        <Form.Item
+                            name="isActive"
+                            label="Shop Status"
+                            valuePropName="checked"
+                            initialValue={true}
+                        >
+                            <Switch checkedChildren="Active" unCheckedChildren="Inactive" />
+                        </Form.Item>
                     </div>
 
-                    <Form.Item
-                        name="website"
-                        label={t('shops.website')}
-                        rules={[{ type: 'url', message: t('shops.invalidUrl') }]}
-                    >
-                        <Input placeholder="https://autoglasspro.com" size="large" />
-                    </Form.Item>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Form.Item
+                            name="website"
+                            label={t('shops.website')}
+                            rules={[{ type: 'url', message: t('shops.invalidUrl') }]}
+                        >
+                            <Input placeholder="https://autoglasspro.com" size="large" />
+                        </Form.Item>
+
+                        <Form.Item
+                            name="maps"
+                            label="Google Maps URL"
+                        >
+                            <Input placeholder="https://maps.google.com/..." size="large" />
+                        </Form.Item>
+                    </div>
+
+                    <Divider orientation="left">Operating Hours</Divider>
+                    <div className="space-y-1">
+                        {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(day => (
+                            <div key={day} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                                <span className="w-16 font-semibold text-gray-500 uppercase text-xs">{day.substring(0, 3)}</span>
+                                <div className="flex items-center gap-4">
+                                    <Form.Item
+                                        name={`${day}_status`}
+                                        initialValue="open"
+                                        className="mb-0"
+                                        valuePropName="checked"
+                                        getValueProps={(value) => ({ checked: value === 'open' })}
+                                        normalize={(value) => (value ? 'open' : 'closed')}
+                                    >
+                                        <Switch
+                                            size="small"
+                                            checkedChildren="OPEN"
+                                            unCheckedChildren="CLOSED"
+                                        />
+                                    </Form.Item>
+
+                                    <Form.Item
+                                        noStyle
+                                        shouldUpdate={(prev, curr) => prev[`${day}_status`] !== curr[`${day}_status`]}
+                                    >
+                                        {({ getFieldValue }) => {
+                                            const isOpen = getFieldValue(`${day}_status`) === 'open';
+                                            return isOpen ? (
+                                                <Form.Item
+                                                    name={`${day}_time`}
+                                                    className="mb-0"
+                                                    initialValue={[dayjs("09:00", "HH:mm"), dayjs("17:00", "HH:mm")]}
+                                                >
+                                                    <TimePicker.RangePicker
+                                                        size="small"
+                                                        format="h:mm a"
+                                                        minuteStep={15}
+                                                        use12Hours
+                                                        allowClear={false}
+                                                    />
+                                                </Form.Item>
+                                            ) : (
+                                                <div className="h-[24px] flex items-center text-gray-400 text-xs italic">Closed for the day</div>
+                                            );
+                                        }}
+                                    </Form.Item>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </Form>
             </Modal>
         </div >

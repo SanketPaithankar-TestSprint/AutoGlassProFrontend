@@ -10,40 +10,30 @@ import urls from '../config';
  * @returns {Promise<Object>} Response data
  */
 export async function createOrUpdateUserSlug(token, {
+    id,
     slug,
+    userId,
+    businessName,
     themeColor,
     backgroundColorHex,
-    businessName,
     tagline,
-    openHoursJson,
-    name,
-    address,
-    phone,
-    alternatePhone,
-    latitude,
-    longitude,
-    maps
+    name
 }) {
     const response = await fetch(`${urls.javaApiUrl}/v1/user-slug-info`, {
-        method: 'POST', // Based on Swagger link provided: createOrUpdate typically implies POST or PUT. Swagger says POST usually if it's "create". I'll assume POST based on typical usage, user said "createOrUpdate".
+        method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
+            id,
             slug,
+            userId,
+            businessName,
             themeColor,
             backgroundColorHex,
-            businessName,
             tagline,
-            openHoursJson,
-            name,
-            address,
-            phone,
-            alternatePhone,
-            latitude,
-            longitude,
-            maps
+            name
         })
     });
 
