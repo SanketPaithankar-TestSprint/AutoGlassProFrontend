@@ -173,61 +173,59 @@ function AppContent() {
 
       {shouldUseDashboardLayout ? (
         // Authenticated Layout
-        <Layout className="h-full" hasSider={!isMobile}>
-          {/* Show Sidebar on DESKTOP only */}
-          {!isMobile && (
-            <Sidebar
-              key={isAuthed ? 'authed' : 'guest'}
-              onLogout={handleLogout}
-              collapsed={collapsed}
-              onCollapse={setCollapsed}
-            />
-          )}
+        <ChatProvider isPublic={false}>
+          <Layout className="h-full" hasSider={!isMobile}>
+            {/* Show Sidebar on DESKTOP only */}
+            {!isMobile && (
+              <Sidebar
+                key={isAuthed ? 'authed' : 'guest'}
+                onLogout={handleLogout}
+                collapsed={collapsed}
+                onCollapse={setCollapsed}
+              />
+            )}
 
-          <Layout className={`flex flex-col h-full transition-all duration-300 overflow-hidden flex-1 w-full ${isMobile ? 'pt-16' : ''}`}> {/* Add padding top for legacy header spacer if mobile */}
-            <Content className="flex-1 flex flex-col overflow-y-auto custom-scrollbar">
-              <div className={`flex-1 flex-col flex`}>
-                <ErrorBoundary>
-                  <Suspense fallback={
-                    <div className="flex items-center justify-center h-full">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
-                    </div>
-                  }>
-                    <Routes>
-                      <Route path="/" element={isAuthed ? <Navigate to="/search-by-root" replace /> : <Home />} />
-                      <Route path="/analytics" element={<AnalyticsRoot />} />
-                      <Route path="/customers" element={<CustomersRoot />} />
-                      <Route path="/search-by-root" element={<SearchByRoot />} />
-                      <Route path="/schedule" element={<Schedule />} />
-                      <Route path="/Profile" element={<Profile />} />
+            <Layout className={`flex flex-col h-full transition-all duration-300 overflow-hidden flex-1 w-full ${isMobile ? 'pt-16' : ''}`}> {/* Add padding top for legacy header spacer if mobile */}
+              <Content className="flex-1 flex flex-col overflow-y-auto custom-scrollbar">
+                <div className={`flex-1 flex-col flex`}>
+                  <ErrorBoundary>
+                    <Suspense fallback={
+                      <div className="flex items-center justify-center h-full">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+                      </div>
+                    }>
+                      <Routes>
+                        <Route path="/" element={isAuthed ? <Navigate to="/search-by-root" replace /> : <Home />} />
+                        <Route path="/analytics" element={<AnalyticsRoot />} />
+                        <Route path="/customers" element={<CustomersRoot />} />
+                        <Route path="/search-by-root" element={<SearchByRoot />} />
+                        <Route path="/schedule" element={<Schedule />} />
+                        <Route path="/Profile" element={<Profile />} />
 
-                      <Route path="/Order" element={<OrderPage />} />
-                      <Route path="/pricing" element={<PricingPage />} />
-                      <Route path="/features" element={<FeaturesPage />} />
-                      <Route path="/features/:sectionId" element={<FeatureSectionDetail />} />
-                      <Route path="/open" element={<OpenRoot />} />
-                      <Route path="/reports" element={<ReportsRoot />} />
-                      <Route path="/auth" element={<AuthRoot />} />
-                      <Route path="/sitemap" element={<SitemapPage />} />
-                      <Route path="/service-contact-form" element={<ServiceContactFormRoot />} />
-                      <Route path="/employee-attendance" element={<EmployeeAttendance />} />
-                      <Route path="/sitemap" element={<SitemapPage />} />
-                      <Route path="/sitemap" element={<SitemapPage />} />
-                      <Route path="/vin-decoder" element={<VinDecoderRoot />} />
-                      <Route path="/chat" element={
-                        <ChatProvider isPublic={false}>
-                          <ShopChatPanel />
-                        </ChatProvider>
-                      } />
-                    </Routes >
-                  </Suspense >
-                </ErrorBoundary >
-              </div >
-              {!isAuthenticated && <Footer />
-              }
-            </Content >
+                        <Route path="/Order" element={<OrderPage />} />
+                        <Route path="/pricing" element={<PricingPage />} />
+                        <Route path="/features" element={<FeaturesPage />} />
+                        <Route path="/features/:sectionId" element={<FeatureSectionDetail />} />
+                        <Route path="/open" element={<OpenRoot />} />
+                        <Route path="/reports" element={<ReportsRoot />} />
+                        <Route path="/auth" element={<AuthRoot />} />
+                        <Route path="/sitemap" element={<SitemapPage />} />
+                        <Route path="/service-contact-form" element={<ServiceContactFormRoot />} />
+                        <Route path="/employee-attendance" element={<EmployeeAttendance />} />
+                        <Route path="/sitemap" element={<SitemapPage />} />
+                        <Route path="/sitemap" element={<SitemapPage />} />
+                        <Route path="/vin-decoder" element={<VinDecoderRoot />} />
+                        <Route path="/chat" element={<ShopChatPanel />} />
+                      </Routes >
+                    </Suspense >
+                  </ErrorBoundary >
+                </div >
+                {!isAuthenticated && <Footer />
+                }
+              </Content >
+            </Layout >
           </Layout >
-        </Layout >
+        </ChatProvider>
       ) : (
         // Public Layout: Header + Content Area
         <Layout className="min-h-screen bg-[#f8fafc] flex flex-col">

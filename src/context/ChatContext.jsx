@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
 import ChatSocket from '../services/ChatSocket';
 import { getValidToken } from '../api/getValidToken';
+import chatNotificationSound from '../assets/NotificationForChat.mp3';
+import { notification } from 'antd';
 
 const ChatContext = createContext(null);
 
@@ -17,6 +19,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
     const activeConversationIdRef = useRef(null);
     const [visitorId, setVisitorId] = useState(null);
     const [unreadTotal, setUnreadTotal] = useState(0);
+    const [notifications, setNotifications] = useState([]);
 
     // Keep refs in sync
     useEffect(() => {
@@ -44,8 +47,9 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
             setConnectionStatus('connected');
 
             if (requestConversations) {
-                // Shop initial connect → fetch conversation list
+                // Shop initial connect → fetch conversation list + notifications
                 chatSocket.send('getConversations', {});
+                chatSocket.send('getNotifications', {});
             }
 
             if (requestHistory && conversationId) {
@@ -162,6 +166,9 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
             case "NEW_MESSAGE":
                 handleNewMessage(data);
                 break;
+            case "NOTIFICATIONS":
+                setNotifications(data.data || []);
+                break;
             default:
                 break;
         }
@@ -270,6 +277,22 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
 
             if (isFromCustomer && !isCurrentlyOpen && !isPublic) {
                 newUnread += 1;
+
+                // Play notification sound
+                try {
+                    const audio = new Audio(chatNotificationSound);
+                    audio.volume = 0.5;
+                    audio.play().catch(() => { });
+                } catch (e) { }
+
+                // Show top-right toast notification
+                const senderName = msg.senderName || msg.name || msg.visitorName || 'Customer';
+                notification.info({
+                    message: `💬 New message from ${senderName}`,
+                    description: message?.length > 80 ? message.slice(0, 80) + '…' : message,
+                    placement: 'topRight',
+                    duration: 4,
+                });
             }
 
             const potentialName = msg.name || msg.senderName || msg.visitorName || msg.customerName;
@@ -394,6 +417,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
             activeConversationId,
             unreadTotal,
             visitorId,
+            notifications,
             sendMessage,
             sendCustomerMessage,
             loadHistory,

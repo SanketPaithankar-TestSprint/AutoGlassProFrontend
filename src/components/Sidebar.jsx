@@ -31,6 +31,7 @@ import { useTranslation } from 'react-i18next';
 import LanguageToggle from './LanguageToggle';
 import { useSidebarStore } from '../store/useSidebarStore';
 import { getPageBackground } from '../const/pageBackgrounds';
+import { useChat } from '../context/ChatContext';
 
 const { Sider } = Layout;
 
@@ -48,6 +49,8 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
     const location = useLocation();
     const [userLogo, setUserLogo] = useState(localStorage.getItem('userLogo'));
     const { badgeCount } = useInquiry(); // Get badge count from context
+    const { notifications } = useChat() || {};
+    const unreadChatCount = Array.isArray(notifications) ? notifications.filter(n => !n.read).length : 0;
     const [localBadgeCount, setLocalBadgeCount] = useState(0);
     const { t } = useTranslation();
     const activeTabBg = useSidebarStore(state => state.activeTabBg);
@@ -281,8 +284,35 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
 
         {
             key: '/chat',
-            icon: <MdSupportAgent style={{ fontSize: '1.2rem' }} />,
-            label: <Link to="/chat">{t('nav.liveChat')}</Link>,
+            icon: (
+                <div className="relative inline-block">
+                    <MdSupportAgent style={{ fontSize: '1.2rem' }} />
+                    {collapsed && unreadChatCount > 0 && (
+                        <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 bg-red-500 w-2 h-2 rounded-full"></div>
+                    )}
+                </div>
+            ),
+            label: (
+                <Link to="/chat">
+                    <span className="inline-flex items-center gap-2">
+                        <span>{t('nav.liveChat')}</span>
+                        {!collapsed && unreadChatCount > 0 && (
+                            <Badge
+                                count={unreadChatCount}
+                                size="small"
+                                color="#ef4444"
+                                overflowCount={99}
+                                style={{
+                                    fontSize: 10,
+                                    minWidth: 16,
+                                    height: 16,
+                                    lineHeight: '16px'
+                                }}
+                            />
+                        )}
+                    </span>
+                </Link>
+            ),
         },
         // Add other authenticated links here if needed
     ];

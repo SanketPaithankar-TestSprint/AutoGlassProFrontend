@@ -140,6 +140,7 @@ const PublicContactRoot = () => {
     const [useVinDecoding, setUseVinDecoding] = useState(false);
     const [fileList, setFileList] = useState([]);
     const [formData, setFormData] = useState({
+        shopId: '',
         name: '',
         email: '',
         phone: '',
@@ -269,8 +270,13 @@ const PublicContactRoot = () => {
                         maps: response.data.maps,
                         latitude: response.data.latitude,
                         longitude: response.data.longitude,
-                        openHours: response.data.open_hours_json
+                        openHours: response.data.open_hours_json,
+                        shops: response.data.shops || []
                     });
+
+                    if (response.data.shops && response.data.shops.length > 0) {
+                        setFormData(prev => ({ ...prev, shopId: response.data.shops[0].shop_id }));
+                    }
                 } else {
                     setIsValidSlug(false);
                     setValidationError(response.message || 'Invalid business slug');
@@ -376,6 +382,7 @@ const PublicContactRoot = () => {
 
             const jsonPayload = {
                 userId: userId, // From shop/slug validation
+                shopId: formData.shopId ? parseInt(formData.shopId, 10) : null,
                 firstName: firstName,
                 lastName: lastName, // Fallback if no last name provided? API might require it.
                 email: formData.email,
@@ -450,6 +457,7 @@ const PublicContactRoot = () => {
         setIsSubmitted(false);
         setFileList([]);
         setFormData({
+            shopId: businessInfo?.shops?.[0]?.shop_id || '',
             name: '',
             email: '',
             phone: '',
@@ -481,6 +489,18 @@ const PublicContactRoot = () => {
         // Example: Open Mon-Fri, 9am - 6pm
         return day >= 1 && day <= 5 && hour >= 9 && hour < 18;
     };
+
+    const selectedShop = businessInfo?.shops?.find(s => String(s.shop_id) === String(formData.shopId));
+
+    // Merge shop details with business details for display
+    const currentDisplayInfo = businessInfo ? {
+        ...businessInfo,
+        phone: selectedShop?.phone || businessInfo.phone,
+        address: selectedShop?.address || businessInfo.address,
+        email: selectedShop?.email || businessInfo.email,
+        openHours: selectedShop?.open_hours_json || businessInfo.openHours,
+        maps: selectedShop?.maps || businessInfo.maps
+    } : null;
 
     // Loading state
     if (isValidating) {
@@ -585,6 +605,27 @@ const PublicContactRoot = () => {
                                             </div>
 
                                             <form onSubmit={handleSubmit} className="space-y-3">
+                                                {/* Shop Selection (if multiple) */}
+                                                {businessInfo?.shops?.length > 1 && (
+                                                    <div className="space-y-2">
+                                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Select Shop <span className="text-red-500">*</span></label>
+                                                        <select
+                                                            name="shopId"
+                                                            value={formData.shopId}
+                                                            onChange={handleInputChange}
+                                                            required
+                                                            className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
+                                                        >
+                                                            <option value="" disabled>Select a shop</option>
+                                                            {businessInfo.shops.map((shop) => (
+                                                                <option key={shop.shop_id} value={shop.shop_id}>
+                                                                    {shop.name} - {shop.address}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                )}
+
                                                 {/* Service Type Dropdown */}
                                                 <div className="space-y-2">
                                                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Service Type <span className="text-red-500">*</span></label>
@@ -1052,14 +1093,14 @@ const PublicContactRoot = () => {
                     <div className="md:hidden w-full bg-white border-t border-gray-200">
                         <div className="border-b border-gray-200">
                             <ShopInfo
-                                businessInfo={businessInfo}
+                                businessInfo={currentDisplayInfo}
                                 themeColor={themeColor}
                                 className="h-auto py-6"
                             />
                         </div>
-                        {businessInfo?.maps && (
+                        {currentDisplayInfo?.maps && (
                             <div className="h-64">
-                                <MapEmbed html={businessInfo.maps} />
+                                <MapEmbed html={currentDisplayInfo.maps} />
                             </div>
                         )}
                     </div>
@@ -1079,16 +1120,16 @@ const PublicContactRoot = () => {
                         {/* Middle: Shop Info (Flex-1) */}
                         <div className="flex-1 bg-white border-t border-b border-gray-200 relative p-0 overflow-hidden">
                             <ShopInfo
-                                businessInfo={businessInfo}
+                                businessInfo={currentDisplayInfo}
                                 themeColor={themeColor}
                                 className="h-full"
                             />
                         </div>
 
                         {/* Bottom: Map (30%) */}
-                        {businessInfo?.maps && (
+                        {currentDisplayInfo?.maps && (
                             <div className="h-[30%] shrink-0">
-                                <MapEmbed html={businessInfo.maps} />
+                                <MapEmbed html={currentDisplayInfo.maps} />
                             </div>
                         )}
                     </div>
