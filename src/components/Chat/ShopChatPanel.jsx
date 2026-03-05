@@ -29,6 +29,8 @@ const ShopChatPanel = () => {
         sendMessage,
         connectionStatus,
         markAsRead,
+        markAllNotificationsRead,
+        clearAllConversationsUnread,
         deleteConversation,
         loadHistory,
         setActiveConversationId

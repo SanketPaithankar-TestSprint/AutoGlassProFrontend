@@ -30,17 +30,6 @@ const useInquiryNotifications = (isAuthed) => {
             eventSource.addEventListener('NEW_INQUIRY', (event) => {
                 try {
                     const data = JSON.parse(event.data);
-                    playNotificationSound();
-                    notification.info({
-                        message: `New Inquiry from ${data.firstName} ${data.lastName}`,
-                        description: `Vehicle: ${data.vehicleYear} ${data.vehicleMake} ${data.vehicleModel}`,
-                        duration: 0,
-                        placement: 'topRight',
-                        onClick: () => {
-                            window.location.href = '/service-contact-form';
-                        },
-                        style: { cursor: 'pointer' }
-                    });
                     const customEvent = new CustomEvent('INQUIRY_RECEIVED', { detail: data });
                     window.dispatchEvent(customEvent);
                 } catch {}

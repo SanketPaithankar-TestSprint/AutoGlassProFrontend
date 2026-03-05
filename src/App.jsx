@@ -20,7 +20,7 @@ import useInquiryNotifications from './hooks/useInquiryNotifications';
 import useScheduleNotifications from './hooks/useScheduleNotifications';
 import { useAuth } from './context/auth/useAuth';
 import { AuthProvider } from './context/auth/authProvide';
-import { InquiryProvider } from './context/InquiryContext';
+import { InquiryProvider, useInquiry } from './context/InquiryContext';
 
 // Lazy Load Main Components
 const Home = React.lazy(() => import('./components/Home/HomeRoot.jsx'));
@@ -84,6 +84,7 @@ function AppContent() {
   const location = useLocation();
   const isMobile = useIsMobile();
   const { isAuthenticated, setIsAuthenticated } = useAuth();
+  const { fetchInquiryCount } = useInquiry();
 
   const isContactPage = /^\/contact\/[^/]+$/.test(location.pathname);
   const isChatPage = /^\/contact\/[^/]+\/chat$/.test(location.pathname);
@@ -112,6 +113,7 @@ function AppContent() {
   const handleLoginSuccess = () => {
     setIsAuthed(true);
     setIsAuthenticated(true);
+    fetchInquiryCount();
     navigate('/analytics');
   };
 
