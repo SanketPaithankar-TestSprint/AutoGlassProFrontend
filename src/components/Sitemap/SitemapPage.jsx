@@ -18,6 +18,18 @@ const SitemapPage = () => {
             ]
         },
         {
+            title: 'Blogs',
+            sectionPath: '/blogs',
+            links: [
+                { path: '/blogs/6-figure-mobile-auto-glass-business', title: '6 Figure Mobile Auto Glass Business' },
+                { path: '/blogs/auto-glass-startup-guide', title: 'Auto Glass Startup Guide' },
+                { path: '/blogs/hidden-cost-of-manual-quoting-auto-glass', title: 'Hidden Cost Of Manual Quoting Auto Glass' },
+                { path: '/blogs/maximize-auto-glass-profit-margins', title: 'Maximize Auto Glass Profit Margins' },
+                { path: '/blogs/mobile-field-service-auto-glass', title: 'Mobile Field Service Auto Glass' },
+                { path: '/blogs/vin-decoding-for-auto-glass-accuracy', title: 'VIN Decoding For Auto Glass Accuracy' },
+            ]
+        },
+        {
             title: 'Legal & Information',
             links: [
                 { path: '/privacy-policy', title: 'Privacy Policy', description: 'Our privacy policy and data protection' },
@@ -75,7 +87,13 @@ const SitemapPage = () => {
                     {sitemapSections.map((section, index) => (
                         <div key={index}>
                             <h2 className="text-xl font-semibold text-slate-800 mb-6 pb-2 border-b border-slate-200">
-                                {section.title}
+                                {section.sectionPath ? (
+                                    <Link to={section.sectionPath} className="hover:underline decoration-2 underline-offset-4">
+                                        {section.title}
+                                    </Link>
+                                ) : (
+                                    section.title
+                                )}
                             </h2>
                             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                                 {section.links.map((link, linkIndex) => (
