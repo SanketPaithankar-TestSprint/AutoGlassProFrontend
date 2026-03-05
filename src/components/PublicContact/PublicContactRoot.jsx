@@ -5,14 +5,14 @@ import { Select, Upload, Button } from 'antd';
 import { UploadOutlined, PhoneOutlined, MailOutlined, EnvironmentOutlined, ClockCircleOutlined, CheckCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { useParams } from 'react-router-dom';
 import clsx from 'clsx';
-import { validateSlug, submitContactForm, createServiceInquiry, decodeVin, fetchVehicleMakes, fetchVehicleModels } from '../../api/publicContactForm';
+import { validateSlug, createServiceInquiry, decodeVin, fetchVehicleMakes, fetchVehicleModels } from '../../api/publicContactForm';
 import { clearSessionId, generateSessionId } from '../../utils/sessionUtils';
 
 // Import components
 import BrandedHeader from './BrandedHeader';
 import NotFoundPage from './NotFoundPage';
 import PublicContactFooter from './PublicContactFooter';
-import { ChatProvider } from '../../context/ChatContext';
+import { ChatProvider, useChat } from '../../context/ChatContext';
 import CustomerChatWidget from './CustomerChatWidget';
 
 // Import styles
@@ -120,8 +120,9 @@ const formatOpeningHours = (openHours) => {
 
 
 
-const PublicContactRoot = () => {
+const PublicContactContent = () => {
     const { slug } = useParams();
+    const { sendCustomerMessage } = useChat();
 
     // Validation state
     const [isValidating, setIsValidating] = useState(true);
@@ -419,6 +420,7 @@ const PublicContactRoot = () => {
             });
 
             await createServiceInquiry(payload);
+
             setIsSubmitted(true);
 
         } catch (error) {
@@ -548,27 +550,567 @@ const PublicContactRoot = () => {
     }
     // Main Contact Form
     return (
-        <ChatProvider isPublic={true} publicUserId={userId}>
-            <div
-                className="bg-white text-gray-900 font-sans selection:bg-yellow-200 h-screen w-full overflow-hidden flex flex-col"
-                style={{
-                    '--theme-color': themeColor,
-                    background: `linear-gradient(135deg, ${themeColor}26 0%, #ffffff 50%, ${themeColor}12 100%)`
-                }}
-            >
-                <CustomerChatWidget
-                    themeColor={themeColor}
-                    businessName={businessInfo?.businessName}
-                    customerName={formData.name}
-                    customerEmail={formData.email}
-                />
+        <div
+            className="bg-white text-gray-900 font-sans selection:bg-yellow-200 h-screen w-full overflow-hidden flex flex-col"
+            style={{
+                '--theme-color': themeColor,
+                background: `linear-gradient(135deg, ${themeColor}26 0%, #ffffff 50%, ${themeColor}12 100%)`
+            }}
+        >
+            <CustomerChatWidget
+                themeColor={themeColor}
+                businessName={businessInfo?.businessName}
+                customerName={formData.name}
+                customerEmail={formData.email}
+            />
 
 
-                {/* Main Content - Strictly Single Page on Desktop */}
-                <main className="flex-1 w-full max-w-7xl mx-auto flex flex-col lg:flex-row h-full overflow-y-auto lg:overflow-hidden">
+            {/* Main Content - Strictly Single Page on Desktop */}
+            <main className="flex-1 w-full max-w-7xl mx-auto flex flex-col lg:flex-row h-full overflow-y-auto lg:overflow-hidden">
 
-                    {/* MOBILE + TABLET: Top Design (Glass Reference) */}
-                    <div className="lg:hidden w-full h-64 md:h-96 shrink-0 relative group overflow-hidden border-b border-gray-200">
+                {/* MOBILE + TABLET: Top Design (Glass Reference) */}
+                <div className="lg:hidden w-full h-64 md:h-96 shrink-0 relative group overflow-hidden border-b border-gray-200">
+                    <GlassReference
+                        serviceType={formData.serviceType}
+                        carPreview={carPreview}
+                        windshieldSensorGuide={windshieldSensorGuide}
+                    />
+                </div>
+
+                {/* Form Area */}
+                <div className="w-full lg:w-[60%] h-auto lg:h-full lg:overflow-y-auto custom-scrollbar relative bg-gray-50 flex-shrink-0">
+                    <div className="p-4 md:p-6 lg:p-8 min-h-full">
+                        <AnimatePresence mode="wait">
+                            {isSubmitted ? (
+                                <SuccessScreen
+                                    key="success"
+                                    onReset={handleNewMessage}
+                                    businessName={businessInfo?.businessName}
+                                    themeColor={themeColor}
+                                />
+                            ) : (
+                                <motion.div
+                                    key="form"
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: 20 }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    <div className="max-w-2xl mx-auto">
+                                        <div className="space-y-2 mb-4">
+                                            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                                <span className="w-8 h-1 bg-yellow-500 rounded-full block" style={{ backgroundColor: themeColor }}></span>
+                                                Request a Quote
+                                            </h2>
+                                            <p className="text-gray-500 text-xs">Fill out the form below and we'll get back to you within 30 minutes during business hours.</p>
+                                        </div>
+
+                                        <form onSubmit={handleSubmit} className="space-y-3">
+                                            {/* Shop Selection (if multiple) */}
+                                            {businessInfo?.shops?.length > 1 && (
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Select Shop <span className="text-red-500">*</span></label>
+                                                    <select
+                                                        name="shopId"
+                                                        value={formData.shopId}
+                                                        onChange={handleInputChange}
+                                                        required
+                                                        className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
+                                                    >
+                                                        <option value="" disabled>Select a shop</option>
+                                                        {businessInfo.shops.map((shop) => (
+                                                            <option key={shop.shop_id} value={shop.shop_id}>
+                                                                {shop.name} - {shop.address}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            )}
+
+                                            {/* Service Type Dropdown */}
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Service Type <span className="text-red-500">*</span></label>
+                                                <select
+                                                    name="serviceType"
+                                                    value={formData.serviceType}
+                                                    onChange={handleInputChange}
+                                                    required
+                                                    className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
+                                                >
+                                                    <option value="">Select service type</option>
+                                                    {serviceTypeOptions.map((opt, idx) => (<option key={idx} value={opt}>{opt}</option>))}
+                                                </select>
+                                            </div>
+
+                                            {/* Windshield Features - Show right after service type selection */}
+                                            {formData.serviceType === 'Windshield Replacement' && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: -10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2"
+                                                >
+                                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Features <span className="text-red-500">*</span></p>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        {windshieldFeatureOptions.map((feature) => (
+                                                            <label key={feature} className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    value={feature}
+                                                                    checked={(formData.windshieldFeatures || []).includes(feature)}
+                                                                    onChange={handleCheckboxChange}
+                                                                    className="w-3.5 h-3.5 rounded"
+                                                                    style={{ accentColor: themeColor }}
+                                                                />
+                                                                {feature}
+                                                            </label>
+                                                        ))}
+                                                    </div>
+                                                </motion.div>
+                                            )}
+
+                                            {/* Window Rolling Location */}
+                                            {formData.serviceType === 'Window Rolling Issue' && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: -10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2"
+                                                >
+                                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Location <span className="text-red-500">*</span></p>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        {windowRollingOptions.map((option) => (
+                                                            <label key={option} className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
+                                                                <input
+                                                                    type="radio"
+                                                                    name="windowRollingLocation"
+                                                                    value={option}
+                                                                    checked={formData.windowRollingLocation === option}
+                                                                    onChange={handleInputChange}
+                                                                    required
+                                                                    className="w-3.5 h-3.5"
+                                                                    style={{ accentColor: themeColor }}
+                                                                />
+                                                                {option}
+                                                            </label>
+                                                        ))}
+                                                    </div>
+                                                </motion.div>
+                                            )}
+
+                                            {/* Vent Glass Location */}
+                                            {formData.serviceType === 'Vent Glass Replacement' && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: -10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2"
+                                                >
+                                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Location <span className="text-red-500">*</span></p>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        {ventGlassOptions.map((option) => (
+                                                            <label key={option} className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
+                                                                <input
+                                                                    type="radio"
+                                                                    name="ventGlassLocation"
+                                                                    value={option}
+                                                                    checked={formData.ventGlassLocation === option}
+                                                                    onChange={handleInputChange}
+                                                                    required
+                                                                    className="w-3.5 h-3.5"
+                                                                    style={{ accentColor: themeColor }}
+                                                                />
+                                                                {option}
+                                                            </label>
+                                                        ))}
+                                                    </div>
+                                                </motion.div>
+                                            )}
+
+                                            {/* Door Glass Location */}
+                                            {formData.serviceType === 'Door Glass Replacement' && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: -10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2"
+                                                >
+                                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Location <span className="text-red-500">*</span></p>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        {doorGlassOptions.map((option) => (
+                                                            <label key={option} className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
+                                                                <input
+                                                                    type="radio"
+                                                                    name="doorGlassLocation"
+                                                                    value={option}
+                                                                    checked={formData.doorGlassLocation === option}
+                                                                    onChange={handleInputChange}
+                                                                    required
+                                                                    className="w-3.5 h-3.5"
+                                                                    style={{ accentColor: themeColor }}
+                                                                />
+                                                                {option}
+                                                            </label>
+                                                        ))}
+                                                    </div>
+                                                </motion.div>
+                                            )}
+
+                                            {/* Quarter Glass Location */}
+                                            {formData.serviceType === 'Quarter Glass Replacement' && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: -10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2"
+                                                >
+                                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Location <span className="text-red-500">*</span></p>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        {quarterGlassOptions.map((option) => (
+                                                            <label key={option} className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
+                                                                <input
+                                                                    type="radio"
+                                                                    name="quarterGlassLocation"
+                                                                    value={option}
+                                                                    checked={formData.quarterGlassLocation === option}
+                                                                    onChange={handleInputChange}
+                                                                    required
+                                                                    className="w-3.5 h-3.5"
+                                                                    style={{ accentColor: themeColor }}
+                                                                />
+                                                                {option}
+                                                            </label>
+                                                        ))}
+                                                    </div>
+                                                </motion.div>
+                                            )}
+
+                                            {/* License Plate */}
+                                            {formData.serviceType && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: -10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    className="space-y-2"
+                                                >
+                                                    <label className="text-xs font-medium text-gray-600">License Plate (Optional)</label>
+                                                    <input
+                                                        type="text"
+                                                        name="licensePlateNumber"
+                                                        value={formData.licensePlateNumber}
+                                                        onChange={handleInputChange}
+                                                        placeholder="License Plate"
+                                                        className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
+                                                    />
+                                                </motion.div>
+                                            )}
+
+                                            {/* VIN Decoding Section */}
+                                            {formData.serviceType && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: -10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2"
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <label className="flex items-center gap-2 cursor-pointer flex-1">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={useVinDecoding}
+                                                                onChange={(e) => setUseVinDecoding(e.target.checked)}
+                                                                className="w-4 h-4 rounded"
+                                                            />
+                                                            <span className="text-sm font-medium text-gray-700">Search by VIN</span>
+                                                        </label>
+                                                    </div>
+
+                                                    {useVinDecoding ? (
+                                                        <div className="space-y-2">
+                                                            <label className="text-xs font-medium text-gray-600">VIN (17 characters)</label>
+                                                            <div className="flex gap-2 items-end">
+                                                                <input
+                                                                    type="text"
+                                                                    name="vin"
+                                                                    value={formData.vin}
+                                                                    onChange={handleInputChange}
+                                                                    placeholder="Enter VIN"
+                                                                    className="flex-1 bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
+                                                                />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={handleVinLookup}
+                                                                    disabled={vinLoading || !formData.vin}
+                                                                    className="h-10 px-3 text-xs font-medium border rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-sm"
+                                                                    style={{
+                                                                        borderColor: themeColor,
+                                                                        color: themeColor,
+                                                                        backgroundColor: 'white'
+                                                                    }}
+                                                                >
+                                                                    {vinLoading ? '...' : 'Decode'}
+                                                                </button>
+                                                            </div>
+
+                                                            {/* Display Decoded Vehicle Info */}
+                                                            {(formData.year || formData.make || formData.model) && (
+                                                                <motion.div
+                                                                    initial={{ opacity: 0, y: -5 }}
+                                                                    animate={{ opacity: 1, y: 0 }}
+                                                                    className="p-2 bg-blue-50 border border-blue-100 rounded-lg"
+                                                                >
+                                                                    <div className="text-xs text-gray-700 space-y-1">
+                                                                        {formData.year && <div><span className="font-medium text-gray-600">Year:</span> {formData.year}</div>}
+                                                                        {formData.make && <div><span className="font-medium text-gray-600">Make:</span> {formData.make}</div>}
+                                                                        {formData.model && <div><span className="font-medium text-gray-600">Model:</span> {formData.model}</div>}
+                                                                    </div>
+                                                                </motion.div>
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="grid grid-cols-3 gap-2">
+                                                            <Select
+                                                                showSearch
+                                                                placeholder="Year"
+                                                                value={formData.year || undefined}
+                                                                onChange={(value) => setFormData(prev => ({ ...prev, year: value }))}
+                                                                filterOption={(input, option) =>
+                                                                    (option?.children ?? '').toString().toLowerCase().includes(input.toLowerCase())
+                                                                }
+                                                                className="w-full"
+                                                                style={{ height: '40px' }}
+                                                                dropdownStyle={{ zIndex: 9999 }}
+                                                            >
+                                                                {yearOptions.map(year => (
+                                                                    <Select.Option key={year} value={year}>{year}</Select.Option>
+                                                                ))}
+                                                            </Select>
+                                                            <Select
+                                                                showSearch
+                                                                placeholder="Make"
+                                                                value={formData.make || undefined}
+                                                                onChange={(value) => setFormData(prev => ({ ...prev, make: value, model: '' }))}
+                                                                filterOption={(input, option) =>
+                                                                    (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+                                                                }
+                                                                className="w-full"
+                                                                style={{ height: '40px' }}
+                                                                dropdownStyle={{ zIndex: 9999 }}
+                                                            >
+                                                                {makeOptions.map((make) => (
+                                                                    <Select.Option key={make.Make_ID} value={make.Make_Name}>{make.Make_Name}</Select.Option>
+                                                                ))}
+                                                            </Select>
+                                                            <Select
+                                                                showSearch
+                                                                placeholder="Model"
+                                                                value={formData.model || undefined}
+                                                                onChange={(value) => setFormData(prev => ({ ...prev, model: value }))}
+                                                                disabled={!formData.make}
+                                                                filterOption={(input, option) =>
+                                                                    (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+                                                                }
+                                                                className="w-full"
+                                                                style={{ height: '40px' }}
+                                                                dropdownStyle={{ zIndex: 9999 }}
+                                                            >
+                                                                {modelOptions.map((model) => (
+                                                                    <Select.Option key={model.Model_ID} value={model.Model_Name}>{model.Model_Name}</Select.Option>
+                                                                ))}
+                                                            </Select>
+                                                        </div>
+                                                    )}
+                                                </motion.div>
+                                            )}
+
+                                            {/* Your Information - 2x2 Grid */}
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Your Information <span className="text-red-500">*</span></label>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    <input
+                                                        type="text"
+                                                        name="name"
+                                                        value={formData.name}
+                                                        onChange={handleInputChange}
+                                                        placeholder="Full Name"
+                                                        required
+                                                        className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
+                                                    />
+                                                    <input
+                                                        type="tel"
+                                                        name="phone"
+                                                        value={formData.phone}
+                                                        onChange={handleInputChange}
+                                                        placeholder="Phone Number"
+                                                        required
+                                                        className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
+                                                    />
+                                                    <input
+                                                        type="email"
+                                                        name="email"
+                                                        value={formData.email}
+                                                        onChange={handleInputChange}
+                                                        placeholder="Email Address"
+                                                        required
+                                                        className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
+                                                    />
+                                                    <input
+                                                        type="text"
+                                                        name="location"
+                                                        value={formData.location}
+                                                        onChange={handleInputChange}
+                                                        placeholder="City, State"
+                                                        required={!isMobile}
+                                                        className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            {/* Service Preference */}
+                                            <div>
+                                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">Service Preference <span className="text-red-500">*</span></label>
+                                                <div className="flex gap-4">
+                                                    <label className="flex items-center gap-2 cursor-pointer">
+                                                        <input
+                                                            type="radio"
+                                                            name="servicePreference"
+                                                            value="In-shop service"
+                                                            checked={formData.servicePreference === 'In-shop service'}
+                                                            onChange={handleInputChange}
+                                                            required
+                                                            className="w-4 h-4"
+                                                            style={{ accentColor: themeColor }}
+                                                        />
+                                                        <span className="text-sm text-gray-700">In-shop</span>
+                                                    </label>
+                                                    <label className="flex items-center gap-2 cursor-pointer">
+                                                        <input
+                                                            type="radio"
+                                                            name="servicePreference"
+                                                            value="Mobile service"
+                                                            checked={formData.servicePreference === 'Mobile service'}
+                                                            onChange={handleInputChange}
+                                                            required
+                                                            className="w-4 h-4"
+                                                            style={{ accentColor: themeColor }}
+                                                        />
+                                                        <span className="text-sm text-gray-700">Mobile</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            {/* Mobile Service Address Fields */}
+                                            {isMobile && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: -10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    className="space-y-3"
+                                                >
+                                                    <div>
+                                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">Address <span className="text-red-500">*</span></label>
+                                                        <input
+                                                            type="text"
+                                                            name="street"
+                                                            value={formData.street}
+                                                            onChange={handleInputChange}
+                                                            placeholder="Street Address"
+                                                            required
+                                                            className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
+                                                        />
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-3">
+                                                        <input
+                                                            type="text"
+                                                            name="city"
+                                                            value={formData.city}
+                                                            onChange={handleInputChange}
+                                                            placeholder="City"
+                                                            required
+                                                            className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
+                                                        />
+                                                        <input
+                                                            type="text"
+                                                            name="zipcode"
+                                                            value={formData.zipcode}
+                                                            onChange={handleInputChange}
+                                                            placeholder="Zip Code"
+                                                            required
+                                                            className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
+                                                        />
+                                                    </div>
+                                                </motion.div>
+                                            )}
+
+
+                                            {/* Additional Details */}
+                                            <div className="space-y-3">
+                                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Additional Details</label>
+                                                <textarea
+                                                    name="message"
+                                                    value={formData.message}
+                                                    onChange={handleInputChange}
+                                                    placeholder="Describe any additional details (optional)..."
+                                                    rows={3}
+                                                    className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm resize-none"
+                                                />
+                                            </div>
+
+                                            {/* File Upload */}
+                                            <div className="space-y-3">
+                                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Upload Image (Optional)</label>
+                                                <Upload
+                                                    beforeUpload={() => false}
+                                                    fileList={fileList}
+                                                    onChange={({ fileList }) => setFileList(fileList)}
+                                                    accept="image/*"
+                                                >
+                                                    <Button icon={<UploadOutlined />} className="w-full">Click to Upload</Button>
+                                                </Upload>
+                                            </div>
+
+                                            {/* Submit Button */}
+                                            <button
+                                                disabled={formLoading}
+                                                type="submit"
+                                                className="w-full bg-yellow-500 hover:bg-yellow-400 text-white font-bold py-4 rounded-lg shadow-lg transition-all transform hover:scale-[1.01] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
+                                                style={{
+                                                    backgroundColor: themeColor,
+                                                    boxShadow: `0 10px 25px -5px ${themeColor}33`
+                                                }}
+                                            >
+                                                {formLoading ? (
+                                                    <>
+                                                        <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                        Sending...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        Get Quote <span className="opacity-75">&rarr;</span>
+                                                    </>
+                                                )}
+                                            </button>
+                                        </form>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                </div>
+
+                {/* MOBILE ONLY: Bottom Info + Map */}
+                <div className="md:hidden w-full bg-white border-t border-gray-200">
+                    <div className="border-b border-gray-200">
+                        <ShopInfo
+                            businessInfo={currentDisplayInfo}
+                            themeColor={themeColor}
+                            className="h-auto py-6"
+                        />
+                    </div>
+                    {currentDisplayInfo?.maps && (
+                        <div className="h-64">
+                            <MapEmbed html={currentDisplayInfo.maps} />
+                        </div>
+                    )}
+                </div>
+
+                {/* DESKTOP ONLY (lg+): Right Column: Info/Map/Visuals */}
+                <div className="hidden lg:flex w-[40%] bg-white border-l border-gray-200 flex-col h-full shadow-lg z-10 flex-shrink-0">
+
+                    {/* Top: Glass Reference (30%) */}
+                    <div className="h-[30%] shrink-0 relative group overflow-hidden">
                         <GlassReference
                             serviceType={formData.serviceType}
                             carPreview={carPreview}
@@ -576,583 +1118,61 @@ const PublicContactRoot = () => {
                         />
                     </div>
 
-                    {/* Form Area */}
-                    <div className="w-full lg:w-[60%] h-auto lg:h-full lg:overflow-y-auto custom-scrollbar relative bg-gray-50 flex-shrink-0">
-                        <div className="p-4 md:p-6 lg:p-8 min-h-full">
-                            <AnimatePresence mode="wait">
-                                {isSubmitted ? (
-                                    <SuccessScreen
-                                        key="success"
-                                        onReset={handleNewMessage}
-                                        businessName={businessInfo?.businessName}
-                                        themeColor={themeColor}
-                                    />
-                                ) : (
-                                    <motion.div
-                                        key="form"
-                                        initial={{ opacity: 0, x: -20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: 20 }}
-                                        transition={{ duration: 0.3 }}
-                                    >
-                                        <div className="max-w-2xl mx-auto">
-                                            <div className="space-y-2 mb-4">
-                                                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                                                    <span className="w-8 h-1 bg-yellow-500 rounded-full block" style={{ backgroundColor: themeColor }}></span>
-                                                    Request a Quote
-                                                </h2>
-                                                <p className="text-gray-500 text-xs">Fill out the form below and we'll get back to you within 30 minutes during business hours.</p>
-                                            </div>
-
-                                            <form onSubmit={handleSubmit} className="space-y-3">
-                                                {/* Shop Selection (if multiple) */}
-                                                {businessInfo?.shops?.length > 1 && (
-                                                    <div className="space-y-2">
-                                                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Select Shop <span className="text-red-500">*</span></label>
-                                                        <select
-                                                            name="shopId"
-                                                            value={formData.shopId}
-                                                            onChange={handleInputChange}
-                                                            required
-                                                            className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
-                                                        >
-                                                            <option value="" disabled>Select a shop</option>
-                                                            {businessInfo.shops.map((shop) => (
-                                                                <option key={shop.shop_id} value={shop.shop_id}>
-                                                                    {shop.name} - {shop.address}
-                                                                </option>
-                                                            ))}
-                                                        </select>
-                                                    </div>
-                                                )}
-
-                                                {/* Service Type Dropdown */}
-                                                <div className="space-y-2">
-                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Service Type <span className="text-red-500">*</span></label>
-                                                    <select
-                                                        name="serviceType"
-                                                        value={formData.serviceType}
-                                                        onChange={handleInputChange}
-                                                        required
-                                                        className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
-                                                    >
-                                                        <option value="">Select service type</option>
-                                                        {serviceTypeOptions.map((opt, idx) => (<option key={idx} value={opt}>{opt}</option>))}
-                                                    </select>
-                                                </div>
-
-                                                {/* Windshield Features - Show right after service type selection */}
-                                                {formData.serviceType === 'Windshield Replacement' && (
-                                                    <motion.div
-                                                        initial={{ opacity: 0, y: -10 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2"
-                                                    >
-                                                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Features <span className="text-red-500">*</span></p>
-                                                        <div className="grid grid-cols-2 gap-2">
-                                                            {windshieldFeatureOptions.map((feature) => (
-                                                                <label key={feature} className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
-                                                                    <input
-                                                                        type="checkbox"
-                                                                        value={feature}
-                                                                        checked={(formData.windshieldFeatures || []).includes(feature)}
-                                                                        onChange={handleCheckboxChange}
-                                                                        className="w-3.5 h-3.5 rounded"
-                                                                        style={{ accentColor: themeColor }}
-                                                                    />
-                                                                    {feature}
-                                                                </label>
-                                                            ))}
-                                                        </div>
-                                                    </motion.div>
-                                                )}
-
-                                                {/* Window Rolling Location */}
-                                                {formData.serviceType === 'Window Rolling Issue' && (
-                                                    <motion.div
-                                                        initial={{ opacity: 0, y: -10 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2"
-                                                    >
-                                                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Location <span className="text-red-500">*</span></p>
-                                                        <div className="grid grid-cols-2 gap-2">
-                                                            {windowRollingOptions.map((option) => (
-                                                                <label key={option} className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
-                                                                    <input
-                                                                        type="radio"
-                                                                        name="windowRollingLocation"
-                                                                        value={option}
-                                                                        checked={formData.windowRollingLocation === option}
-                                                                        onChange={handleInputChange}
-                                                                        required
-                                                                        className="w-3.5 h-3.5"
-                                                                        style={{ accentColor: themeColor }}
-                                                                    />
-                                                                    {option}
-                                                                </label>
-                                                            ))}
-                                                        </div>
-                                                    </motion.div>
-                                                )}
-
-                                                {/* Vent Glass Location */}
-                                                {formData.serviceType === 'Vent Glass Replacement' && (
-                                                    <motion.div
-                                                        initial={{ opacity: 0, y: -10 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2"
-                                                    >
-                                                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Location <span className="text-red-500">*</span></p>
-                                                        <div className="grid grid-cols-2 gap-2">
-                                                            {ventGlassOptions.map((option) => (
-                                                                <label key={option} className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
-                                                                    <input
-                                                                        type="radio"
-                                                                        name="ventGlassLocation"
-                                                                        value={option}
-                                                                        checked={formData.ventGlassLocation === option}
-                                                                        onChange={handleInputChange}
-                                                                        required
-                                                                        className="w-3.5 h-3.5"
-                                                                        style={{ accentColor: themeColor }}
-                                                                    />
-                                                                    {option}
-                                                                </label>
-                                                            ))}
-                                                        </div>
-                                                    </motion.div>
-                                                )}
-
-                                                {/* Door Glass Location */}
-                                                {formData.serviceType === 'Door Glass Replacement' && (
-                                                    <motion.div
-                                                        initial={{ opacity: 0, y: -10 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2"
-                                                    >
-                                                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Location <span className="text-red-500">*</span></p>
-                                                        <div className="grid grid-cols-2 gap-2">
-                                                            {doorGlassOptions.map((option) => (
-                                                                <label key={option} className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
-                                                                    <input
-                                                                        type="radio"
-                                                                        name="doorGlassLocation"
-                                                                        value={option}
-                                                                        checked={formData.doorGlassLocation === option}
-                                                                        onChange={handleInputChange}
-                                                                        required
-                                                                        className="w-3.5 h-3.5"
-                                                                        style={{ accentColor: themeColor }}
-                                                                    />
-                                                                    {option}
-                                                                </label>
-                                                            ))}
-                                                        </div>
-                                                    </motion.div>
-                                                )}
-
-                                                {/* Quarter Glass Location */}
-                                                {formData.serviceType === 'Quarter Glass Replacement' && (
-                                                    <motion.div
-                                                        initial={{ opacity: 0, y: -10 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2"
-                                                    >
-                                                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Location <span className="text-red-500">*</span></p>
-                                                        <div className="grid grid-cols-2 gap-2">
-                                                            {quarterGlassOptions.map((option) => (
-                                                                <label key={option} className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
-                                                                    <input
-                                                                        type="radio"
-                                                                        name="quarterGlassLocation"
-                                                                        value={option}
-                                                                        checked={formData.quarterGlassLocation === option}
-                                                                        onChange={handleInputChange}
-                                                                        required
-                                                                        className="w-3.5 h-3.5"
-                                                                        style={{ accentColor: themeColor }}
-                                                                    />
-                                                                    {option}
-                                                                </label>
-                                                            ))}
-                                                        </div>
-                                                    </motion.div>
-                                                )}
-
-                                                {/* License Plate */}
-                                                {formData.serviceType && (
-                                                    <motion.div
-                                                        initial={{ opacity: 0, y: -10 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        className="space-y-2"
-                                                    >
-                                                        <label className="text-xs font-medium text-gray-600">License Plate (Optional)</label>
-                                                        <input
-                                                            type="text"
-                                                            name="licensePlateNumber"
-                                                            value={formData.licensePlateNumber}
-                                                            onChange={handleInputChange}
-                                                            placeholder="License Plate"
-                                                            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
-                                                        />
-                                                    </motion.div>
-                                                )}
-
-                                                {/* VIN Decoding Section */}
-                                                {formData.serviceType && (
-                                                    <motion.div
-                                                        initial={{ opacity: 0, y: -10 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2"
-                                                    >
-                                                        <div className="flex items-center gap-3">
-                                                            <label className="flex items-center gap-2 cursor-pointer flex-1">
-                                                                <input
-                                                                    type="checkbox"
-                                                                    checked={useVinDecoding}
-                                                                    onChange={(e) => setUseVinDecoding(e.target.checked)}
-                                                                    className="w-4 h-4 rounded"
-                                                                />
-                                                                <span className="text-sm font-medium text-gray-700">Search by VIN</span>
-                                                            </label>
-                                                        </div>
-
-                                                        {useVinDecoding ? (
-                                                            <div className="space-y-2">
-                                                                <label className="text-xs font-medium text-gray-600">VIN (17 characters)</label>
-                                                                <div className="flex gap-2 items-end">
-                                                                    <input
-                                                                        type="text"
-                                                                        name="vin"
-                                                                        value={formData.vin}
-                                                                        onChange={handleInputChange}
-                                                                        placeholder="Enter VIN"
-                                                                        className="flex-1 bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
-                                                                    />
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={handleVinLookup}
-                                                                        disabled={vinLoading || !formData.vin}
-                                                                        className="h-10 px-3 text-xs font-medium border rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-sm"
-                                                                        style={{
-                                                                            borderColor: themeColor,
-                                                                            color: themeColor,
-                                                                            backgroundColor: 'white'
-                                                                        }}
-                                                                    >
-                                                                        {vinLoading ? '...' : 'Decode'}
-                                                                    </button>
-                                                                </div>
-
-                                                                {/* Display Decoded Vehicle Info */}
-                                                                {(formData.year || formData.make || formData.model) && (
-                                                                    <motion.div
-                                                                        initial={{ opacity: 0, y: -5 }}
-                                                                        animate={{ opacity: 1, y: 0 }}
-                                                                        className="p-2 bg-blue-50 border border-blue-100 rounded-lg"
-                                                                    >
-                                                                        <div className="text-xs text-gray-700 space-y-1">
-                                                                            {formData.year && <div><span className="font-medium text-gray-600">Year:</span> {formData.year}</div>}
-                                                                            {formData.make && <div><span className="font-medium text-gray-600">Make:</span> {formData.make}</div>}
-                                                                            {formData.model && <div><span className="font-medium text-gray-600">Model:</span> {formData.model}</div>}
-                                                                        </div>
-                                                                    </motion.div>
-                                                                )}
-                                                            </div>
-                                                        ) : (
-                                                            <div className="grid grid-cols-3 gap-2">
-                                                                <Select
-                                                                    showSearch
-                                                                    placeholder="Year"
-                                                                    value={formData.year || undefined}
-                                                                    onChange={(value) => setFormData(prev => ({ ...prev, year: value }))}
-                                                                    filterOption={(input, option) =>
-                                                                        (option?.children ?? '').toString().toLowerCase().includes(input.toLowerCase())
-                                                                    }
-                                                                    className="w-full"
-                                                                    style={{ height: '40px' }}
-                                                                    dropdownStyle={{ zIndex: 9999 }}
-                                                                >
-                                                                    {yearOptions.map(year => (
-                                                                        <Select.Option key={year} value={year}>{year}</Select.Option>
-                                                                    ))}
-                                                                </Select>
-                                                                <Select
-                                                                    showSearch
-                                                                    placeholder="Make"
-                                                                    value={formData.make || undefined}
-                                                                    onChange={(value) => setFormData(prev => ({ ...prev, make: value, model: '' }))}
-                                                                    filterOption={(input, option) =>
-                                                                        (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
-                                                                    }
-                                                                    className="w-full"
-                                                                    style={{ height: '40px' }}
-                                                                    dropdownStyle={{ zIndex: 9999 }}
-                                                                >
-                                                                    {makeOptions.map((make) => (
-                                                                        <Select.Option key={make.Make_ID} value={make.Make_Name}>{make.Make_Name}</Select.Option>
-                                                                    ))}
-                                                                </Select>
-                                                                <Select
-                                                                    showSearch
-                                                                    placeholder="Model"
-                                                                    value={formData.model || undefined}
-                                                                    onChange={(value) => setFormData(prev => ({ ...prev, model: value }))}
-                                                                    disabled={!formData.make}
-                                                                    filterOption={(input, option) =>
-                                                                        (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
-                                                                    }
-                                                                    className="w-full"
-                                                                    style={{ height: '40px' }}
-                                                                    dropdownStyle={{ zIndex: 9999 }}
-                                                                >
-                                                                    {modelOptions.map((model) => (
-                                                                        <Select.Option key={model.Model_ID} value={model.Model_Name}>{model.Model_Name}</Select.Option>
-                                                                    ))}
-                                                                </Select>
-                                                            </div>
-                                                        )}
-                                                    </motion.div>
-                                                )}
-
-                                                {/* Your Information - 2x2 Grid */}
-                                                <div className="space-y-2">
-                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Your Information <span className="text-red-500">*</span></label>
-                                                    <div className="grid grid-cols-2 gap-2">
-                                                        <input
-                                                            type="text"
-                                                            name="name"
-                                                            value={formData.name}
-                                                            onChange={handleInputChange}
-                                                            placeholder="Full Name"
-                                                            required
-                                                            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
-                                                        />
-                                                        <input
-                                                            type="tel"
-                                                            name="phone"
-                                                            value={formData.phone}
-                                                            onChange={handleInputChange}
-                                                            placeholder="Phone Number"
-                                                            required
-                                                            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
-                                                        />
-                                                        <input
-                                                            type="email"
-                                                            name="email"
-                                                            value={formData.email}
-                                                            onChange={handleInputChange}
-                                                            placeholder="Email Address"
-                                                            required
-                                                            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
-                                                        />
-                                                        <input
-                                                            type="text"
-                                                            name="location"
-                                                            value={formData.location}
-                                                            onChange={handleInputChange}
-                                                            placeholder="City, State"
-                                                            required={!isMobile}
-                                                            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                {/* Service Preference */}
-                                                <div>
-                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">Service Preference <span className="text-red-500">*</span></label>
-                                                    <div className="flex gap-4">
-                                                        <label className="flex items-center gap-2 cursor-pointer">
-                                                            <input
-                                                                type="radio"
-                                                                name="servicePreference"
-                                                                value="In-shop service"
-                                                                checked={formData.servicePreference === 'In-shop service'}
-                                                                onChange={handleInputChange}
-                                                                required
-                                                                className="w-4 h-4"
-                                                                style={{ accentColor: themeColor }}
-                                                            />
-                                                            <span className="text-sm text-gray-700">In-shop</span>
-                                                        </label>
-                                                        <label className="flex items-center gap-2 cursor-pointer">
-                                                            <input
-                                                                type="radio"
-                                                                name="servicePreference"
-                                                                value="Mobile service"
-                                                                checked={formData.servicePreference === 'Mobile service'}
-                                                                onChange={handleInputChange}
-                                                                required
-                                                                className="w-4 h-4"
-                                                                style={{ accentColor: themeColor }}
-                                                            />
-                                                            <span className="text-sm text-gray-700">Mobile</span>
-                                                        </label>
-                                                    </div>
-                                                </div>
-
-                                                {/* Mobile Service Address Fields */}
-                                                {isMobile && (
-                                                    <motion.div
-                                                        initial={{ opacity: 0, y: -10 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        className="space-y-3"
-                                                    >
-                                                        <div>
-                                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">Address <span className="text-red-500">*</span></label>
-                                                            <input
-                                                                type="text"
-                                                                name="street"
-                                                                value={formData.street}
-                                                                onChange={handleInputChange}
-                                                                placeholder="Street Address"
-                                                                required
-                                                                className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
-                                                            />
-                                                        </div>
-                                                        <div className="grid grid-cols-2 gap-3">
-                                                            <input
-                                                                type="text"
-                                                                name="city"
-                                                                value={formData.city}
-                                                                onChange={handleInputChange}
-                                                                placeholder="City"
-                                                                required
-                                                                className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
-                                                            />
-                                                            <input
-                                                                type="text"
-                                                                name="zipcode"
-                                                                value={formData.zipcode}
-                                                                onChange={handleInputChange}
-                                                                placeholder="Zip Code"
-                                                                required
-                                                                className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
-                                                            />
-                                                        </div>
-                                                    </motion.div>
-                                                )}
-
-
-                                                {/* Additional Details */}
-                                                <div className="space-y-3">
-                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Additional Details</label>
-                                                    <textarea
-                                                        name="message"
-                                                        value={formData.message}
-                                                        onChange={handleInputChange}
-                                                        placeholder="Describe any additional details (optional)..."
-                                                        rows={3}
-                                                        className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm resize-none"
-                                                    />
-                                                </div>
-
-                                                {/* File Upload */}
-                                                <div className="space-y-3">
-                                                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Upload Image (Optional)</label>
-                                                    <Upload
-                                                        beforeUpload={() => false}
-                                                        fileList={fileList}
-                                                        onChange={({ fileList }) => setFileList(fileList)}
-                                                        accept="image/*"
-                                                    >
-                                                        <Button icon={<UploadOutlined />} className="w-full">Click to Upload</Button>
-                                                    </Upload>
-                                                </div>
-
-                                                {/* Submit Button */}
-                                                <button
-                                                    disabled={formLoading}
-                                                    type="submit"
-                                                    className="w-full bg-yellow-500 hover:bg-yellow-400 text-white font-bold py-4 rounded-lg shadow-lg transition-all transform hover:scale-[1.01] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
-                                                    style={{
-                                                        backgroundColor: themeColor,
-                                                        boxShadow: `0 10px 25px -5px ${themeColor}33`
-                                                    }}
-                                                >
-                                                    {formLoading ? (
-                                                        <>
-                                                            <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                                            Sending...
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            Get Quote <span className="opacity-75">&rarr;</span>
-                                                        </>
-                                                    )}
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
+                    {/* Middle: Shop Info (Flex-1) */}
+                    <div className="flex-1 bg-white border-t border-b border-gray-200 relative p-0 overflow-hidden">
+                        <ShopInfo
+                            businessInfo={currentDisplayInfo}
+                            themeColor={themeColor}
+                            className="h-full"
+                        />
                     </div>
 
-                    {/* MOBILE ONLY: Bottom Info + Map */}
-                    <div className="md:hidden w-full bg-white border-t border-gray-200">
-                        <div className="border-b border-gray-200">
-                            <ShopInfo
-                                businessInfo={currentDisplayInfo}
-                                themeColor={themeColor}
-                                className="h-auto py-6"
-                            />
+                    {/* Bottom: Map (30%) */}
+                    {currentDisplayInfo?.maps && (
+                        <div className="h-[30%] shrink-0">
+                            <MapEmbed html={currentDisplayInfo.maps} />
                         </div>
-                        {currentDisplayInfo?.maps && (
-                            <div className="h-64">
-                                <MapEmbed html={currentDisplayInfo.maps} />
-                            </div>
-                        )}
-                    </div>
+                    )}
+                </div>
+            </main>
 
-                    {/* DESKTOP ONLY (lg+): Right Column: Info/Map/Visuals */}
-                    <div className="hidden lg:flex w-[40%] bg-white border-l border-gray-200 flex-col h-full shadow-lg z-10 flex-shrink-0">
+            <CustomerChatWidget themeColor={themeColor} businessName={businessInfo?.businessName} />
 
-                        {/* Top: Glass Reference (30%) */}
-                        <div className="h-[30%] shrink-0 relative group overflow-hidden">
-                            <GlassReference
-                                serviceType={formData.serviceType}
-                                carPreview={carPreview}
-                                windshieldSensorGuide={windshieldSensorGuide}
-                            />
-                        </div>
+            <style>{`
+                .custom-scrollbar::-webkit-scrollbar {
+                    width: 6px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: #f9fafb; 
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: #cbd5e1; 
+                    border-radius: 3px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: #94a3b8; 
+                }
+            `}</style>
+        </div>
+    );
+};
 
-                        {/* Middle: Shop Info (Flex-1) */}
-                        <div className="flex-1 bg-white border-t border-b border-gray-200 relative p-0 overflow-hidden">
-                            <ShopInfo
-                                businessInfo={currentDisplayInfo}
-                                themeColor={themeColor}
-                                className="h-full"
-                            />
-                        </div>
+// Main Export Component with Providers
+const PublicContactRoot = () => {
+    // We need an intermediate wrapper component to access URL params for the ChatProvider
+    const { slug } = useParams();
+    const [userId, setUserId] = useState(null);
 
-                        {/* Bottom: Map (30%) */}
-                        {currentDisplayInfo?.maps && (
-                            <div className="h-[30%] shrink-0">
-                                <MapEmbed html={currentDisplayInfo.maps} />
-                            </div>
-                        )}
-                    </div>
-                </main>
+    // Light-weight effect just to get the generic user info to init the ChatProvider early
+    useEffect(() => {
+        validateSlug(slug).then(res => {
+            if (res.valid && res.data) setUserId(res.data.user_id);
+        }).catch(() => { });
+    }, [slug]);
 
-                <CustomerChatWidget themeColor={themeColor} businessName={businessInfo?.businessName} />
-
-                <style>{`
-                    .custom-scrollbar::-webkit-scrollbar {
-                        width: 6px;
-                    }
-                    .custom-scrollbar::-webkit-scrollbar-track {
-                        background: #f9fafb; 
-                    }
-                    .custom-scrollbar::-webkit-scrollbar-thumb {
-                        background: #cbd5e1; 
-                        border-radius: 3px;
-                    }
-                    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                        background: #94a3b8; 
-                    }
-                `}</style>
-            </div>
+    return (
+        <ChatProvider isPublic={true} publicUserId={userId}>
+            <PublicContactContent />
         </ChatProvider>
     );
 };

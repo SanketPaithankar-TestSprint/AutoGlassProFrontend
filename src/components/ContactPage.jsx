@@ -273,7 +273,7 @@ ${userMessage || 'No message provided'}
                         </p>
                     </div>
                     <div className="bg-blue-50 px-8 py-4 rounded-xl border border-blue-100 whitespace-nowrap">
-                        <span className="text-lg font-bold text-blue-700">support@autopaneai.com</span>
+                        <a href="mailto:support@autopaneai.com" className="text-base text-blue-600 hover:text-blue-800 hover:underline transition-colors">support@autopaneai.com</a>
                     </div>
                 </div>
             </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Card, Tag, Button, Statistic, Row, Col, Typography, message, Popconfirm, Tooltip, Modal, List } from 'antd';
+import { Table, Card, Tag, Button, Statistic, Row, Col, Typography, Popconfirm, Tooltip, Modal, List } from 'antd';
 import { ReloadOutlined, EyeOutlined, DeleteOutlined, UserOutlined, CarOutlined, ToolOutlined, CalendarOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { getValidToken } from '../../api/getValidToken';
 import urls from '../../config';
@@ -7,7 +7,6 @@ import InquiryDetails from './InquiryDetails';
 import useServiceInquiries from './hooks/useServiceInquiries';
 import useInquiryDetails from './hooks/useInquiryDetails';
 import { playNotificationSound } from '../../utils/playNotificationSound';
-import { App as AntApp } from 'antd';
 
 const { Title } = Typography;
 
@@ -47,56 +46,13 @@ const ServiceContactFormRoot = () => {
 
     const { inquiries, loading, total, fetchInquiries, deleteInquiry, markAsRead } = useServiceInquiries();
 
-    const hasNewInquiry = inquiries.some(inquiry => inquiry.status === 'NEW');
-    const [initialFetchDone, setInitialFetchDone] = useState(false);
-    const { notification } = AntApp.useApp();
-
-    useEffect(() => {
-        let intervalId;
-
-        // Play sound once after login/initial fetch if there are new inquiries
-        if (hasNewInquiry) {
-            playNotificationSound();
-            intervalId = setInterval(() => {
-                playNotificationSound();
-            }, 60000); // 1 minute delay
-        }
-
-        return () => {
-            if (intervalId) clearInterval(intervalId);
-        };
-    }, [hasNewInquiry]);
-
-    // Show notification and play sound immediately after first fetch if there are new inquiries
-    useEffect(() => {
-        if (!initialFetchDone && inquiries.length > 0) {
-            setInitialFetchDone(true);
-            const newInquiry = inquiries.find(inquiry => inquiry.status === 'NEW');
-            if (newInquiry) {
-                playNotificationSound();
-                notification.info({
-                    message: `New Inquiry${newInquiry.name ? ` from ${newInquiry.name}` : ''}`,
-                    description: newInquiry.vehicle ? `Vehicle: ${newInquiry.vehicle}` : undefined,
-                    duration: 0,
-                    placement: 'topRight',
-                    style: { cursor: 'pointer' },
-                    onClick: () => {
-                        window.location.href = '/service-contact-form';
-                    }
-                });
-            }
-        }
-    }, [inquiries, initialFetchDone, notification]);
-
     // Listen for event stream notification and play sound robustly
     useEffect(() => {
         const handleNewInquiry = () => {
-            message.info('New inquiry received. Refreshing list...');
             const now = Date.now();
             if (now - lastSoundPlayedAt > 2000) {
                 lastSoundPlayedAt = now;
-                const audio = new Audio(serviceNotificationSound);
-                audio.play().catch(e => console.error("Error playing notification sound:", e));
+                playNotificationSound();
             }
             fetchInquiries(currentPage - 1);
         };
@@ -114,25 +70,6 @@ const ServiceContactFormRoot = () => {
 
     useEffect(() => {
         fetchInquiries(currentPage - 1);
-
-        const handleNewInquiry = () => {
-            message.info('New inquiry received. Refreshing list...');
-
-            const now = Date.now();
-            if (now - lastSoundPlayedAt > 2000) {
-                lastSoundPlayedAt = now;
-                const audio = new Audio(serviceNotificationSound);
-                audio.play().catch(e => console.error("Error playing notification sound:", e));
-            }
-
-            fetchInquiries(currentPage - 1);
-        };
-
-        window.addEventListener('INQUIRY_RECEIVED', handleNewInquiry);
-
-        return () => {
-            window.removeEventListener('INQUIRY_RECEIVED', handleNewInquiry);
-        };
     }, [fetchInquiries]);
 
     const handleDelete = async (id) => {

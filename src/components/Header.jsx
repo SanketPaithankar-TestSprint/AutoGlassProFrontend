@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { MdSupportAgent } from "react-icons/md";
-import { Layout, Button, Space, Drawer, Modal, Dropdown } from "antd";
+import { Layout, Button, Space, Drawer, Modal, Dropdown, Badge } from "antd";
 import { MenuOutlined, UserOutlined, DownOutlined, PieChartOutlined, TeamOutlined, FormOutlined, CalendarOutlined, FolderOpenOutlined, BarChartOutlined, MessageOutlined, AuditOutlined } from "@ant-design/icons";
 import Logo from "./logo";
 import { getValidToken } from "../api/getValidToken";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import LanguageToggle from "./LanguageToggle";
+import { useChat } from "../context/ChatContext";
 
 const { Header: AntHeader } = Layout;
 
@@ -84,6 +85,10 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
+  // Chat Notifications
+  const { unreadTotal } = useChat() || {};
+  const unreadChatCount = unreadTotal || 0;
+
   useEffect(() => {
     const token = getValidToken();
     setIsAuthed(!!token);
@@ -121,7 +126,31 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
       { key: "reports", label: t('nav.reports'), href: "/reports", icon: <BarChartOutlined /> },
       { key: "service-inquiries", label: t('nav.serviceInquiries'), href: "/service-contact-form", icon: <MessageOutlined /> },
       { key: "employee-attendance", label: t('nav.employeeAttendance'), href: "/employee-attendance", icon: <AuditOutlined /> },
-      { key: "live-chat", label: t('nav.liveChat'), href: "/chat", icon: <MdSupportAgent className="text-xl" /> },
+      {
+        key: "live-chat",
+        label: t('nav.liveChat'),
+        href: "/chat",
+        icon: (
+          <div className="relative inline-block">
+            <MdSupportAgent className="text-xl" />
+            {unreadChatCount > 0 && (
+              <Badge
+                count={unreadChatCount}
+                size="small"
+                color="#ef4444"
+                overflowCount={99}
+                className="absolute -top-2 -right-3"
+                style={{
+                  fontSize: 10,
+                  minWidth: 16,
+                  height: 16,
+                  lineHeight: '16px'
+                }}
+              />
+            )}
+          </div>
+        )
+      },
     ] : []),
   ];
 
