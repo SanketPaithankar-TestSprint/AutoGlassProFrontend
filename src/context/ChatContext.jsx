@@ -1,8 +1,10 @@
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import ChatSocket from '../services/ChatSocket';
 import { getValidToken } from '../api/getValidToken';
 import chatNotificationSound from '../assets/NotificationForChat.mp3';
-import { App } from 'antd';
+import { App, Modal, Button } from 'antd';
+import { MessageOutlined } from '@ant-design/icons';
 
 const ChatContext = createContext(null);
 
@@ -12,6 +14,7 @@ export const useChat = () => {
 
 export const ChatProvider = ({ children, isPublic = false, publicUserId = null }) => {
     const { notification } = App.useApp();
+    const location = useLocation();
     const [socket, setSocket] = useState(null);
     const socketRef = useRef(null);
     const [connectionStatus, setConnectionStatus] = useState('disconnected');
@@ -21,6 +24,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
     const [visitorId, setVisitorId] = useState(null);
     const [unreadTotal, setUnreadTotal] = useState(0);
     const [notifications, setNotifications] = useState([]);
+    const [showUnreadModal, setShowUnreadModal] = useState(false);
 
     // Keep refs in sync
     useEffect(() => {
@@ -705,34 +709,44 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
         };
     }, [clearUnreadForConversation, isPublic]);
 
-    // Show toast + loop notification sound when there are unread chats (Shop only)
+    // When user navigates to /chat (SPA navigation), auto-clear unread & close modal
     useEffect(() => {
-        if (isPublic || unreadTotal === 0) {
-            notification.destroy('chat-unread-toast');
+        if (isPublic || location.pathname !== '/chat') return;
+        setShowUnreadModal(false);
+        const convoId = activeConversationIdRef.current;
+        if (convoId) {
+            clearUnreadForConversation(convoId);
+        }
+    }, [location.pathname, isPublic, clearUnreadForConversation]);
+
+    // Show modal + loop notification sound when there are unread chats (Shop only)
+    useEffect(() => {
+        const onChatPage = window?.location?.pathname === '/chat';
+        if (isPublic || unreadTotal === 0 || onChatPage) {
+            setShowUnreadModal(false);
             return undefined;
         }
 
-        notification.info({
-            key: 'chat-unread-toast',
-            message: 'Unread Live Chats',
-            description: `You have ${unreadTotal} unread chat${unreadTotal > 1 ? 's' : ''}`,
-            placement: 'topRight',
-            duration: 0,
-        });
+        setShowUnreadModal(true);
 
+        let playCount = 0;
         const intervalId = setInterval(() => {
+            if (playCount >= 10) {
+                clearInterval(intervalId);
+                return;
+            }
             try {
                 const audio = new Audio(chatNotificationSound);
                 audio.volume = 0.5;
                 audio.play().catch(() => { });
+                playCount += 1;
             } catch (e) { }
         }, 10000);
 
         return () => {
             clearInterval(intervalId);
-            notification.destroy('chat-unread-toast');
         };
-    }, [unreadTotal, isPublic, notification]);
+    }, [unreadTotal, isPublic]);
 
 
     return (
@@ -757,6 +771,46 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
             refreshNotifications,
         }}>
             {children}
+
+            <Modal
+                open={showUnreadModal}
+                onCancel={() => setShowUnreadModal(false)}
+                footer={null}
+                centered
+                width={520}
+                closable
+                maskClosable={false}
+                styles={{
+                    content: { borderRadius: 16, padding: '40px 48px', textAlign: 'center' },
+                }}
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+                    <div style={{
+                        width: 72, height: 72, borderRadius: '50%',
+                        background: '#e6f4ff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                        <MessageOutlined style={{ fontSize: 36, color: '#1677ff' }} />
+                    </div>
+                    <div style={{ fontSize: 22, fontWeight: 700, color: '#0f172a' }}>Unread Live Chats</div>
+                    <div style={{ fontSize: 16, color: '#64748b' }}>
+                        You have <strong style={{ color: '#1677ff' }}>{unreadTotal}</strong> unread chat{unreadTotal > 1 ? 's' : ''}
+                    </div>
+                    <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+                        <Button
+                            type="primary"
+                            size="large"
+                            style={{ borderRadius: 8, paddingInline: 28 }}
+                            onClick={() => {
+                                setShowUnreadModal(false);
+                                window.history.pushState({}, '', '/chat');
+                                window.dispatchEvent(new PopStateEvent('popstate'));
+                            }}
+                        >
+                            Go to Messages →
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
         </ChatContext.Provider>
     );
 };

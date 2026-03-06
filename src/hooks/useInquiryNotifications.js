@@ -1,13 +1,9 @@
 import { useEffect } from 'react';
 import { EventSourcePolyfill } from 'event-source-polyfill';
-import { App } from 'antd';
 import { getValidToken } from '../api/getValidToken';
 import urls from '../config';
-import { playNotificationSound } from '../utils/playNotificationSound';
 
 const useInquiryNotifications = (isAuthed) => {
-
-    const { notification } = App.useApp();
 
     useEffect(() => {
         if (!isAuthed) return;
@@ -36,20 +32,15 @@ const useInquiryNotifications = (isAuthed) => {
             });
             eventSource.onerror = (_error) => {
                 eventSource.close();
-                const retryTime = 10000;
-                retryTimeout = setTimeout(connect, retryTime);
+                retryTimeout = setTimeout(connect, 10000);
             };
         };
         connect();
         return () => {
-            if (eventSource) {
-                eventSource.close();
-            }
-            if (retryTimeout) {
-                clearTimeout(retryTimeout);
-            }
+            if (eventSource) eventSource.close();
+            if (retryTimeout) clearTimeout(retryTimeout);
         };
-    }, [notification, isAuthed]);
+    }, [isAuthed]); // removed `notification` — it was unused and caused reconnects on every render
 };
 
 export default useInquiryNotifications;
