@@ -246,8 +246,8 @@ const AttendanceView = ({ token, isMobile }) => {
                 date: values.date.format("YYYY-MM-DD"),
                 status: values.status,
             };
-            if (values.clockInTime) payload.clockInTime = values.date.format("YYYY-MM-DD") + "T" + values.clockInTime.format("HH:mm:ss") + "Z";
-            if (values.clockOutTime) payload.clockOutTime = values.date.format("YYYY-MM-DD") + "T" + values.clockOutTime.format("HH:mm:ss") + "Z";
+            if (values.clockInTime) payload.clockInTime = values.date.hour(values.clockInTime.hour()).minute(values.clockInTime.minute()).second(values.clockInTime.second()).toISOString();
+            if (values.clockOutTime) payload.clockOutTime = values.date.hour(values.clockOutTime.hour()).minute(values.clockOutTime.minute()).second(values.clockOutTime.second()).toISOString();
             if (values.notes) payload.notes = values.notes;
             recordMutation.mutate(payload);
         } catch (e) { /* validation errors shown by antd */ }
