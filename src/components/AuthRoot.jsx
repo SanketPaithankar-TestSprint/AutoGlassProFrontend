@@ -6,7 +6,6 @@ import ForgotPasswordForm from "./ForgotPasswordForm";
 import PageHead from "./PageHead";
 import { useAuth } from '../context/auth/useAuth';
 import { useProfileDataPrefetch } from '../hooks/useProfileDataPrefetch';
-import useInquiryNotifications from "../hooks/useInquiryNotifications";
 import { getValidToken } from '../api/getValidToken';
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -27,7 +26,6 @@ export default function AuthRoot() {
     const [authMode, setAuthMode] = useState('LOGIN');
     const { login } = useAuth();
     const prefetchProfileData = useProfileDataPrefetch();
-    // const { fetchUnreadCount } = useInquiryNotifications();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -47,7 +45,6 @@ export default function AuthRoot() {
             if (login) login(token);
             try {
                 if (prefetchProfileData) await prefetchProfileData();
-                // if (fetchUnreadCount) await fetchUnreadCount();
             } catch (error) {
                 console.error("Error prefetching data:", error);
             }
