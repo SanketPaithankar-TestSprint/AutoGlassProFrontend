@@ -219,6 +219,7 @@ function metaInjectionPlugin() {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss(), metaInjectionPlugin()],
+  assetsInclude: ['**/*.m4a'],
   build: {
     sourcemap: false,
     target: 'esnext',

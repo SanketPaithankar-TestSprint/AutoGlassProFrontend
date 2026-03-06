@@ -1,8 +1,27 @@
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import ChatSocket from '../services/ChatSocket';
 import { getValidToken } from '../api/getValidToken';
 import chatNotificationSound from '../assets/NotificationForChat.mp3';
-import { App } from 'antd';
+import dingSound from '../assets/ding.mp3';
+import { App, Modal, Button } from 'antd';
+
+// Single primed Audio for in-chat ding — must be unlocked during a user gesture
+const dingAudio = new Audio(dingSound);
+dingAudio.preload = 'auto';
+let dingPrimed = false;
+const primeDing = () => {
+    if (dingPrimed) return;
+    dingAudio.volume = 0;
+    dingAudio.play().then(() => {
+        dingAudio.pause();
+        dingAudio.currentTime = 0;
+        dingAudio.volume = 0.4;
+        dingPrimed = true;
+    }).catch(() => {});
+};
+['click', 'keydown', 'touchstart'].forEach(e => document.addEventListener(e, primeDing));
+import { MessageOutlined } from '@ant-design/icons';
 
 const ChatContext = createContext(null);
 
@@ -12,6 +31,7 @@ export const useChat = () => {
 
 export const ChatProvider = ({ children, isPublic = false, publicUserId = null }) => {
     const { notification } = App.useApp();
+    const location = useLocation();
     const [socket, setSocket] = useState(null);
     const socketRef = useRef(null);
     const [connectionStatus, setConnectionStatus] = useState('disconnected');
@@ -21,6 +41,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
     const [visitorId, setVisitorId] = useState(null);
     const [unreadTotal, setUnreadTotal] = useState(0);
     const [notifications, setNotifications] = useState([]);
+    const [showUnreadModal, setShowUnreadModal] = useState(false);
 
     // Keep refs in sync
     useEffect(() => {
@@ -221,14 +242,17 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
                     visitorId: c.visitorId,
                     lastMessage: c.lastMessage,
                     updatedAt: c.updatedAt,
-                    unreadCount: 0,
+                    unreadCount: c.unreadCount || 0,
                     messages: [],
                 };
 
-                // Preserve existing messages if we already have them
+                // Preserve existing messages and take the higher unread count
                 if (prev[c.conversationId]) {
                     newMap[c.conversationId].messages = prev[c.conversationId].messages;
-                    newMap[c.conversationId].unreadCount = prev[c.conversationId].unreadCount;
+                    newMap[c.conversationId].unreadCount = Math.max(
+                        newMap[c.conversationId].unreadCount,
+                        prev[c.conversationId].unreadCount || 0
+                    );
                 }
             });
             return newMap;
@@ -300,11 +324,20 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
             const senderName = payload.senderName || payload.name || payload.visitorName || payload.customerName || 'Customer';
             console.log("[ChatContext] Triggering persistent toast for new message from:", senderName);
 
-            // Play chat notification sound
+            // Play chat notification sound (chat not in focus)
             try {
                 const audio = new Audio(chatNotificationSound);
                 audio.volume = 0.5;
                 audio.play().catch(() => { });
+            } catch (e) { }
+        }
+
+        // Play in-chat ding for every incoming message while chat is open
+        const incomingFromOther = isPublic ? senderType?.toUpperCase() === 'SHOP' : isFromCustomer;
+        if (incomingFromOther && isCurrentlyOpen && isTabActive && dingPrimed) {
+            try {
+                dingAudio.currentTime = 0;
+                dingAudio.play().catch(() => {});
             } catch (e) { }
         }
 
@@ -345,22 +378,46 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
             const potentialName = payload.name || payload.senderName || payload.visitorName || payload.customerName;
             const updatedCustomerName = existing.customerName || potentialName;
 
-            return {
-                ...prev,
-                [conversationId]: {
-                    ...existing,
-                    messages: [...existing.messages, newMsg],
-                    lastMessage: message,
-                    updatedAt: timestamp || Date.now(),
-                    unreadCount: newUnread,
-                    customerName: updatedCustomerName,
-                    visitorId: existing.visitorId || payload.visitorId,
-                },
+            const updatedConversation = {
+                ...existing,
+                messages: [...existing.messages, newMsg],
+                lastMessage: message,
+                updatedAt: timestamp || Date.now(),
+                unreadCount: newUnread,
+                customerName: updatedCustomerName,
+                visitorId: existing.visitorId || payload.visitorId,
             };
+
+            const result = { ...prev, [conversationId]: updatedConversation };
+
+            // ── Migrate temp local conversation to the real server conversationId ──
+            // When the customer sends their first message, it's stored under a temp
+            // key like 'visitor_123'. Once the server responds with the real UUID,
+            // merge those locally-appended messages in and remove the temp entry.
+            const tempId = activeConversationIdRef.current;
+            if (isPublic && tempId && tempId !== conversationId && prev[tempId]) {
+                const tempMsgs = prev[tempId].messages || [];
+                const mergedMsgs = [...tempMsgs, ...updatedConversation.messages]
+                    .reduce((acc, m) => {
+                        const isDupe = acc.some(x =>
+                            x.message === m.message &&
+                            x.senderType === m.senderType &&
+                            Math.abs((x.timestamp || 0) - (m.timestamp || 0)) < 5000
+                        );
+                        if (!isDupe) acc.push(m);
+                        return acc;
+                    }, [])
+                    .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+
+                result[conversationId] = { ...updatedConversation, messages: mergedMsgs };
+                delete result[tempId];
+            }
+
+            return result;
         });
 
-        // Auto-set active for customer if not already set
-        if (isPublic && !activeConversationIdRef.current) {
+        // Always sync activeConversationId to the real server-assigned conversationId
+        if (isPublic) {
             setActiveConversationId(conversationId);
         }
     };
@@ -705,34 +762,44 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
         };
     }, [clearUnreadForConversation, isPublic]);
 
-    // Show toast + loop notification sound when there are unread chats (Shop only)
+    // When user navigates to /chat (SPA navigation), auto-clear unread & close modal
     useEffect(() => {
-        if (isPublic || unreadTotal === 0) {
-            notification.destroy('chat-unread-toast');
+        if (isPublic || location.pathname !== '/chat') return;
+        setShowUnreadModal(false);
+        const convoId = activeConversationIdRef.current;
+        if (convoId) {
+            clearUnreadForConversation(convoId);
+        }
+    }, [location.pathname, isPublic, clearUnreadForConversation]);
+
+    // Show modal + loop notification sound when there are unread chats (Shop only)
+    useEffect(() => {
+        const onChatPage = window?.location?.pathname === '/chat';
+        if (isPublic || unreadTotal === 0 || onChatPage) {
+            setShowUnreadModal(false);
             return undefined;
         }
 
-        notification.info({
-            key: 'chat-unread-toast',
-            message: 'Unread Live Chats',
-            description: `You have ${unreadTotal} unread chat${unreadTotal > 1 ? 's' : ''}`,
-            placement: 'topRight',
-            duration: 0,
-        });
+        setShowUnreadModal(true);
 
+        let playCount = 0;
         const intervalId = setInterval(() => {
+            if (playCount >= 10) {
+                clearInterval(intervalId);
+                return;
+            }
             try {
                 const audio = new Audio(chatNotificationSound);
                 audio.volume = 0.5;
                 audio.play().catch(() => { });
+                playCount += 1;
             } catch (e) { }
         }, 10000);
 
         return () => {
             clearInterval(intervalId);
-            notification.destroy('chat-unread-toast');
         };
-    }, [unreadTotal, isPublic, notification]);
+    }, [unreadTotal, isPublic]);
 
 
     return (
@@ -757,6 +824,46 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
             refreshNotifications,
         }}>
             {children}
+
+            <Modal
+                open={showUnreadModal}
+                onCancel={() => setShowUnreadModal(false)}
+                footer={null}
+                centered
+                width={520}
+                closable
+                maskClosable={false}
+                styles={{
+                    content: { borderRadius: 16, padding: '40px 48px', textAlign: 'center', background: 'linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%)' },
+                }}
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+                    <div style={{
+                        width: 72, height: 72, borderRadius: '50%',
+                        background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                        <MessageOutlined style={{ fontSize: 36, color: '#ffffff' }} />
+                    </div>
+                    <div style={{ fontSize: 22, fontWeight: 700, color: '#ffffff' }}>Unread Live Chats</div>
+                    <div style={{ fontSize: 16, color: '#bfdbfe' }}>
+                        You have <strong style={{ color: '#ffffff' }}>{unreadTotal}</strong> unread chat{unreadTotal > 1 ? 's' : ''}
+                    </div>
+                    <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+                        <Button
+                            type="primary"
+                            size="large"
+                            style={{ borderRadius: 8, paddingInline: 28, background: '#ffffff', borderColor: '#ffffff', color: '#1d4ed8', fontWeight: 600 }}
+                            onClick={() => {
+                                setShowUnreadModal(false);
+                                window.history.pushState({}, '', '/chat');
+                                window.dispatchEvent(new PopStateEvent('popstate'));
+                            }}
+                        >
+                            Go to Messages →
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
         </ChatContext.Provider>
     );
 };

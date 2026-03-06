@@ -5,7 +5,7 @@ import { getCustomers } from "../../api/getCustomers";
 import { updateProfile } from "../../api/updateProfile";
 import { saveUserLogo } from "../../api/saveUserLogo";
 import { getValidToken } from "../../api/getValidToken";
-import { UserOutlined, TeamOutlined, IdcardOutlined, ShopOutlined, PhoneOutlined, EnvironmentOutlined, EditOutlined, PlusOutlined, DollarOutlined, ThunderboltOutlined, PercentageOutlined, KeyOutlined, ScanOutlined, FileTextOutlined, UploadOutlined, CalculatorOutlined, MailOutlined, GiftOutlined, CameraOutlined, LinkOutlined } from "@ant-design/icons";
+import { UserOutlined, TeamOutlined, IdcardOutlined, ShopOutlined, PhoneOutlined, EnvironmentOutlined, EditOutlined, PlusOutlined, DollarOutlined, ThunderboltOutlined, PercentageOutlined, KeyOutlined, ScanOutlined, FileTextOutlined, UploadOutlined, CalculatorOutlined, MailOutlined, GiftOutlined, CameraOutlined, LinkOutlined, BellOutlined } from "@ant-design/icons";
 import { Modal, Form, Input, Select, Button, notification, Upload, Avatar } from "antd";
 import ImgCrop from 'antd-img-crop';
 import imageCompression from 'browser-image-compression';
@@ -21,6 +21,7 @@ import Shops from "./Shops";
 import EmployeeManagement from "./EmployeeManagement";
 import TerminalConfiguration from "./TerminalConfiguration";
 import SlugConfig from "../SlugConfig/SlugConfig";
+import NotificationSettings from "./NotificationSettings";
 import { getStatesOrProvinces, getCities, COUNTRIES } from "../../const/locations";
 import { useSidebarStore } from '../../store/useSidebarStore';
 import { getPageBackground } from '../../const/pageBackgrounds';
@@ -453,7 +454,8 @@ const Profile = () => {
                             { id: 'terminalConfig', label: 'Terminal Config', icon: <ScanOutlined /> },
                             { id: 'userKitPrice', label: t('profile.standardKits'), icon: <GiftOutlined /> },
                             { id: 'userAdasPrice', label: t('profile.adasPricing'), icon: <CameraOutlined /> },
-                            { id: 'slugConfig', label: t('profile.contactFormConfig'), icon: <LinkOutlined /> }
+                            { id: 'slugConfig', label: t('profile.contactFormConfig'), icon: <LinkOutlined /> },
+                            { id: 'notificationSettings', label: 'Notification Settings', icon: <BellOutlined /> },
                         ].map(item => {
                             const isActive = activeTab === item.id;
                             return (
@@ -489,6 +491,7 @@ const Profile = () => {
                             {renderMenuItem('userAdasPrice', t('profile.adasPricing'), <CameraOutlined />)}
                             {renderMenuItem('specialInstructions', t('profile.specialInstructions'), <FileTextOutlined />)}
                             {renderMenuItem('slugConfig', t('profile.contactFormConfig'), <LinkOutlined />)}
+                            {renderMenuItem('notificationSettings', 'Notification Settings', <BellOutlined />)}
                         </div>
                     </div>
                 </div>
@@ -509,6 +512,7 @@ const Profile = () => {
                     {activeTab === 'userAdasPrice' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><UserAdasPricePage /></div>}
                     {activeTab === 'specialInstructions' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><SpecialInstructions /></div>}
                     {activeTab === 'slugConfig' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><SlugConfig /></div>}
+                    {activeTab === 'notificationSettings' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><NotificationSettings /></div>}
                 </div>
             </div>
         </div>

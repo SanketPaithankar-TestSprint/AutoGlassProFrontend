@@ -1,21 +1,35 @@
+import inquirySound from '../assets/NotificationForServiceEnquiery.NotificationForServiceEnquiery.m4a';
+
+// Single reusable Audio instance — must be primed during a user gesture
+// so the browser whitelists it for future programmatic playback
+const audio = new Audio(inquirySound);
+audio.preload = 'auto';
+
+let primed = false;
+
+const primeAudio = () => {
+    if (primed) return;
+    audio.volume = 0;
+    audio.play()
+        .then(() => {
+            audio.pause();
+            audio.currentTime = 0;
+            audio.volume = 0.7;
+            primed = true;
+        })
+        .catch(() => {});
+};
+
+['click', 'keydown', 'touchstart'].forEach(evt =>
+    document.addEventListener(evt, primeAudio)
+);
+
 export const playNotificationSound = () => {
+    if (!primed) return;
     try {
-        // Use a public Google notification sound for the beep
-        const beepPath = '/src/assets/ding.mp3';
-        const mainPath = '/src/assets/NotificationForServiceEnquiery.m4a';
-        // Play soft ding beep first
-        const beep = new Audio(beepPath);
-        beep.volume = 0.5;
-        beep.play()
-            .then(() => {
-                beep.onended = () => {
-                    const mainSound = new Audio(mainPath);
-                    mainSound.volume = 0.7;
-                    mainSound.play().catch(e2 => console.error("Error playing main notification sound:", e2));
-                };
-            })
-            .catch(e => console.error("Error playing beep sound:", e));
-    } catch (error) {
-        console.error("Audio playback failed:", error);
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+    } catch (_) {
+        // Audio not supported in this environment
     }
 };

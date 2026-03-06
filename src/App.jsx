@@ -16,7 +16,6 @@ import OpenRoot from './components/Open/OpenRoot';
 import ReportsRoot from './components/Reports/ReportsRoot';
 import { getValidToken } from './api/getValidToken';
 import { useProfileDataPrefetch } from './hooks/useProfileDataPrefetch';
-import useInquiryNotifications from './hooks/useInquiryNotifications';
 import useScheduleNotifications from './hooks/useScheduleNotifications';
 import { useAuth } from './context/auth/useAuth';
 import { AuthProvider } from './context/auth/authProvide';
@@ -99,7 +98,6 @@ function AppContent() {
   const { showModal } = useSubscriptionRestriction(isAuthed && !isStandalonePage);
 
   // Only run notification hooks when authenticated and not loading
-  useInquiryNotifications(isAuthed && !isStandalonePage && !loading);
   useScheduleNotifications(isAuthed && !isStandalonePage && !loading);
 
   useEffect(() => {
@@ -304,12 +302,12 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AntApp>
         <AuthProvider>
-          <InquiryProvider>
-            <Router>
+          <Router>
+            <InquiryProvider>
               <ScrollToTop />
               <AppContent />
-            </Router>
-          </InquiryProvider>
+            </InquiryProvider>
+          </Router>
         </AuthProvider>
       </AntApp>
     </QueryClientProvider>
