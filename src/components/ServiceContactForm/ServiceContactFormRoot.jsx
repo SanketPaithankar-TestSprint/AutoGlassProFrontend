@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Table, Card, Tag, Button, Statistic, Row, Col, Typography, Popconfirm, Tooltip, Modal, List } from 'antd';
+import React, { useState, useEffect, useRef } from 'react';
+import { Table, Card, Tag, Button, Statistic, Row, Col, Typography, Popconfirm, Tooltip, Modal, List, message } from 'antd';
 import { ReloadOutlined, EyeOutlined, DeleteOutlined, UserOutlined, CarOutlined, ToolOutlined, CalendarOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { getValidToken } from '../../api/getValidToken';
 import urls from '../../config';
 import InquiryDetails from './InquiryDetails';
 import useServiceInquiries from './hooks/useServiceInquiries';
 import useInquiryDetails from './hooks/useInquiryDetails';
-import { playNotificationSound } from '../../utils/playNotificationSound';
+import { useInquiry } from '../../context/InquiryContext';
 
 const { Title } = Typography;
 
@@ -36,8 +36,6 @@ const ModalInquiryDetails = ({ inquiryId }) => {
     return <InquiryDetails inquiry={inquiry} />;
 };
 
-let lastSoundPlayedAt = 0;
-
 const ServiceContactFormRoot = () => {
     const [viewDetailsModalOpen, setViewDetailsModalOpen] = useState(false);
     const [selectedInquiryId, setSelectedInquiryId] = useState(null);
@@ -45,22 +43,17 @@ const ServiceContactFormRoot = () => {
     const [currentPage, setCurrentPage] = useState(1);
 
     const { inquiries, loading, total, fetchInquiries, deleteInquiry, markAsRead } = useServiceInquiries();
+    const { badgeCount } = useInquiry();
+    const prevBadgeRef = useRef(badgeCount);
 
-    // Listen for event stream notification and play sound robustly
+    // Auto-refresh the list the instant the badge count increases (new inquiry arrived)
     useEffect(() => {
-        const handleNewInquiry = () => {
-            const now = Date.now();
-            if (now - lastSoundPlayedAt > 2000) {
-                lastSoundPlayedAt = now;
-                playNotificationSound();
-            }
+        if (badgeCount > prevBadgeRef.current) {
             fetchInquiries(currentPage - 1);
-        };
-        window.addEventListener('INQUIRY_RECEIVED', handleNewInquiry);
-        return () => {
-            window.removeEventListener('INQUIRY_RECEIVED', handleNewInquiry);
-        };
-    }, [fetchInquiries, currentPage]);
+            message.info('New inquiry received — list refreshed.');
+        }
+        prevBadgeRef.current = badgeCount;
+    }, [badgeCount, fetchInquiries, currentPage]);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);

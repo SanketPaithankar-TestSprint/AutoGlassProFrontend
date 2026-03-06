@@ -137,6 +137,7 @@ export const InquiryProvider = ({ children }) => {
 
     const value = {
         badgeCount,
+        refreshTrigger,
         triggerRefresh,
         fetchInquiryCount,
     };
@@ -219,25 +220,25 @@ export const InquiryProvider = ({ children }) => {
                 closable
                 maskClosable={false}
                 styles={{
-                    content: { borderRadius: 16, padding: '40px 48px', textAlign: 'center' },
+                    content: { borderRadius: 16, padding: '40px 48px', textAlign: 'center', background: 'linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%)' },
                 }}
             >
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
                     <div style={{
                         width: 72, height: 72, borderRadius: '50%',
-                        background: '#fff7e6', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
-                        <BellOutlined style={{ fontSize: 36, color: '#fa8c16' }} />
+                        <BellOutlined style={{ fontSize: 36, color: '#ffffff' }} />
                     </div>
-                    <div style={{ fontSize: 22, fontWeight: 700, color: '#0f172a' }}>New Service Inquiry</div>
-                    <div style={{ fontSize: 16, color: '#64748b' }}>
-                        <strong style={{ color: '#fa8c16' }}>{lastInquiryName || 'A customer'}</strong> has submitted a new service inquiry
+                    <div style={{ fontSize: 22, fontWeight: 700, color: '#ffffff' }}>New Service Inquiry</div>
+                    <div style={{ fontSize: 16, color: '#bfdbfe' }}>
+                        <strong style={{ color: '#ffffff' }}>{lastInquiryName || 'A customer'}</strong> has submitted a new service inquiry
                     </div>
                     <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
                         <Button
                             type="primary"
                             size="large"
-                            style={{ borderRadius: 8, paddingInline: 28, background: '#fa8c16', borderColor: '#fa8c16' }}
+                            style={{ borderRadius: 8, paddingInline: 28, background: '#ffffff', borderColor: '#ffffff', color: '#1d4ed8', fontWeight: 600 }}
                             onClick={() => {
                                 dismissedCountRef.current = badgeCount;
                                 setShowInquiryModal(false);
