@@ -77,7 +77,7 @@ jobs:
           curl -s -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
           -H "Content-Type: application/json" \
           -d '{
-            "content": "✅ **Build Successful**\n\n📦 Repo: ${{ github.repository }}\n🌿 Branch: ${{ github.ref_name }}"
+            "content": "✅ **Build Successful**\n\n📦 Repoo: ${{ github.repository }}\n🌿 Branch: ${{ github.ref_name }}"
           }'
 
       - name: Upload build artifact
