@@ -242,14 +242,17 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
                     visitorId: c.visitorId,
                     lastMessage: c.lastMessage,
                     updatedAt: c.updatedAt,
-                    unreadCount: 0,
+                    unreadCount: c.unreadCount || 0,
                     messages: [],
                 };
 
-                // Preserve existing messages if we already have them
+                // Preserve existing messages and take the higher unread count
                 if (prev[c.conversationId]) {
                     newMap[c.conversationId].messages = prev[c.conversationId].messages;
-                    newMap[c.conversationId].unreadCount = prev[c.conversationId].unreadCount;
+                    newMap[c.conversationId].unreadCount = Math.max(
+                        newMap[c.conversationId].unreadCount,
+                        prev[c.conversationId].unreadCount || 0
+                    );
                 }
             });
             return newMap;
