@@ -119,16 +119,16 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
             const cachedLogo = localStorage.getItem('userLogo');
             if (!cachedLogo) {
                 try {
-                    console.log('Sidebar: Fetching user logo from API...');
+                    // console.log('Sidebar: Fetching user logo from API...');
                     const logoData = await getUserLogo();
                     if (logoData) {
-                        console.log('Sidebar: Logo fetched successfully');
+                        // console.log('Sidebar: Logo fetched successfully');
                         localStorage.setItem('userLogo', logoData);
                         setUserLogo(logoData);
                         // Also dispatch event for other components
                         window.dispatchEvent(new Event('userLogoUpdated'));
                     } else {
-                        console.log('Sidebar: No logo returned from API');
+                        // console.log('Sidebar: No logo returned from API');
                     }
                 } catch (err) {
                     console.error("Failed to fetch user logo in Sidebar", err);

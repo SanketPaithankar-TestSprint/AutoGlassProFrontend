@@ -53,7 +53,7 @@ export const InquiryProvider = ({ children }) => {
             const content = Array.isArray(data?.content) ? data.content : [];
             const count = content.filter(item => item?.status === 'NEW').length;
 
-            console.log('InquiryContext: Updating badge count to', count);
+            // console.log('InquiryContext: Updating badge count to', count);
             setBadgeCount(count);
         } catch (error) {
             console.error('Failed to fetch inquiry count', error);
@@ -62,17 +62,17 @@ export const InquiryProvider = ({ children }) => {
 
     // Trigger refresh
     const triggerRefresh = () => {
-        console.log('🔄 InquiryContext: Refresh triggered, current trigger:', refreshTrigger);
+        // console.log('🔄 InquiryContext: Refresh triggered, current trigger:', refreshTrigger);
         setRefreshTrigger(prev => {
             const newValue = prev + 1;
-            console.log('🔄 InquiryContext: Setting refresh trigger to:', newValue);
+            // console.log('🔄 InquiryContext: Setting refresh trigger to:', newValue);
             return newValue;
         });
     };
 
     // Fetch on mount and when refresh is triggered
     useEffect(() => {
-        console.log('🔍 InquiryContext: Fetching inquiry count (trigger:', refreshTrigger, ')');
+        // console.log('🔍 InquiryContext: Fetching inquiry count (trigger:', refreshTrigger, ')');
         fetchInquiryCount();
     }, [refreshTrigger]);
 
@@ -102,10 +102,10 @@ export const InquiryProvider = ({ children }) => {
 
     // Listen to inquiry events
     useEffect(() => {
-        console.log('📡 InquiryContext: Setting up event listeners...');
+        // console.log('📡 InquiryContext: Setting up event listeners...');
 
         const handleInquiryReceived = (event) => {
-            console.log('🔔 InquiryContext: INQUIRY_RECEIVED event detected', event.detail);
+            // console.log('🔔 InquiryContext: INQUIRY_RECEIVED event detected', event.detail);
             const name = event?.detail?.visitorName
                 || event?.detail?.firstName
                 || event?.detail?.name
@@ -115,21 +115,26 @@ export const InquiryProvider = ({ children }) => {
             if (window.location.pathname !== '/service-contact-form') {
                 dismissedCountRef.current = 0;
             }
-            triggerRefresh();
+
+            // Wait 1.5 seconds to allow the backend database to actually save the 
+            // REST service inquiry before we request the new count from the Java API
+            setTimeout(() => {
+                triggerRefresh();
+            }, 1500);
         };
 
         const handleInquiryStatusChanged = (event) => {
-            console.log('🔔 InquiryContext: INQUIRY_STATUS_CHANGED event detected');
+            // console.log('🔔 InquiryContext: INQUIRY_STATUS_CHANGED event detected');
             triggerRefresh();
         };
 
         window.addEventListener('INQUIRY_RECEIVED', handleInquiryReceived);
         window.addEventListener('INQUIRY_STATUS_CHANGED', handleInquiryStatusChanged);
 
-        console.log('✅ InquiryContext: Event listeners registered');
+        // console.log('✅ InquiryContext: Event listeners registered');
 
         return () => {
-            console.log('🔌 InquiryContext: Removing event listeners');
+            // console.log('🔌 InquiryContext: Removing event listeners');
             window.removeEventListener('INQUIRY_RECEIVED', handleInquiryReceived);
             window.removeEventListener('INQUIRY_STATUS_CHANGED', handleInquiryStatusChanged);
         };

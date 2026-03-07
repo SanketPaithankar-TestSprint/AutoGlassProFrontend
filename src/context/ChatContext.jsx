@@ -18,7 +18,7 @@ const primeDing = () => {
         dingAudio.currentTime = 0;
         dingAudio.volume = 0.4;
         dingPrimed = true;
-    }).catch(() => {});
+    }).catch(() => { });
 };
 ['click', 'keydown', 'touchstart'].forEach(e => document.addEventListener(e, primeDing));
 import { MessageOutlined } from '@ant-design/icons';
@@ -111,7 +111,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
 
             const storedConversationId = localStorage.getItem("chat_conversationId");
 
-            console.log("[ChatContext] Initializing PUBLIC connection for visitor:", visitorId);
+            // console.log("[ChatContext] Initializing PUBLIC connection for visitor:", visitorId);
 
             chatSocket = new ChatSocket({
                 url: WS_URL,
@@ -127,7 +127,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
             // ── SHOP MODE ── (initial connect, no conversationId)
             const token = getValidToken();
             if (!token) {
-                console.log("[ChatContext] Shop connection skipped: No token available (User not logged in)");
+                // console.log("[ChatContext] Shop connection skipped: No token available (User not logged in)");
                 return null;
             }
 
@@ -145,11 +145,11 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
             }
 
             if (!userId) {
-                console.log("[ChatContext] Shop connection skipped: Could not determine userId (TenantId)");
+                // console.log("[ChatContext] Shop connection skipped: Could not determine userId (TenantId)");
                 return null;
             }
 
-            console.log("[ChatContext] Connecting SHOP socket for user:", userId);
+            // console.log("[ChatContext] Connecting SHOP socket for user:", userId);
 
             chatSocket = new ChatSocket({
                 url: WS_URL,
@@ -176,7 +176,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
 
         const handleStorageChange = (e) => {
             if (e.key === 'ApiToken' || e.key === 'userId') {
-                console.log("[ChatContext] Auth storage changed, attempting to connect socket...");
+                // console.log("[ChatContext] Auth storage changed, attempting to connect socket...");
                 if (!socketRef.current) {
                     connect();
                 }
@@ -188,7 +188,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
         return () => {
             window.removeEventListener('storage', handleStorageChange);
             if (socketInstance) {
-                console.log("[ChatContext] Disconnecting socket...");
+                // console.log("[ChatContext] Disconnecting socket...");
                 socketInstance.disconnect();
             }
         };
@@ -196,7 +196,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
 
     // ─── Message Router ──────────────────────────────────────────────────────
     const handleIncomingMessage = (data) => {
-        console.log(`[ChatContext] Incoming notification type: "${data.type}"`);
+        // console.log(`[ChatContext] Incoming notification type: "${data.type}"`);
 
         switch (data.type) {
             case "CONVERSATIONS_LIST":
@@ -264,7 +264,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
         const payload = data.data && data.data.messages ? data.data : data;
         let { conversationId, messages } = payload;
 
-        console.log('[ChatContext] handleHistory received:', { conversationId, messageCount: messages?.length });
+        // console.log('[ChatContext] handleHistory received:', { conversationId, messageCount: messages?.length });
 
         if (!Array.isArray(messages)) {
             console.warn('[ChatContext] handleHistory: messages is not an array, ignoring');
@@ -306,7 +306,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
 
     const handleNewMessage = (msg) => {
         const payload = msg.data || msg;
-        console.log("[ChatContext] NEW_MESSAGE payload:", JSON.stringify(payload, null, 2));
+        // console.log("[ChatContext] NEW_MESSAGE payload:", JSON.stringify(payload, null, 2));
         const { conversationId, message, senderType, timestamp, messageId } = payload;
         if (!conversationId) return;
 
@@ -322,7 +322,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
         // Execute side effects outside of the setState callback
         if (isFromCustomer && !isPublic && (!isCurrentlyOpen || !isTabActive)) {
             const senderName = payload.senderName || payload.name || payload.visitorName || payload.customerName || 'Customer';
-            console.log("[ChatContext] Triggering persistent toast for new message from:", senderName);
+            // console.log("[ChatContext] Triggering persistent toast for new message from:", senderName);
 
             // Play chat notification sound (chat not in focus)
             try {
@@ -337,7 +337,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
         if (incomingFromOther && isCurrentlyOpen && isTabActive && dingPrimed) {
             try {
                 dingAudio.currentTime = 0;
-                dingAudio.play().catch(() => {});
+                dingAudio.play().catch(() => { });
             } catch (e) { }
         }
 
@@ -611,6 +611,20 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
         currentSocket.send('sendMessage', payload);
     };
 
+    const sendQuoteNotification = (quoteData) => {
+        const currentSocket = socketRef.current;
+        if (!currentSocket || connectionStatus !== 'connected' || !isPublic) return;
+
+        const vId = localStorage.getItem("visitorId");
+
+        const payload = {
+            visitorId: vId,
+            ...quoteData,
+        };
+        // We use newQuoteRequest as the Lambda action to notify shop about new inquiry
+        currentSocket.send('newQuoteRequest', payload);
+    };
+
     const loadHistory = (conversationId) => {
         const currentSocket = socketRef.current;
         if (!currentSocket || connectionStatus !== 'connected') return;
@@ -814,6 +828,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
             unreadNotificationCount,
             sendMessage,
             sendCustomerMessage,
+            sendQuoteNotification,
             loadHistory,
             markAsRead,
             deleteConversation,

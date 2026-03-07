@@ -122,7 +122,7 @@ const formatOpeningHours = (openHours) => {
 
 const PublicContactContent = () => {
     const { slug } = useParams();
-    const { sendCustomerMessage } = useChat();
+    const { sendCustomerMessage, sendQuoteNotification } = useChat();
 
     // Validation state
     const [isValidating, setIsValidating] = useState(true);
@@ -420,6 +420,21 @@ const PublicContactContent = () => {
             });
 
             await createServiceInquiry(payload);
+
+            if (sendQuoteNotification) {
+                const shopIdToSend = formData.shopId ? parseInt(formData.shopId, 10) : (businessInfo?.shops?.[0]?.shop_id || null);
+                sendQuoteNotification({
+                    tenantId: userId,
+                    shopId: shopIdToSend,
+                    visitorName: `${firstName} ${lastName}`.trim(),
+                    visitorPhone: formData.phone,
+                    visitorEmail: formData.email,
+                    serviceType: formData.serviceType,
+                    city: isMobile ? formData.city : "",
+                    preference: formData.servicePreference === 'Mobile service' ? 'MOBILE' : 'IN_SHOP',
+                    details: formData.message || "New Quote Request"
+                });
+            }
 
             setIsSubmitted(true);
 

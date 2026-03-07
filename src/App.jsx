@@ -190,7 +190,7 @@ function AppContent() {
                 <div className={`flex-1 flex-col flex`}>
                   <ErrorBoundary>
                     <Suspense fallback={
-                      <div className="flex items-center justify-center h-full">
+                      <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh]">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
                       </div>
                     }>
@@ -251,7 +251,7 @@ function AppContent() {
             )}
             <div className={`flex flex-col relative z-10 ${location.pathname === '/auth' ? '' : 'min-h-screen'} ${(location.pathname === '/' || location.pathname === '/auth' || location.pathname === '/vin-decoder') ? '' : 'pt-16'}`}>
               <Suspense fallback={
-                <div className="flex items-center justify-center h-full">
+                <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh]">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
                 </div>
               }>

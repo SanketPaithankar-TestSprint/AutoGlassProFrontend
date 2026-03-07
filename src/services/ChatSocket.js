@@ -27,7 +27,7 @@ class ChatSocket {
 
         const connectionUrl = this.buildUrl();
 
-        console.log(`[ChatSocket] Connecting as ${this.role || 'Unknown'} to: ${connectionUrl}`);
+        // console.log(`[ChatSocket] Connecting as ${this.role || 'Unknown'} to: ${connectionUrl}`);
 
         try {
             // SHOP: Needs JWT in Sec-WebSocket-Protocol (subprotocol)
@@ -46,7 +46,7 @@ class ChatSocket {
         }
 
         this.ws.onopen = () => {
-            console.log("[ChatSocket] Connected");
+            // console.log("[ChatSocket] Connected");
             this.reconnectAttempts = 0;
             this.emit('open');
         };
@@ -61,7 +61,7 @@ class ChatSocket {
         };
 
         this.ws.onclose = (event) => {
-            console.log(`[ChatSocket] Disconnected (Code: ${event.code})`);
+            // console.log(`[ChatSocket] Disconnected (Code: ${event.code})`);
             this.emit('close', event);
             if (!this.isExplicitDisconnect) {
                 this.tryReconnect();
@@ -85,7 +85,7 @@ class ChatSocket {
     send(action, payload = {}) {
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
             const message = { action, ...payload };
-            console.log("[ChatSocket] Sending:", message);
+            // console.log("[ChatSocket] Sending:", message);
             this.ws.send(JSON.stringify(message));
             return true;
         } else {
@@ -107,7 +107,7 @@ class ChatSocket {
     tryReconnect() {
         if (this.reconnectAttempts < this.maxRetries) {
             const timeout = 2000 * Math.pow(1.5, this.reconnectAttempts);
-            console.log(`[ChatSocket] Reconnecting in ${timeout}ms (Attempt ${this.reconnectAttempts + 1}/${this.maxRetries})`);
+            // console.log(`[ChatSocket] Reconnecting in ${timeout}ms (Attempt ${this.reconnectAttempts + 1}/${this.maxRetries})`);
 
             this.emit('statusChange', 'reconnecting');
 

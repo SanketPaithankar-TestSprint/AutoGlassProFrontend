@@ -119,7 +119,7 @@ export const useProfileDataPrefetch = (isAuthed) => {
                     }
                 });
 
-                console.log("Profile data prefetching initiated.");
+                // console.log("Profile data prefetching initiated.");
             } catch (err) {
                 console.error("Error prefetching profile data:", err);
             }
