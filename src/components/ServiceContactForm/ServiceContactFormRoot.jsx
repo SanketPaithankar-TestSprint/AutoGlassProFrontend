@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Table, Card, Tag, Button, Statistic, Row, Col, Typography, Popconfirm, Tooltip, Modal, List, message } from 'antd';
-import { ReloadOutlined, EyeOutlined, DeleteOutlined, UserOutlined, CarOutlined, ToolOutlined, CalendarOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { ReloadOutlined, EyeOutlined, DeleteOutlined, UserOutlined, CarOutlined, ToolOutlined, CalendarOutlined, InfoCircleOutlined, FileAddOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import { getValidToken } from '../../api/getValidToken';
 import urls from '../../config';
 import InquiryDetails from './InquiryDetails';
 import useServiceInquiries from './hooks/useServiceInquiries';
 import useInquiryDetails from './hooks/useInquiryDetails';
 import { useInquiry } from '../../context/InquiryContext';
+import { createQuoteFromInquiry } from '../../utils/createQuoteFromInquiry';
 
 const { Title } = Typography;
 
@@ -41,7 +43,9 @@ const ServiceContactFormRoot = () => {
     const [selectedInquiryId, setSelectedInquiryId] = useState(null);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [currentPage, setCurrentPage] = useState(1);
+    const [creatingQuoteId, setCreatingQuoteId] = useState(null);
 
+    const navigate = useNavigate();
     const { inquiries, loading, total, fetchInquiries, deleteInquiry, markAsRead } = useServiceInquiries();
     const { badgeCount } = useInquiry();
     const prevBadgeRef = useRef(badgeCount);
@@ -67,6 +71,36 @@ const ServiceContactFormRoot = () => {
 
     const handleDelete = async (id) => {
         await deleteInquiry(id);
+    };
+
+    const handleCreateQuote = async (record) => {
+        setCreatingQuoteId(record.id);
+        try {
+            // Fetch the full inquiry detail to get individual fields (firstName, vehicleYear, etc.)
+            // The list API only returns combined strings (name, vehicle).
+            const token = getValidToken();
+            const res = await fetch(`${urls.javaApiUrl}/v1/service-inquiries/${record.id}`, {
+                headers: { 'Authorization': `Bearer ${token}`, 'Accept': '*/*' }
+            });
+            const fullInquiry = res.ok ? await res.json() : record;
+
+            const prefillData = await createQuoteFromInquiry(fullInquiry);
+            console.log('[handleCreateQuote] prefillData:', prefillData);
+
+            // Mark as read (fire-and-forget, same as View Details)
+            markAsRead(record.id);
+
+            // Clear cached quote data so SearchByRoot starts fresh with the prefill
+            localStorage.removeItem('agp_customer_data');
+            localStorage.removeItem('agp_doc_metadata');
+
+            navigate('/search-by-root', { state: { prefillData } });
+        } catch (err) {
+            console.error('[handleCreateQuote] Failed:', err);
+            message.error('Failed to prepare quote. Please try again.');
+        } finally {
+            setCreatingQuoteId(null);
+        }
     };
 
 
@@ -123,7 +157,7 @@ const ServiceContactFormRoot = () => {
         {
             title: 'Actions',
             key: 'actions',
-            width: 100,
+            width: 130,
             fixed: 'right',
             render: (text, record) => (
                 <div className="flex gap-2">
@@ -132,6 +166,15 @@ const ServiceContactFormRoot = () => {
                             icon={<EyeOutlined />}
                             onClick={() => handleViewDetails(record)}
                             size="small"
+                        />
+                    </Tooltip>
+                    <Tooltip title="Create Quote">
+                        <Button
+                            icon={<FileAddOutlined />}
+                            onClick={() => handleCreateQuote(record)}
+                            size="small"
+                            loading={creatingQuoteId === record.id}
+                            style={{ color: '#16a34a', borderColor: '#16a34a' }}
                         />
                     </Tooltip>
                     <Popconfirm
@@ -233,6 +276,12 @@ const ServiceContactFormRoot = () => {
                                 </div>}
                                 actions={[
                                     <Button icon={<EyeOutlined />} onClick={() => handleViewDetails(item)}>View</Button>,
+                                    <Button
+                                        icon={<FileAddOutlined />}
+                                        onClick={() => handleCreateQuote(item)}
+                                        loading={creatingQuoteId === item.id}
+                                        style={{ color: '#16a34a', borderColor: '#16a34a' }}
+                                    >Create Quote</Button>,
                                     <Popconfirm
                                         title="Delete Inquiry"
                                         description="Are you sure?"

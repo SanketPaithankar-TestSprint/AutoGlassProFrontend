@@ -449,6 +449,7 @@ const SearchByRoot = () => {
       setIsSaved(false);
       setDocMetadata(null);
       localStorage.removeItem("agp_doc_metadata");
+      resetStore(); // Clear any stale parts/items from previous sessions
       if (incomingAiContactFormId) {
         setAiContactFormId(incomingAiContactFormId);
       }
@@ -483,26 +484,37 @@ const SearchByRoot = () => {
         const newVehicleInfo = {
           year: vehicle.vehicleYear?.toString() || "",
           make: vehicle.vehicleMake || "",
+          makeId: vehicle.makeId || null,
           model: vehicle.vehicleModel || "",
+          makeModelId: vehicle.makeModelId || null,
+          vehModifierId: vehicle.vehModifierId || null,
           style: vehicle.vehicleStyle || "",
           bodyType: vehicle.bodyType || "",
-          vin: vehicle.vin || ""
+          vin: vehicle.vin || "",
+          vehId: vehicle.vehicleId || null,
         };
         setVehicleInfo(newVehicleInfo);
 
-        // Sync with customer data vehicle fields
+        // Sync with customer data vehicle fields + IDs
         setCustomerData(prev => ({
           ...prev,
           vehicleYear: newVehicleInfo.year,
           vehicleMake: newVehicleInfo.make,
           vehicleModel: newVehicleInfo.model,
           vehicleStyle: newVehicleInfo.style,
-          bodyType: newVehicleInfo.bodyType
+          bodyType: newVehicleInfo.bodyType,
+          makeId: newVehicleInfo.makeId,
+          modelId: newVehicleInfo.makeModelId,
+          vehModifierId: newVehicleInfo.vehModifierId,
+          vehId: newVehicleInfo.vehId,
+          vin: newVehicleInfo.vin || prev.vin,
         }));
 
-        // Force model/vehicle update in YMM component if we have IDs (might need more logic in YMM)
         if (vehicle.vehicleId) {
           setVehId(vehicle.vehicleId);
+        }
+        if (vehicle.makeModelId) {
+          setModelId(vehicle.makeModelId);
         }
       }
 

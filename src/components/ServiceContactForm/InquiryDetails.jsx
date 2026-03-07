@@ -1,6 +1,9 @@
-import React from 'react';
-import { Descriptions, Card, Tag, Typography, Spin, Image } from 'antd';
+import React, { useState } from 'react';
+import { Descriptions, Card, Tag, Typography, Spin, Image, Button, message } from 'antd';
+import { FileAddOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import useSecureImage from './hooks/useSecureImage';
+import { createQuoteFromInquiry } from '../../utils/createQuoteFromInquiry';
 
 const { Title } = Typography;
 
@@ -22,6 +25,26 @@ const SecureImage = ({ attachment }) => {
 };
 
 const InquiryDetails = ({ inquiry }) => {
+    const navigate = useNavigate();
+    const [creatingQuote, setCreatingQuote] = useState(false);
+
+    const handleCreateQuote = async () => {
+        setCreatingQuote(true);
+        try {
+            const prefillData = await createQuoteFromInquiry(inquiry);
+            console.log('[InquiryDetails] prefillData:', prefillData);
+            // Clear cached quote data so SearchByRoot starts fresh with the prefill
+            localStorage.removeItem('agp_customer_data');
+            localStorage.removeItem('agp_doc_metadata');
+            navigate('/search-by-root', { state: { prefillData } });
+        } catch (err) {
+            console.error('[InquiryDetails] Create quote failed:', err);
+            message.error('Failed to prepare quote. Please try again.');
+        } finally {
+            setCreatingQuote(false);
+        }
+    };
+
     if (!inquiry) return null;
     return (
         <Card
@@ -86,6 +109,18 @@ const InquiryDetails = ({ inquiry }) => {
                     {new Date(inquiry.createdAt).toLocaleString()}
                 </Descriptions.Item>
             </Descriptions>
+
+            <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
+                <Button
+                    type="primary"
+                    icon={<FileAddOutlined />}
+                    loading={creatingQuote}
+                    onClick={handleCreateQuote}
+                    style={{ backgroundColor: '#7c3aed', borderColor: '#7c3aed' }}
+                >
+                    Create Quote
+                </Button>
+            </div>
         </Card>
     );
 };

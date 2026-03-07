@@ -14,9 +14,6 @@ export const getPosCd = (glass) => {
 };
 
 export const getSideCd = (glass) => {
-    const prefix = getPrefixCd(glass);
-    if (prefix === "DW" || prefix === "DB") return "NULL";
-
     const raw = (glass?.side || "").toUpperCase();
     if (raw.startsWith("LEFT") || raw === "L") return "L";
     if (raw.startsWith("RIGHT") || raw === "R") return "R";

@@ -210,9 +210,12 @@ export default function CarGlassViewer({
         setInitialLoadDone(true); // Mark initial load as complete
 
       } catch (err) {
-        console.error(err);
-        setError(err.message || "Failed to fetch glass data");
-        setInitialLoadDone(true); // Mark as done even on error
+        console.warn('[CarGlassViewer] Glass types fetch failed (will show empty state):', err.message);
+        // Don't surface API errors to the user — just show an empty state.
+        // A 422 is expected when vehicle data is incomplete (e.g. no body style yet).
+        setGlassData([]);
+        setGlassGroups({});
+        setInitialLoadDone(true);
       }
     };
 
@@ -567,13 +570,8 @@ export default function CarGlassViewer({
     );
   }
 
-  if (error) {
-    return (
-      <div className="bg-red-50 border border-red-200 p-4 text-xs text-red-600">
-        {error}
-      </div>
-    );
-  }
+  // Errors are intentionally not shown — just render an empty state.
+  // API errors (e.g. 422 when body style not yet selected) are expected and silent.
 
   return (
     <div className="bg-transparent p-0 h-full flex flex-col">
