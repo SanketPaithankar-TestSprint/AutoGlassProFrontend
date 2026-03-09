@@ -101,12 +101,10 @@ const SidebarFilters = ({
                         mode="single"
                         style={{ width: '100%' }}
                         placeholder="Select document types"
-                        value={documentTypeFilter}
-                        defaultValue={"Quote"}
-                        onChange={setDocumentTypeFilter}
+                        value={documentTypeFilter === 'all' ? null : documentTypeFilter}
+                        onChange={(val) => setDocumentTypeFilter(val || 'all')}
                         options={documentTypeOptions.filter(opt => opt.value !== 'all')}
                         allowClear
-                        maxTagCount={2}
                     />
                 </Panel>
 
@@ -263,9 +261,9 @@ const SidebarFilters = ({
                 <div className="mt-auto pt-4 border-t border-slate-200">
                     <p className="text-xs text-slate-500 mb-2">Active Filters:</p>
                     <div className="flex flex-wrap gap-1">
-                        {documentTypeFilter && documentTypeFilter.length > 0 && (
-                            <Tag color="purple" closable onClose={() => setDocumentTypeFilter([])}>
-                                Type: {documentTypeFilter.length}
+                        {documentTypeFilter && documentTypeFilter !== 'all' && (
+                            <Tag color="purple" closable onClose={() => setDocumentTypeFilter('all')}>
+                                Type: {documentTypeFilter}
                             </Tag>
                         )}
                         {statusFilter && statusFilter.length > 0 && (
