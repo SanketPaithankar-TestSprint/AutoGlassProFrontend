@@ -1,39 +1,39 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import PageHead from '../PageHead';
 
 const SitemapPage = () => {
+    const baseUrl = 'https://www.autopaneai.com';
     const sitemapSections = [
         {
             title: 'Main Pages',
             links: [
-                { path: '/', title: 'Home', description: 'Welcome to AutoPane AI' },
-                { path: '/features', title: 'Features', description: 'Explore our powerful features' },
-                { path: '/pricing', title: 'Pricing', description: 'View our pricing plans' },
-                { path: '/about', title: 'About', description: 'Learn more about us' },
-                { path: '/contact', title: 'Contact', description: 'Get in touch with us' },
-                { path: '/blogs', title: 'Blogs', description: 'Read our latest articles and updates' },
-                { path: '/vin-decoder', title: 'VIN Decoder', description: 'Decode any vehicle VIN instantly using official NHTSA data' },
+                { path: `${baseUrl}/`, title: 'Home', description: 'Welcome to AutoPane AI' },
+                { path: `${baseUrl}/features`, title: 'Features', description: 'Explore our powerful features' },
+                { path: `${baseUrl}/pricing`, title: 'Pricing', description: 'View our pricing plans' },
+                { path: `${baseUrl}/about`, title: 'About', description: 'Learn more about us' },
+                { path: `${baseUrl}/contact`, title: 'Contact', description: 'Get in touch with us' },
+                { path: `${baseUrl}/blogs`, title: 'Blogs', description: 'Read our latest articles and updates' },
+                { path: `${baseUrl}/vin-decoder`, title: 'VIN Decoder', description: 'Decode any vehicle VIN instantly using official NHTSA data' },
             ]
         },
         {
             title: 'Blogs',
-            sectionPath: '/blogs',
+            sectionPath: `${baseUrl}/blogs`,
             links: [
-                { path: '/blogs/6-figure-mobile-auto-glass-business', title: '6 Figure Mobile Auto Glass Business' },
-                { path: '/blogs/auto-glass-startup-guide', title: 'Auto Glass Startup Guide' },
-                { path: '/blogs/hidden-cost-of-manual-quoting-auto-glass', title: 'Hidden Cost Of Manual Quoting Auto Glass' },
-                { path: '/blogs/maximize-auto-glass-profit-margins', title: 'Maximize Auto Glass Profit Margins' },
-                { path: '/blogs/mobile-field-service-auto-glass', title: 'Mobile Field Service Auto Glass' },
-                { path: '/blogs/vin-decoding-for-auto-glass-accuracy', title: 'VIN Decoding For Auto Glass Accuracy' },
+                { path: `${baseUrl}/blogs/6-figure-mobile-auto-glass-business`, title: '6 Figure Mobile Auto Glass Business' },
+                { path: `${baseUrl}/blogs/auto-glass-startup-guide`, title: 'Auto Glass Startup Guide' },
+                { path: `${baseUrl}/blogs/hidden-cost-of-manual-quoting-auto-glass`, title: 'Hidden Cost Of Manual Quoting Auto Glass' },
+                { path: `${baseUrl}/blogs/maximize-auto-glass-profit-margins`, title: 'Maximize Auto Glass Profit Margins' },
+                { path: `${baseUrl}/blogs/mobile-field-service-auto-glass`, title: 'Mobile Field Service Auto Glass' },
+                { path: `${baseUrl}/blogs/vin-decoding-for-auto-glass-accuracy`, title: 'VIN Decoding For Auto Glass Accuracy' },
             ]
         },
         {
             title: 'Legal & Information',
             links: [
-                { path: '/privacy-policy', title: 'Privacy Policy', description: 'Our privacy policy and data protection' },
-                { path: '/terms-of-service', title: 'Terms of Service', description: 'Terms and conditions for using the APAI platform' },
+                { path: `${baseUrl}/privacy-policy`, title: 'Privacy Policy', description: 'Our privacy policy and data protection' },
+                { path: `${baseUrl}/terms-of-service`, title: 'Terms of Service', description: 'Terms and conditions for using the APAI platform' },
             ]
         }
     ];
@@ -88,9 +88,9 @@ const SitemapPage = () => {
                         <div key={index}>
                             <h2 className="text-xl font-semibold text-slate-800 mb-6 pb-2 border-b border-slate-200">
                                 {section.sectionPath ? (
-                                    <Link to={section.sectionPath} className="hover:underline decoration-2 underline-offset-4">
+                                    <a href={section.sectionPath} className="hover:underline decoration-2 underline-offset-4" target="_blank" rel="noopener noreferrer">
                                         {section.title}
-                                    </Link>
+                                    </a>
                                 ) : (
                                     section.title
                                 )}
@@ -98,7 +98,7 @@ const SitemapPage = () => {
                             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                                 {section.links.map((link, linkIndex) => (
                                     <li key={linkIndex} className="group">
-                                        <Link to={link.path} className="flex flex-col h-full bg-gradient-to-br from-white/50 to-white/30 p-4 md:p-5 rounded-lg transition-all duration-300 border border-white/40 hover:border-violet-300 hover:bg-gradient-to-br hover:from-white/70 hover:to-white/50 hover:shadow-md cursor-pointer">
+                                        <a href={link.path} className="flex flex-col h-full bg-gradient-to-br from-white/50 to-white/30 p-4 md:p-5 rounded-lg transition-all duration-300 border border-white/40 hover:border-violet-300 hover:bg-gradient-to-br hover:from-white/70 hover:to-white/50 hover:shadow-md cursor-pointer" target="_blank" rel="noopener noreferrer">
                                             <div className="flex flex-col gap-3">
                                                 <span className="text-violet-600 font-semibold text-base md:text-lg group-hover:underline decoration-2 underline-offset-2 transition-all">
                                                     {link.title}
@@ -109,7 +109,7 @@ const SitemapPage = () => {
                                                     {link.description}
                                                 </p>
                                             )}
-                                        </Link>
+                                        </a>
                                     </li>
                                 ))}
                             </ul>
