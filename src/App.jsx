@@ -85,6 +85,13 @@ function AppContent() {
   const { isAuthenticated, setIsAuthenticated } = useAuth();
   const { fetchInquiryCount } = useInquiry();
 
+  // Redirect uppercase URLs to lowercase for SEO and consistency
+  useEffect(() => {
+    if (location.pathname !== '/' && location.pathname !== location.pathname.toLowerCase()) {
+      navigate(location.pathname.toLowerCase() + location.search + location.hash, { replace: true });
+    }
+  }, [location.pathname, navigate]);
+
   const isContactPage = /^\/contact\/[^/]+$/.test(location.pathname);
   const isChatPage = /^\/contact\/[^/]+\/chat$/.test(location.pathname);
   const isServiceView = location.pathname.startsWith('/service-inquiry-view/');
@@ -200,9 +207,9 @@ function AppContent() {
                         <Route path="/customers" element={<CustomersRoot />} />
                         <Route path="/search-by-root" element={<SearchByRoot />} />
                         <Route path="/schedule" element={<Schedule />} />
-                        <Route path="/Profile" element={<Profile />} />
+                        <Route path="/profile" element={<Profile />} />
 
-                        <Route path="/Order" element={<OrderPage />} />
+                        <Route path="/order" element={<OrderPage />} />
                         <Route path="/pricing" element={<PricingPage />} />
                         <Route path="/features" element={<FeaturesPage />} />
                         <Route path="/features/:sectionId" element={<FeatureSectionDetail />} />
@@ -262,9 +269,9 @@ function AppContent() {
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/contact" element={<ContactPage />} />
                   <Route path="/search-by-root" element={<SearchByRoot />} />
-                  <Route path="/Profile" element={<Profile />} />
+                  <Route path="/profile" element={<Profile />} />
 
-                  <Route path="/Order" element={<OrderPage />} />
+                  <Route path="/order" element={<OrderPage />} />
                   <Route path="/pricing" element={<PricingPage />} />
                   <Route path="/auth" element={<AuthRoot />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
