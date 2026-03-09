@@ -19,5 +19,5 @@ Disallow: /search-by-root
 Disallow: /service-contact-form
 
 # Sitemap location
-Sitemap: https://autopaneai.com/sitemap.xml
-Sitemap: https://autopaneai.com/sitemap.html
+Sitemap: https://www.autopaneai.com/sitemap.xml
+Sitemap: https://www.autopaneai.com/sitemap.html
