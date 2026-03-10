@@ -9,7 +9,6 @@ import {
     Row,
     Col,
     Space,
-    Upload,
     notification,
     Result,
     Alert
@@ -17,8 +16,7 @@ import {
 import {
     UserOutlined,
     MailOutlined,
-    PhoneOutlined,
-    UploadOutlined
+    PhoneOutlined
 } from '@ant-design/icons';
 import axios from 'axios';
 import urls from '../config';
@@ -164,21 +162,14 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                 state: values.state,
                 postalCode: values.postalCode,
                 country: values.country,
-                businessLicenseNumber: values.businessLicenseNumber,
                 userType: values.userType,
-                businessLicenseDocument: values.businessLicenseDocument,
                 ein: null
             };
 
             // Append all user data fields to FormData
             Object.keys(userData).forEach(key => {
                 if (userData[key] !== null && userData[key] !== undefined) {
-                    // special handling for file
-                    if (key === 'businessLicenseDocument' && userData[key].originFileObj) {
-                        formData.append(key, userData[key].originFileObj);
-                    } else if (key !== 'businessLicenseDocument') {
-                        formData.append(key, userData[key]);
-                    }
+                    formData.append(key, userData[key]);
                 }
             });
 
@@ -322,40 +313,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                         </Form.Item>
                     </Col>
                 </Row>
-                <Row gutter={16}>
-                    <Col xs={24} sm={12}>
-                        <Form.Item
-                            name="businessLicenseNumber"
-                            label={t('auth.businessLicenseNumber')}
-                            rules={[{ required: true, message: 'Please input business license number!' }]}
-                            style={formItemStyle}
-                        >
-                            <Input className="custom-api-input" />
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} sm={12}>
-                        <Form.Item
-                            name="businessLicenseDocument"
-                            label={t('auth.businessLicenseDocument')}
-                            valuePropName="file"
-                            getValueFromEvent={(e) => {
-                                if (Array.isArray(e)) {
-                                    return e;
-                                }
-                                return e?.file;
-                            }}
-                            style={formItemStyle}
-                        >
-                            <Upload
-                                beforeUpload={() => false}
-                                maxCount={1}
-                                accept=".pdf,.png,.jpg,.jpeg"
-                            >
-                                <Button icon={<UploadOutlined />}>{t('auth.clickToUpload')}</Button>
-                            </Upload>
-                        </Form.Item>
-                    </Col>
-                </Row>
+
 
                 <Row gutter={16}>
                     <Col xs={24} sm={12}>
@@ -423,25 +381,24 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                     <Input className="custom-api-input" />
                 </Form.Item>
 
-                {/* Country, State, City, Zip Reordered */}
+                {/* City, State, Zip, Country */}
                 <Row gutter={16}>
                     <Col xs={24} sm={12}>
                         <Form.Item
-                            name="country"
-                            label={t('customers.country')}
-                            rules={[{ required: true, message: 'Please select country!' }]}
-                            initialValue="USA"
+                            name="city"
+                            label={t('customers.city')}
+                            rules={[{ required: true, message: 'Please enter or select city!' }]}
                             style={formItemStyle}
                         >
                             <Select
-                                onChange={handleCountryChange}
                                 showSearch
                                 optionFilterProp="label"
                                 className="custom-api-input"
+                                placeholder={t('auth.selectCity')}
                             >
-                                {COUNTRIES.map(country => (
-                                    <Select.Option key={country.value} value={country.value}>
-                                        {country.label}
+                                {availableCities.map(city => (
+                                    <Select.Option key={city.value} value={city.value}>
+                                        {city.label}
                                     </Select.Option>
                                 ))}
                             </Select>
@@ -473,33 +430,34 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                 <Row gutter={16}>
                     <Col xs={24} sm={12}>
                         <Form.Item
-                            name="city"
-                            label={t('customers.city')}
-                            rules={[{ required: true, message: 'Please enter or select city!' }]}
-                            style={formItemStyle}
-                        >
-                            <Select
-                                showSearch
-                                optionFilterProp="label"
-                                className="custom-api-input"
-                                placeholder={t('auth.selectCity')}
-                            >
-                                {availableCities.map(city => (
-                                    <Select.Option key={city.value} value={city.value}>
-                                        {city.label}
-                                    </Select.Option>
-                                ))}
-                            </Select>
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} sm={12}>
-                        <Form.Item
                             name="postalCode"
                             label={t('customers.zipCode')}
                             rules={[{ required: true, message: 'Please input zip code!' }]}
                             style={formItemStyle}
                         >
                             <Input className="custom-api-input" />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24} sm={12}>
+                        <Form.Item
+                            name="country"
+                            label={t('customers.country')}
+                            rules={[{ required: true, message: 'Please select country!' }]}
+                            initialValue="USA"
+                            style={formItemStyle}
+                        >
+                            <Select
+                                onChange={handleCountryChange}
+                                showSearch
+                                optionFilterProp="label"
+                                className="custom-api-input"
+                            >
+                                {COUNTRIES.map(country => (
+                                    <Select.Option key={country.value} value={country.value}>
+                                        {country.label}
+                                    </Select.Option>
+                                ))}
+                            </Select>
                         </Form.Item>
                     </Col>
                 </Row>
