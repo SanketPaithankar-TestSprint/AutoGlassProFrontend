@@ -55,7 +55,7 @@ const OpenRoot = () => {
     // Filter states
     const [searchTerm, setSearchTerm] = useState('');
     // Default document type filter to 'quote'
-    const [documentTypeFilter, setDocumentTypeFilter] = useState(['quote']);
+    const [documentTypeFilter, setDocumentTypeFilter] = useState('quote');
     const [statusFilter, setStatusFilter] = useState([]);
     const [dateRangeFilter, setDateRangeFilter] = useState('all');
     const [customDateRange, setCustomDateRange] = useState(null);
@@ -94,7 +94,7 @@ const OpenRoot = () => {
                     setLoading(false);
                     return;
                 }
-                const data = await getServiceDocuments(token, currentPage, pageSize);
+                const data = await getServiceDocuments(token, currentPage, pageSize, documentTypeFilter);
                 const docs = data?.content || [];
                 const total = data?.totalElements || 0;
 
@@ -110,7 +110,7 @@ const OpenRoot = () => {
         };
 
         fetchDocuments();
-    }, [currentPage, pageSize, message]);
+    }, [currentPage, pageSize, documentTypeFilter, message]);
 
     // Helper function to check if notifications were shown recently (within 6 hours)
     const wasNotificationShownRecently = () => {
@@ -182,7 +182,6 @@ const OpenRoot = () => {
     useEffect(() => {
         const filters = {
             searchTerm,
-            documentType: documentTypeFilter?.length > 0 ? documentTypeFilter : 'all',
             status: statusFilter?.length > 0 ? statusFilter : 'all',
             dateRange: dateRangeFilter,
             customStartDate: customDateRange?.[0]?.toDate?.() || customDateRange?.[0],
@@ -225,7 +224,6 @@ const OpenRoot = () => {
             // Check if local results are insufficient (less than 5)
             const filters = {
                 searchTerm,
-                documentType: documentTypeFilter?.length > 0 ? documentTypeFilter : 'all',
                 status: statusFilter?.length > 0 ? statusFilter : 'all',
                 dateRange: dateRangeFilter,
                 customStartDate: customDateRange?.[0]?.toDate?.() || customDateRange?.[0],
@@ -267,7 +265,7 @@ const OpenRoot = () => {
     // Calculate active filter count
     const activeFilterCount = useMemo(() => {
         let count = 0;
-        if (documentTypeFilter?.length > 0) count++;
+        if (documentTypeFilter && documentTypeFilter !== 'all') count++;
         if (statusFilter?.length > 0) count++;
         if (dateRangeFilter && dateRangeFilter !== 'all') count++;
         if (amountRange[0] > 0 || amountRange[1] < 100000) count++;
@@ -278,7 +276,7 @@ const OpenRoot = () => {
     // Clear all filters
     const handleClearAllFilters = useCallback(() => {
         setSearchTerm('');
-        setDocumentTypeFilter([]);
+        setDocumentTypeFilter('all');
         setStatusFilter([]);
         setDateRangeFilter('all');
         setCustomDateRange(null);

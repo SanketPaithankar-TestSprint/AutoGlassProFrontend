@@ -73,27 +73,6 @@ const filterDocumentsByStatus = (documents, status) => {
 };
 
 /**
- * Filter documents by document type (multi-select support)
- * @param {Array} documents - Array of documents
- * @param {string|Array} type - Document type string or array of types
- * @returns {Array} Filtered documents
- */
-const filterDocumentsByType = (documents, type) => {
-    if (!type || type === 'all' || (Array.isArray(type) && type.length === 0)) {
-        return documents;
-    }
-
-    // Support for multi-select (array of types)
-    if (Array.isArray(type)) {
-        return documents.filter(doc =>
-            type.some(t => doc.documentType?.toLowerCase() === t.toLowerCase())
-        );
-    }
-
-    return documents.filter(doc => doc.documentType?.toLowerCase() === type.toLowerCase());
-};
-
-/**
  * Filter documents by amount range
  * @param {Array} documents - Array of documents
  * @param {number} from - Minimum amount (default: 0)
@@ -398,7 +377,6 @@ const getDateRangeOptions = () => [
 export {
     // Filter functions
     filterDocumentsByStatus,
-    filterDocumentsByType,
     filterDocumentsByAmountRange,
     filterDocumentsByDateRange,
     filterDocumentsBySearch,

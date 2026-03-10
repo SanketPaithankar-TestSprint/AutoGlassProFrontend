@@ -1,8 +1,11 @@
 // src/api/getServiceDocuments.js
 import urls from "../config";
 
-export async function getServiceDocuments(token, page = 0, size = 10) {
-    const url = `${urls.javaApiUrl}/v1/service-documents/my?page=${page}&size=${size}`;
+export async function getServiceDocuments(token, page = 0, size = 10, documentType = null) {
+    let url = `${urls.javaApiUrl}/v1/service-documents/my?page=${page}&size=${size}`;
+    if (documentType && documentType !== 'all') {
+        url += `&documenttype=${documentType.toUpperCase()}`;
+    }
     try {
         const response = await fetch(url, {
             method: "GET",
