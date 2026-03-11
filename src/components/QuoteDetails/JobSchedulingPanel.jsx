@@ -5,6 +5,7 @@ import dayjs from 'dayjs';
 import DatePickerHelper from './DatePickerHelper';
 import { updateServiceDocumentStatus } from '../../api/updateServiceDocumentStatus';
 import { App } from 'antd';
+import { useTranslation } from 'react-i18next';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -35,6 +36,7 @@ const JobSchedulingPanel = ({
     onStatusChange = () => { }
 }) => {
     const { message } = App.useApp();
+    const { t } = useTranslation();
 
     // Helper to handle date changes
     const handleDateChange = (field, date) => {
@@ -127,10 +129,10 @@ const JobSchedulingPanel = ({
         try {
             await updateServiceDocumentStatus(documentNumber, newStatus);
             onStatusChange(newStatus);
-            message.success(`Status updated to ${newStatus}`);
+            message.success(t('quoteDetails.jobScheduling.statusUpdatedTo', { status: t(`quoteDetails.jobScheduling.status.${newStatus}`) }));
         } catch (error) {
             console.error("Failed to update status", error);
-            message.error("Failed to update status");
+            message.error(t('quoteDetails.jobScheduling.failedToUpdateStatus'));
         }
     };
 
@@ -143,7 +145,7 @@ const JobSchedulingPanel = ({
                 title={
                     <span className="flex items-center gap-2 text-xs !font-semibold text-slate-800 uppercase tracking-wide">
                         <CalendarOutlined className="text-violet-500" />
-                        Appointment
+                        {t('quoteDetails.jobScheduling.appointment')}
                     </span>
                 }
                 className="shadow-sm"
@@ -156,8 +158,8 @@ const JobSchedulingPanel = ({
                             <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
                                 <span className="flex items-center gap-1">
                                     <CheckCircleOutlined />
-                                    <span className="hidden sm:inline">Service Document Status</span>
-                                    <span className="sm:hidden">Status</span>
+                                    <span className="hidden sm:inline">{t('quoteDetails.jobScheduling.serviceDocumentStatus')}</span>
+                                    <span className="sm:hidden">{t('quoteDetails.jobScheduling.statusShort')}</span>
                                 </span>
                             </label>
                             <Select
@@ -169,13 +171,13 @@ const JobSchedulingPanel = ({
                                 {STATUS_OPTIONS.map(option => (
                                     <Option key={option.value} value={option.value}>
                                         <span className={`flex items-center gap-2`}>
-                                            {option.label}
+                                            {t(`quoteDetails.jobScheduling.status.${option.value}`)}
                                         </span>
                                     </Option>
                                 ))}
                             </Select>
                             <p className="text-xs text-slate-500 mt-1">
-                                update status
+                                {t('quoteDetails.jobScheduling.updateStatus')}
                             </p>
                         </div>
                     )}
@@ -184,14 +186,14 @@ const JobSchedulingPanel = ({
                     {/* Scheduled Date */}
                     <div>
                         <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
-                            Scheduled Date & Time <span className="text-red-500">*</span>
+                            {t('quoteDetails.jobScheduling.scheduledDateTime')} <span className="text-red-500">*</span>
                         </label>
                         <DatePickerHelper
                             value={getDayjsValue(schedulingData.scheduledDate)}
                             onChange={(date) => handleDateChange('scheduledDate', date)}
                         />
                         <p className="text-xs text-slate-500 mt-1">
-                            Job start date and time
+                            {t('quoteDetails.jobScheduling.jobStartDateTime')}
                         </p>
                     </div>
 
@@ -200,8 +202,8 @@ const JobSchedulingPanel = ({
                         <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
                             <span className="flex items-center gap-1">
                                 <UserOutlined />
-                                <span className="hidden sm:inline">Assigned Technician</span>
-                                <span className="sm:hidden">Technician</span>
+                                <span className="hidden sm:inline">{t('quoteDetails.jobScheduling.assignedTechnician')}</span>
+                                <span className="sm:hidden">{t('quoteDetails.jobScheduling.technicianShort')}</span>
                             </span>
                         </label>
                         <Select
@@ -222,7 +224,7 @@ const JobSchedulingPanel = ({
                             ))}
                         </Select>
                         <p className="text-xs text-slate-500 mt-1">
-                            Optional assignment
+                            {t('quoteDetails.jobScheduling.optionalAssignment')}
                         </p>
                     </div>
 
@@ -231,8 +233,8 @@ const JobSchedulingPanel = ({
                         <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
                             <span className="flex items-center gap-1">
                                 <EnvironmentOutlined />
-                                <span className="hidden sm:inline">Service Address</span>
-                                <span className="sm:hidden">Address</span>
+                                <span className="hidden sm:inline">{t('quoteDetails.jobScheduling.serviceAddress')}</span>
+                                <span className="sm:hidden">{t('quoteDetails.jobScheduling.addressShort')}</span>
                                 {isServiceAddressRequired && <span className="text-red-500">*</span>}
                             </span>
                         </label>
@@ -247,8 +249,8 @@ const JobSchedulingPanel = ({
                         />
                         <p className="text-xs text-slate-500 mt-1 break-words">
                             {isServiceAddressRequired
-                                ? 'Address for service'
-                                : 'Default: Shop Location'}
+                                ? t('quoteDetails.jobScheduling.addressForService')
+                                : t('quoteDetails.jobScheduling.defaultShopLocation')}
                         </p>
                     </div>
                 </div>

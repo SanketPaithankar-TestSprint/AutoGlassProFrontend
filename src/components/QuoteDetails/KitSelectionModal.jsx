@@ -1,6 +1,7 @@
 import React from 'react';
 import { Modal, Radio, Space, Tag } from 'antd'; // Removed redundant Tabs
 import { ToolOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Kit Selection Modal
@@ -21,6 +22,7 @@ const KitSelectionModal = ({
     kits = [],
     partNumber = ''
 }) => {
+    const { t } = useTranslation();
     const [standardPrices, setStandardPrices] = React.useState({});
     const [selectedStandardKit, setSelectedStandardKit] = React.useState(null);
 
@@ -89,7 +91,7 @@ const KitSelectionModal = ({
             title={
                 <div className="flex items-center gap-2">
                     <ToolOutlined className="text-violet-600" />
-                    <span>Select Installation Kit</span>
+                    <span>{t('kitSelection.selectInstallationKit', 'Select Installation Kit')}</span>
                 </div>
             }
             open={visible}
@@ -108,7 +110,7 @@ const KitSelectionModal = ({
         >
             <div className="py-2">
                 <p className="text-sm text-slate-600 mb-4">
-                    Select an installation kit for <strong>{partNumber}</strong>:
+                    {t('kitSelection.selectKitFor', 'Select an installation kit for')} <strong>{partNumber}</strong>:
                 </p>
 
                 {/* Desktop Table View */}
@@ -117,8 +119,8 @@ const KitSelectionModal = ({
                         <thead className="bg-slate-50">
                             <tr>
                                 <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider w-10"></th>
-                                <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Description</th>
-                                <th className="px-4 py-2 text-right text-xs font-medium text-slate-500 uppercase tracking-wider w-32">Price</th>
+                                <th className="px-4 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{t('kitSelection.description', 'Description')}</th>
+                                <th className="px-4 py-2 text-right text-xs font-medium text-slate-500 uppercase tracking-wider w-32">{t('kitSelection.price', 'Price')}</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-slate-200">
@@ -156,7 +158,7 @@ const KitSelectionModal = ({
                             ) : (
                                 <tr>
                                     <td colSpan="3" className="px-4 py-8 text-center text-slate-500">
-                                        No authorized kits available for this part.
+                                        {t('kitSelection.noKitsAvailable', 'No authorized kits available for this part.')}
                                     </td>
                                 </tr>
                             )}
@@ -181,7 +183,7 @@ const KitSelectionModal = ({
                                         <div className="flex-1">
                                             <p className="text-sm font-medium text-slate-700 mb-2">{kit.desc}</p>
                                             <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                                                <span className="text-xs text-slate-500">Price:</span>
+                                                <span className="text-xs text-slate-500">{t('kitSelection.price', 'Price')}:</span>
                                                 <div className="flex items-center">
                                                     <span className="text-slate-400 text-sm mr-1">$</span>
                                                     <input
@@ -201,7 +203,7 @@ const KitSelectionModal = ({
                         })
                     ) : (
                         <div className="border border-slate-200 rounded-lg p-8 text-center text-slate-500">
-                            No authorized kits available for this part.
+                            {t('kitSelection.noKitsAvailable', 'No authorized kits available for this part.')}
                         </div>
                     )}
                 </div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Tabs, Button, Dropdown } from 'antd';
 import { DeleteOutlined, DownOutlined, IdcardOutlined, CalendarOutlined, SafetyCertificateOutlined, PaperClipOutlined, CreditCardOutlined, FileDoneOutlined, FileTextOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 
 const DocumentEditorHeader = ({
   activeTab,
@@ -9,6 +10,8 @@ const DocumentEditorHeader = ({
   setManualDocType,
   handleGlobalClear
 }) => {
+  const { t } = useTranslation();
+  
   // Style configuration for transparent tabs
   const stylesObject = {
     root: {
@@ -33,17 +36,17 @@ const DocumentEditorHeader = ({
   const docTypeItems = [
     {
       key: 'Quote',
-      label: 'Quote',
+      label: t('quoteDetails.docTypeQuote', 'Quote'),
       onClick: () => setManualDocType('Quote'),
     },
     {
       key: 'Work Order',
-      label: 'Work Order',
+      label: t('quoteDetails.docTypeWorkOrder', 'Work Order'),
       onClick: () => setManualDocType('Work Order'),
     },
     {
       key: 'Invoice',
-      label: 'Invoice',
+      label: t('quoteDetails.docTypeInvoice', 'Invoice'),
       onClick: () => setManualDocType('Invoice'),
     },
   ];
@@ -54,7 +57,10 @@ const DocumentEditorHeader = ({
       key: 'quote',
       label: (
         <div className="flex items-center">
-          {manualDocType || 'Quote'}
+          {manualDocType === 'Quote' ? t('quoteDetails.docTypeQuote', 'Quote') : 
+           manualDocType === 'Work Order' ? t('quoteDetails.docTypeWorkOrder', 'Work Order') : 
+           manualDocType === 'Invoice' ? t('quoteDetails.docTypeInvoice', 'Invoice') : 
+           (manualDocType || t('quoteDetails.docTypeQuote', 'Quote'))}
           <Dropdown menu={{ items: docTypeItems }} trigger={['click']} placement="bottomLeft">
             <button
               onClick={(e) => e.stopPropagation()}
@@ -71,56 +77,63 @@ const DocumentEditorHeader = ({
     {
       key: 'customer',
       label: (
-        <span>Customer Information</span>
+        <span>{t('quoteDetails.customerInformation', 'Customer Information')}</span>
       ),
       children: null,
     },
     {
       key: 'scheduling',
       label: (
-        <span>Appointment</span>
+        <span>{t('quoteDetails.appointment', 'Appointment')}</span>
       ),
       children: null,
     },
     {
       key: 'insurance',
       label: (
-        <span>Insurance</span>
+        <span>{t('quoteDetails.insurance', 'Insurance')}</span>
       ),
       children: null,
     },
     {
       key: 'attachment',
       label: (
-        <span>Attachment</span>
+        <span>{t('quoteDetails.attachments', 'Attachment')}</span>
       ),
       children: null,
     },
     {
       key: 'payment',
       label: (
-        <span>Payment</span>
+        <span>{t('quoteDetails.payment', 'Payment')}</span>
       ),
       children: null,
     },
     {
       key: 'notes',
       label: (
-        <span>Notes</span>
+        <span>{t('quoteDetails.notes', 'Notes')}</span>
       ),
       children: null,
     },
   ];
 
   // Tab button grid items for mobile/tablet
+  const getGridDocTypeLabel = () => {
+    if (manualDocType === 'Quote') return t('quoteDetails.docTypeQuote', 'Quote');
+    if (manualDocType === 'Work Order') return t('quoteDetails.docTypeWorkOrder', 'Work Order');
+    if (manualDocType === 'Invoice') return t('quoteDetails.docTypeInvoice', 'Invoice');
+    return manualDocType || t('quoteDetails.docTypeQuote', 'Quote');
+  };
+
   const gridTabItems = [
-    { key: 'quote', icon: FileTextOutlined, label: manualDocType || 'Quote', title: manualDocType || 'Quote' },
-    { key: 'customer', icon: IdcardOutlined, label: 'Customer', title: 'Customer Information' },
-    { key: 'scheduling', icon: CalendarOutlined, label: 'Appointment', title: 'Appointment' },
-    { key: 'insurance', icon: SafetyCertificateOutlined, label: 'Insurance', title: 'Insurance' },
-    { key: 'attachment', icon: PaperClipOutlined, label: 'Attachment', title: 'Attachment' },
-    { key: 'payment', icon: CreditCardOutlined, label: 'Payment', title: 'Payment' },
-    { key: 'notes', icon: FileDoneOutlined, label: 'Notes', title: 'Notes' },
+    { key: 'quote', icon: FileTextOutlined, label: getGridDocTypeLabel(), title: getGridDocTypeLabel() },
+    { key: 'customer', icon: IdcardOutlined, label: t('quoteDetails.customerInformation', 'Customer'), title: t('quoteDetails.customerInformation', 'Customer Information') },
+    { key: 'scheduling', icon: CalendarOutlined, label: t('quoteDetails.appointment', 'Appointment'), title: t('quoteDetails.appointment', 'Appointment') },
+    { key: 'insurance', icon: SafetyCertificateOutlined, label: t('quoteDetails.insurance', 'Insurance'), title: t('quoteDetails.insurance', 'Insurance') },
+    { key: 'attachment', icon: PaperClipOutlined, label: t('quoteDetails.attachments', 'Attachment'), title: t('quoteDetails.attachments', 'Attachment') },
+    { key: 'payment', icon: CreditCardOutlined, label: t('quoteDetails.payment', 'Payment'), title: t('quoteDetails.payment', 'Payment') },
+    { key: 'notes', icon: FileDoneOutlined, label: t('quoteDetails.notes', 'Notes'), title: t('quoteDetails.notes', 'Notes') },
   ];
 
   return (
@@ -154,7 +167,7 @@ const DocumentEditorHeader = ({
               size="small"
               className="font-medium text-xs md:text-sm whitespace-nowrap"
             >
-              <span className="hidden md:inline">Clear All</span>
+              <span className="hidden md:inline">{t('quoteDetails.clearAll', 'Clear All')}</span>
             </Button>
           </div>
         </div>
@@ -187,10 +200,10 @@ const DocumentEditorHeader = ({
           <button
             onClick={handleGlobalClear}
             className="flex flex-col items-center gap-0.5 px-1 py-1 rounded-md transition-all text-[10px] font-medium bg-transparent text-red-600 hover:bg-red-50 hover:text-red-700"
-            title="Clear All"
+            title={t('quoteDetails.clearAll', 'Clear All')}
           >
             <DeleteOutlined className="text-base text-red-600" />
-            <span className="text-[9px] text-center line-clamp-1 text-red-600">Clear All</span>
+            <span className="text-[9px] text-center line-clamp-1 text-red-600">{t('quoteDetails.clearAll', 'Clear All')}</span>
           </button>
         </div>
 
@@ -199,7 +212,7 @@ const DocumentEditorHeader = ({
           {/* Document Type Dropdown */}
           <Dropdown menu={{ items: docTypeItems }} trigger={['click']} placement="bottomLeft">
             <button className="flex-1 flex items-center justify-between px-3 py-1.5 bg-white border border-slate-300 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
-              <span>{manualDocType || 'Quote'}</span>
+              <span>{getGridDocTypeLabel()}</span>
               <DownOutlined className="text-xs ml-2" />
             </button>
           </Dropdown>

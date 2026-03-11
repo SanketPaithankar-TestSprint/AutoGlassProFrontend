@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import ReactDOM from "react-dom";
 import { Select, Modal, Dropdown } from "antd";
 import config from "../../config";
+import { useTranslation } from "react-i18next";
 
 const { Option, OptGroup } = Select;
 import { DeleteOutlined, DownOutlined } from "@ant-design/icons";
@@ -21,6 +22,7 @@ export default function CarGlassViewer({
   externalRemovedPartKey, // New prop: when set, remove this part from internal state
   preSelectedGlassCodes = [], // New prop: array of glass codes to auto-select
 }) {
+  const { t } = useTranslation();
   // 1) Glass catalog (left column)
   const [loading, setLoading] = useState(false); // Don't show loading on initial mount
   const [initialLoadDone, setInitialLoadDone] = useState(false); // Track if initial glass types load is done
@@ -391,7 +393,7 @@ export default function CarGlassViewer({
       return (
         <div className="flex flex-col items-center justify-center h-full text-slate-400 italic p-4 text-center">
           <p className="text-sm">
-            Select one or more glass types from the left to view available parts.
+            {t('searchBy.selectOneGlassType', 'Select one or more glass types from the left to view available parts.')}
           </p>
         </div>
       );
@@ -580,7 +582,7 @@ export default function CarGlassViewer({
         {/* Left column: Diagram & Glass Selection */}
         <div className="flex flex-col items-center justify-start bg-white shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg border-0 pr-0 w-full md:w-1/3 shrink-0 relative z-0">
           <div className="w-full mb-2 relative px-2 pt-2">
-            <label className="text-xs !font-semibold block mb-2">Select Glass Type</label>
+            <label className="text-xs !font-semibold block mb-2">{t('searchBy.selectGlassType', 'Select Glass Type')}</label>
 
 
             {/* ... inside CarGlassViewer component ... */}
@@ -601,7 +603,7 @@ export default function CarGlassViewer({
                     <span className="text-sm text-slate-700 truncate">
                       {selectedGlassCodes.length > 0
                         ? selectedGlassCodes.map(c => getFormattedLabel(c)).join(", ")
-                        : "Select Glass Type"
+                        : t('searchBy.selectGlassType', 'Select Glass Type')
                       }
                     </span>
                   </div>
@@ -751,8 +753,8 @@ export default function CarGlassViewer({
           <div className="px-2 py-1 bg-white flex items-center justify-between">
             <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wide">
               {selectedGlassCodes.length > 0
-                ? `Available Options (${selectedGlassCodes.length} Selected)`
-                : "Available Options"
+                ? `${t('searchBy.availableOptions', 'Available Options')} (${selectedGlassCodes.length} Selected)`
+                : t('searchBy.availableOptions', 'Available Options')
               }
             </h4>
           </div>

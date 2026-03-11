@@ -1,9 +1,11 @@
 import React from 'react';
-
 import { Switch, DatePicker } from 'antd';
 import dayjs from 'dayjs';
+import { useTranslation } from 'react-i18next';
 
 export default function InsuranceDetails({ data, onChange, enabled, onToggle }) {
+    const { t } = useTranslation();
+
     const handleChange = (field, value) => {
         onChange({
             ...data,
@@ -17,7 +19,7 @@ export default function InsuranceDetails({ data, onChange, enabled, onToggle }) 
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-violet-600">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
                 </svg>
-                Include Insurance Details
+                {t('insurance.includeInsuranceDetails', 'Include Insurance Details')}
                 <Switch
                     size="small"
                     className="ml-2 bg-slate-300"
@@ -31,43 +33,43 @@ export default function InsuranceDetails({ data, onChange, enabled, onToggle }) 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                         {/* Provider Name */}
                         <div>
-                            <label className="block text-[11px] font-medium text-slate-500 mb-1">Provider Name</label>
+                            <label className="block text-[11px] font-medium text-slate-500 mb-1">{t('insurance.providerName', 'Provider Name')}</label>
                             <input
                                 type="text"
                                 value={data.insuranceProviderName || ''}
                                 onChange={(e) => handleChange('insuranceProviderName', e.target.value)}
                                 className="w-full h-8 rounded border border-slate-300 px-2 text-xs focus:ring-1 focus:ring-violet-500 outline-none"
-                                placeholder="e.g. Geico, State Farm"
+                                placeholder={t('insurance.providerNamePlaceholder', 'e.g. Geico, State Farm')}
                             />
                         </div>
 
                         {/* Claim Number (Required) */}
                         <div>
-                            <label className="block text-[11px] font-medium text-slate-500 mb-1">Claim Number <span className="text-red-500">*</span></label>
+                            <label className="block text-[11px] font-medium text-slate-500 mb-1">{t('insurance.claimNumber', 'Claim Number')} <span className="text-red-500">*</span></label>
                             <input
                                 type="text"
                                 value={data.claimNumber || ''}
                                 onChange={(e) => handleChange('claimNumber', e.target.value)}
                                 className={`w-full h-8 rounded border px-2 text-xs focus:ring-1 focus:ring-violet-500 outline-none ${!data.claimNumber ? 'border-amber-300 bg-amber-50' : 'border-slate-300'}`}
-                                placeholder="Required"
+                                placeholder={t('insurance.required', 'Required')}
                             />
                         </div>
 
                         {/* Policy Number */}
                         <div>
-                            <label className="block text-[11px] font-medium text-slate-500 mb-1">Policy Number</label>
+                            <label className="block text-[11px] font-medium text-slate-500 mb-1">{t('insurance.policyNumber', 'Policy Number')}</label>
                             <input
                                 type="text"
                                 value={data.policyNumber || ''}
                                 onChange={(e) => handleChange('policyNumber', e.target.value)}
                                 className="w-full h-8 rounded border border-slate-300 px-2 text-xs focus:ring-1 focus:ring-violet-500 outline-none"
-                                placeholder="Policy #"
+                                placeholder={t('insurance.policyNumberShort', 'Policy #')}
                             />
                         </div>
 
                         {/* Deductible */}
                         <div>
-                            <label className="block text-[11px] font-medium text-slate-500 mb-1">Deductible ($)</label>
+                            <label className="block text-[11px] font-medium text-slate-500 mb-1">{t('insurance.deductible', 'Deductible ($)')}</label>
                             <input
                                 type="number"
                                 value={data.deductibleAmount || ''}
@@ -79,26 +81,26 @@ export default function InsuranceDetails({ data, onChange, enabled, onToggle }) 
 
                         {/* Incident Date */}
                         <div>
-                            <label className="block text-[11px] font-medium text-slate-500 mb-1">Incident Date</label>
+                            <label className="block text-[11px] font-medium text-slate-500 mb-1">{t('insurance.incidentDate', 'Incident Date')}</label>
                             <DatePicker
                                 value={data.incidentDate ? dayjs(data.incidentDate) : null}
                                 onChange={(date) => handleChange('incidentDate', date ? date.format('YYYY-MM-DD') : null)}
                                 className="w-full h-8 text-xs"
                                 format="MM/DD/YYYY"
-                                placeholder="Select date"
+                                placeholder={t('insurance.selectDate', 'Select date')}
                                 size="small"
                             />
                         </div>
 
                         {/* Odometer */}
                         <div>
-                            <label className="block text-[11px] font-medium text-slate-500 mb-1">Odometer</label>
+                            <label className="block text-[11px] font-medium text-slate-500 mb-1">{t('insurance.odometer', 'Odometer')}</label>
                             <input
                                 type="number"
                                 value={data.odometerReading || ''}
                                 onChange={(e) => handleChange('odometerReading', e.target.value)}
                                 className="w-full h-8 rounded border border-slate-300 px-2 text-xs focus:ring-1 focus:ring-violet-500 outline-none"
-                                placeholder="Miles"
+                                placeholder={t('insurance.miles', 'Miles')}
                             />
                         </div>
                     </div>
@@ -107,3 +109,5 @@ export default function InsuranceDetails({ data, onChange, enabled, onToggle }) 
         </div >
     );
 }
+
+

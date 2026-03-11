@@ -3,6 +3,7 @@ import { Select, Modal, Button } from "antd";
 import { DeleteOutlined, LoadingOutlined } from "@ant-design/icons";
 import CurrencyInput from "../common/CurrencyInput";
 import { ADAS_TYPES } from "../../const/adasTypes";
+import { useTranslation } from "react-i18next";
 
 // Lazy load heavy modal
 const KitSelectionModal = lazy(() => import("./KitSelectionModal"));
@@ -43,6 +44,7 @@ export default function QuoteItemsTable({
     handleKitSelection,
     handleCloseKitSelection,
 }) {
+    const { t } = useTranslation();
     // Mobile: Expanded description state
     const [expandedDescriptions, setExpandedDescriptions] = useState({});
 
@@ -50,7 +52,7 @@ export default function QuoteItemsTable({
         <div className="bg-white shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg mb-3 sm:mb-4">
             {/* Glass Selection Modal */}
             <Modal
-                title={<span className="text-[#7E5CFE] ">Select Glass Type</span>}
+                title={<span className="text-[#7E5CFE] ">{t('quoteDetails.selectGlassType')}</span>}
                 open={glassSelectionModal.visible}
                 onCancel={handleCloseGlassSelection}
                 footer={null}
@@ -59,17 +61,17 @@ export default function QuoteItemsTable({
             >
                 <div className="py-2">
                     <p className="text-sm text-slate-600 mb-3">
-                        Multiple glass types found for <strong>{glassSelectionModal.partNo}</strong>. Please select one:
+                        {t('quoteDetails.multipleGlassTypesFound')} <strong>{glassSelectionModal.partNo}</strong>. {t('quoteDetails.pleaseSelectOne')}
                     </p>
                     <div className="overflow-x-auto max-h-[350px] overflow-y-auto border border-slate-200 rounded-lg">
                         <table className="min-w-full divide-y divide-slate-200">
                             <thead className="bg-slate-50 sticky top-0">
                                 <tr>
-                                    <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Part</th>
-                                    <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Description</th>
-                                    <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">OEM</th>
-                                    <th className="px-3 py-2 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Price</th>
-                                    <th className="px-3 py-2 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">Kits</th>
+                                    <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{t('quoteDetails.part')}</th>
+                                    <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{t('quoteDetails.description')}</th>
+                                    <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">{t('quoteDetails.oem')}</th>
+                                    <th className="px-3 py-2 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">{t('quoteDetails.price')}</th>
+                                    <th className="px-3 py-2 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">{t('quoteDetails.kits')}</th>
                                     <th className="px-2 py-2 w-8"></th>
                                 </tr>
                             </thead>
@@ -144,12 +146,12 @@ export default function QuoteItemsTable({
                 <table className="min-w-full divide-y divide-slate-100">
                     <thead className="bg-slate-50 sticky top-0 z-10">
                         <tr className="text-left text-sm sm:text-base font-bold text-slate-700 tracking-tight">
-                            <th className="px-1 sm:px-2 py-2 w-[100px] sm:w-[160px] bg-slate-50">Part</th>
-                            <th className="px-1 sm:px-2 py-2 bg-slate-50">Description</th>
-                            <th className="px-1 sm:px-2 py-2 w-[80px] sm:w-[110px] bg-slate-50 hidden md:table-cell">Manufacturer</th>
-                            <th className="px-1 sm:px-2 py-2 text-right w-[60px] sm:w-[70px] bg-slate-50">Qty</th>
-                            <th className="px-1 sm:px-2 py-2 text-right w-[80px] sm:w-[100px] bg-slate-50">List</th>
-                            <th className="px-1 sm:px-2 py-2 text-right w-[80px] sm:w-[100px] bg-slate-50">Amount</th>
+                            <th className="px-1 sm:px-2 py-2 w-[100px] sm:w-[160px] bg-slate-50">{t('quoteDetails.part')}</th>
+                            <th className="px-1 sm:px-2 py-2 bg-slate-50">{t('quoteDetails.description')}</th>
+                            <th className="px-1 sm:px-2 py-2 w-[80px] sm:w-[110px] bg-slate-50 hidden md:table-cell">{t('quoteDetails.manufacturer')}</th>
+                            <th className="px-1 sm:px-2 py-2 text-right w-[60px] sm:w-[70px] bg-slate-50">{t('quoteDetails.qty')}</th>
+                            <th className="px-1 sm:px-2 py-2 text-right w-[80px] sm:w-[100px] bg-slate-50">{t('quoteDetails.list')}</th>
+                            <th className="px-1 sm:px-2 py-2 text-right w-[80px] sm:w-[100px] bg-slate-50">{t('quoteDetails.amount')}</th>
                             <th className="px-1 sm:px-2 py-2 w-5 bg-slate-50"></th>
                         </tr>
                     </thead>
@@ -204,7 +206,7 @@ export default function QuoteItemsTable({
                                                         }
                                                     }}
                                                     className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all font-medium text-sm"
-                                                    placeholder="Part No"
+                                                    placeholder={t('quoteDetails.partNo')}
                                                 />
                                             ) : (
                                                 <input
@@ -222,7 +224,7 @@ export default function QuoteItemsTable({
                                                 className="w-full text-sm custom-select-borderless"
                                                 size="small"
                                                 bordered={false}
-                                                placeholder="Select Type"
+                                                placeholder={t('quoteDetails.selectType')}
                                                 value={it.adasCode || null}
                                                 onChange={(val) => handleAdasChange(it.id, val)}
                                                 options={ADAS_TYPES.map(type => ({
@@ -237,7 +239,7 @@ export default function QuoteItemsTable({
                                                     type="text"
                                                     value={it.description || ''}
                                                     onChange={(e) => updateItem(it.id, "description", e.target.value)}
-                                                    placeholder="Enter service details"
+                                                    placeholder={t('quoteDetails.enterServiceDetails')}
                                                     className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all text-sm"
                                                 />
                                             ) : (
@@ -245,10 +247,13 @@ export default function QuoteItemsTable({
                                                     className="w-full text-sm custom-select-borderless"
                                                     size="small"
                                                     bordered={false}
-                                                    placeholder="Select Service"
+                                                    placeholder={t('quoteDetails.selectService', 'Select Service')}
                                                     value={serviceSelectValue}
                                                     onChange={(val) => handleServiceChange(it.id, val)}
-                                                    options={serviceOptionsWithCustom}
+                                                    options={serviceOptionsWithCustom.map(opt => ({
+                                                        ...opt,
+                                                        label: opt.value === '__custom__' ? opt.label : t(`quoteDetails.services.${opt.value}`, opt.label)
+                                                    }))}
                                                     dropdownMatchSelectWidth={false}
                                                     optionFilterProp="label"
                                                     showSearch
@@ -260,7 +265,7 @@ export default function QuoteItemsTable({
                                                     type="text"
                                                     value={it.description || ''}
                                                     onChange={(e) => updateItem(it.id, "description", e.target.value)}
-                                                    placeholder="Enter labor details"
+                                                    placeholder={t('quoteDetails.enterLaborDetails')}
                                                     className="w-full h-7 px-1 sm:px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-700 transition-all text-sm"
                                                 />
                                             ) : (
@@ -268,10 +273,13 @@ export default function QuoteItemsTable({
                                                     className="w-full text-sm custom-select-borderless"
                                                     size="small"
                                                     bordered={false}
-                                                    placeholder="Select Labor"
+                                                    placeholder={t('quoteDetails.selectLabor', 'Select Labor')}
                                                     value={laborSelectValue}
                                                     onChange={(val) => handleLaborChange(it.id, val)}
-                                                    options={laborOptionsWithCustom}
+                                                    options={laborOptionsWithCustom.map(opt => ({
+                                                        ...opt,
+                                                        label: opt.value === '__custom__' ? opt.label : t(`quoteDetails.labors.${opt.value}`, opt.label)
+                                                    }))}
                                                     dropdownMatchSelectWidth={false}
                                                     optionFilterProp="label"
                                                     showSearch
@@ -315,7 +323,7 @@ export default function QuoteItemsTable({
                                         {it.isLoadingVendorPrice ? (
                                             <div className="flex items-center justify-end gap-2 h-7">
                                                 <LoadingOutlined className="text-violet-600" style={{ fontSize: '14px' }} />
-                                                <span className="text-xs text-slate-500">Fetching...</span>
+                                                <span className="text-xs text-slate-500">{t('quoteDetails.fetching')}</span>
                                             </div>
                                         ) : (
                                             <CurrencyInput
@@ -328,7 +336,7 @@ export default function QuoteItemsTable({
                                     </td>
                                     {showDeleteButton && (
                                         <td className="px-1 py-0.5 text-center align-middle" rowSpan={rowSpan}>
-                                            <button type="button" onClick={() => handleDeleteItem(it.id)} className="text-red-500 hover:text-red-700 transition-colors p-1 rounded hover:bg-red-50" title="Remove Item">
+                                            <button type="button" onClick={() => handleDeleteItem(it.id)} className="text-red-500 hover:text-red-700 transition-colors p-1 rounded hover:bg-red-50" title={t('quoteDetails.removeItem')}>
                                                 <DeleteOutlined style={{ fontSize: '14px' }} />
                                             </button>
                                         </td>
@@ -407,7 +415,7 @@ export default function QuoteItemsTable({
                                                         }
                                                     }}
                                                     className="w-full h-7 px-2 rounded border border-transparent hover:border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-transparent text-slate-900 font-mono font-bold text-sm break-words"
-                                                    placeholder="Part No"
+                                                    placeholder={t('quoteDetails.partNo')}
                                                 />
                                             ) : (
                                                 <input
@@ -423,7 +431,7 @@ export default function QuoteItemsTable({
                                                 type="button"
                                                 onClick={() => handleDeleteItem(it.id)}
                                                 className="h-7 w-7 flex items-center justify-center text-red-500 bg-red-50 hover:bg-red-100 hover:text-red-700 transition-all rounded-md flex-shrink-0"
-                                                title="Remove Item"
+                                                title={t('quoteDetails.removeItem')}
                                             >
                                                 <DeleteOutlined style={{ fontSize: '14px' }} />
                                             </button>
@@ -433,7 +441,7 @@ export default function QuoteItemsTable({
                                     {/* ROW 2: Manufacturer + Qty + List Price + Amount */}
                                     <div className="grid grid-cols-4 gap-2 mb-3 pb-3 border-b border-slate-100">
                                         <div>
-                                            <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest mb-1">Mfg</p>
+                                            <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest mb-1">{t('quoteDetails.mfg')}</p>
                                             <input
                                                 value={it.manufacturer}
                                                 onChange={(e) => updateItem(it.id, "manufacturer", e.target.value)}
@@ -443,7 +451,7 @@ export default function QuoteItemsTable({
                                             />
                                         </div>
                                         <div>
-                                            <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest mb-1 text-center">Qty</p>
+                                            <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest mb-1 text-center">{t('quoteDetails.qty')}</p>
                                             <input
                                                 type="number"
                                                 value={it.qty}
@@ -453,7 +461,7 @@ export default function QuoteItemsTable({
                                             />
                                         </div>
                                         <div>
-                                            <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest mb-1 text-right">List</p>
+                                            <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest mb-1 text-right">{t('quoteDetails.list')}</p>
                                             <CurrencyInput
                                                 value={it.listPrice}
                                                 onChange={(val) => updateItem(it.id, "listPrice", val)}
@@ -463,7 +471,7 @@ export default function QuoteItemsTable({
                                             />
                                         </div>
                                         <div>
-                                            <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest mb-1 text-right">Amt</p>
+                                            <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest mb-1 text-right">{t('quoteDetails.amt')}</p>
                                             {it.isLoadingVendorPrice ? (
                                                 <div className="flex items-center justify-end h-6">
                                                     <LoadingOutlined style={{ fontSize: '12px' }} className="text-violet-600" />
@@ -486,7 +494,7 @@ export default function QuoteItemsTable({
                                                 className="w-full text-xs custom-select-borderless"
                                                 size="small"
                                                 bordered={false}
-                                                placeholder="Select Type"
+                                                placeholder={t('quoteDetails.selectType')}
                                                 value={it.adasCode || null}
                                                 onChange={(val) => handleAdasChange(it.id, val)}
                                                 options={ADAS_TYPES.map(type => ({
@@ -502,7 +510,7 @@ export default function QuoteItemsTable({
                                                     type="text"
                                                     value={it.description || ''}
                                                     onChange={(e) => updateItem(it.id, "description", e.target.value)}
-                                                    placeholder="Enter service details"
+                                                    placeholder={t('quoteDetails.enterServiceDetails')}
                                                     className="w-full min-h-16 px-2 py-1.5 rounded border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-white text-slate-700 text-xs break-words whitespace-pre-wrap resize-none"
                                                 />
                                             ) : (
@@ -510,10 +518,13 @@ export default function QuoteItemsTable({
                                                     className="w-full text-xs custom-select-borderless"
                                                     size="small"
                                                     bordered={false}
-                                                    placeholder="Select Service"
+                                                    placeholder={t('quoteDetails.selectService')}
                                                     value={serviceSelectValue}
                                                     onChange={(val) => handleServiceChange(it.id, val)}
-                                                    options={serviceOptionsWithCustom}
+                                                    options={serviceOptionsWithCustom.map(opt => ({
+                                                        ...opt,
+                                                        label: opt.value === '__custom__' ? opt.label : t(`quoteDetails.services.${opt.value}`, opt.label)
+                                                    }))}
                                                     dropdownMatchSelectWidth={false}
                                                     optionFilterProp="label"
                                                     showSearch
@@ -526,7 +537,7 @@ export default function QuoteItemsTable({
                                                     type="text"
                                                     value={it.description || ''}
                                                     onChange={(e) => updateItem(it.id, "description", e.target.value)}
-                                                    placeholder="Enter labor details"
+                                                    placeholder={t('quoteDetails.enterLaborDetails')}
                                                     className="w-full min-h-16 px-2 py-1.5 rounded border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none bg-white text-slate-700 text-xs break-words whitespace-pre-wrap resize-none"
                                                 />
                                             ) : (
@@ -534,10 +545,13 @@ export default function QuoteItemsTable({
                                                     className="w-full text-xs custom-select-borderless"
                                                     size="small"
                                                     bordered={false}
-                                                    placeholder="Select Labor"
+                                                    placeholder={t('quoteDetails.selectLabor')}
                                                     value={laborSelectValue}
                                                     onChange={(val) => handleLaborChange(it.id, val)}
-                                                    options={laborOptionsWithCustom}
+                                                    options={laborOptionsWithCustom.map(opt => ({
+                                                        ...opt,
+                                                        label: opt.value === '__custom__' ? opt.label : t(`quoteDetails.labors.${opt.value}`, opt.label)
+                                                    }))}
                                                     dropdownMatchSelectWidth={false}
                                                     optionFilterProp="label"
                                                     showSearch
@@ -564,7 +578,7 @@ export default function QuoteItemsTable({
                     })
                 ) : (
                     <div className="text-center py-8 text-slate-500">
-                        <p className="text-sm">No items added yet</p>
+                        <p className="text-sm">{t('quoteDetails.noItemsAddedYet')}</p>
                     </div>
                 )}
             </div>
