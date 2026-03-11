@@ -1,9 +1,11 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 /**
  * CustomerSummary renders the vendor pricing data and document metadata section.
  */
 export default function CustomerSummary({ items, docMetadata, formatDate }) {
+    const { t } = useTranslation();
     return (
         <div className="flex flex-col gap-2 flex-1 lg:order-1">
             {/* Vendor Pricing Data Display */}
@@ -20,10 +22,10 @@ export default function CustomerSummary({ items, docMetadata, formatDate }) {
 
                         return (
                             <div key={item.id} className={`text-xs font-medium ${colorClass}`}>
-                                {vendorData.industryCode && <>IndustryCode: {vendorData.industryCode} • </>}
-                                Price: ${item.unitPrice} •
-                                {vendorData.leadTime && <>LeadTime: {vendorData.leadTime} • </>}
-                                Manufacturer: {vendorData.manufacturer || 'Pilkington'}
+                                {vendorData.industryCode && <>{t('quoteDetails.industryCode')}: {vendorData.industryCode} • </>}
+                                {t('quoteDetails.price')}: ${item.unitPrice} •
+                                {vendorData.leadTime && <>{t('quoteDetails.leadTime')}: {vendorData.leadTime} • </>}
+                                {t('quoteDetails.manufacturer')}: {vendorData.manufacturer || 'Pilkington'}
                             </div>
                         );
                     })}
@@ -34,13 +36,13 @@ export default function CustomerSummary({ items, docMetadata, formatDate }) {
             {docMetadata && (
                 <div className="flex flex-col gap-2 mt-2">
                     <div className="flex flex-col">
-                        <span className="text-[10px] text-sky-700 font-bold uppercase tracking-wider mb-0.5">Document #</span>
+                        <span className="text-[10px] text-sky-700 font-bold uppercase tracking-wider mb-0.5">{t('quoteDetails.documentNumber')}</span>
                         <span className="font-mono text-lg font-bold text-slate-800">{docMetadata.documentNumber}</span>
                     </div>
                     <div className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
-                        <span className="uppercase text-[10px] font-bold text-slate-400 tracking-wider self-center">Created</span>
+                        <span className="uppercase text-[10px] font-bold text-slate-400 tracking-wider self-center">{t('quoteDetails.created')}</span>
                         <span className="font-medium text-slate-700">{formatDate(docMetadata.createdAt)}</span>
-                        <span className="uppercase text-[10px] font-bold text-slate-400 tracking-wider self-center">Updated</span>
+                        <span className="uppercase text-[10px] font-bold text-slate-400 tracking-wider self-center">{t('quoteDetails.updated')}</span>
                         <span className="font-medium text-slate-700">{formatDate(docMetadata.updatedAt)}</span>
                     </div>
                 </div>

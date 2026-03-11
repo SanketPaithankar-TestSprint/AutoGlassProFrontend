@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Select, Spin, message, Button } from "antd";
 import { getModels, getBodyTypes, getVehicleDetails, getMakes, getModelsReverse } from "../../api/getModels";
+import { useTranslation } from "react-i18next";
 
 const buildYears = (start = 1949) => {
   const current = new Date().getFullYear();
@@ -20,6 +21,7 @@ export default function SearchByYMM({
   minYear = 1949,
   showSearch = true,
 }) {
+  const { t } = useTranslation();
   // --- YMM state with IDs ---
   const [year, setYear] = useState(value?.year || null);
 
@@ -865,11 +867,11 @@ export default function SearchByYMM({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {/* Year */}
           <div className="w-full">
-            <label className="block text-gray-800 text-xs font-medium mb-1">Year</label>
+            <label className="block text-gray-800 text-xs font-medium mb-1">{t('searchBy.year', 'Year')}</label>
             <Select
               size="middle"
               className="w-full !rounded-lg"
-              placeholder="Year"
+              placeholder={t('searchBy.year', 'Year')}
               value={year}
               onChange={handleYear}
               disabled={disabled}
@@ -884,11 +886,11 @@ export default function SearchByYMM({
 
           {/* Make */}
           <div className="w-full">
-            <label className="block text-gray-800 text-xs font-medium mb-1">Make</label>
+            <label className="block text-gray-800 text-xs font-medium mb-1">{t('searchBy.make', 'Make')}</label>
             <Select
               size="middle"
               className="w-full !rounded-lg"
-              placeholder="Make"
+              placeholder={t('searchBy.make', 'Make')}
               value={makeId}
               onChange={handleMake}
               onDropdownVisibleChange={handleMakeDropdownVisibleChange}
@@ -914,11 +916,11 @@ export default function SearchByYMM({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {/* Model */}
           <div className="w-full">
-            <label className="block text-gray-800 text-xs font-medium mb-1">Model</label>
+            <label className="block text-gray-800 text-xs font-medium mb-1">{t('searchBy.model', 'Model')}</label>
             <Select
               size="middle"
               className="w-full !rounded-lg"
-              placeholder="Model"
+              placeholder={t('searchBy.model', 'Model')}
               value={currentModelValue}
               onChange={handleModel}
               onDropdownVisibleChange={handleModelDropdownVisibleChange}
@@ -938,11 +940,11 @@ export default function SearchByYMM({
 
           {/* Body Type */}
           <div className="w-full">
-            <label className="block text-gray-800 text-xs font-medium mb-1">Body Type</label>
+            <label className="block text-gray-800 text-xs font-medium mb-1">{t('searchBy.bodyType', 'Body Type')}</label>
             <Select
               size="middle"
               className="w-full !rounded-lg"
-              placeholder="Body Type"
+              placeholder={t('searchBy.bodyType', 'Body Type')}
               value={bodyType ? String(bodyType) : undefined}
               onChange={(val) => setBodyType(Number(val))}
               onDropdownVisibleChange={handleBodyTypeDropdownVisibleChange}
@@ -976,7 +978,7 @@ export default function SearchByYMM({
               block
               className="w-full bg-[#3B82F6] hover:!bg-[#7E5CFE] text-white hover:!text-white font-semibold text-sm border-0 transition-colors !rounded-md shadow-sm flex-1 h-full min-h-[40px]"
             >
-              Find Parts
+              {t('searchBy.findParts', 'Find Parts')}
             </Button>
           </div>
         </div>

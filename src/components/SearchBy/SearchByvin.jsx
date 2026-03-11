@@ -3,6 +3,7 @@ import { Input } from "antd";
 import { SearchOutlined, ScanOutlined } from "@ant-design/icons";
 import config from "../../config";
 import VinScanner from "./VinScanner";
+import { useTranslation } from "react-i18next";
 
 const VIN_REGEX = /^[A-HJ-NPR-Z0-9]{17}$/;
 
@@ -15,6 +16,7 @@ export default function SearchByVin({
   defaultVin = "",
   onDecoded,
 }) {
+  const { t } = useTranslation();
   const [vin, setVin] = useState(defaultVin.toUpperCase().slice(0, 17));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -110,7 +112,7 @@ export default function SearchByVin({
           onChange={handleChange}
           maxLength={17}
           size="middle"
-          placeholder="17-character VIN"
+          placeholder={t('searchBy.vinPlaceholder', '17-character VIN')}
           aria-label="Vehicle Identification Number"
           prefix={<SearchOutlined className="text-slate-400 group-focus-within:text-blue-500" />}
           className="
@@ -145,7 +147,7 @@ export default function SearchByVin({
           onClick={handleDecode}
           disabled={loading || !isValid}
         >
-          {loading ? "..." : "Decode"}
+          {loading ? "..." : t('searchBy.decode', 'Decode')}
         </button>
       </div>
 
@@ -153,7 +155,7 @@ export default function SearchByVin({
 
         {vin.length > 0 && !isValid && (
           <span className="text-rose-400">
-            VIN must be 17 characters and cannot contain I, O, or Q.
+            {t('searchBy.vinError', 'VIN must be 17 characters and cannot contain I, O, or Q.')}
           </span>
         )}
         {error && <span className="text-rose-400">{error}</span>}

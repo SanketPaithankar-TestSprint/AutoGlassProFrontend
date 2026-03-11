@@ -10,6 +10,7 @@ import { getCustomerWithVehicles } from "../../api/getCustomerWithVehicles";
 import { updateCustomer } from "../../api/updateCustomer";
 import { getOrganizations, getOrganizationById, createOrganization, updateOrganization, updateOrganizationTaxExempt, getOrganizationVehicles, getOrganizationWithDetails } from "../../api/organizationApi";
 import { COUNTRIES, US_STATES } from "../../const/locations";
+import { useTranslation } from "react-i18next";
 
 const { Option } = Select;
 
@@ -50,6 +51,7 @@ const FormSelect = ({ label, name, value, onChange, onBlur, options, required = 
 
 export default function CustomerPanel({ formData, setFormData, setCanShowQuotePanel, setPanel, isDocumentLoaded = false }) {
     const queryClient = useQueryClient();
+    const { t } = useTranslation();
 
     // Vehicles
     const [vehicles, setVehicles] = useState([]);
@@ -475,8 +477,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
         if (!formData.firstName || formData.firstName.trim() === "") {
             notification.error({
-                message: "Validation Error",
-                description: "Name is required.",
+                message: t('quoteDetails.customerPanel.validationError'),
+                description: t('quoteDetails.customerPanel.nameRequired'),
                 placement: "topRight"
             });
             return;
@@ -484,8 +486,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
         if (!formData.phone || formData.phone.trim() === "") {
             notification.error({
-                message: "Validation Error",
-                description: "Phone is required.",
+                message: t('quoteDetails.customerPanel.validationError'),
+                description: t('quoteDetails.customerPanel.phoneRequired'),
                 placement: "topRight"
             });
             return;
@@ -532,8 +534,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
             if (!silent) {
                 notification.success({
-                    message: "Customer Updated",
-                    description: "Customer information has been updated successfully.",
+                    message: t('quoteDetails.customerPanel.customerUpdated'),
+                    description: t('quoteDetails.customerPanel.customerUpdatedSuccess'),
                     placement: "topRight"
                 });
             }
@@ -544,8 +546,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
             console.error("Error updating customer:", error);
             if (!silent) {
                 notification.error({
-                    message: "Update Failed",
-                    description: "Failed to update customer. Please try again.",
+                    message: t('quoteDetails.customerPanel.updateFailed'),
+                    description: t('quoteDetails.customerPanel.customerUpdateFailed'),
                     placement: "topRight"
                 });
             }
@@ -588,8 +590,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
         // Validate required fields
         if (!orgFormData.phone || orgFormData.phone.trim() === "") {
             notification.error({
-                message: "Validation Error",
-                description: "Phone number is required.",
+                message: t('quoteDetails.customerPanel.validationError'),
+                description: t('quoteDetails.customerPanel.phoneRequired'),
                 placement: "topRight"
             });
             return;
@@ -597,8 +599,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
         if (!orgFormData.companyName || orgFormData.companyName.trim() === "") {
             notification.error({
-                message: "Validation Error",
-                description: "Company name is required.",
+                message: t('quoteDetails.customerPanel.validationError'),
+                description: t('quoteDetails.customerPanel.companyNameRequired'),
                 placement: "topRight"
             });
             return;
@@ -670,8 +672,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
             if (!silent) {
                 notification.success({
-                    message: "Organization Updated",
-                    description: "Organization information has been updated successfully.",
+                    message: t('quoteDetails.customerPanel.orgUpdated'),
+                    description: t('quoteDetails.customerPanel.orgUpdatedSuccess'),
                     placement: "topRight"
                 });
             }
@@ -687,8 +689,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
             console.error("Error updating organization:", error);
             if (!silent) {
                 notification.error({
-                    message: "Update Failed",
-                    description: "Failed to update organization. Please try again.",
+                    message: t('quoteDetails.customerPanel.updateFailed'),
+                    description: t('quoteDetails.customerPanel.orgUpdateFailed'),
                     placement: "topRight"
                 });
             }
@@ -711,8 +713,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
             if (!hasPhone) {
                 notification.error({
-                    message: "Missing Contact Information",
-                    description: "Phone number is mandatory for the organization.",
+                    message: t('quoteDetails.customerPanel.missingContactInfo'),
+                    description: t('quoteDetails.customerPanel.orgPhoneMandatory'),
                     placement: "topRight",
                     duration: 4
                 });
@@ -725,8 +727,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
             if (!hasPhone) {
                 notification.error({
-                    message: "Missing Contact Information",
-                    description: "Phone number is required.",
+                    message: t('quoteDetails.customerPanel.missingContactInfo'),
+                    description: t('quoteDetails.customerPanel.phoneRequired'),
                     placement: "topRight",
                     duration: 4
                 });
@@ -736,8 +738,8 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
             const firstName = formData.firstName || "";
             if (!firstName.trim().length > 0) {
                 notification.error({
-                    message: "Missing Customer Information",
-                    description: "First Name is required.",
+                    message: t('quoteDetails.customerPanel.missingCustomerInfo'),
+                    description: t('quoteDetails.customerPanel.firstNameRequired'),
                     placement: "topRight",
                     duration: 4
                 });
@@ -762,12 +764,12 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
                         {/* 1. Client Type Toggle */}
                         <div className="mb-4 shrink-0">
-                            <label className="text-xs !font-semibold text-slate-800 uppercase tracking-wide mb-2 block">Client Type:</label>
+                            <label className="text-xs !font-semibold text-slate-800 uppercase tracking-wide mb-2 block">{t('quoteDetails.customerPanel.clientType')}</label>
                             <Segmented
                                 block
                                 options={[
-                                    { label: 'Individual', value: 'INDIVIDUAL', icon: <UserOutlined /> },
-                                    { label: 'Business', value: 'BUSINESS', icon: <ShopOutlined /> },
+                                    { label: t('quoteDetails.customerPanel.individual'), value: 'INDIVIDUAL', icon: <UserOutlined /> },
+                                    { label: t('quoteDetails.customerPanel.business'), value: 'BUSINESS', icon: <ShopOutlined /> },
                                 ]}
                                 value={clientType}
                                 onChange={handleClientTypeChange}
@@ -778,7 +780,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                         {/* 2. Customer Selection (INDIVIDUAL ONLY) */}
                         {clientType === "INDIVIDUAL" && (
                             <div className="animate-fade-in mt-4 pt-4 border-t border-gray-300 shrink-0">
-                                <h4 className="text-xs !font-semibold text-slate-800 uppercase tracking-wide mb-3">Customer Selection</h4>
+                                <h4 className="text-xs !font-semibold text-slate-800 uppercase tracking-wide mb-3">{t('quoteDetails.customerPanel.customerSelection')}</h4>
 
                                 <div className="flex flex-col gap-3">
                                     <Radio.Group
@@ -787,17 +789,17 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                         className="flex flex-col gap-2"
                                         disabled={isDocumentLoaded} // Disable mode switch
                                     >
-                                        <Radio value="NEW">New Customer</Radio>
-                                        <Radio value="EXISTING">Existing Customer</Radio>
+                                        <Radio value="NEW">{t('quoteDetails.customerPanel.newCustomer')}</Radio>
+                                        <Radio value="EXISTING">{t('quoteDetails.customerPanel.existingCustomer')}</Radio>
                                     </Radio.Group>
 
                                     {customerMode === "EXISTING" && (
                                         <div className="mt-2 animate-fade-in">
-                                            <label className="text-xs font-semibold text-gray-500 mb-1 block">Search Customer</label>
+                                            <label className="text-xs font-semibold text-gray-500 mb-1 block">{t('quoteDetails.customerPanel.searchCustomer')}</label>
                                             <Select
                                                 showSearch
                                                 allowClear
-                                                placeholder="Search by name/phone/email"
+                                                placeholder={t('quoteDetails.customerPanel.searchBy')}
                                                 className="w-full"
                                                 loading={loadingCustomers}
                                                 onSearch={handleCustomerSearch}
@@ -805,7 +807,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                                 onChange={handleCustomerSelect}
                                                 value={formData.customerId}
                                                 disabled={isDocumentLoaded} // Disable search
-                                                notFoundContent={loadingCustomers ? <Spin size="small" /> : "No customers found"}
+                                                notFoundContent={loadingCustomers ? <Spin size="small" /> : t('quoteDetails.customerPanel.noCustomersFound')}
                                             >
                                                 {customers.map(c => (
                                                     <Option key={c.customerId} value={c.customerId}>
@@ -822,7 +824,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                         {/* 2. Organization Selection (BUSINESS ONLY) */}
                         {clientType === "BUSINESS" && (
                             <div className="animate-fade-in mt-4 pt-4 border-t border-gray-300 shrink-0">
-                                <h4 className="text-xs !font-semibold text-slate-800 uppercase tracking-wide mb-3">Organization Selection</h4>
+                                <h4 className="text-xs !font-semibold text-slate-800 uppercase tracking-wide mb-3">{t('quoteDetails.customerPanel.orgSelection')}</h4>
 
                                 <div className="flex flex-col gap-3">
                                     <Radio.Group
@@ -831,17 +833,17 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                         className="flex flex-col gap-2"
                                         disabled={isDocumentLoaded} // Disable mode switch
                                     >
-                                        <Radio value="NEW">New Organization</Radio>
-                                        <Radio value="EXISTING">Existing Organization</Radio>
+                                        <Radio value="NEW">{t('quoteDetails.customerPanel.newOrg')}</Radio>
+                                        <Radio value="EXISTING">{t('quoteDetails.customerPanel.existingOrg')}</Radio>
                                     </Radio.Group>
 
                                     {orgMode === "EXISTING" && (
                                         <div className="mt-2 animate-fade-in">
-                                            <label className="text-xs font-semibold text-gray-500 mb-1 block">Search Organization</label>
+                                            <label className="text-xs font-semibold text-gray-500 mb-1 block">{t('quoteDetails.customerPanel.searchOrg')}</label>
                                             <Select
                                                 showSearch
                                                 allowClear
-                                                placeholder="Search by name/phone/email"
+                                                placeholder={t('quoteDetails.customerPanel.searchBy')}
                                                 className="w-full"
                                                 loading={loadingOrganizations}
                                                 filterOption={(input, option) => {
@@ -883,7 +885,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                         <div className="bg-white rounded-md border border-gray-200 shadow-sm flex flex-col shrink-0 animate-slide-up">
                             <div className="bg-white border-b border-gray-100 px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                                 <h3 className="text-sm font-bold text-gray-800">
-                                    {orgMode === "NEW" ? "Organization Details" : "Organization Details"}
+                                    {t('quoteDetails.customerPanel.orgDetails')}
                                 </h3>
                                 <div className="flex items-center gap-2 flex-wrap">
                                     {/* Save button for EXISTING mode */}
@@ -896,7 +898,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                             onClick={() => handleSaveOrganization(false)}
                                             disabled={!isOrgDirty}
                                         >
-                                            Save Changes
+                                            {t('quoteDetails.customerPanel.saveChanges')}
                                         </Button>
                                     )}
                                     {/* Tax Exempt Switch */}
@@ -906,19 +908,19 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
                             <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                                 {/* Organization Details - First Rows */}
-                                <FormInput label="Company Name" name="companyName" value={orgFormData.companyName} onChange={handleOrgFormChange} required />
-                                <FormInput label="Tax ID" name="taxId" value={orgFormData.taxId} onChange={handleOrgFormChange} />
-                                <FormInput label="Email" name="email" value={orgFormData.email} onChange={handleOrgFormChange} />
-                                <FormInput label="Phone" name="phone" value={orgFormData.phone} onChange={handleOrgFormChange} required />
+                                <FormInput label={t('quoteDetails.customerPanel.companyName')} name="companyName" value={orgFormData.companyName} onChange={handleOrgFormChange} required />
+                                <FormInput label={t('quoteDetails.customerPanel.taxId')} name="taxId" value={orgFormData.taxId} onChange={handleOrgFormChange} />
+                                <FormInput label={t('quoteDetails.customerPanel.email')} name="email" value={orgFormData.email} onChange={handleOrgFormChange} />
+                                <FormInput label={t('quoteDetails.customerPanel.phone')} name="phone" value={orgFormData.phone} onChange={handleOrgFormChange} required />
 
-                                <FormInput label="Address Line 1" name="addressLine1" value={orgFormData.addressLine1} onChange={handleOrgFormChange} />
-                                <FormInput label="City" name="city" value={orgFormData.city} onChange={handleOrgFormChange} />
-                                <FormSelect label="State" name="state" value={orgFormData.state} onChange={handleOrgFormChange} options={US_STATES} />
-                                <FormInput label="Zip Code" name="postalCode" value={orgFormData.postalCode} onChange={handleOrgFormChange} />
+                                <FormInput label={t('quoteDetails.customerPanel.addressLine1')} name="addressLine1" value={orgFormData.addressLine1} onChange={handleOrgFormChange} />
+                                <FormInput label={t('quoteDetails.customerPanel.city')} name="city" value={orgFormData.city} onChange={handleOrgFormChange} />
+                                <FormSelect label={t('quoteDetails.customerPanel.state')} name="state" value={orgFormData.state} onChange={handleOrgFormChange} options={US_STATES} />
+                                <FormInput label={t('quoteDetails.customerPanel.zipCode')} name="postalCode" value={orgFormData.postalCode} onChange={handleOrgFormChange} />
 
                                 {/* Contact Person Details - Last Rows */}
                                 <div className="col-span-1">
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Contact Name</label>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('quoteDetails.customerPanel.contactName')}</label>
                                     {orgMode === "NEW" || formData.newContactDetails ? (
                                         <div className="flex-1 w-full">
                                             <input
@@ -926,7 +928,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                                 name="contactName"
                                                 value={orgFormData.contactName || ""}
                                                 onChange={handleOrgFormChange}
-                                                placeholder="Enter contact name"
+                                                placeholder={t('quoteDetails.customerPanel.enterContactName')}
                                                 className="border border-gray-200 rounded px-2 py-[5px] text-sm focus:ring-1 focus:ring-violet-500 focus:border-violet-500 focus:outline-none transition-all w-full h-[32px]"
                                             />
                                         </div>
@@ -961,7 +963,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                                     label: c.name || c.contactName
                                                 }))}
                                                 isClearable
-                                                placeholder="Select Contact"
+                                                placeholder={t('quoteDetails.customerPanel.selectContact')}
                                                 styles={{
                                                     control: (base) => ({
                                                         ...base,
@@ -1046,7 +1048,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                                 }));
                                             }}
                                         >
-                                            + Add
+                                            {t('quoteDetails.customerPanel.add')}
                                         </Button>
                                     )}
                                 </div>
@@ -1056,7 +1058,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                 {/* Tax Exempt Switch in Form Body */}
                                 <div className="flex flex-col justify-end pb-1 col-span-full sm:col-span-1">
                                     <div className="flex items-center gap-2 h-[38px]">
-                                        <span className="text-xs sm:text-sm font-medium text-slate-700 whitespace-nowrap">Tax Status:</span>
+                                        <span className="text-xs sm:text-sm font-medium text-slate-700 whitespace-nowrap">{t('quoteDetails.customerPanel.taxStatus')}</span>
                                         <Switch
                                             size="small"
                                             checked={formData.isTaxExempt}
@@ -1076,7 +1078,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                             }}
                                         />
                                         <span className={`text-xs sm:text-sm font-medium whitespace-nowrap ${formData.isTaxExempt ? "text-violet-600" : "text-slate-500"}`}>
-                                            {formData.isTaxExempt ? "Tax Exempt" : "Taxable"}
+                                            {formData.isTaxExempt ? t('quoteDetails.customerPanel.taxExempt') : t('quoteDetails.customerPanel.taxable')}
                                         </span>
                                     </div>
                                 </div>
@@ -1089,7 +1091,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                         <div className="bg-white rounded-md border border-gray-200 shadow-sm flex flex-col shrink-0 animate-slide-up">
                             <div className="bg-white border-b border-gray-100 px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                                 <h3 className="text-sm font-bold text-gray-800">
-                                    {customerMode === "NEW" ? "New Customer Details" : "Customer Details"}
+                                    {customerMode === "NEW" ? t('quoteDetails.customerPanel.newCustomerDetails') : t('quoteDetails.customerPanel.customerDetails')}
                                 </h3>
                                 {/* Save button when EXISTING */}
                                 {customerMode === "EXISTING" && (
@@ -1102,7 +1104,7 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                                             onClick={() => handleSaveCustomer(false)}
                                             disabled={!isCustomerDirty}
                                         >
-                                            Save Changes
+                                            {t('quoteDetails.customerPanel.saveChanges')}
                                         </Button>
                                     </div>
                                 )}
@@ -1110,17 +1112,17 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
 
                             <div className="p-4">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
-                                    <FormInput label="First Name" name="firstName" value={formData.firstName} onChange={handleChange} onBlur={handleInputBlur} required />
-                                    <FormInput label="Last Name" name="lastName" value={formData.lastName} onChange={handleChange} onBlur={handleInputBlur} />
-                                    <FormInput label="Email" name="email" value={formData.email} onChange={handleChange} onBlur={handleInputBlur} type="email" />
-                                    <FormInput label="Phone" name="phone" value={formData.phone} onChange={handleChange} onBlur={handleInputBlur} required />
+                                    <FormInput label={t('quoteDetails.customerPanel.firstName')} name="firstName" value={formData.firstName} onChange={handleChange} onBlur={handleInputBlur} required />
+                                    <FormInput label={t('quoteDetails.customerPanel.lastName')} name="lastName" value={formData.lastName} onChange={handleChange} onBlur={handleInputBlur} />
+                                    <FormInput label={t('quoteDetails.customerPanel.email')} name="email" value={formData.email} onChange={handleChange} onBlur={handleInputBlur} type="email" />
+                                    <FormInput label={t('quoteDetails.customerPanel.phone')} name="phone" value={formData.phone} onChange={handleChange} onBlur={handleInputBlur} required />
                                 </div>
                                 <div className="mt-2">
                                     <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                                        <FormInput label="Address Line 1" name="addressLine1" value={formData.addressLine1} onChange={handleChange} onBlur={handleInputBlur} />
-                                        <FormInput label="City" name="city" value={formData.city} onChange={handleChange} onBlur={handleInputBlur} />
-                                        <FormSelect label="State" name="state" value={formData.state} onChange={handleChange} onBlur={handleInputBlur} options={US_STATES} />
-                                        <FormInput label="Zip Code" name="postalCode" value={formData.postalCode} onChange={handleChange} onBlur={handleInputBlur} />
+                                        <FormInput label={t('quoteDetails.customerPanel.addressLine1')} name="addressLine1" value={formData.addressLine1} onChange={handleChange} onBlur={handleInputBlur} />
+                                        <FormInput label={t('quoteDetails.customerPanel.city')} name="city" value={formData.city} onChange={handleChange} onBlur={handleInputBlur} />
+                                        <FormSelect label={t('quoteDetails.customerPanel.state')} name="state" value={formData.state} onChange={handleChange} onBlur={handleInputBlur} options={US_STATES} />
+                                        <FormInput label={t('quoteDetails.customerPanel.zipCode')} name="postalCode" value={formData.postalCode} onChange={handleChange} onBlur={handleInputBlur} />
                                     </div>
                                 </div>
                             </div>
@@ -1131,14 +1133,14 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                     <div className="bg-white rounded-md border border-gray-200 shadow-sm flex flex-col shrink-0 animate-slide-up">
                         <div className="bg-white border-b border-gray-100 px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                             <h3 className="text-sm font-bold text-gray-800">
-                                Vehicle Details
+                                {t('quoteDetails.customerPanel.vehicleDetails')}
                             </h3>
 
                             {/* Vehicle Selection Dropdown */}
                             {(vehicles.length > 0) && (
                                 <div className="w-full sm:w-64">
                                     <Select
-                                        placeholder="Select Saved Vehicle"
+                                        placeholder={t('quoteDetails.customerPanel.selectSavedVehicle')}
                                         className="w-full"
                                         onChange={handleVehicleSelect}
                                         allowClear
@@ -1158,10 +1160,10 @@ export default function CustomerPanel({ formData, setFormData, setCanShowQuotePa
                         </div>
 
                         <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                            <FormInput label="Year" name="vehicleYear" value={formData.vehicleYear} onChange={handleChange} onBlur={handleInputBlur} type="number" />
-                            <FormInput label="Make" name="vehicleMake" value={formData.vehicleMake} onChange={handleChange} onBlur={handleInputBlur} />
-                            <FormInput label="Model" name="vehicleModel" value={formData.vehicleModel} onChange={handleChange} onBlur={handleInputBlur} />
-                            <FormInput label="VIN" name="vin" value={formData.vin} onChange={handleChange} onBlur={handleInputBlur} />
+                            <FormInput label={t('quoteDetails.customerPanel.year')} name="vehicleYear" value={formData.vehicleYear} onChange={handleChange} onBlur={handleInputBlur} type="number" />
+                            <FormInput label={t('quoteDetails.customerPanel.make')} name="vehicleMake" value={formData.vehicleMake} onChange={handleChange} onBlur={handleInputBlur} />
+                            <FormInput label={t('quoteDetails.customerPanel.model')} name="vehicleModel" value={formData.vehicleModel} onChange={handleChange} onBlur={handleInputBlur} />
+                            <FormInput label={t('quoteDetails.customerPanel.vin')} name="vin" value={formData.vin} onChange={handleChange} onBlur={handleInputBlur} />
                         </div>
                     </div>
 

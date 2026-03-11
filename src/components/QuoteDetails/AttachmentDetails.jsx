@@ -6,6 +6,7 @@ import { downloadAndSaveAttachment, getAttachmentPreviewUrl } from "../../api/do
 import { uploadAttachments } from "../../api/uploadAttachments";
 import { getAttachmentsByDocumentNumber } from "../../api/getAttachmentsByDocumentNumber";
 import { validateAndCompressFile, formatFileSize, isAllowedFileType } from "../../utils/fileCompression";
+import { useTranslation } from "react-i18next";
 
 // Lazy load heavy modal
 const AttachmentPreviewModal = lazy(() => import("./AttachmentPreviewModal"));
@@ -18,6 +19,7 @@ const AttachmentDetails = ({
     createdDocumentNumber = null, // Document number from successful creation
     customerData = {} // Customer data for customerId
 }) => {
+    const { t } = useTranslation();
     const [downloadingIds, setDownloadingIds] = useState(new Set());
     const previewCacheRef = useRef(new Map()); // Cache preview URLs
     const cleanupTimersRef = useRef(new Map()); // Track cleanup timeouts
@@ -326,7 +328,7 @@ const AttachmentDetails = ({
                 <div>
                     <h3 className="text-xs !font-semibold text-slate-800 uppercase tracking-wide mb-3 flex items-center gap-2">
                         <FileTextOutlined />
-                        Saved Attachments ({savedAttachments.length})
+                        {t('attachments.savedAttachments', 'Saved Attachments')} ({savedAttachments.length})
                     </h3>
                     <div className="space-y-2">
                         {savedAttachments.map((att) => (
@@ -346,7 +348,7 @@ const AttachmentDetails = ({
                                             </div>
                                         )}
                                         <div className="text-xs text-slate-500 mt-0.5">
-                                            Uploaded: {formatDate(att.uploadedAt)}
+                                            {t('attachments.uploaded', 'Uploaded')}: {formatDate(att.uploadedAt)}
                                         </div>
                                     </div>
                                 </div>
@@ -387,15 +389,15 @@ const AttachmentDetails = ({
             <div>
                 <h3 className="text-xs !font-semibold text-slate-800 uppercase tracking-wide mb-3 flex items-center gap-2">
                     <UploadOutlined />
-                    Upload New Files
+                    {t('attachments.uploadNewFiles', 'Upload New Files')}
                 </h3>
                 <label className="cursor-pointer bg-white border border-dashed border-slate-300 hover:border-violet-500 hover:bg-slate-50 rounded-lg px-6 py-8 flex flex-col items-center gap-2 transition-all group w-full">
                     <div className="p-3 bg-slate-100 rounded-full group-hover:scale-110 transition-transform">
                         <UploadOutlined className="text-2xl text-slate-400 group-hover:text-violet-500 transition-colors" />
                     </div>
-                    <span className="font-semibold text-slate-700">Click to Upload Files</span>
-                    <span className="text-xs text-slate-500">Images and PDFs only • Max 1MB per file</span>
-                    <span className="text-xs text-slate-400">Files larger than 1MB will be automatically compressed</span>
+                    <span className="font-semibold text-slate-700">{t('attachments.clickToUpload', 'Click to Upload Files')}</span>
+                    <span className="text-xs text-slate-500">{t('attachments.fileTypes', 'Images and PDFs only • Max 1MB per file')}</span>
+                    <span className="text-xs text-slate-400">{t('attachments.compression', 'Files larger than 1MB will be automatically compressed')}</span>
                     <input
                         type="file"
                         multiple
@@ -410,7 +412,7 @@ const AttachmentDetails = ({
             {attachments.length > 0 && (
                 <div>
                     <h3 className="text-xs !font-semibold text-slate-800 uppercase tracking-wide mb-3">
-                        New Files to Upload ({attachments.length})
+                        {t('attachments.newFilesToUpload', 'New Files to Upload')} ({attachments.length})
                     </h3>
                     <div className="space-y-2">
                         {attachments.map((att) => (

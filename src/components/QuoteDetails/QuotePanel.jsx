@@ -3,6 +3,7 @@ import { useQuoteStore } from "../../store";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { Modal, Input, Button, message, notification, Select, App } from "antd";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { getActiveTaxRates, getDefaultTaxRate } from "../../api/taxRateApi";
 import { getValidToken } from "../../api/getValidToken";
 import { extractGlassInfo } from "../carGlassViewer/carGlassHelpers";
@@ -117,6 +118,7 @@ const QuotePanelContent = ({
     const queryClient = useQueryClient();
     const token = getValidToken();
     const { message, notification } = App.useApp();
+    const { t } = useTranslation();
 
     // --- Zustand store ---
     const { quoteItems, setQuoteItems, quoteItemsVersion } = useQuoteStore();
@@ -341,20 +343,20 @@ const QuotePanelContent = ({
 
         if (zeroPriceItems.length > 0) {
             const itemDescriptions = zeroPriceItems.map(item =>
-                `• ${item.type}: ${item.description || 'No description'}`
+                `• ${item.type}: ${item.description || t('quoteDetails.noDescription')}`
             ).join('\n');
 
             modal.confirm({
-                title: '⚠️ Items with $0.00 Price',
+                title: `⚠️ ${t('quoteDetails.itemsWithZeroPrice')}`,
                 content: (
                     <div>
-                        <p className="mb-2">The following items have $0.00 price:</p>
+                        <p className="mb-2">{t('quoteDetails.followingItemsZeroPrice')}</p>
                         <pre className="text-xs bg-slate-100 p-2 rounded whitespace-pre-wrap">{itemDescriptions}</pre>
-                        <p className="mt-2 text-slate-500 text-sm">Are you sure you want to save with these prices? This might be intentional for discounts.</p>
+                        <p className="mt-2 text-slate-500 text-sm">{t('quoteDetails.saveWithZeroPriceWarning')}</p>
                     </div>
                 ),
-                okText: 'Yes, Save Anyway',
-                cancelText: 'Cancel & Fix',
+                okText: t('quoteDetails.yesSaveAnyway'),
+                cancelText: t('quoteDetails.cancelAndFix'),
                 onOk: async () => {
                     const { success } = await performSave();
                     if (success) {
@@ -414,16 +416,16 @@ const QuotePanelContent = ({
 
     const handleAddRow = (type = "Part") => {
         let actualType = type;
-        let description = "Custom Part";
+        let description = t('quoteDetails.customPart');
 
         if (type === "ADAS") { actualType = "ADAS"; description = ""; }
         else if (type === "Service") { actualType = "Service"; description = ""; }
         else if (type.startsWith("ADAS_")) {
             actualType = "Service";
             const subType = type.split('_')[1];
-            if (subType === 'Static') description = "Labor/ADAS Recal - Static";
-            else if (subType === 'Dynamic') description = "Labor/ADAS Recal - Dynamic";
-            else if (subType === 'Dual') description = "Labor/ADAS Recal - Static & Dynamic";
+            if (subType === 'Static') description = t('quoteDetails.laborAdasStatic');
+            else if (subType === 'Dynamic') description = t('quoteDetails.laborAdasDynamic');
+            else if (subType === 'Dual') description = t('quoteDetails.laborAdasDual');
         }
 
         const newItemData = {
@@ -471,10 +473,10 @@ const QuotePanelContent = ({
         const trimmedPartNo = partNo.trim();
         try {
             const res = await fetch(`https://api.autopaneai.com/agp/v1/glass-info?nags_glass_id=${trimmedPartNo}`);
-            if (!res.ok) { message.error(`Part not found: ${trimmedPartNo}`); return; }
+            if (!res.ok) { message.error(`${t('quoteDetails.partNotFound')} ${trimmedPartNo}`); return; }
             const data = await res.json();
             if (!data || !Array.isArray(data) || data.length === 0) {
-                message.error(`No glass info found for: ${trimmedPartNo}`); return;
+                message.error(`${t('quoteDetails.noGlassInfoFound')} ${trimmedPartNo}`); return;
             }
             if (data.length > 1) {
                 setGlassSelectionModal({ visible: true, options: data, pendingItemId: id, partNo: trimmedPartNo });
@@ -483,7 +485,7 @@ const QuotePanelContent = ({
             }
         } catch (error) {
             console.error("Error fetching glass info:", error);
-            message.error("Failed to fetch part information");
+            message.error(t('quoteDetails.failedToFetchPart'));
         }
     };
 
@@ -505,7 +507,7 @@ const QuotePanelContent = ({
                             ...it, nagsId: fullPartNumber,
                             oemId: Array.isArray(glassData.OEMS) && glassData.OEMS.length > 0 ? glassData.OEMS[0] : '',
                             description: glassData?.qualifiers?.includes('Aftermarket')
-                                ? `${fullPartNumber} (${qualifiersStr})` : (qualifiersStr || `Glass Part ${glassData.nags_id}`),
+                                ? `${fullPartNumber} (${qualifiersStr})` : (qualifiersStr || `${t('quoteDetails.glassPart')} ${glassData.nags_id}`),
                             listPrice: glassData.list_price || 0, unitPrice: glassData.list_price || 0,
                             amount: (Number(it.qty) || 1) * (glassData.list_price || 0),
                             labor: glassData.labor || 0, glassData
@@ -540,7 +542,7 @@ const QuotePanelContent = ({
                         ...it, nagsId: fullPartNumber,
                         oemId: Array.isArray(glassData.OEMS) && glassData.OEMS.length > 0 ? glassData.OEMS[0] : '',
                         description: glassData?.qualifiers?.includes('Aftermarket')
-                            ? `${fullPartNumber} (${qualifiersStr})` : (qualifiersStr || `Glass Part ${glassData.nags_id}`),
+                            ? `${fullPartNumber} (${qualifiersStr})` : (qualifiersStr || `${t('quoteDetails.glassPart')} ${glassData.nags_id}`),
                         listPrice: glassData.list_price || 0, unitPrice: glassData.list_price || 0,
                         amount: (Number(it.qty) || 1) * (glassData.list_price || 0), labor, glassData
                     };
@@ -560,7 +562,7 @@ const QuotePanelContent = ({
                 const kitUnitPrice = selectedKit.unitPrice || 0;
                 const kitQtyFromApi = selectedKit.QTY || 1;
                 const formattedQty = Number(kitQtyFromApi).toFixed(1);
-                const kitDescription = selectedKit.DSC ? `${formattedQty} ${selectedKit.DSC}` : 'Installation Kit';
+                const kitDescription = selectedKit.DSC ? `${formattedQty} ${selectedKit.DSC}` : t('quoteDetails.installationKit');
                 additionalItems.push({
                     id: `${itemId}_KIT_0`, parentPartId: itemId,
                     nagsId: selectedKit.NAGS_HW_ID || '', oemId: '',
@@ -617,8 +619,8 @@ const QuotePanelContent = ({
             console.error("Error fetching vendor price:", error);
             if (error.message && error.message.includes("No vendor credentials found")) {
                 modal.warning({
-                    title: 'Missing Vendor Credentials',
-                    content: 'No vendor credentials found for Your Account. Please configure Pilkington credentials first.',
+                    title: t('quoteDetails.missingVendorCredentials'),
+                    content: t('quoteDetails.noVendorCredentialsFound'),
                 });
             }
         }
@@ -753,7 +755,7 @@ const QuotePanelContent = ({
                 footer={[
                     <Button key="cancel" onClick={handleCloseModal}>Cancel</Button>,
                     <Button key="send" type="primary" loading={emailLoading} onClick={handleConfirmAndSend} className="bg-violet-600">
-                        Confirm & Send
+                        {t('quoteDetails.confirmAndSend')}
                     </Button>
                 ]}
                 width={800}
@@ -762,23 +764,23 @@ const QuotePanelContent = ({
                 <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
                     <div className="flex-1 space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">To</label>
-                            <Input value={emailForm.to} onChange={(e) => setEmailForm({ ...emailForm, to: e.target.value })} placeholder="Recipient email" />
+                            <label className="block text-sm font-medium text-slate-700 mb-1">{t('quoteDetails.to')}</label>
+                            <Input value={emailForm.to} onChange={(e) => setEmailForm({ ...emailForm, to: e.target.value })} placeholder={t('quoteDetails.recipientEmail')} />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Subject</label>
-                            <Input value={emailForm.subject} onChange={(e) => setEmailForm({ ...emailForm, subject: e.target.value })} placeholder="Email subject" />
+                            <label className="block text-sm font-medium text-slate-700 mb-1">{t('quoteDetails.subject')}</label>
+                            <Input value={emailForm.subject} onChange={(e) => setEmailForm({ ...emailForm, subject: e.target.value })} placeholder={t('quoteDetails.emailSubject')} />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">Message</label>
-                            <Input.TextArea rows={4} value={emailForm.body} onChange={(e) => setEmailForm({ ...emailForm, body: e.target.value })} placeholder="Email body..." />
+                            <Input.TextArea rows={4} value={emailForm.body} onChange={(e) => setEmailForm({ ...emailForm, body: e.target.value })} placeholder={t('quoteDetails.emailBody')} />
                         </div>
                     </div>
                     <div className="flex-1 h-[300px] sm:h-[400px] border border-slate-200 rounded-lg bg-slate-50 overflow-hidden">
                         {previewUrl ? (
                             <iframe src={previewUrl} className="w-full h-full" title="PDF Preview" />
                         ) : (
-                            <div className="flex items-center justify-center h-full text-slate-400">Generating Preview...</div>
+                            <div className="flex items-center justify-center h-full text-slate-400">{t('quoteDetails.generatingPreview')}</div>
                         )}
                     </div>
                 </div>

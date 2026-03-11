@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 function currency(n) {
     const num = Number.isFinite(n) ? n : 0;
@@ -21,33 +22,34 @@ export default function TotalsSummary({
     totalPaid,
     balance,
 }) {
+    const { t } = useTranslation();
     return (
         <table className="w-full sm:w-auto text-xs sm:text-sm rounded-xl overflow-hidden bg-slate-50/50 min-w-[280px]">
             <tbody>
                 {/* Labor Row */}
                 <tr>
-                    <td className="px-2 py-1 text-slate-600">Labor</td>
+                    <td className="px-2 py-1 text-slate-600">{t('quoteDetails.labor')}</td>
                     <td className="px-2 py-1 text-right text-slate-900">{currency(laborCostDisplay)}</td>
                 </tr>
                 {/* Subtotal Row */}
                 <tr>
-                    <td className="px-2 py-1 text-slate-600">Subtotal</td>
+                    <td className="px-2 py-1 text-slate-600">{t('quoteDetails.subtotal')}</td>
                     <td className="px-2 py-1 text-right text-slate-900">{currency(subtotal)}</td>
                 </tr>
                 {/* Tax Row */}
                 <tr>
-                    <td className="px-2 py-1 text-slate-600">Tax ({globalTaxRate}%)</td>
+                    <td className="px-2 py-1 text-slate-600">{t('quoteDetails.tax')} ({globalTaxRate}%)</td>
                     <td className="px-2 py-1 text-right text-slate-900">{currency(totalTax)}</td>
                 </tr>
                 {/* Total Row */}
                 <tr className="bg-slate-50">
                     <td className="px-2 py-1 font-semibold text-slate-700">
                         <div className="flex items-center gap-1">
-                            Total
+                            {t('quoteDetails.total')}
                             <button
                                 onClick={handleRoundUp}
                                 className="w-4 h-4 flex items-center justify-center bg-sky-100 hover:bg-sky-200 text-sky-600 rounded text-[10px] font-bold"
-                                title="Round Up"
+                                title={t('quoteDetails.roundUp')}
                             >↑</button>
                         </div>
                     </td>
@@ -72,12 +74,12 @@ export default function TotalsSummary({
                     </td>
                 </tr>
                 <tr>
-                    <td className="px-2 py-1 text-slate-600">Paid</td>
+                    <td className="px-2 py-1 text-slate-600">{t('quoteDetails.paid')}</td>
                     <td className="px-2 py-1 text-right text-slate-900 font-medium">{currency(totalPaid)}</td>
                 </tr>
                 {/* Balance Row */}
                 <tr className="bg-slate-50">
-                    <td className="px-2 py-1 font-semibold text-slate-700">Balance</td>
+                    <td className="px-2 py-1 font-semibold text-slate-700">{t('quoteDetails.balance')}</td>
                     <td className="px-2 py-1 text-right font-bold text-slate-900">{currency(balance)}</td>
                 </tr>
             </tbody>

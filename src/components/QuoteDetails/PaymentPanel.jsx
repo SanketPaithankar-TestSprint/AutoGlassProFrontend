@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { message } from "antd";
 import CurrencyInput from "../common/CurrencyInput";
 import paymentService from "../../services/paymentService";
+import { useTranslation } from "react-i18next";
 
 const PAYMENT_METHODS = [
     { label: "Cash", value: "CASH" },
@@ -26,6 +27,7 @@ const PAYMENT_TERMS = [
 ];
 
 export default function PaymentPanel({ paymentData, setPaymentData, existingPayments = [], totalAmount = 0, onPaymentDeleted = null, paymentTerms = 'Due upon receipt', onPaymentTermsChange = null, customPaymentTerms = '', onCustomPaymentTermsChange = null }) {
+    const { t } = useTranslation();
     // Modal state for delete confirmation
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [paymentToDelete, setPaymentToDelete] = useState(null);
@@ -123,19 +125,19 @@ export default function PaymentPanel({ paymentData, setPaymentData, existingPaym
                 <div className="flex justify-between items-center gap-2 sm:gap-4">
                     {/* Total Amount */}
                     <div className="flex flex-col items-start flex-1">
-                        <span className="text-[10px] sm:text-xs text-slate-500 uppercase font-bold tracking-wider">Total</span>
+                        <span className="text-[10px] sm:text-xs text-slate-500 uppercase font-bold tracking-wider">{t('payment.total', 'Total')}</span>
                         <span className="text-sm sm:text-lg font-bold text-slate-900">{formatCurrency(totalAmount)}</span>
                     </div>
 
                     {/* Total Paid */}
                     <div className="flex flex-col items-center flex-1">
-                        <span className="text-[10px] sm:text-xs text-slate-500 uppercase font-bold tracking-wider">Paid</span>
+                        <span className="text-[10px] sm:text-xs text-slate-500 uppercase font-bold tracking-wider">{t('payment.paid', 'Paid')}</span>
                         <span className="text-sm sm:text-lg font-bold text-emerald-600">{formatCurrency(totalPaid)}</span>
                     </div>
 
                     {/* Balance Due */}
                     <div className="flex flex-col items-end flex-1">
-                        <span className="text-[10px] sm:text-xs text-slate-500 uppercase font-bold tracking-wider">Balance</span>
+                        <span className="text-[10px] sm:text-xs text-slate-500 uppercase font-bold tracking-wider">{t('payment.balance', 'Balance')}</span>
                         <span className={`text-sm sm:text-xl font-extrabold ${balanceDue > 0 ? 'text-amber-600' : 'text-slate-400'}`}>
                             {formatCurrency(balanceDue)}
                         </span>
@@ -146,16 +148,16 @@ export default function PaymentPanel({ paymentData, setPaymentData, existingPaym
             {/* Existing Payments List */}
             {existingPayments.length > 0 && (
                 <div className="bg-white rounded-md border border-gray-200 shadow-sm overflow-hidden">
-                    <h3 className="text-xs !font-semibold text-slate-800 uppercase tracking-wide bg-gray-50 px-4 py-2 border-b">Payment History</h3>
+                    <h3 className="text-xs !font-semibold text-slate-800 uppercase tracking-wide bg-gray-50 px-4 py-2 border-b">{t('payment.paymentHistory', 'Payment History')}</h3>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left">
                             <thead className="bg-gray-50 text-gray-500 font-semibold border-b">
                                 <tr>
-                                    <th className="px-4 py-2">Date</th>
-                                    <th className="px-4 py-2">Method</th>
-                                    <th className="px-4 py-2">Reference</th>
-                                    <th className="px-4 py-2 text-right">Amount</th>
-                                    <th className="px-4 py-2 text-center w-20">Action</th>
+                                    <th className="px-4 py-2">{t('payment.date', 'Date')}</th>
+                                    <th className="px-4 py-2">{t('payment.method', 'Method')}</th>
+                                    <th className="px-4 py-2">{t('payment.reference', 'Reference')}</th>
+                                    <th className="px-4 py-2 text-right">{t('payment.amount', 'Amount')}</th>
+                                    <th className="px-4 py-2 text-center w-20">{t('payment.action', 'Action')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
@@ -217,29 +219,29 @@ export default function PaymentPanel({ paymentData, setPaymentData, existingPaym
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-semibold text-gray-900">Confirm Payment Deletion</h3>
+                                    <h3 className="text-lg font-semibold text-gray-900">{t('payment.confirmDelete', 'Confirm Payment Deletion')}</h3>
                                 </div>
                             </div>
 
                             <p className="text-gray-600 mb-4">
-                                Are you sure you want to delete this payment? This action cannot be undone.
+                                {t('payment.deleteWarning', 'Are you sure you want to delete this payment? This action cannot be undone.')}
                             </p>
 
                             {paymentToDelete && (
                                 <div className="bg-gray-50 rounded-md p-3 mb-4 border border-gray-200">
                                     <div className="grid grid-cols-2 gap-2 text-sm">
                                         <div>
-                                            <span className="text-gray-500">Amount:</span>
+                                            <span className="text-gray-500">{t('payment.amountLabel', 'Amount:')}</span>
                                             <span className="ml-2 font-semibold text-gray-900">{formatCurrency(paymentToDelete.amount)}</span>
                                         </div>
                                         <div>
-                                            <span className="text-gray-500">Method:</span>
+                                            <span className="text-gray-500">{t('payment.methodLabel', 'Method:')}</span>
                                             <span className="ml-2 font-medium text-gray-900">
                                                 {(PAYMENT_METHODS.find(m => m.value === paymentToDelete.paymentMethod)?.label || paymentToDelete.paymentMethod)?.replace('_', ' ')}
                                             </span>
                                         </div>
                                         <div className="col-span-2">
-                                            <span className="text-gray-500">Date:</span>
+                                            <span className="text-gray-500">{t('payment.dateLabel', 'Date:')}</span>
                                             <span className="ml-2 text-gray-900">{formatDate(paymentToDelete.paymentDate || paymentToDelete.createdAt)}</span>
                                         </div>
                                         {paymentToDelete.transactionReference && (
@@ -260,7 +262,7 @@ export default function PaymentPanel({ paymentData, setPaymentData, existingPaym
                                     }}
                                     className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
                                 >
-                                    Cancel
+                                    {t('payment.cancel', 'Cancel')}
                                 </button>
                                 <button
                                     onClick={() => {
@@ -268,7 +270,7 @@ export default function PaymentPanel({ paymentData, setPaymentData, existingPaym
                                     }}
                                     className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
                                 >
-                                    Delete Payment
+                                    {t('payment.deletePayment', 'Delete Payment')}
                                 </button>
                             </div>
                         </div>
@@ -279,13 +281,13 @@ export default function PaymentPanel({ paymentData, setPaymentData, existingPaym
             {/* New Payment Entry - FULL WIDTH, REDUCED HEIGHT */}
             <div className="w-full bg-white rounded-md border border-gray-200 shadow-sm p-4 animate-fade-in">
                 <div className="flex justify-between items-center mb-3 border-b pb-2">
-                    <h3 className="text-xs !font-semibold text-slate-800 uppercase tracking-wide">Add New Payment</h3>
+                    <h3 className="text-xs !font-semibold text-slate-800 uppercase tracking-wide">{t('payment.addNewPayment', 'Add New Payment')}</h3>
                     <button
                         onClick={() => updateField('amount', balanceDue)}
                         className="text-xs font-semibold text-violet-600 hover:text-violet-800 underline disabled:opacity-50"
                         disabled={balanceDue <= 0}
                     >
-                        Pay Remaining Balance
+                        {t('payment.payRemaining', 'Pay Remaining Balance')}
                     </button>
                 </div>
 
@@ -293,14 +295,14 @@ export default function PaymentPanel({ paymentData, setPaymentData, existingPaym
                     {/* Payment Terms - Moved here */}
                     <div className="flex flex-col gap-1">
                         <label className="text-xs font-semibold text-gray-500">
-                            Payment Terms
+                            {t('payment.paymentTerms', 'Payment Terms')}
                         </label>
                         <select
                             value={paymentTerms}
                             onChange={(e) => onPaymentTermsChange && onPaymentTermsChange(e.target.value)}
                             className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-violet-500 focus:border-violet-500 outline-none transition-all bg-white"
                         >
-                            <option value="">Select Terms</option>
+                            <option value="">{t('payment.selectTerms', 'Select Terms')}</option>
                             {PAYMENT_TERMS.map((term) => (
                                 <option key={term.value} value={term.value}>
                                     {term.label}
@@ -321,7 +323,7 @@ export default function PaymentPanel({ paymentData, setPaymentData, existingPaym
                     {/* Amount */}
                     <div className="flex flex-col gap-1">
                         <label className="text-xs font-semibold text-gray-500">
-                            Payment Amount <span className="text-slate-400 font-normal">(Max: {formatCurrency(balanceDue)})</span>
+                            {t('payment.paymentAmount', 'Payment Amount')} <span className="text-slate-400 font-normal">({t('payment.max', 'Max')}: {formatCurrency(balanceDue)})</span>
                         </label>
                         <CurrencyInput
                             value={paymentData.amount}
@@ -331,13 +333,13 @@ export default function PaymentPanel({ paymentData, setPaymentData, existingPaym
                             max={balanceDue}
                         />
                         {paymentData.amount >= balanceDue && balanceDue > 0 && (
-                            <span className="text-[10px] text-green-600 font-medium">Full balance covered</span>
+                            <span className="text-[10px] text-green-600 font-medium">{t('payment.fullBalanceCovered', 'Full balance covered')}</span>
                         )}
                     </div>
 
                     {/* Payment Method */}
                     <div className="flex flex-col gap-1">
-                        <label className="text-xs font-semibold text-gray-500">Payment Method</label>
+                        <label className="text-xs font-semibold text-gray-500">{t('payment.paymentMethod', 'Payment Method')}</label>
                         <select
                             value={paymentData.paymentMethod}
                             onChange={(e) => updateField("paymentMethod", e.target.value)}
@@ -353,13 +355,13 @@ export default function PaymentPanel({ paymentData, setPaymentData, existingPaym
 
                     {/* Transaction Reference */}
                     <div className="flex flex-col gap-1">
-                        <label className="text-xs font-semibold text-gray-500">Transaction Reference / Check #</label>
+                        <label className="text-xs font-semibold text-gray-500">{t('payment.transactionReference', 'Transaction Reference / Check #')}</label>
                         <input
                             type="text"
                             value={paymentData.transactionReference}
                             onChange={(e) => updateField("transactionReference", e.target.value)}
                             className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-violet-500 focus:border-violet-500 outline-none transition-all"
-                            placeholder="e.g. TXN-123456 or Check #999"
+                            placeholder={t('payment.transactionPlaceholder', 'e.g. TXN-123456 or Check #999')}
                         />
                     </div>
                 </div>
@@ -367,19 +369,19 @@ export default function PaymentPanel({ paymentData, setPaymentData, existingPaym
                 {/* Notes - COMPACT */}
                 <div className="mb-3">
                     <div className="flex flex-col gap-1">
-                        <label className="text-xs font-semibold text-gray-500">Payment Notes</label>
+                        <label className="text-xs font-semibold text-gray-500">{t('payment.paymentNotes', 'Payment Notes')}</label>
                         <textarea
                             value={paymentData.notes}
                             onChange={(e) => updateField("notes", e.target.value)}
                             className="w-full border border-gray-200 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-violet-500 focus:border-violet-500 outline-none transition-all h-12 resize-none"
-                            placeholder="Add any additional notes about this payment..."
+                            placeholder={t('payment.notesPlaceholder', 'Add any additional notes about this payment...')}
                         />
                     </div>
                 </div>
             </div>
 
             <div className="text-xs text-gray-400 px-1">
-                Note: Payments added here will be recorded when the document is saved.
+                {t('payment.saveNote', 'Note: Payments added here will be recorded when the document is saved.')}
             </div>
         </div>
     );
