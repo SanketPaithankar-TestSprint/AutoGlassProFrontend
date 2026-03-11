@@ -48,6 +48,7 @@ export default function TaxSection({
                 <Dropdown
                     menu={{
                         items: [
+                            { key: 'Part', label: <span className="text-xs">Part</span>, onClick: () => handleAddRow("Part") },
                             { key: 'Labor', label: <span className="text-xs">Labor</span>, onClick: () => handleAddRow("Labor") },
                             { key: 'Service', label: <span className="text-xs">Service</span>, onClick: () => handleAddRow("Service") },
                             { key: 'ADAS', label: <span className="text-xs">ADAS Recalibration</span>, onClick: () => handleAddRow("ADAS") },
