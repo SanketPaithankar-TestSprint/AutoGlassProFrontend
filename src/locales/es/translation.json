@@ -1134,6 +1134,7 @@
         "qty": "Cant.",
         "list": "Lista",
         "amount": "Monto",
+        "part": "Pieza",
         "partNo": "Nº de Pieza",
         "selectType": "Seleccionar Tipo",
         "enterServiceDetails": "Ingrese los detalles del servicio",

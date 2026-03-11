@@ -1134,6 +1134,7 @@
         "qty": "Qty",
         "list": "List",
         "amount": "Amount",
+        "part": "Part",
         "partNo": "Part No",
         "selectType": "Select Type",
         "enterServiceDetails": "Enter service details",
