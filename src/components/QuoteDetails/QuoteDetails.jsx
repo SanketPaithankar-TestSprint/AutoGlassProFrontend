@@ -9,10 +9,12 @@ import AttachmentDetails from "./AttachmentDetails";
 import JobSchedulingPanel from "./JobSchedulingPanel";
 import { getEmployees } from "../../api/getEmployees";
 import { getValidToken } from "../../api/getValidToken";
+import { useTranslation } from "react-i18next";
 
 const { Option } = Select;
 
 export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel, onPanelSwitch, invoiceItems, setInvoiceItems }) {
+    const { t } = useTranslation();
     // Internal state fallback if not controlled
     const [internalPanel, setInternalPanel] = useState("customer");
     const [canShowQuotePanel, setCanShowQuotePanel] = useState(true);
@@ -36,13 +38,13 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
     const getDocumentTabName = () => {
         switch (documentType) {
             case "QUOTE":
-                return "Quote Information";
+                return t('quoteDetails.quoteInformation');
             case "INVOICE":
-                return "Invoice Information";
+                return t('quoteDetails.invoiceInformation');
             case "WORK_ORDER":
-                return "Work Order Information";
+                return t('quoteDetails.workOrderInformation');
             default:
-                return "Quote Information";
+                return t('quoteDetails.quoteInformation');
         }
     };
 
@@ -250,16 +252,16 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
         <div className="text-slate-900 min-h-screen">
             {/* Document Type Dropdown - Always visible at top */}
             <div className="flex items-center justify-between gap-2 mb-3 pb-3 border-b border-gray-200">
-                <label className="text-sm font-semibold text-slate-700">Document Type:</label>
+                <label className="text-sm font-semibold text-slate-700">{t('quoteDetails.documentType')}</label>
                 <Select
                     value={documentType}
                     onChange={setDocumentType}
                     style={{ width: 160 }}
                     className="text-sm"
                 >
-                    <Option value="QUOTE">Quote</Option>
-                    <Option value="INVOICE">Invoice</Option>
-                    <Option value="WORK_ORDER">Work Order</Option>
+                    <Option value="QUOTE">{t('quoteDetails.docTypeQuote')}</Option>
+                    <Option value="INVOICE">{t('quoteDetails.docTypeInvoice')}</Option>
+                    <Option value="WORK_ORDER">{t('quoteDetails.docTypeWorkOrder')}</Option>
                 </Select>
             </div>
 
@@ -269,7 +271,7 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
                     className={`px-3 sm:px-4 py-2 rounded-md font-semibold border transition-all duration-150 text-sm ${panel === 'customer' ? 'border-violet-500 text-violet-700 bg-white shadow-sm' : 'border-transparent text-slate-500 bg-slate-50 hover:bg-slate-100'}`}
                     onClick={() => handlePanelSwitch('customer')}
                 >
-                    Customer Information
+                    {t('quoteDetails.customerInformation')}
                 </button>
                 <button
                     className={`px-3 sm:px-4 py-2 rounded-md font-semibold border transition-all duration-150 text-sm ${panel === 'quote' ? 'border-violet-500 text-violet-700 bg-white' : 'border-transparent text-slate-500 bg-slate-50 hover:bg-slate-100'}`}
@@ -281,19 +283,19 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
                     className={`px-3 sm:px-4 py-2 rounded-md font-semibold border transition-all duration-150 text-sm ${panel === 'attachments' ? 'border-violet-500 text-violet-700 bg-white' : 'border-transparent text-slate-500 bg-slate-50 hover:bg-slate-100'}`}
                     onClick={() => handlePanelSwitch('attachments')}
                 >
-                    Attachments
+                    {t('quoteDetails.attachments')}
                 </button>
                 <button
                     className={`px-3 sm:px-4 py-2 rounded-md font-semibold border transition-all duration-150 text-sm ${panel === 'payment' ? 'border-violet-500 text-violet-700 bg-white' : 'border-transparent text-slate-500 bg-slate-50 hover:bg-slate-100'}`}
                     onClick={() => handlePanelSwitch('payment')}
                 >
-                    Payment
+                    {t('quoteDetails.payment')}
                 </button>
                 <button
                     className={`px-3 sm:px-4 py-2 rounded-md font-semibold border transition-all duration-150 text-sm ${panel === 'scheduling' ? 'border-violet-500 text-violet-700 bg-white' : 'border-transparent text-slate-500 bg-slate-50 hover:bg-slate-100'}`}
                     onClick={() => handlePanelSwitch('scheduling')}
                 >
-                    Appointment
+                    {t('quoteDetails.appointment')}
                 </button>
             </div>
             {panel === 'customer' && (

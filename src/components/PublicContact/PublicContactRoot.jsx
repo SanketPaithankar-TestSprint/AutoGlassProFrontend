@@ -967,7 +967,7 @@ const PublicContactContent = () => {
                                                         name="location"
                                                         value={formData.location}
                                                         onChange={handleInputChange}
-                                                        placeholder="City, State"
+                                                        placeholder="State"
                                                         required={!isMobile}
                                                         className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
                                                     />

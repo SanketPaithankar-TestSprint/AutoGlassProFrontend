@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, Form, Input, Button, Steps, notification } from 'antd';
 import { MailOutlined, LockOutlined, SafetyOutlined } from '@ant-design/icons';
-import { requestPasswordResetOtp, resetPasswordWithOtp } from '../api/password';
+import { requestPasswordResetOtp, resetPasswordWithOtp } from '../../api/password';
 
 const { Step } = Steps;
 

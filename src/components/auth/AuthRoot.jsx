@@ -3,10 +3,10 @@ import { useTranslation } from 'react-i18next';
 import Login from "./login";
 import SignUpForm from "./SignUpForm";
 import ForgotPasswordForm from "./ForgotPasswordForm";
-import PageHead from "./PageHead";
-import { useAuth } from '../context/auth/useAuth';
-import { useProfileDataPrefetch } from '../hooks/useProfileDataPrefetch';
-import { getValidToken } from '../api/getValidToken';
+import PageHead from '../PageHead';
+import { useAuth } from '../../context/auth/useAuth';
+import { useProfileDataPrefetch } from '../../hooks/useProfileDataPrefetch';
+import { getValidToken } from '../../api/getValidToken';
 import { useNavigate, useLocation } from "react-router-dom";
 
 // Simple Logo Component if needed locally, or import shared

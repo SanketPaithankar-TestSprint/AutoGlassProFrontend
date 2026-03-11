@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { Form, Input, Button, Checkbox, Alert, Space, notification } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
-import { loginUser, handleLoginSuccess } from "../api/login";
-import { getTaxSettings } from "../api/taxSettings";
+import { loginUser, handleLoginSuccess } from '../../api/login';
+import { getTaxSettings } from '../../api/taxSettings';
 
 // Reusable style for form items to ensure consistent bordering and focus states
 const formItemStyle = {

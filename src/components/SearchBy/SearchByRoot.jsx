@@ -1027,8 +1027,6 @@ const SearchByRoot = () => {
   return (
     <div className="bg-slate-100 flex flex-col px-0 pt-0 pb-1 ">
       {contextHolder}
-
-      {/* Kit Selection Modal */}
       <KitSelectionModal
         visible={kitModalVisible}
         onClose={handleKitModalClose}
@@ -1061,7 +1059,7 @@ const SearchByRoot = () => {
                   <div className="bg-white p-4 flex flex-col gap-1 overflow-visible shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)] rounded-lg w-full md:w-[380px] md:flex-shrink-0">
                     {/* VIN */}
                     <div>
-                      <h2 className="text-xs !font-semibold text-slate-800 mb-1 uppercase tracking-wide">Search by VIN:</h2>
+                      <h2 className="text-xs !font-semibold text-slate-800 mb-1 uppercase tracking-wide">{t('searchBy.searchByVin', 'Search by VIN:')}</h2>
                       <ErrorBoundary>
                         <SearchByVin key={`vin-${resetKey}`} autoDecode delayMs={500} onDecoded={handleVinDecoded} />
                       </ErrorBoundary>
@@ -1069,7 +1067,7 @@ const SearchByRoot = () => {
                     <hr className="border-slate-100" />
                     {/* YMM */}
                     <div className="flex-1 flex flex-col">
-                      <h2 className="text-xs !font-semibold text-slate-800 mb-1 uppercase tracking-wide">Search by Year Make Model:</h2>
+                      <h2 className="text-xs !font-semibold text-slate-800 mb-1 uppercase tracking-wide">{t('searchBy.searchByYmm', 'Search by Year Make Model:')}</h2>
                       <ErrorBoundary>
                         <SearchByYMM
                           key={`ymm-${resetKey}`}
@@ -1188,7 +1186,7 @@ const SearchByRoot = () => {
                     <div className="flex flex-col">
                       <div className="mb-3">
                         <h3 className="text-xs font-semibold text-slate-900">
-                          Printable Note <span className="text-[11px] text-slate-500 font-medium">(Visible to customer)</span>
+                          {t('notes.printableNote', 'Printable Note')} <span className="text-[11px] text-slate-500 font-medium">({t('notes.visibleToCustomer', 'Visible to customer')})</span>
                         </h3>
                       </div>
                       <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md hover:border-slate-300 transition-all bg-white">
@@ -1207,7 +1205,7 @@ const SearchByRoot = () => {
                     <div className="flex flex-col">
                       <div className="mb-3">
                         <h3 className="text-xs font-semibold text-slate-900">
-                          Internal Note <span className="text-[11px] text-slate-500 font-medium">(Private - office use only)</span>
+                          {t('notes.internalNote', 'Internal Note')} <span className="text-[11px] text-slate-500 font-medium">({t('notes.privateOfficeUse', 'Private - office use only')})</span>
                         </h3>
                       </div>
                       <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md hover:border-slate-300 transition-all bg-white">
@@ -1215,7 +1213,7 @@ const SearchByRoot = () => {
                           value={internalNote}
                           onChange={(e) => setInternalNote(e.target.value)}
                           className="w-full h-[280px] p-4 text-sm focus:outline-none resize-none"
-                          placeholder="Type internal notes here..."
+                          placeholder={t('notes.internalNotePlaceholder', 'Type internal notes here...')}
                         />
                       </div>
                     </div>

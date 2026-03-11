@@ -2,10 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { Button, Select, Popover, Input } from 'antd';
 import { LeftOutlined, RightOutlined, CalendarOutlined, ClockCircleOutlined, FieldTimeOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+import { useTranslation } from 'react-i18next';
 
 const DatePickerHelper = ({ value, onChange }) => {
+    const { t } = useTranslation();
+
+    const translatedDays = [
+        t('datePicker.days.mon', 'Mon'),
+        t('datePicker.days.tue', 'Tue'),
+        t('datePicker.days.wed', 'Wed'),
+        t('datePicker.days.thu', 'Thu'),
+        t('datePicker.days.fri', 'Fri'),
+        t('datePicker.days.sat', 'Sat'),
+        t('datePicker.days.sun', 'Sun')
+    ];
+
     // State for the calendar view (month navigation)
     const [viewDate, setViewDate] = useState(value ? dayjs(value) : dayjs());
     const [selectedDate, setSelectedDate] = useState(value ? dayjs(value) : null);
@@ -147,8 +158,8 @@ const DatePickerHelper = ({ value, onChange }) => {
             {/* Calendar Grid */}
             <div className="px-2 sm:px-4 pb-2 sm:pb-4">
                 <div className="grid grid-cols-7 mb-1 sm:mb-2">
-                    {DAYS.map(day => (
-                        <div key={day} className="text-center text-xs font-medium text-slate-500 py-0.5 sm:py-1">
+                    {translatedDays.map((day, idx) => (
+                        <div key={idx} className="text-center text-xs font-medium text-slate-500 py-0.5 sm:py-1">
                             {day}
                         </div>
                     ))}
@@ -190,7 +201,7 @@ const DatePickerHelper = ({ value, onChange }) => {
                     <div className="mb-3 sm:mb-4 pb-3 sm:pb-4 border-b border-slate-200">
                         <div className="flex items-center gap-2 sm:gap-3">
                             <FieldTimeOutlined className="text-slate-500 text-sm" />
-                            <span className="text-xs sm:text-sm font-semibold text-slate-700">Time</span>
+                            <span className="text-xs sm:text-sm font-semibold text-slate-700">{t('datePicker.time', 'Time')}</span>
                         </div>
                         <div className="flex items-center gap-1 sm:gap-2 mt-2">
                             {/* Hours (12-hour format) */}
@@ -244,21 +255,21 @@ const DatePickerHelper = ({ value, onChange }) => {
                         className="flex-1 flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-3 bg-white border border-slate-200 rounded-lg text-xs sm:text-base font-medium text-slate-700 hover:border-blue-500 hover:text-blue-600 transition-colors shadow-sm"
                     >
                         <CalendarOutlined className="text-xs sm:text-base" />
-                        <span className="hidden sm:inline">Today</span>
+                        <span className="hidden sm:inline">{t('datePicker.today', 'Today')}</span>
                     </button>
                     <button
                         onClick={setTomorrow}
                         className="flex-1 flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-3 bg-white border border-slate-200 rounded-lg text-xs sm:text-base font-medium text-slate-700 hover:border-blue-500 hover:text-blue-600 transition-colors shadow-sm"
                     >
                         <RightOutlined className="text-xs" />
-                        <span className="hidden sm:inline">Tmrw</span>
+                        <span className="hidden sm:inline">{t('datePicker.tmrw', 'Tmrw')}</span>
                     </button>
                     <button
                         onClick={setNextWeek}
                         className="flex-1 flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-3 bg-white border border-slate-200 rounded-lg text-xs sm:text-base font-medium text-slate-700 hover:border-blue-500 hover:text-blue-600 transition-colors shadow-sm"
                     >
                         <ClockCircleOutlined className="text-xs sm:text-base" />
-                        <span className="hidden sm:inline">Week</span>
+                        <span className="hidden sm:inline">{t('datePicker.week', 'Week')}</span>
                     </button>
                 </div>
 
@@ -285,7 +296,7 @@ const DatePickerHelper = ({ value, onChange }) => {
             <Input
                 readOnly
                 value={selectedDate ? selectedDate.format('MM/DD/YYYY HH:mm') : ''}
-                placeholder="Select date & time"
+                placeholder={t('datePicker.selectDateTime', 'Select date & time')}
                 prefix={<CalendarOutlined className="text-slate-400" />}
                 className="cursor-pointer hover:border-blue-400 focus:border-blue-500"
                 onClick={() => setOpen(true)}
