@@ -3,7 +3,7 @@ import { Button, theme } from "antd";
 import { useLocation, useNavigate } from "react-router-dom";
 import Login from "./login";
 import SignUpForm from "./SignUpForm";
-import Logo from "./logo";
+import Logo from '../logo';
 import { ArrowLeftOutlined } from "@ant-design/icons";
 
 const AuthPage = () => {

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Form, Input, Button, Steps, notification, Alert } from 'antd';
 import { MailOutlined, LockOutlined, SafetyOutlined, ArrowLeftOutlined } from '@ant-design/icons';
-import { requestPasswordResetOtp, resetPasswordWithOtp } from '../api/password';
+import { requestPasswordResetOtp, resetPasswordWithOtp } from '../../api/password';
 
 const { Step } = Steps;
 

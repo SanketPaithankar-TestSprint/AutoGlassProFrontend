@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Form, Input, Button, Card, notification, Typography, Result, Alert } from 'antd';
 import { LockOutlined, ArrowLeftOutlined, MailOutlined } from '@ant-design/icons';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { setPassword } from '../api/setPassword';
+import { setPassword } from '../../api/setPassword';
 
 const { Title, Text } = Typography;
 

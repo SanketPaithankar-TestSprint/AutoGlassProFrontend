@@ -19,8 +19,8 @@ import {
     PhoneOutlined
 } from '@ant-design/icons';
 import axios from 'axios';
-import urls from '../config';
-import { COUNTRIES, getStatesOrProvinces, getCities } from '../const/locations';
+import urls from '../../config';
+import { COUNTRIES, getStatesOrProvinces, getCities } from '../../const/locations';
 
 // Reusable style for form items
 const formItemStyle = {
