@@ -96,7 +96,8 @@ function AppContent() {
   const isChatPage = /^\/contact\/[^/]+\/chat$/.test(location.pathname);
   const isServiceView = location.pathname.startsWith('/service-inquiry-view/');
   const isSetPasswordPage = location.pathname.startsWith('/set-password');
-  const isStandalonePage = isContactPage || isChatPage || isServiceView || isSetPasswordPage;
+  const isAuthPage = location.pathname.startsWith('/auth');
+  const isStandalonePage = isContactPage || isChatPage || isServiceView || isSetPasswordPage || isAuthPage;
 
   // Prefetch data when authenticated
   useProfileDataPrefetch(isAuthed && !isStandalonePage);
@@ -159,6 +160,7 @@ function AppContent() {
             {isContactPage && <Route path="/contact/:slug" element={<PublicContactRoot />} />}
             {isServiceView && <Route path="/service-inquiry-view/:id" element={<ServiceInquiryView />} />}
             {isSetPasswordPage && <Route path="/set-password" element={<SetPassword />} />}
+            {isAuthPage && <Route path="/auth" element={<AuthRoot />} />}
           </Routes>
         </Suspense>
       </ErrorBoundary>

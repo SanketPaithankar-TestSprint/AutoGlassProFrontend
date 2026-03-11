@@ -1,67 +1,9 @@
 import React, { useState } from "react";
 import { useTranslation } from 'react-i18next';
-import { Form, Input, Button, Checkbox, Alert, Space, notification } from "antd";
-import { UserOutlined, LockOutlined } from "@ant-design/icons";
+import { Form, Input, Checkbox, Alert, notification } from "antd";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 import { loginUser, handleLoginSuccess } from '../../api/login';
 import { getTaxSettings } from '../../api/taxSettings';
-
-// Reusable style for form items to ensure consistent bordering and focus states
-const formItemStyle = {
-    marginBottom: '20px'
-};
-
-// Custom Input Styles injected via style tag or css-in-js approach for specific focus states
-// For simplicity in this file, we'll use inline styles and Ant Design's `classNames` if needed, 
-// or rely on a global CSS class. Let's add a small internal style block for the glow effect.
-const customInputStyle = `
-  .custom-api-input .ant-input, .custom-api-input .ant-input-password .ant-input {
-      border-color: #e2e8f0; /* Light grey border */
-      border-width: 1.5px;
-      padding: 6px 11px;
-      border-radius: 8px;
-      height: 40px;
-      display: flex !important;
-      align-items: center !important;
-      line-height: 28px !important;
-  }
-  .custom-api-input .ant-input::placeholder, .custom-api-input .ant-input-password .ant-input::placeholder {
-      line-height: 28px !important;
-      vertical-align: middle !important;
-  }
-  .custom-api-input .ant-input-prefix {
-      display: flex !important;
-      align-items: center !important;
-  }
-  .custom-api-input .ant-input-password-icon {
-      display: flex !important;
-      align-items: center !important;
-  }
-  .custom-api-input .ant-input:hover, .custom-api-input .ant-input-password:hover .ant-input {
-      border-color: #7E5CFE;
-  }
-  .custom-api-input .ant-input:focus, .custom-api-input.ant-input-affix-wrapper-focused {
-      border-color: #7E5CFE;
-      box-shadow: 0 0 0 3px rgba(126, 92, 254, 0.2);
-  }
-  .custom-api-input.ant-input-affix-wrapper {
-      padding: 6px 11px;
-      border-radius: 8px;
-      border-color: #e2e8f0;
-      border-width: 1.5px;
-      height: 40px;
-  }
-  .custom-api-input.ant-input-affix-wrapper:hover {
-      border-color: #7E5CFE;
-  }
-  .custom-api-input.ant-input-affix-wrapper-focused {
-       border-color: #7E5CFE;
-       box-shadow: 0 0 0 3px rgba(126, 92, 254, 0.2);
-  }
-  .custom-api-input.ant-input-password .ant-input-affix-wrapper {
-      padding: 6px 11px;
-      height: 40px;
-  }
-`;
 
 export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordClick }) {
     const { t } = useTranslation();
@@ -81,10 +23,8 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
             });
 
             if (res && res.success) {
-                // Handle post-login storage
                 handleLoginSuccess(res, values.remember);
 
-                // Fetch and cache tax settings
                 try {
                     const settings = await getTaxSettings();
                     if (settings) {
@@ -116,8 +56,7 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
     };
 
     return (
-        <div style={{ padding: '0px 0' }}>
-            <style>{customInputStyle}</style>
+        <div>
             {error && (
                 <Alert
                     message={t('auth.loginFailed')}
@@ -131,88 +70,97 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
             )}
 
             <Form
-
                 name="login"
                 initialValues={{ remember: true }}
                 onFinish={onFinish}
                 layout="vertical"
-                size="large"
                 requiredMark={false}
             >
+                {/* Company Username */}
                 <Form.Item
                     name="email"
-                    label={t('auth.emailOrUsername')}
+                    label={<span className="text-sm font-medium text-slate-700">Email</span>}
                     rules={[
-                        { required: true, message: 'Please input your email or username!' },
-                        {
-                            validator: (_, value) => {
-                                if (!value) return Promise.resolve();
-                                const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-                                const isUsername = /^[a-zA-Z0-9_]{3,}$/.test(value);
-                                if (isEmail || isUsername || value.length >= 3) {
-                                    return Promise.resolve();
-                                }
-                                return Promise.reject(new Error('Please enter a valid email or username'));
-                            }
-                        }
+                        { required: true, message: <span className="text-red-500 text-xs">Please enter your email</span> },
                     ]}
-                    style={formItemStyle}
+                    style={{ marginBottom: '20px' }}
                 >
                     <Input
-                        prefix={<UserOutlined style={{ color: '#a0aec0' }} />}
-                        className="custom-api-input"
+                        placeholder="Enter your email"
+                        className="!h-11 !rounded-lg !border-slate-300 hover:!border-blue-500 focus:!border-blue-500 focus:!shadow-[0_0_0_2px_rgba(59,130,246,0.15)]"
                     />
                 </Form.Item>
 
+                {/* Password */}
                 <Form.Item
                     name="password"
-                    label={t('auth.password')}
-                    rules={[{ required: true, message: 'Please input your password!' }]}
-                    style={formItemStyle}
+                    label={<span className="text-sm font-medium text-slate-700">Password</span>}
+                    rules={[{ required: true, message: <span className="text-red-500 text-xs">Please enter your password</span> }]}
+                    style={{ marginBottom: '16px' }}
                 >
                     <Input.Password
-                        prefix={<LockOutlined style={{ color: '#a0aec0' }} />}
-                        className="custom-api-input"
+                        placeholder="Enter your password"
+                        iconRender={(visible) => (visible ? <FiEye className="text-slate-400 cursor-pointer" /> : <FiEyeOff className="text-slate-400 cursor-pointer" />)}
+                        className="!h-11 !rounded-lg !border-slate-300 hover:!border-blue-500 focus-within:!border-blue-500 focus-within:!shadow-[0_0_0_2px_rgba(59,130,246,0.15)]"
                     />
                 </Form.Item>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+                {/* Remember me + Forgot password */}
+                <div className="flex items-center justify-between mb-6">
                     <Form.Item name="remember" valuePropName="checked" noStyle>
-                        <Checkbox>{t('auth.rememberMe')}</Checkbox>
+                        <Checkbox>
+                            <span className="text-sm text-slate-600">Keep me logged in</span>
+                        </Checkbox>
                     </Form.Item>
                     <a
-                        className="login-form-forgot"
                         href=""
                         onClick={(e) => {
                             e.preventDefault();
                             if (onForgotPasswordClick) onForgotPasswordClick();
                         }}
+                        className="text-sm text-blue-600 hover:text-blue-700 font-medium"
                     >
-                        {t('auth.forgotPassword')}
+                        Forgot your password?
                     </a>
                 </div>
 
-                <Form.Item>
-                    <Button
-                        type="primary"
-                        htmlType="submit"
-                        loading={loading}
-                        block
-                        style={{
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            border: 'none',
-                            height: '50px',
-                            fontSize: '16px',
-                            fontWeight: 'bold',
-                            borderRadius: '12px',
-                            boxShadow: '0 4px 14px 0 rgba(118, 75, 162, 0.39)'
-                        }}
+                {/* Submit Button */}
+                <Form.Item style={{ marginBottom: '16px' }}>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
                     >
-                        {loading ? t('auth.signingIn') : t('auth.signIn')}
-                    </Button>
+                        {loading ? (
+                            <span className="flex items-center gap-2">
+                                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Signing in...
+                            </span>
+                        ) : 'Sign In'}
+                    </button>
                 </Form.Item>
             </Form>
+
+            {/* Divider */}
+            <hr className="border-slate-200 my-5" />
+
+            {/* Sign up prompt */}
+            <p className="text-center text-sm text-slate-600">
+                Don't have an account?{' '}
+                <a
+                    href=""
+                    onClick={(e) => {
+                        e.preventDefault();
+                        if (onSignUpClick) onSignUpClick();
+                    }}
+                    className="text-blue-600 hover:text-blue-700 font-semibold"
+                >
+                    Sign up
+                </a>
+            </p>
         </div>
     );
 }
-

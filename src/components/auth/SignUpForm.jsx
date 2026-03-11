@@ -28,6 +28,7 @@ const formItemStyle = {
 };
 
 // Custom Input Styles injected via style tag
+/* Custom Input Styles injected via style tag */
 const customInputStyle = `
   .custom-api-input .ant-input, 
   .custom-api-input .ant-input-password .ant-input,
@@ -35,14 +36,13 @@ const customInputStyle = `
       border-color: #e2e8f0 !important;
       border-width: 1.5px !important;
       border-radius: 8px !important;
-      padding: 6px 11px !important;
-      height: 40px !important;
+      padding: 10px 15px !important;
+      height: 45px !important;
       line-height: 28px !important;
       display: flex !important;
       align-items: center !important;
   }
-  .custom-api-input .ant-input::placeholder,
-  .custom-api-input .ant-input-password .ant-input::placeholder {
+  .custom-api-input .ant-input::placeholder {
       line-height: 28px !important;
       vertical-align: middle !important;
   }
@@ -52,7 +52,7 @@ const customInputStyle = `
       align-items: center !important;
   }
   .custom-api-input.ant-select .ant-select-selector {
-      height: 40px !important;
+      height: 45px !important;
       display: flex !important;
       align-items: center !important;
   }
@@ -61,30 +61,23 @@ const customInputStyle = `
   .custom-api-input.ant-select:hover .ant-select-selector {
       border-color: #7E5CFE !important;
   }
-  .custom-api-input .ant-input:focus, 
+  .custom-api-input.ant-input:focus, 
   .custom-api-input.ant-input-affix-wrapper-focused,
   .custom-api-input.ant-select-focused .ant-select-selector {
       border-color: #7E5CFE !important;
       box-shadow: 0 0 0 3px rgba(126, 92, 254, 0.2) !important;
   }
   .custom-api-input.ant-input-affix-wrapper {
-      padding: 6px 11px !important;
+      padding: 10px 15px !important;
       border-radius: 8px;
       border-color: #e2e8f0;
       border-width: 1.5px;
-      height: 40px !important;
+      height: 45px !important;
       display: flex !important;
       align-items: center !important;
   }
-  .custom-api-input.ant-input-affix-wrapper:hover {
-      border-color: #7E5CFE;
-  }
-  .custom-api-input.ant-input-affix-wrapper-focused {
-       border-color: #7E5CFE;
-       box-shadow: 0 0 0 3px rgba(126, 92, 254, 0.2);
-  }
   .custom-api-input.ant-input-password {
-      height: 40px !important;
+      height: 45px !important;
   }
   .custom-api-input .ant-input-password-icon {
       display: flex !important;
@@ -266,248 +259,247 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                 />
             )}
 
-            <Form
-                form={form}
-                name="signup"
-                onFinish={onFinish}
-                layout="vertical"
-                size="large"
-                requiredMark={false}
-                initialValues={{ userType: 'SHOP_OWNER', country: 'USA' }}
+<Form
+    form={form}
+    name="signup"
+    onFinish={onFinish}
+    layout="vertical"
+    size="large"
+    requiredMark={false}
+    initialValues={{ userType: 'SHOP_OWNER', country: 'USA' }}
+>
+    <Row gutter={16}>
+        <Col xs={24} sm={12}>
+            <Form.Item
+                name="businessName"
+                label={t('customers.companyName')}
+                rules={[{ required: true, message: 'Please input business name!' }]}
+                style={formItemStyle}
             >
-                <Row gutter={16}>
-                    <Col xs={24} sm={12}>
-                        <Form.Item
-                            name="businessName"
-                            label={t('customers.companyName')}
-                            rules={[{ required: true, message: 'Please input business name!' }]}
-                            style={formItemStyle}
-                        >
-                            <Input className="custom-api-input" />
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} sm={12}>
-                        <Form.Item
-                            name="ownerName"
-                            label={t('customers.contactName')}
-                            rules={[{ required: true, message: 'Please input contact name!' }]}
-                            style={formItemStyle}
-                        >
-                            <Input prefix={<UserOutlined style={{ color: '#a0aec0' }} />} className="custom-api-input" />
-                        </Form.Item>
-                    </Col>
-                </Row>
+                {/* Ensure the custom class is applied */}
+                <Input className="custom-api-input" />
+            </Form.Item>
+        </Col>
+        <Col xs={24} sm={12}>
+            <Form.Item
+                name="ownerName"
+                label={t('customers.contactName')}
+                rules={[{ required: true, message: 'Please input contact name!' }]}
+                style={formItemStyle}
+            >
+                <Input prefix={<UserOutlined style={{ color: '#a0aec0' }} />} className="custom-api-input" />
+            </Form.Item>
+        </Col>
+    </Row>
 
-                <Row gutter={16}>
-                    <Col xs={24} sm={12}>
-                        <Form.Item
-                            name="email"
-                            label={t('auth.email')}
-                            rules={[
-                                { required: true, message: 'Please input email!' },
-                                { type: 'email', message: 'Invalid email!' }
-                            ]}
-                            style={formItemStyle}
-                        >
-                            <Input prefix={<MailOutlined style={{ color: '#a0aec0' }} />} className="custom-api-input" />
-                        </Form.Item>
-                    </Col>
-                </Row>
+    <Row gutter={16}>
+        <Col xs={24} sm={24}> {/* Ensure full width for the email field */}
+            <Form.Item
+                name="email"
+                label={t('auth.email')}
+                rules={[
+                    { required: true, message: 'Please input email!' },
+                    { type: 'email', message: 'Invalid email!' }
+                ]}
+                style={formItemStyle}
+            >
+                <Input prefix={<MailOutlined style={{ color: '#a0aec0' }} />} className="custom-api-input" />
+            </Form.Item>
+        </Col>
+    </Row>
+    <Row gutter={16}>
+        <Col xs={24} sm={12}>
+            <Form.Item
+                name="phone"
+                label={t('customers.phone')}
+                rules={[
+                    { required: true, message: 'Please input phone number!' },
+                    { validator: (_, value) => validatePhoneNumber(value || '') }
+                ]}
+                style={formItemStyle}
+            >
+                <Input
+                    prefix={<PhoneOutlined style={{ color: '#a0aec0' }} />}
+                    className="custom-api-input"
+                    maxLength={14}
+                    onChange={(e) => {
+                        const formatted = formatPhoneNumber(e.target.value);
+                        form.setFieldsValue({ phone: formatted });
+                    }}
+                />
+            </Form.Item>
+        </Col>
+        <Col xs={24} sm={12}>
+            <Form.Item
+                name="alternatePhone"
+                label={t('auth.alternatePhone')}
+                rules={[
+                    {
+                        validator: (_, value) => {
+                            if (!value) return Promise.resolve();
+                            return validatePhoneNumber(value);
+                        }
+                    }
+                ]}
+                style={formItemStyle}
+            >
+                <Input
+                    prefix={<PhoneOutlined style={{ color: '#a0aec0' }} />}
+                    className="custom-api-input"
+                    maxLength={14}
+                    onChange={(e) => {
+                        const formatted = formatPhoneNumber(e.target.value);
+                        form.setFieldsValue({ alternatePhone: formatted });
+                    }}
+                />
+            </Form.Item>
+        </Col>
+    </Row>
 
-
-                <Row gutter={16}>
-                    <Col xs={24} sm={12}>
-                        <Form.Item
-                            name="phone"
-                            label={t('customers.phone')}
-                            rules={[
-                                { required: true, message: 'Please input phone number!' },
-                                { validator: (_, value) => validatePhoneNumber(value || '') }
-                            ]}
-                            style={formItemStyle}
-                        >
-                            <Input
-                                prefix={<PhoneOutlined style={{ color: '#a0aec0' }} />}
-                                className="custom-api-input"
-                                maxLength={14}
-                                onChange={(e) => {
-                                    const formatted = formatPhoneNumber(e.target.value);
-                                    form.setFieldsValue({ phone: formatted });
-                                }}
-                            />
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} sm={12}>
-                        <Form.Item
-                            name="alternatePhone"
-                            label={t('auth.alternatePhone')}
-                            rules={[
-                                {
-                                    validator: (_, value) => {
-                                        if (!value) return Promise.resolve();
-                                        return validatePhoneNumber(value);
-                                    }
-                                }
-                            ]}
-                            style={formItemStyle}
-                        >
-                            <Input
-                                prefix={<PhoneOutlined style={{ color: '#a0aec0' }} />}
-                                className="custom-api-input"
-                                maxLength={14}
-                                onChange={(e) => {
-                                    const formatted = formatPhoneNumber(e.target.value);
-                                    form.setFieldsValue({ alternatePhone: formatted });
-                                }}
-                            />
-                        </Form.Item>
-                    </Col>
-                </Row>
-
-                <Form.Item
-                    name="addressLine1"
-                    label={t('customers.addressLine1')}
-                    rules={[{ required: true, message: 'Please input address!' }]}
-                    style={formItemStyle}
+    {/* City, State, Zip, Country */}
+    <Row gutter={16}>
+        <Col xs={24} sm={12}>
+            <Form.Item
+                name="city"
+                label={t('customers.city')}
+                rules={[{ required: true, message: 'Please enter or select city!' }]}
+                style={formItemStyle}
+            >
+                <Select
+                    showSearch
+                    optionFilterProp="label"
+                    className="custom-api-input"
+                    placeholder={t('auth.selectCity')}
                 >
-                    <Input className="custom-api-input" />
-                </Form.Item>
-
-                <Form.Item
-                    name="addressLine2"
-                    label={t('auth.addressLine2')}
-                    style={formItemStyle}
+                    {availableCities.map(city => (
+                        <Select.Option key={city.value} value={city.value}>
+                            {city.label}
+                        </Select.Option>
+                    ))}
+                </Select>
+            </Form.Item>
+        </Col>
+        <Col xs={24} sm={12}>
+            <Form.Item
+                name="state"
+                label={selectedCountry === 'Canada' ? t('customers.provinceLabel') : t('customers.stateLabel')}
+                rules={[{ required: true, message: `Please select ${selectedCountry === 'Canada' ? 'province' : 'state'}!` }]}
+                style={formItemStyle}
+            >
+                <Select
+                    onChange={handleStateChange}
+                    showSearch
+                    optionFilterProp="label"
+                    className="custom-api-input"
                 >
-                    <Input className="custom-api-input" />
-                </Form.Item>
+                    {availableStates.map(state => (
+                        <Select.Option key={state.value} value={state.value}>
+                            {state.label}
+                        </Select.Option>
+                    ))}
+                </Select>
+            </Form.Item>
+        </Col>
+    </Row>
 
-                {/* City, State, Zip, Country */}
-                <Row gutter={16}>
-                    <Col xs={24} sm={12}>
-                        <Form.Item
-                            name="city"
-                            label={t('customers.city')}
-                            rules={[{ required: true, message: 'Please enter or select city!' }]}
-                            style={formItemStyle}
-                        >
-                            <Select
-                                showSearch
-                                optionFilterProp="label"
-                                className="custom-api-input"
-                                placeholder={t('auth.selectCity')}
-                            >
-                                {availableCities.map(city => (
-                                    <Select.Option key={city.value} value={city.value}>
-                                        {city.label}
-                                    </Select.Option>
-                                ))}
-                            </Select>
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} sm={12}>
-                        <Form.Item
-                            name="state"
-                            label={selectedCountry === 'Canada' ? t('customers.provinceLabel') : t('customers.stateLabel')}
-                            rules={[{ required: true, message: `Please select ${selectedCountry === 'Canada' ? 'province' : 'state'}!` }]}
-                            style={formItemStyle}
-                        >
-                            <Select
-                                onChange={handleStateChange}
-                                showSearch
-                                optionFilterProp="label"
-                                className="custom-api-input"
-                            >
-                                {availableStates.map(state => (
-                                    <Select.Option key={state.value} value={state.value}>
-                                        {state.label}
-                                    </Select.Option>
-                                ))}
-                            </Select>
-                        </Form.Item>
-                    </Col>
-                </Row>
-
-                <Row gutter={16}>
-                    <Col xs={24} sm={12}>
-                        <Form.Item
-                            name="postalCode"
-                            label={t('customers.zipCode')}
-                            rules={[{ required: true, message: 'Please input zip code!' }]}
-                            style={formItemStyle}
-                        >
-                            <Input className="custom-api-input" />
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} sm={12}>
-                        <Form.Item
-                            name="country"
-                            label={t('customers.country')}
-                            rules={[{ required: true, message: 'Please select country!' }]}
-                            initialValue="USA"
-                            style={formItemStyle}
-                        >
-                            <Select
-                                onChange={handleCountryChange}
-                                showSearch
-                                optionFilterProp="label"
-                                className="custom-api-input"
-                            >
-                                {COUNTRIES.map(country => (
-                                    <Select.Option key={country.value} value={country.value}>
-                                        {country.label}
-                                    </Select.Option>
-                                ))}
-                            </Select>
-                        </Form.Item>
-                    </Col>
-                </Row>
-
-                {selectedCity === 'Other' && (
-                    <Form.Item
-                        name="customCity"
-                        label={t('auth.enterCityName')}
-                        rules={[{ required: true, message: 'Please enter your city!' }]}
-                        style={formItemStyle}
-                    >
-                        <Input className="custom-api-input" placeholder={t('auth.typeCityName')} />
-                    </Form.Item>
-                )}
-
-                <Form.Item
-                    name="userType"
-                    label={t('auth.userType')}
-                    rules={[{ required: true, message: 'Please select user type!' }]}
-                    style={formItemStyle}
+    <Row gutter={16}>
+        <Col xs={24} sm={12}>
+            <Form.Item
+                name="postalCode"
+                label={t('customers.zipCode')}
+                rules={[{ required: true, message: 'Please input zip code!' }]}
+                style={formItemStyle}
+            >
+                <Input className="custom-api-input" />
+            </Form.Item>
+        </Col>
+        <Col xs={24} sm={12}>
+            <Form.Item
+                name="country"
+                label={t('customers.country')}
+                rules={[{ required: true, message: 'Please select country!' }]}
+                initialValue="USA"
+                style={formItemStyle}
+            >
+                <Select
+                    onChange={handleCountryChange}
+                    showSearch
+                    optionFilterProp="label"
+                    className="custom-api-input"
                 >
-                    <Select className="custom-api-input">
-                        <Select.Option value="SHOP_OWNER">{t('auth.shopOwner')}</Select.Option>
-                        <Select.Option value="MOBILE_TECHNICIAN">{t('auth.mobileTechnician')}</Select.Option>
-                    </Select>
-                </Form.Item>
-                <Form.Item style={{ marginBottom: 0, marginTop: '24px' }}>
-                    <Space style={{ width: '100%', justifyContent: 'center' }}>
-                        <Button onClick={onCancel}>
-                            {t('common.cancel')}
-                        </Button>
-                        <Button
-                            type="primary"
-                            htmlType="submit"
-                            style={{
-                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                border: 'none',
-                                height: '50px',
-                                fontSize: '16px',
-                                fontWeight: 'bold',
-                                borderRadius: '12px',
-                                boxShadow: '0 4px 14px 0 rgba(118, 75, 162, 0.39)'
-                            }}
-                            loading={loading}
-                        >
-                            {t('auth.continue')}
-                        </Button>
-                    </Space>
-                </Form.Item>
-            </Form>
+                    {COUNTRIES.map(country => (
+                        <Select.Option key={country.value} value={country.value}>
+                            {country.label}
+                        </Select.Option>
+                    ))}
+                </Select>
+            </Form.Item>
+        </Col>
+    </Row>
+
+    {selectedCity === 'Other' && (
+        <Form.Item
+            name="customCity"
+            label={t('auth.enterCityName')}
+            rules={[{ required: true, message: 'Please enter your city!' }]}
+            style={formItemStyle}
+        >
+            <Input className="custom-api-input" placeholder={t('auth.typeCityName')} />
+        </Form.Item>
+    )}
+
+    <Form.Item
+        name="userType"
+        label={t('auth.userType')}
+        rules={[{ required: true, message: 'Please select user type!' }]}
+        style={formItemStyle}
+    >
+        <Select className="custom-api-input">
+            <Select.Option value="SHOP_OWNER">{t('auth.shopOwner')}</Select.Option>
+            <Select.Option value="MOBILE_TECHNICIAN">{t('auth.mobileTechnician')}</Select.Option>
+        </Select>
+    </Form.Item>
+
+    {/* Action buttons */}
+    <Form.Item style={{ marginBottom: 0, marginTop: '24px' }}>
+        <div className="grid grid-cols-2 gap-4 w-full">
+            <Button
+                onClick={onCancel}
+                className="w-full"
+                style={{
+                    backgroundColor: '#7E5CFE', // Solid color for the button
+                    border: 'none',
+                    height: '50px',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    borderRadius: '12px',
+                    color: 'white',
+                    boxShadow: '0 4px 14px 0 rgba(118, 75, 162, 0.39)',
+                }}
+            >
+                {t('common.cancel')}
+            </Button>
+            <Button
+                type="primary"
+                htmlType="submit"
+                className="w-full"
+                style={{
+                    backgroundColor: '#7E5CFE', // Same color for both buttons
+                    border: 'none',
+                    height: '50px',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    borderRadius: '12px',
+                    color: 'white',
+                    boxShadow: '0 4px 14px 0 rgba(118, 75, 162, 0.39)',
+                }}
+                loading={loading}
+            >
+                {t('auth.continue')}
+            </Button>
+        </div>
+    </Form.Item>
+</Form>
         </div>
     );
 };

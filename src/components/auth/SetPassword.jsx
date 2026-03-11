@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Form, Input, Button, Card, notification, Typography, Result, Alert } from 'antd';
 import { LockOutlined, ArrowLeftOutlined, MailOutlined } from '@ant-design/icons';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { setPassword } from '../../api/setPassword';
+import Logo from '../logo';
 
 const { Title, Text } = Typography;
 
@@ -51,11 +52,11 @@ const SetPassword = () => {
         }
     };
 
-    // 1. Success State
-    if (success) {
-        return (
-            <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4">
-                <Card className="w-full max-w-md shadow-lg rounded-xl border border-slate-200">
+    const renderContent = () => {
+        // 1. Success State
+        if (success) {
+            return (
+                <Card className="w-full max-w-md shadow-lg rounded-xl border border-slate-200 z-10 mx-auto">
                     <Result
                         status="success"
                         title="Password Set Successfully!"
@@ -72,15 +73,13 @@ const SetPassword = () => {
                         ]}
                     />
                 </Card>
-            </div>
-        );
-    }
+            );
+        }
 
-    // 2. Check Email State (Registered but not verified)
-    if (!token && email) {
-        return (
-            <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4">
-                <Card className="w-full max-w-md shadow-lg rounded-xl border border-slate-200">
+        // 2. Check Email State (Registered but not verified)
+        if (!token && email) {
+            return (
+                <Card className="w-full max-w-md shadow-lg rounded-xl border border-slate-200 z-10 mx-auto">
                     <Result
                         icon={<MailOutlined className="text-violet-600" />}
                         title="Check Your Email"
@@ -101,27 +100,23 @@ const SetPassword = () => {
                         ]}
                     />
                 </Card>
-            </div>
-        );
-    }
+            );
+        }
 
-    // 3. Fallback: No Token, No Email
-    if (!token) {
-        return (
-            <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4">
-                <Card className="w-full max-w-md shadow-lg rounded-xl border border-slate-200 text-center p-8">
+        // 3. Fallback: No Token, No Email
+        if (!token) {
+            return (
+                <Card className="w-full max-w-md shadow-lg rounded-xl border border-slate-200 text-center p-8 z-10 mx-auto">
                     <Title level={4} className="mb-4">Invalid Link</Title>
                     <Text type="secondary" className="block mb-6">This link appears to be invalid or expired.</Text>
                     <Button type="primary" onClick={() => navigate('/auth')}>Go to Login</Button>
                 </Card>
-            </div>
-        )
-    }
+            );
+        }
 
-    // 4. Default: Set Password Form
-    return (
-        <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4">
-            <Card className="w-full max-w-md shadow-lg rounded-xl border border-slate-200">
+        // 4. Default: Set Password Form
+        return (
+            <Card className="w-full max-w-md shadow-lg rounded-xl border border-slate-200 z-10 mx-auto">
                 <div className="text-center mb-6">
                     <Title level={3} className="!mb-2">{t('auth.setPassword')}</Title>
                     <Text type="secondary">Create a new password for your account</Text>
@@ -193,6 +188,17 @@ const SetPassword = () => {
                     </Button>
                 </div>
             </Card>
+        );
+    };
+
+    return (
+        <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4 relative overflow-hidden">
+            <div className="absolute top-0 left-0 p-4 md:p-6 z-50">
+                <Link to="/">
+                    <Logo className="w-28 md:w-36 h-auto cursor-pointer" />
+                </Link>
+            </div>
+            {renderContent()}
         </div>
     );
 };

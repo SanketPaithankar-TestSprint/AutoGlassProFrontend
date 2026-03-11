@@ -48,6 +48,8 @@
     "react-router-dom": "^7.9.3",
     "react-select": "^5.10.2",
     "react-signature-canvas": "^1.1.0-alpha.2",
+    "react-slick": "^0.31.0",
+    "slick-carousel": "^1.8.1",
     "tailwind-merge": "^3.4.1",
     "tailwindcss": "^4.1.13",
     "three": "^0.180.0",
