@@ -184,7 +184,7 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
         {
             key: '/open',
             icon: <FolderOpenOutlined />,
-            label: <Link to="/open">Jobs</Link>,
+            label: <Link to="/open">{t('nav.jobs')}</Link>,
         },
         {
             key: '/reports',

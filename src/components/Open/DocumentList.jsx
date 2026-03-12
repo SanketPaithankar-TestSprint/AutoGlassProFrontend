@@ -1,6 +1,7 @@
 import React from 'react';
 import { Empty } from 'antd';
 import DocumentCard from './DocumentCard';
+import { useTranslation } from 'react-i18next';
 
 const DocumentList = ({ documents, loading, onDocumentClick }) => {
     if (loading) {
@@ -22,7 +23,7 @@ const DocumentList = ({ documents, loading, onDocumentClick }) => {
     if (!documents || documents.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center py-20 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                <Empty description="No documents found" />
+                <Empty description={t('openRoute.document.noData')} />
             </div>
         );
     }

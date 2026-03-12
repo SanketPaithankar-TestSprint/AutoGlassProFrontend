@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, Tag, Button, Tooltip } from 'antd';
 import { FileTextOutlined, UserOutlined, CarOutlined, CalendarOutlined, DeleteOutlined, WarningOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import { getStatusColor, getTypeColor, formatCurrency, formatDate, isOverdue, getDaysOverdue } from './helpers/utils';
 
 const PremiumDocumentCard = ({
@@ -9,10 +10,13 @@ const PremiumDocumentCard = ({
     onDelete,
     isListMode = false,
 }) => {
+    const { t } = useTranslation();
     const { documentNumber, documentType, status, customerName, vehicleInfo, totalAmount, createdAt, balanceDue } = doc;
 
     const docIsOverdue = isOverdue(doc);
     const daysOverdue = getDaysOverdue(doc);
+    const normalizedDocumentType = documentType?.toLowerCase() === 'workorder' ? 'work_order' : documentType?.toLowerCase();
+    const translatedDocumentType = t(`openRoute.documentTypes.${normalizedDocumentType}`);
 
     // Get border color based on status
     // Overdue = orange, Completed/Paid = green, Not completed = yellow
@@ -58,7 +62,7 @@ const PremiumDocumentCard = ({
                                 {documentType?.replace('_', ' ')}
                             </Tag>
                         </div>
-                        <Tooltip title="Delete Document">
+                        <Tooltip title={t('openRoute.actions.deleteDocument')}>
                             <Button
                                 type="text"
                                 danger
@@ -83,7 +87,7 @@ const PremiumDocumentCard = ({
                         <div className="flex flex-col items-end">
                             <span className="font-bold text-slate-900 text-sm">{formatCurrency(totalAmount)}</span>
                             <span className={`font-medium text-xs ${(balanceDue || 0) > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
-                                Bal: {formatCurrency(balanceDue)}
+                                {t('openRoute.document.bal')}: {formatCurrency(balanceDue)}
                             </span>
                         </div>
                     </div>
@@ -95,10 +99,10 @@ const PremiumDocumentCard = ({
                     <span className="font-bold text-slate-900 text-sm w-[90px] truncate">{documentNumber}</span>
                     <div className="w-[70px] flex justify-center flex-shrink-0">
                         <Tag color={getTypeColor(documentType)} className="uppercase font-bold text-[9px] m-0">
-                            {documentType?.replace('_', ' ')}
+                                {translatedDocumentType}
                         </Tag>
                     </div>
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-1 min-w-0 pl-4">
                         <UserOutlined className="text-slate-400 flex-shrink-0 text-xs" />
                         <span className="text-slate-700 text-sm truncate">{customerName}</span>
                     </div>
@@ -110,7 +114,7 @@ const PremiumDocumentCard = ({
                         {formatCurrency(totalAmount)}
                     </span>
                     <div className="w-[32px] flex justify-center flex-shrink-0">
-                        <Tooltip title="Delete Document">
+                        <Tooltip title={t('openRoute.actions.deleteDocument')}>
                             <Button
                                 type="text"
                                 danger
@@ -133,10 +137,10 @@ const PremiumDocumentCard = ({
                         <span className="font-bold text-slate-900 text-sm w-[110px] truncate">{documentNumber}</span>
                         <div className="w-[80px] flex justify-center flex-shrink-0">
                             <Tag color={getTypeColor(documentType)} className="uppercase font-bold text-[10px] m-0">
-                                {documentType?.replace('_', ' ')}
+                                {translatedDocumentType}
                             </Tag>
                         </div>
-                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-1 min-w-0 pl-4">
                             <UserOutlined className="text-slate-400 flex-shrink-0" />
                             <span className="text-slate-700 text-sm">{customerName}</span>
                         </div>
@@ -161,7 +165,7 @@ const PremiumDocumentCard = ({
                             {formatCurrency(balanceDue)}
                         </span>
                         <div className="w-[32px] flex justify-center">
-                            <Tooltip title="Delete Document">
+                            <Tooltip title={t('openRoute.actions.deleteDocument')}>
                                 <Button
                                     type="text"
                                     danger
@@ -196,10 +200,10 @@ const PremiumDocumentCard = ({
                 </div>
                 <div className="flex items-center gap-1">
                     <Tag color={getTypeColor(documentType)} className="uppercase font-bold text-[8px] sm:text-[10px] m-0">
-                        {documentType?.replace('_', ' ')}
+                        {translatedDocumentType}
                     </Tag>
                     {docIsOverdue && (
-                        <Tooltip title={`${daysOverdue} days overdue`}>
+                        <Tooltip title={t('openRoute.overdue.days', { count: daysOverdue })}>
                             <Tag color="orange" className="text-[8px] sm:text-[10px] m-0">
                                 <WarningOutlined />
                             </Tag>
@@ -225,18 +229,18 @@ const PremiumDocumentCard = ({
 
             <div className="flex justify-between items-center pt-2 border-t border-slate-100">
                 <div className="flex flex-col">
-                    <span className="text-[9px] sm:text-xs text-slate-500">Total</span>
+                    <span className="text-[9px] sm:text-xs text-slate-500">{t('openRoute.document.total')}</span>
                     <span className="font-bold text-slate-900 text-xs sm:text-base">
                         {formatCurrency(totalAmount)}
                     </span>
                 </div>
                 <div className="flex flex-col items-end">
-                    <span className="text-[9px] sm:text-xs text-slate-500">Balance</span>
+                    <span className="text-[9px] sm:text-xs text-slate-500">{t('openRoute.document.balance')}</span>
                     <span className={`font-medium text-xs sm:text-base ${(balanceDue || 0) > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
                         {formatCurrency(balanceDue)}
                     </span>
                 </div>
-                <Tooltip title="Delete Document">
+                <Tooltip title={t('openRoute.actions.deleteDocument')}>
                     <Button
                         type="text"
                         danger

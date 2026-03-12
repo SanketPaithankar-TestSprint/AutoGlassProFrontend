@@ -1,8 +1,10 @@
 import React from 'react';
 import { Card, Tag } from 'antd';
 import { FileTextOutlined, UserOutlined, CarOutlined, CalendarOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 
 const DocumentCard = ({ document, onClick }) => {
+    const { t } = useTranslation();
     const { documentNumber, documentType, status, customerName, vehicleInfo, totalAmount, createdAt } = document;
 
     const getStatusColor = (status) => {
@@ -59,10 +61,10 @@ const DocumentCard = ({ document, onClick }) => {
 
             <div className="flex justify-between items-center pt-3 border-t border-slate-100">
                 <Tag color={getStatusColor(status)} className="capitalize m-0">
-                    {status?.replace('_', ' ')}
+                    {t(`openRoute.status.${status?.toLowerCase()}`)}
                 </Tag>
                 <span className="font-bold text-slate-900 text-lg">
-                    {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalAmount || 0)}
+                    <span>{new Intl.NumberFormat(t('common.locale') || 'en-US', { style: 'currency', currency: 'USD' }).format(totalAmount || 0)}</span>
                 </span>
             </div>
         </Card>

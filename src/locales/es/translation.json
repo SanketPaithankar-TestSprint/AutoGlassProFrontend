@@ -9,6 +9,7 @@
         "customers": "Clientes",
         "quote": "Cotizaci\u00f3n",
         "schedule": "Calendario",
+        "jobs": "Trabajos",
         "dashboard": "Panel",
         "reports": "Informes",
         "serviceInquiries": "Consultas",
@@ -474,6 +475,45 @@
         "noOrganizationsFound": "No se encontraron organizaciones",
         "showing": "Mostrando",
         "of": "de",
+        "actions": {
+            "hideFilters": "Ocultar Filtros",
+            "showFilters": "Mostrar Filtros"
+        },
+        "filters": {
+            "dateAdded": "Fecha de Adición"
+        },
+        "details": {
+            "title": "Detalles del Cliente",
+            "name": "Nombre",
+            "email": "Correo Electrónico",
+            "phone": "Teléfono",
+            "address": "Dirección",
+            "addressLine1": "Línea de Dirección 1",
+            "addressLine2": "Línea de Dirección 2",
+            "city": "Ciudad",
+            "state": "Estado",
+            "postalCode": "Código Postal",
+            "country": "País",
+            "created": "Creado",
+            "companyName": "Nombre de la Empresa",
+            "contactName": "Nombre de Contacto",
+            "taxId": "ID Fiscal",
+            "altPhone": "Teléfono Alternativo",
+            "notes": "Notas",
+            "lastUpdated": "Última Actualización"
+        },
+        "infoTooltip": "Gestionar contactos individuales y organizaciones",
+        "dateRangeOptions": {
+            "all": "Todo el Tiempo",
+            "week": "Últimos 7 Días",
+            "month": "Últimos 30 Días",
+            "custom": "Rango Personalizado"
+        },
+        "deleteModal": {
+            "title": "Eliminar Cliente",
+            "message": "¿Está seguro de que desea eliminar a {{name}}? Esta acción no se puede deshacer.",
+            "confirm": "Sí, Eliminar"
+        },
         "results": "resultados",
         "customerUpdated": "Cliente actualizado",
         "customerCreated": "Cliente creado",
@@ -1361,17 +1401,144 @@
         "pressEscToClose": "Presiona Esc o haz clic afuera para cerrar"
     },
     "datePicker": {
-        "time": "Tiempo",
-        "today": "Hoy",
-        "tmrw": "Mañana",
-        "week": "Semana",
-        "selectDateTime": "Seleccione fecha y hora"
+        "time": "Tiempo"
     },
-    "kitSelection": {
-        "selectInstallationKit": "Seleccionar kit de instalación",
-        "selectKitFor": "Seleccione un kit de instalación para",
-        "description": "Descripción",
-        "price": "Precio",
-        "noKitsAvailable": "No hay kits autorizados disponibles para esta pieza."
+    "actions": {
+        "hideFilters": "Ocultar Filtros",
+        "showFilters": "Mostrar Filtros",
+        "loading": "Cargando detalles del documento...",
+        "deleteDocument": "Eliminar Documento",
+        "itemsPerPage": "Elementos por página:"
+    },
+    "deleteModal": {
+        "title": "Confirmar Eliminación",
+        "message": "¿Cómo le gustaría eliminar el documento",
+        "softDelete": "Cancelar Documento (Eliminación Suave)",
+        "softDeleteDesc": "Marcar como cancelado, mantener en base de datos.",
+        "hardDelete": "Eliminar de Base de Datos (Eliminación Permanente)",
+        "hardDeleteDesc": "Eliminar registros permanentemente.",
+        "close": "Cerrar"
+    },
+    "messages": {
+        "failedLoad": "Error al cargar documentos.",
+        "failedOpen": "Error al abrir documento.",
+        "failedDelete": "Error al eliminar documento.",
+        "documentDeleted": "Documento eliminado permanentemente.",
+        "documentCancelled": "Documento cancelado.",
+        "overdue": "Vencido"
+    },
+    "openRoute": {
+        "title": "Documentos Abiertos",
+        "subtitle": "Gestiona y da seguimiento a los documentos de servicio abiertos",
+        "filters": {
+            "title": "Filtros",
+            "active": "activos",
+            "clear": "Limpiar",
+            "documentType": "Tipo de Documento",
+            "status": "Estado",
+            "overdue": "Vencido",
+            "dateRange": "Rango de Fechas",
+            "amountRange": "Rango de Monto",
+            "selectDocumentTypes": "Seleccionar tipos de documento",
+            "selectStatuses": "Seleccionar estados",
+            "overdueDocuments": "Documentos vencidos",
+            "selectDateRange": "Seleccionar rango de fechas",
+            "startDate": "Fecha de inicio",
+            "endDate": "Fecha de fin",
+            "selectStartDate": "Seleccionar fecha de inicio",
+            "selectEndDate": "Seleccionar fecha de fin",
+            "activeFilters": "Filtros Activos:",
+            "type": "Tipo",
+            "date": "Fecha",
+            "overdueOnly": "Solo Vencidos"
+        },
+        "statusOptions": {
+            "all": "Todos los Estados"
+        },
+        "documentTypeOptions": {
+            "all": "Todos los Tipos"
+        },
+        "dateRangeOptions": {
+            "all": "Todo el Tiempo",
+            "week": "Últimos 7 Días",
+            "month": "Últimos 30 Días",
+            "custom": "Rango Personalizado"
+        },
+        "documentTypes": {
+            "quote": "Cotización",
+            "invoice": "Factura",
+            "work_order": "Orden de Trabajo",
+            "workorder": "Orden de Trabajo"
+        },
+        "viewModes": {
+            "grid": "Cuadrícula",
+            "list": "Lista"
+        },
+        "search": {
+            "placeholder": "Buscar por # de documento, cliente, vehículo...",
+            "server": "Servidor",
+            "mixed": "Mixto",
+            "local": "Local"
+        },
+        "results": {
+            "documents": "documentos",
+            "filterApplied_one": "{{count}} filtro aplicado",
+            "filterApplied_other": "{{count}} filtros aplicados"
+        },
+        "notifications": {
+            "overdue": "Factura vencida: {{documentNumber}}",
+            "customer": "Cliente:",
+            "balanceDue": "Saldo Pendiente:"
+        },
+        "overdue": {
+            "days_one": "{{count}} día de vencimiento",
+            "days_other": "{{count}} días de vencimiento"
+        },
+        "status": {
+            "pending": "Pendiente",
+            "in_progress": "En Progreso",
+            "completed": "Completado",
+            "paid": "Pagado",
+            "cancelled": "Cancelado",
+            "draft": "Borrador",
+            "sent": "Enviado",
+            "viewed": "Visto",
+            "accepted": "Aceptado",
+            "rejected": "Rechazado",
+            "expired": "Caducado"
+        },
+        "document": {
+            "doc": "Doc #",
+            "customer": "Cliente",
+            "vehicle": "Vehículo",
+            "total": "Total",
+            "balance": "Saldo",
+            "bal": "Saldo",
+            "noData": "No se encontraron documentos"
+        },
+        "actions": {
+            "hideFilters": "Ocultar Filtros",
+            "showFilters": "Mostrar Filtros",
+            "loading": "Cargando detalles del documento...",
+            "deleteDocument": "Eliminar Documento",
+            "itemsPerPage": "Elementos por página:"
+        },
+        "deleteModal": {
+            "title": "Confirmar Eliminación",
+            "message": "¿Cómo le gustaría eliminar el documento",
+            "softDelete": "Cancelar Documento (Eliminación Suave)",
+            "softDeleteDesc": "Marcar como cancelado, mantener en base de datos.",
+            "hardDelete": "Eliminar de Base de Datos (Eliminación Permanente)",
+            "hardDeleteDesc": "Eliminar registros permanentemente.",
+            "close": "Cerrar"
+        },
+        "messages": {
+            "failedLoad": "Error al cargar documentos.",
+            "failedOpen": "Error al abrir documento.",
+            "failedDelete": "Error al eliminar documento.",
+            "documentDeleted": "Documento eliminado permanentemente.",
+            "documentCancelled": "Documento cancelado.",
+            "overdue": "Vencido"
+        }
     }
 }

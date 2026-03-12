@@ -87,9 +87,9 @@ export const applyCustomerFilters = (items, filters) => {
     return filtered;
 };
 
-export const getDateRangeOptions = () => [
-    { value: 'all', label: 'All Time' },
-    { value: 'week', label: 'Last 7 Days' },
-    { value: 'month', label: 'Last 30 Days' },
-    { value: 'custom', label: 'Custom Range' },
+export const getDateRangeOptions = (t) => [
+    { value: 'all', label: t('customers.dateRangeOptions.all') },
+    { value: 'week', label: t('customers.dateRangeOptions.week') },
+    { value: 'month', label: t('customers.dateRangeOptions.month') },
+    { value: 'custom', label: t('customers.dateRangeOptions.custom') },
 ];

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Segmented, Input, Button, Tag, Spin, Tooltip } from 'antd';
 import { AppstoreOutlined, UnorderedListOutlined, SearchOutlined, ClockCircleOutlined, FilterOutlined, LoadingOutlined, CloudServerOutlined, DatabaseOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 
 const HeaderBar = ({
     viewMode,
@@ -13,6 +14,7 @@ const HeaderBar = ({
     searchSource = 'local',
     isMobile = false,
 }) => {
+    const { t } = useTranslation();
     const [currentTime, setCurrentTime] = useState(new Date());
 
     // Update time every second for real-time display
@@ -41,9 +43,9 @@ const HeaderBar = ({
             {/* Title Section */}
             <div className="mb-6 flex items-center gap-2">
                 <h1 className="!text-[30px] font-bold text-slate-900 m-0">
-                    Jobs
+                    {t('openRoute.title')}
                 </h1>
-                <Tooltip title="Manage and track your service documents" placement="right">
+                <Tooltip title={t('openRoute.subtitle')} placement="right">
                     <InfoCircleOutlined className="text-slate-400 text-base cursor-pointer hover:text-violet-500 transition-colors" />
                 </Tooltip>
             </div>
@@ -61,7 +63,7 @@ const HeaderBar = ({
                                 className={`flex-shrink-0 border-0 ${viewMode === 'grid' ? 'bg-white shadow-sm text-violet-600 font-medium' : 'text-slate-500 hover:text-slate-700'}`}
                                 size="small"
                             >
-                                Grid
+                                {t('openRoute.viewModes.grid')}
                             </Button>
                             <Button
                                 type={viewMode === 'list' ? 'primary' : 'text'}
@@ -70,7 +72,7 @@ const HeaderBar = ({
                                 className={`flex-shrink-0 border-0 ${viewMode === 'list' ? 'bg-white shadow-sm text-violet-600 font-medium' : 'text-slate-500 hover:text-slate-700'}`}
                                 size="small"
                             >
-                                List
+                                {t('openRoute.viewModes.list')}
                             </Button>
                         </div>
                     )}
@@ -80,7 +82,7 @@ const HeaderBar = ({
                         icon={<FilterOutlined />}
                         onClick={onOpenFilters}
                     >
-                        {sidebarOpen ? 'Hide Filters' : 'Show Filters'}
+                        {sidebarOpen ? t('openRoute.actions.hideFilters') : t('openRoute.actions.showFilters')}
                     </Button>
                 </div>
 
@@ -89,7 +91,7 @@ const HeaderBar = ({
                     <div className="relative">
                         <Input
                             size="large"
-                            placeholder="Search by Document #, Customer, or Vehicle..."
+                            placeholder={t('openRoute.search.placeholder')}
                             prefix={
                                 isSearchingApi
                                     ? <Spin indicator={<LoadingOutlined style={{ fontSize: 16 }} spin />} />
@@ -102,7 +104,7 @@ const HeaderBar = ({
                                         icon={searchSource === 'api' || searchSource === 'mixed' ? <CloudServerOutlined /> : <DatabaseOutlined />}
                                         className="mr-0"
                                     >
-                                        {searchSource === 'api' ? 'Server' : searchSource === 'mixed' ? 'Mixed' : 'Local'}
+                                        {searchSource === 'api' ? t('openRoute.search.server') : searchSource === 'mixed' ? t('openRoute.search.mixed') : t('openRoute.search.local')}
                                     </Tag>
                                 )
                             }

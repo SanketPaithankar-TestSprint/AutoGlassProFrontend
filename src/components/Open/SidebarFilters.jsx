@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Select, Slider, DatePicker, Collapse, Button, Tag, InputNumber, Space, Checkbox } from 'antd';
 import { FilterOutlined, ClearOutlined, CalendarOutlined, DollarOutlined, FileOutlined, CheckCircleOutlined, WarningOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import { getStatusOptions, getDocumentTypeOptions, getDateRangeOptions } from './helpers/utils';
 
 const { Panel } = Collapse;
@@ -28,11 +29,12 @@ const SidebarFilters = ({
     // Active filter count
     activeFilterCount = 0,
 }) => {
+    const { t } = useTranslation();
     const [expandedPanels, setExpandedPanels] = useState([]);
 
-    const statusOptions = getStatusOptions();
-    const documentTypeOptions = getDocumentTypeOptions();
-    const dateRangeOptions = getDateRangeOptions();
+    const statusOptions = getStatusOptions(t);
+    const documentTypeOptions = getDocumentTypeOptions(t);
+    const dateRangeOptions = getDateRangeOptions(t);
 
     const handleAmountChange = (value) => {
         setAmountRange(value);
@@ -58,10 +60,10 @@ const SidebarFilters = ({
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
                     <FilterOutlined className="text-violet-600 text-lg" />
-                    <h2 className="text-lg font-bold text-slate-900">Filters</h2>
+                    <h2 className="text-lg font-bold text-slate-900">{t('openRoute.filters.title')}</h2>
                     {activeFilterCount > 0 && (
                         <Tag color="violet" className="ml-2">
-                            {activeFilterCount} active
+                            {activeFilterCount} {t('openRoute.filters.active')}
                         </Tag>
                     )}
                 </div>
@@ -73,7 +75,7 @@ const SidebarFilters = ({
                         onClick={onClearAll}
                         className="text-slate-500 hover:text-violet-600"
                     >
-                        Clear
+                        {t('openRoute.filters.clear')}
                     </Button>
                 )}
             </div>
@@ -91,7 +93,7 @@ const SidebarFilters = ({
                     header={
                         <div className="flex items-center gap-2">
                             <FileOutlined className="text-slate-400" />
-                            <span className="font-semibold text-slate-700">Document Type</span>
+                            <span className="font-semibold text-slate-700">{t('openRoute.filters.documentType')}</span>
                         </div>
                     }
                     key="documentType"
@@ -100,7 +102,7 @@ const SidebarFilters = ({
                     <Select
                         mode="single"
                         style={{ width: '100%' }}
-                        placeholder="Select document types"
+                        placeholder={t('openRoute.filters.selectDocumentTypes')}
                         value={documentTypeFilter === 'all' ? null : documentTypeFilter}
                         onChange={(val) => setDocumentTypeFilter(val || 'all')}
                         options={documentTypeOptions.filter(opt => opt.value !== 'all')}
@@ -113,7 +115,7 @@ const SidebarFilters = ({
                     header={
                         <div className="flex items-center gap-2">
                             <CheckCircleOutlined className="text-slate-400" />
-                            <span className="font-semibold text-slate-700">Status & Overdue</span>
+                            <span className="font-semibold text-slate-700">{t('openRoute.filters.status')} & {t('openRoute.filters.overdue')}</span>
                         </div>
                     }
                     key="status"
@@ -123,7 +125,7 @@ const SidebarFilters = ({
                         <Select
                             mode="multiple"
                             style={{ width: '100%' }}
-                            placeholder="Select statuses"
+                            placeholder={t('openRoute.filters.selectStatuses')}
                             value={statusFilter}
                             onChange={setStatusFilter}
                             options={statusOptions.filter(opt => opt.value !== 'all')}
@@ -136,7 +138,7 @@ const SidebarFilters = ({
                             className="text-slate-700"
                         >
                             <span className="text-sm flex items-center gap-1">
-                                overdue documents
+                                {t('openRoute.filters.overdueDocuments')}
                             </span>
                         </Checkbox>
                     </div>
@@ -147,7 +149,7 @@ const SidebarFilters = ({
                     header={
                         <div className="flex items-center gap-2">
                             <CalendarOutlined className="text-slate-400" />
-                            <span className="font-semibold text-slate-700">Date Range</span>
+                            <span className="font-semibold text-slate-700">{t('openRoute.filters.dateRange')}</span>
                         </div>
                     }
                     key="dateRange"
@@ -156,7 +158,7 @@ const SidebarFilters = ({
                     <div className="space-y-3">
                         <Select
                             style={{ width: '100%' }}
-                            placeholder="Select date range"
+                            placeholder={t('openRoute.filters.selectDateRange')}
                             value={dateRangeFilter}
                             onChange={handleDateRangeTypeChange}
                             options={dateRangeOptions}
@@ -166,7 +168,7 @@ const SidebarFilters = ({
                         {dateRangeFilter === 'custom' && (
                             <div className="space-y-2">
                                 <div>
-                                    <label className="block text-xs font-medium text-slate-600 mb-1">Start Date</label>
+                                    <label className="block text-xs font-medium text-slate-600 mb-1">{t('openRoute.filters.startDate')}</label>
                                     <DatePicker
                                         style={{ width: '100%' }}
                                         value={customDateRange?.[0]}
@@ -175,11 +177,11 @@ const SidebarFilters = ({
                                             handleCustomDateChange(newRange);
                                         }}
                                         format="YYYY-MM-DD"
-                                        placeholder="Select start date"
+                                        placeholder={t('openRoute.filters.selectStartDate')}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-slate-600 mb-1">End Date</label>
+                                    <label className="block text-xs font-medium text-slate-600 mb-1">{t('openRoute.filters.endDate')}</label>
                                     <DatePicker
                                         style={{ width: '100%' }}
                                         value={customDateRange?.[1]}
@@ -188,7 +190,7 @@ const SidebarFilters = ({
                                             handleCustomDateChange(newRange);
                                         }}
                                         format="YYYY-MM-DD"
-                                        placeholder="Select end date"
+                                        placeholder={t('openRoute.filters.selectEndDate')}
                                         disabledDate={(current) => {
                                             // Disable dates before start date
                                             if (!customDateRange?.[0]) return false;
@@ -206,7 +208,7 @@ const SidebarFilters = ({
                     header={
                         <div className="flex items-center gap-2">
                             <DollarOutlined className="text-slate-400" />
-                            <span className="font-semibold text-slate-700">Amount Range</span>
+                            <span className="font-semibold text-slate-700">{t('openRoute.filters.amountRange')}</span>
                         </div>
                     }
                     key="amount"
@@ -259,21 +261,21 @@ const SidebarFilters = ({
             {/* Filter Summary */}
             {activeFilterCount > 0 && (
                 <div className="mt-auto pt-4 border-t border-slate-200">
-                    <p className="text-xs text-slate-500 mb-2">Active Filters:</p>
+                    <p className="text-xs text-slate-500 mb-2">{t('openRoute.filters.activeFilters')}</p>
                     <div className="flex flex-wrap gap-1">
                         {documentTypeFilter && documentTypeFilter !== 'all' && (
                             <Tag color="purple" closable onClose={() => setDocumentTypeFilter('all')}>
-                                Type: {documentTypeFilter}
+                                {t('openRoute.filters.type')}: {t(`openRoute.documentTypes.${documentTypeFilter}`)}
                             </Tag>
                         )}
                         {statusFilter && statusFilter.length > 0 && (
                             <Tag color="blue" closable onClose={() => setStatusFilter([])}>
-                                Status: {statusFilter.length}
+                                {t('openRoute.filters.status')}: {statusFilter.length}
                             </Tag>
                         )}
                         {dateRangeFilter && dateRangeFilter !== 'all' && (
                             <Tag color="green" closable onClose={() => { setDateRangeFilter('all'); setCustomDateRange(null); }}>
-                                Date: {dateRangeFilter === 'week' ? '7 Days' : dateRangeFilter === 'month' ? '30 Days' : 'Custom'}
+                                {t('openRoute.filters.date')}: {dateRangeFilter === 'week' ? t('openRoute.dateRangeOptions.week') : dateRangeFilter === 'month' ? t('openRoute.dateRangeOptions.month') : t('openRoute.dateRangeOptions.custom')}
                             </Tag>
                         )}
                         {(amountRange[0] > 0 || amountRange[1] < 100000) && (
@@ -283,7 +285,7 @@ const SidebarFilters = ({
                         )}
                         {overdueFilter && (
                             <Tag color="red" closable onClose={() => setOverdueFilter(false)}>
-                                Overdue Only
+                                {t('openRoute.filters.overdueOnly')}
                             </Tag>
                         )}
                     </div>

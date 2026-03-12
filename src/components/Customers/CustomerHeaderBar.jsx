@@ -21,7 +21,7 @@ const CustomerHeaderBar = ({
                     <h1 className="!text-[30px] font-bold text-slate-900 m-0">
                         {t('nav.customers')}
                     </h1>
-                    <Tooltip title="Manage individual contacts and organizations" placement="right">
+                    <Tooltip title={t('customers.infoTooltip')} placement="right">
                         <InfoCircleOutlined className="text-slate-400 text-base cursor-pointer hover:text-violet-500 transition-colors" />
                     </Tooltip>
                 </div>
@@ -53,7 +53,7 @@ const CustomerHeaderBar = ({
                         icon={<FilterOutlined />}
                         onClick={onOpenFilters}
                     >
-                        {sidebarOpen ? 'Hide Filters' : 'Show Filters'}
+                        {sidebarOpen ? t('customers.actions.hideFilters') : t('customers.actions.showFilters')}
                     </Button>
                 </div>
 
