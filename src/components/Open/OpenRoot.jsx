@@ -103,7 +103,7 @@ const OpenRoot = () => {
                 setTotalElements(total);
             } catch (error) {
                 console.error("Failed to fetch documents", error);
-                message.error("Failed to load documents.");
+                message.error(t('openRoute.messages.failedLoad'));
             } finally {
                 setLoading(false);
             }
@@ -158,8 +158,8 @@ const OpenRoot = () => {
                     // Stagger notifications by 500ms each for better visibility
                     setTimeout(() => {
                         notification.error({
-                            message: `Overdue: ${doc.documentNumber}`,
-                            description: `Customer: ${doc.customerName} | Balance Due: ${formatCurrency(doc.balanceDue)}`,
+                            message: t('openRoute.notifications.overdue', { documentNumber: doc.documentNumber }),
+                            description: `${t('openRoute.notifications.customer')} ${doc.customerName} | ${t('openRoute.notifications.balanceDue')} ${formatCurrency(doc.balanceDue)}`,
                             placement: 'topRight',
                             duration: 10,
                             style: {
@@ -286,7 +286,7 @@ const OpenRoot = () => {
 
     // Handle document click
     const handleDocumentClick = async (doc) => {
-        const hide = message.loading("Loading document details...", 0);
+        const hide = message.loading(t('openRoute.actions.loading'), 0);
         try {
             const compositeData = await getCompositeServiceDocument(doc.documentNumber);
             hide();
@@ -294,7 +294,7 @@ const OpenRoot = () => {
         } catch (error) {
             hide();
             console.error("Failed to load composite document", error);
-            message.error("Failed to open document.");
+            message.error(t('openRoute.messages.failedOpen'));
         }
     };
 
@@ -304,7 +304,7 @@ const OpenRoot = () => {
         try {
             await deleteServiceDocument(doc.documentNumber, isHardDelete);
             hide();
-            message.success(isHardDelete ? 'Document deleted permanently.' : 'Document cancelled.');
+            message.success(isHardDelete ? t('openRoute.messages.documentDeleted') : t('openRoute.messages.documentCancelled'));
             setDeleteTarget(null);
 
             if (isHardDelete) {
@@ -316,20 +316,20 @@ const OpenRoot = () => {
             }
         } catch (error) {
             hide();
-            message.error("Failed to delete document.");
+            message.error(t('openRoute.messages.failedDelete'));
         }
     };
 
     // Delete Confirmation Modal
     const DeleteConfirmModal = () => (
         <Modal
-            title={<Space><ExclamationCircleOutlined className="text-red-500" /> Confirm Deletion</Space>}
+            title={t('openRoute.deleteModal.title')}
             open={!!deleteTarget}
             onCancel={() => setDeleteTarget(null)}
             footer={null}
         >
             <p className="mb-4 text-base">
-                How would you like to delete document <b>{deleteTarget?.documentNumber}</b>?
+                {t('openRoute.deleteModal.message')} <b>{deleteTarget?.documentNumber}</b>?
             </p>
             <div className="flex flex-col gap-3">
                 <Button
@@ -337,9 +337,9 @@ const OpenRoot = () => {
                     size="large"
                     onClick={() => performDelete(deleteTarget, false)}
                 >
-                    Cancel Document (Soft Delete)
+                    {t('openRoute.deleteModal.softDelete')}
                 </Button>
-                <div className="text-xs text-slate-400 text-center -mt-2 mb-1">Mark as cancelled, keep in database.</div>
+                <div className="text-xs text-slate-400 text-center -mt-2 mb-1">{t('openRoute.deleteModal.softDeleteDesc')}</div>
 
                 <Button
                     block
@@ -347,12 +347,12 @@ const OpenRoot = () => {
                     danger
                     onClick={() => performDelete(deleteTarget, true)}
                 >
-                    Delete from Database (Hard Delete)
+                    {t('openRoute.deleteModal.hardDelete')}
                 </Button>
-                <div className="text-xs text-slate-400 text-center -mt-2">Permanently remove records.</div>
+                <div className="text-xs text-slate-400 text-center -mt-2">{t('openRoute.deleteModal.hardDeleteDesc')}</div>
             </div>
             <div className="text-right mt-4">
-                <Button type="text" onClick={() => setDeleteTarget(null)}>Close</Button>
+                <Button type="text" onClick={() => setDeleteTarget(null)}>{t('openRoute.deleteModal.close')}</Button>
             </div>
         </Modal>
     );
@@ -398,26 +398,25 @@ const OpenRoot = () => {
 
                     {/* Results count */}
                     <div className="mb-4 text-sm text-slate-600">
-                        {t('common.showing')} {filteredDocuments.length} {t('common.of')} {documents.length} documents
-                        {activeFilterCount > 0 && ` (${activeFilterCount} filter${activeFilterCount > 1 ? 's' : ''} applied)`}
+                        {t('common.showing')} {filteredDocuments.length} {t('common.of')} {documents.length} {t('openRoute.results.documents')}
+                        {activeFilterCount > 0 && ` (${t('openRoute.results.filterApplied', { count: activeFilterCount })})`}
                     </div>
 
                     {/* Column Headers for List View */}
                     {viewMode === 'list' && filteredDocuments.length > 0 && !loading && (
                         <div className="hidden md:block w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-t-lg">
-                            <div className="flex items-center justify-between gap-4">
-                                {/* Left side header */}
+                            <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-600">
                                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                                    <span className="w-[16px]"></span>
-                                    <span className="font-semibold text-slate-600 text-xs uppercase tracking-wide w-[110px]">Doc #</span>
-                                    <span className="font-semibold text-slate-600 text-xs uppercase tracking-wide w-[160px]">Customer</span>
+                                    <span className="w-[16px] flex-shrink-0" />
+                                    <span className="w-[110px] flex-shrink-0">{t('openRoute.document.doc')}</span>
+                                    <span className="w-[80px] flex-shrink-0" />
+                                    <span className="min-w-0 flex-1 pl-4">{t('openRoute.document.customer')}</span>
                                 </div>
-                                {/* Right side header */}
-                                <div className="flex items-center gap-4 flex-shrink-0">
-                                    <span className="font-semibold text-slate-600 text-xs uppercase tracking-wide w-[130px]">Vehicle</span>
-                                    <span className="font-semibold text-slate-600 text-xs uppercase tracking-wide w-[90px] text-right">Total</span>
-                                    <span className="font-semibold text-slate-600 text-xs uppercase tracking-wide w-[90px] text-right">Balance</span>
-                                    <span className="w-[32px]"></span>
+                                <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
+                                    <span className="w-[130px] text-left">{t('openRoute.document.vehicle')}</span>
+                                    <span className="w-[90px] text-right">{t('openRoute.document.total')}</span>
+                                    <span className="w-[90px] text-right">{t('openRoute.document.balance')}</span>
+                                    <span className="w-[32px] flex-shrink-0" />
                                 </div>
                             </div>
                         </div>
@@ -453,7 +452,7 @@ const OpenRoot = () => {
                             {/* Mobile Page Size Selector */}
                             {isMobile && (
                                 <div className="flex items-center justify-between gap-3 mb-4 px-4 py-3 bg-white rounded-lg border border-slate-200">
-                                    <span className="text-sm font-medium text-slate-600">Items per page:</span>
+                                    <span className="text-sm font-medium text-slate-600">{t('openRoute.actions.itemsPerPage')}</span>
                                     <Select
                                         value={pageSize}
                                         onChange={(size) => {

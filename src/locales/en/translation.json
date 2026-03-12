@@ -9,6 +9,7 @@
         "customers": "Customers",
         "quote": "Quote",
         "schedule": "Schedule",
+        "jobs": "Jobs",
         "dashboard": "Dashboard",
         "reports": "Reports",
         "serviceInquiries": "Inquiries",
@@ -474,6 +475,45 @@
         "noOrganizationsFound": "No organizations found",
         "showing": "Showing",
         "of": "of",
+        "actions": {
+            "hideFilters": "Hide Filters",
+            "showFilters": "Show Filters"
+        },
+        "filters": {
+            "dateAdded": "Date Added"
+        },
+        "details": {
+            "title": "Customer Details",
+            "name": "Name",
+            "email": "Email",
+            "phone": "Phone",
+            "address": "Address",
+            "addressLine1": "Address Line 1",
+            "addressLine2": "Address Line 2",
+            "city": "City",
+            "state": "State",
+            "postalCode": "Postal Code",
+            "country": "Country",
+            "created": "Created",
+            "companyName": "Company Name",
+            "contactName": "Contact Name",
+            "taxId": "Tax ID",
+            "altPhone": "Alt. Phone",
+            "notes": "Notes",
+            "lastUpdated": "Last Updated"
+        },
+        "infoTooltip": "Manage individual contacts and organizations",
+        "dateRangeOptions": {
+            "all": "All Time",
+            "week": "Last 7 Days",
+            "month": "Last 30 Days",
+            "custom": "Custom Range"
+        },
+        "deleteModal": {
+            "title": "Delete Customer",
+            "message": "Are you sure you want to delete {{name}}? This action cannot be undone.",
+            "confirm": "Yes, Delete"
+        },
         "results": "results",
         "customerUpdated": "Customer updated",
         "customerCreated": "Customer created",
@@ -1236,8 +1276,6 @@
         },
         "jobScheduling": {
             "serviceLocation": "Service Location",
-            "inShop": "In Shop",
-            "mobile": "Mobile",
             "appointment": "Appointment",
             "serviceDocumentStatus": "Service Document Status",
             "statusShort": "Status",
@@ -1253,8 +1291,6 @@
             "addressShort": "Address",
             "addressForService": "Address for service",
             "defaultShopLocation": "Default: Shop Location",
-            "inShop": "In Shop",
-            "mobile": "Mobile",
             "status": {
                 "DRAFT": "Draft",
                 "SENT": "Sent",
@@ -1353,25 +1389,153 @@
         "uploadNewFiles": "Upload New Files",
         "clickToUpload": "Click to Upload Files",
         "fileTypes": "Images and PDFs only \u2022 Max 1MB per file",
-        "compression": "Files larger than 1MB will be automatically compressed",
-        "newFilesToUpload": "New Files to Upload",
-        "previewNotAvailable": "Preview not available for this file type",
-        "downloadFile": "Download File",
-        "closeEsc": "Close (Esc)",
-        "pressEscToClose": "Press Esc or click outside to close"
+        "compression": "Files larger than 1MB will be automatically compressed"
     },
-    "datePicker": {
-        "time": "Time",
-        "today": "Today",
-        "tmrw": "Tmrw",
-        "week": "Week",
-        "selectDateTime": "Select date & time"
+    "document": {
+        "doc": "Doc #",
+        "customer": "Customer",
+        "vehicle": "Vehicle",
+        "total": "Total",
+        "balance": "Balance",
+        "bal": "Bal",
+        "noData": "No documents found"
     },
-    "kitSelection": {
-        "selectInstallationKit": "Select Installation Kit",
-        "selectKitFor": "Select an installation kit for",
-        "description": "Description",
-        "price": "Price",
-        "noKitsAvailable": "No authorized kits available for this part."
+    "actions": {
+        "hideFilters": "Hide Filters",
+        "showFilters": "Show Filters",
+        "loading": "Loading document details...",
+        "deleteDocument": "Delete Document",
+        "itemsPerPage": "Items per page:"
+    },
+    "deleteModal": {
+        "title": "Confirm Deletion",
+        "message": "How would you like to delete document",
+        "softDelete": "Cancel Document (Soft Delete)",
+        "softDeleteDesc": "Mark as cancelled, keep in database.",
+        "hardDelete": "Delete from Database (Hard Delete)",
+        "hardDeleteDesc": "Permanently remove records.",
+        "close": "Close"
+    },
+    "messages": {
+        "failedLoad": "Failed to load documents.",
+        "failedOpen": "Failed to open document.",
+        "failedDelete": "Failed to delete document.",
+        "documentDeleted": "Document deleted permanently.",
+        "documentCancelled": "Document cancelled.",
+        "overdue": "Overdue"
+    },
+    "openRoute": {
+        "title": "Open Documents",
+        "subtitle": "Manage and track open service documents",
+        "filters": {
+            "title": "Filters",
+            "active": "active",
+            "clear": "Clear",
+            "documentType": "Document Type",
+            "status": "Status",
+            "overdue": "Overdue",
+            "dateRange": "Date Range",
+            "amountRange": "Amount Range",
+            "selectDocumentTypes": "Select document types",
+            "selectStatuses": "Select statuses",
+            "overdueDocuments": "Overdue documents",
+            "selectDateRange": "Select date range",
+            "startDate": "Start Date",
+            "endDate": "End Date",
+            "selectStartDate": "Select start date",
+            "selectEndDate": "Select end date",
+            "activeFilters": "Active Filters:",
+            "type": "Type",
+            "date": "Date",
+            "overdueOnly": "Overdue Only"
+        },
+        "statusOptions": {
+            "all": "All Statuses"
+        },
+        "documentTypeOptions": {
+            "all": "All Types"
+        },
+        "dateRangeOptions": {
+            "all": "All Time",
+            "week": "Last 7 Days",
+            "month": "Last 30 Days",
+            "custom": "Custom Range"
+        },
+        "documentTypes": {
+            "quote": "Quote",
+            "invoice": "Invoice",
+            "work_order": "Work Order",
+            "workorder": "Work Order"
+        },
+        "viewModes": {
+            "grid": "Grid",
+            "list": "List"
+        },
+        "search": {
+            "placeholder": "Search by document #, customer, vehicle...",
+            "server": "Server",
+            "mixed": "Mixed",
+            "local": "Local"
+        },
+        "results": {
+            "documents": "documents",
+            "filterApplied_one": "{{count}} filter applied",
+            "filterApplied_other": "{{count}} filters applied"
+        },
+        "notifications": {
+            "overdue": "Overdue invoice: {{documentNumber}}",
+            "customer": "Customer:",
+            "balanceDue": "Balance Due:"
+        },
+        "overdue": {
+            "days_one": "{{count}} day overdue",
+            "days_other": "{{count}} days overdue"
+        },
+        "status": {
+            "pending": "Pending",
+            "in_progress": "In Progress",
+            "completed": "Completed",
+            "paid": "Paid",
+            "cancelled": "Cancelled",
+            "draft": "Draft",
+            "sent": "Sent",
+            "viewed": "Viewed",
+            "accepted": "Accepted",
+            "rejected": "Rejected",
+            "expired": "Expired"
+        },
+        "document": {
+            "doc": "Doc #",
+            "customer": "Customer",
+            "vehicle": "Vehicle",
+            "total": "Total",
+            "balance": "Balance",
+            "bal": "Bal",
+            "noData": "No documents found"
+        },
+        "actions": {
+            "hideFilters": "Hide Filters",
+            "showFilters": "Show Filters",
+            "loading": "Loading document details...",
+            "deleteDocument": "Delete Document",
+            "itemsPerPage": "Items per page:"
+        },
+        "deleteModal": {
+            "title": "Confirm Deletion",
+            "message": "How would you like to delete document",
+            "softDelete": "Cancel Document (Soft Delete)",
+            "softDeleteDesc": "Mark as cancelled, keep in database.",
+            "hardDelete": "Delete from Database (Hard Delete)",
+            "hardDeleteDesc": "Permanently remove records.",
+            "close": "Close"
+        },
+        "messages": {
+            "failedLoad": "Failed to load documents.",
+            "failedOpen": "Failed to open document.",
+            "failedDelete": "Failed to delete document.",
+            "documentDeleted": "Document deleted permanently.",
+            "documentCancelled": "Document cancelled.",
+            "overdue": "Overdue"
+        }
     }
 }
