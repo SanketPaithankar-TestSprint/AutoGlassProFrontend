@@ -2,28 +2,32 @@ import React, { createContext, useContext, useEffect, useState, useRef, useCallb
 import { useLocation } from 'react-router-dom';
 import ChatSocket from '../services/ChatSocket';
 import { getValidToken } from '../api/getValidToken';
-import chatNotificationSound from '../assets/NotificationForChat.mp3';
+import { playNotificationSound } from '../utils/playNotificationSound';
+import { useNotificationSettings } from './NotificationSettingsContext';
 import dingSound from '../assets/ding.mp3';
 import { App, Modal, Button } from 'antd';
-
-// Single primed Audio for in-chat ding — must be unlocked during a user gesture
-const dingAudio = new Audio(dingSound);
-dingAudio.preload = 'auto';
-let dingPrimed = false;
-const primeDing = () => {
-    if (dingPrimed) return;
-    dingAudio.volume = 0;
-    dingAudio.play().then(() => {
-        dingAudio.pause();
-        dingAudio.currentTime = 0;
-        dingAudio.volume = 0.4;
-        dingPrimed = true;
-    }).catch(() => { });
-};
-['click', 'keydown', 'touchstart'].forEach(e => document.addEventListener(e, primeDing));
 import { MessageOutlined } from '@ant-design/icons';
 
 const ChatContext = createContext(null);
+
+const inChatDingAudio = new Audio(dingSound);
+inChatDingAudio.preload = 'auto';
+let inChatDingPrimed = false;
+
+const primeInChatDing = () => {
+    if (inChatDingPrimed) return;
+
+    inChatDingAudio.volume = 0;
+    inChatDingAudio.play().then(() => {
+        inChatDingAudio.pause();
+        inChatDingAudio.currentTime = 0;
+        inChatDingPrimed = true;
+    }).catch(() => { });
+};
+
+['click', 'keydown', 'touchstart'].forEach((eventName) => {
+    document.addEventListener(eventName, primeInChatDing);
+});
 
 export const useChat = () => {
     return useContext(ChatContext);
@@ -31,6 +35,7 @@ export const useChat = () => {
 
 export const ChatProvider = ({ children, isPublic = false, publicUserId = null }) => {
     const { notification } = App.useApp();
+    const { settings: notificationSettings, loading: notificationSettingsLoading } = useNotificationSettings();
     const location = useLocation();
     const [socket, setSocket] = useState(null);
     const socketRef = useRef(null);
@@ -42,6 +47,47 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
     const [unreadTotal, setUnreadTotal] = useState(0);
     const [notifications, setNotifications] = useState([]);
     const [showUnreadModal, setShowUnreadModal] = useState(false);
+    const previousUnreadTotalRef = useRef(null);
+
+    const liveChatSettings = notificationSettings?.liveChat;
+    const liveChatEnabled = liveChatSettings?.enabled !== false;
+    const liveChatShowModal = liveChatSettings?.showModal !== false;
+    const liveChatSound = liveChatSettings?.sound || 'none';
+    const liveChatVolume = typeof liveChatSettings?.volume === 'number' ? liveChatSettings.volume : 100;
+    const liveChatFrequency = typeof liveChatSettings?.frequency === 'string' ? liveChatSettings.frequency : 'every';
+    const liveChatDelay = typeof liveChatSettings?.delay === 'number' ? liveChatSettings.delay : 0;
+
+    const parseFrequencyMs = useCallback((frequency) => {
+        if (!frequency || frequency === 'every') return null;
+        if (frequency === '10s') return 10000;
+        if (frequency === '30s') return 30000;
+        if (frequency === '1m') return 60000;
+        if (frequency === '5m') return 300000;
+        return null;
+    }, []);
+
+    const playLiveChatSound = useCallback(() => {
+        // Avoid playing default sounds before user settings are loaded.
+        if (notificationSettingsLoading) return;
+        if (!liveChatEnabled) return;
+        if (typeof liveChatSound === 'string' && liveChatSound.toLowerCase() === 'none') return;
+
+        playNotificationSound({
+            sound: liveChatSound,
+            volume: liveChatVolume,
+            type: 'liveChat',
+        });
+    }, [notificationSettingsLoading, liveChatEnabled, liveChatSound, liveChatVolume]);
+
+    const playInChatDing = useCallback(() => {
+        if (!inChatDingPrimed) return;
+
+        try {
+            inChatDingAudio.volume = 0.45;
+            inChatDingAudio.currentTime = 0;
+            inChatDingAudio.play().catch(() => { });
+        } catch (e) { }
+    }, []);
 
     // Keep refs in sync
     useEffect(() => {
@@ -323,22 +369,12 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
         if (isFromCustomer && !isPublic && (!isCurrentlyOpen || !isTabActive)) {
             const senderName = payload.senderName || payload.name || payload.visitorName || payload.customerName || 'Customer';
             // console.log("[ChatContext] Triggering persistent toast for new message from:", senderName);
-
-            // Play chat notification sound (chat not in focus)
-            try {
-                const audio = new Audio(chatNotificationSound);
-                audio.volume = 0.5;
-                audio.play().catch(() => { });
-            } catch (e) { }
         }
 
         // Play in-chat ding for every incoming message while chat is open
         const incomingFromOther = isPublic ? senderType?.toUpperCase() === 'SHOP' : isFromCustomer;
-        if (incomingFromOther && isCurrentlyOpen && isTabActive && dingPrimed) {
-            try {
-                dingAudio.currentTime = 0;
-                dingAudio.play().catch(() => { });
-            } catch (e) { }
+        if (incomingFromOther && isCurrentlyOpen && isTabActive) {
+            playInChatDing();
         }
 
         setConversations(prev => {
@@ -580,6 +616,11 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
                 message: messageText,
             };
             currentSocket.send('sendMessage', payload);
+
+            const isCurrentlyOpen = activeConversationIdRef.current === conversationId;
+            if (isCurrentlyOpen && isChatTabActive()) {
+                playInChatDing();
+            }
         }
     };
 
@@ -609,6 +650,10 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
             email: email || "no-email@test.com",
         };
         currentSocket.send('sendMessage', payload);
+
+        if (isChatTabActive()) {
+            playInChatDing();
+        }
     };
 
     const sendQuoteNotification = (quoteData) => {
@@ -788,32 +833,54 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
 
     // Show modal + loop notification sound when there are unread chats (Shop only)
     useEffect(() => {
-        const onChatPage = window?.location?.pathname === '/chat';
-        if (isPublic || unreadTotal === 0 || onChatPage) {
+        const onChatPage = location.pathname === '/chat';
+        const isFirstUnreadBaseline = previousUnreadTotalRef.current === null;
+        const previousUnread = isFirstUnreadBaseline ? unreadTotal : previousUnreadTotalRef.current;
+        const hasNewUnread = !isFirstUnreadBaseline && unreadTotal > previousUnread;
+        previousUnreadTotalRef.current = unreadTotal;
+
+        if (isPublic || unreadTotal === 0 || onChatPage || !liveChatEnabled) {
             setShowUnreadModal(false);
             return undefined;
         }
 
-        setShowUnreadModal(true);
+        if (isFirstUnreadBaseline) {
+            // Do not alert for already-existing unread items when a tab first opens.
+            return undefined;
+        }
 
-        let playCount = 0;
-        const intervalId = setInterval(() => {
-            if (playCount >= 10) {
-                clearInterval(intervalId);
-                return;
+        if (hasNewUnread && liveChatShowModal) {
+            setShowUnreadModal(true);
+        }
+
+        const delayMs = Math.max(0, liveChatDelay) * 1000;
+        const frequencyMs = parseFrequencyMs(liveChatFrequency);
+
+        let delayTimeout = null;
+        let intervalId = null;
+
+        if (liveChatFrequency === 'every') {
+            if (hasNewUnread) {
+                delayTimeout = setTimeout(() => {
+                    playLiveChatSound();
+                }, delayMs);
             }
-            try {
-                const audio = new Audio(chatNotificationSound);
-                audio.volume = 0.5;
-                audio.play().catch(() => { });
-                playCount += 1;
-            } catch (e) { }
-        }, 10000);
+        } else {
+            delayTimeout = setTimeout(() => {
+                playLiveChatSound();
+                if (frequencyMs) {
+                    intervalId = setInterval(() => {
+                        playLiveChatSound();
+                    }, frequencyMs);
+                }
+            }, delayMs);
+        }
 
         return () => {
-            clearInterval(intervalId);
+            if (delayTimeout) clearTimeout(delayTimeout);
+            if (intervalId) clearInterval(intervalId);
         };
-    }, [unreadTotal, isPublic]);
+    }, [unreadTotal, isPublic, location.pathname, liveChatEnabled, liveChatShowModal, liveChatDelay, liveChatFrequency, parseFrequencyMs, playLiveChatSound]);
 
 
     return (

@@ -20,6 +20,7 @@ import useScheduleNotifications from './hooks/useScheduleNotifications';
 import { useAuth } from './context/auth/useAuth';
 import { AuthProvider } from './context/auth/authProvide';
 import { InquiryProvider, useInquiry } from './context/InquiryContext';
+import { NotificationSettingsProvider } from './context/NotificationSettingsContext';
 
 // Lazy Load Main Components
 const Home = React.lazy(() => import('./components/Home/HomeRoot.jsx'));
@@ -310,10 +311,12 @@ function App() {
       <AntApp>
         <AuthProvider>
           <Router>
-            <InquiryProvider>
-              <ScrollToTop />
-              <AppContent />
-            </InquiryProvider>
+            <NotificationSettingsProvider>
+              <InquiryProvider>
+                <ScrollToTop />
+                <AppContent />
+              </InquiryProvider>
+            </NotificationSettingsProvider>
           </Router>
         </AuthProvider>
       </AntApp>
