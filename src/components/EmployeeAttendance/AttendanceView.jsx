@@ -275,12 +275,40 @@ const AttendanceView = ({ token, isMobile }) => {
     const handleCellClick = (employeeId, day) => {
         recordForm.resetFields();
         const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-        recordForm.setFieldsValue({
-            employeeId,
-            date: dayjs(dateStr),
-            status: "PRESENT",
-            clockInTime: dayjs().startOf("hour").hour(9),
-        });
+        
+        // Find existing attendance record for this employee and date
+        const existingRecord = attendanceData.find(record => 
+            record.employeeId === employeeId && 
+            dayjs(record.date).format("YYYY-MM-DD") === dateStr
+        );
+        
+        if (existingRecord) {
+            // Load existing data
+            const formValues = {
+                employeeId,
+                date: dayjs(existingRecord.date),
+                status: existingRecord.status,
+                notes: existingRecord.notes || ""
+            };
+            
+            // Add time fields if they exist
+            if (existingRecord.clockInTime) {
+                formValues.clockInTime = dayjs(existingRecord.clockInTime);
+            }
+            if (existingRecord.clockOutTime) {
+                formValues.clockOutTime = dayjs(existingRecord.clockOutTime);
+            }
+            
+            recordForm.setFieldsValue(formValues);
+        } else {
+            // Set defaults only for new records
+            recordForm.setFieldsValue({
+                employeeId,
+                date: dayjs(dateStr),
+                status: "PRESENT"
+            });
+        }
+        
         setRecordModalOpen(true);
     };
 
@@ -342,7 +370,12 @@ const AttendanceView = ({ token, isMobile }) => {
                     <Button
                         type="primary"
                         icon={<PlusOutlined />}
-                        onClick={() => { recordForm.resetFields(); setRecordModalOpen(true); }}
+                        onClick={() => {
+                            recordForm.resetFields();
+                            const n = dayjs();
+                            recordForm.setFieldsValue({ date: n, status: "PRESENT" });
+                            setRecordModalOpen(true);
+                        }}
                         style={{ background: "#7c3aed", borderColor: "#7c3aed" }}
                     >
                         Record First Attendance
@@ -351,8 +384,8 @@ const AttendanceView = ({ token, isMobile }) => {
             );
         }
         return matrixData.map(emp => (
-            <div key={emp.employeeId} className="bg-white rounded-xl border border-gray-100 p-4 mb-3 shadow-sm">
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <div key={emp.employeeId} className="bg-white rounded-xl border border-gray-200 p-4 mb-3 shadow-sm">
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, borderBottom: "1px solid #e5e7eb", paddingBottom: 8 }}>
                     <div>
                         <div style={{ fontWeight: 700, fontSize: 15 }}>{emp.employeeName}</div>
                     </div>
@@ -362,18 +395,31 @@ const AttendanceView = ({ token, isMobile }) => {
                         <span style={{ fontSize: 12, fontWeight: 700, color: "#f59e0b" }}>L:{emp.totals.L}</span>
                     </div>
                 </div>
-                <div className="flex gap-1 flex-wrap mt-2">
+                <div className="flex gap-1 flex-wrap mt-2" style={{ borderTop: "1px solid #f3f4f6", paddingTop: 8 }}>
                     {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
                         const info = emp.days[day];
                         const weekend = isWeekend(day);
                         const isToday = isCurrentMonth && day === today;
 
-                        let badgeStyle = { width: 22, height: 22, borderRadius: 4, background: "#f1f5f9", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: "#64748b" };
+                        let badgeStyle = { 
+                            width: 22, 
+                            height: 22, 
+                            borderRadius: 4, 
+                            background: "#f1f5f9", 
+                            display: "inline-flex", 
+                            alignItems: "center", 
+                            justifyContent: "center", 
+                            fontSize: 10, 
+                            fontWeight: 700, 
+                            color: "#64748b",
+                            border: "1px solid #e5e7eb"
+                        };
                         if (info) {
                             const s = STATUS_MAP[info.status];
                             if (s) {
                                 badgeStyle.background = s.bg;
                                 badgeStyle.color = s.color;
+                                badgeStyle.borderColor = s.color + "30";
                             }
                         }
 
@@ -383,7 +429,7 @@ const AttendanceView = ({ token, isMobile }) => {
                                     onClick={() => handleCellClick(emp.employeeId, day)}
                                     style={{
                                         ...badgeStyle,
-                                        ...(weekend && !info ? { background: "#fef2f2" } : {}),
+                                        ...(weekend && !info ? { background: "#fef2f2", borderColor: "#fecaca" } : {}),
                                         ...(isToday ? { outline: "2px solid #7c3aed", outlineOffset: -1 } : {}),
                                     }}
                                 >
@@ -441,7 +487,12 @@ const AttendanceView = ({ token, isMobile }) => {
                                                 <Button
                                                     type="primary"
                                                     icon={<PlusOutlined />}
-                                                    onClick={() => { recordForm.resetFields(); setRecordModalOpen(true); }}
+                                                    onClick={() => {
+                                                        recordForm.resetFields();
+                                                        const n = dayjs();
+                                                        recordForm.setFieldsValue({ date: n, status: "PRESENT" });
+                                                        setRecordModalOpen(true);
+                                                    }}
                                                     style={{ background: "#7c3aed", borderColor: "#7c3aed" }}
                                                 >
                                                     Record Attendance
@@ -583,7 +634,7 @@ const AttendanceView = ({ token, isMobile }) => {
                         onClick={() => {
                             recordForm.resetFields();
                             const n = dayjs();
-                            recordForm.setFieldsValue({ date: n, status: "PRESENT", clockInTime: n });
+                            recordForm.setFieldsValue({ date: n, status: "PRESENT" });
                             setRecordModalOpen(true);
                         }}
                     >

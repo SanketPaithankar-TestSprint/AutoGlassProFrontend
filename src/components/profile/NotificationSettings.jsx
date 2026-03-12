@@ -6,7 +6,6 @@ import { playNotificationSound } from '../../utils/playNotificationSound';
 
 const SHARED_SOUND_OPTIONS = [
     { value: 'chime', label: 'Chime' },
-    { value: 'bell', label: 'Bell' },
     { value: 'ping', label: 'Ping' },
     { value: 'none', label: 'None' },
 ];
@@ -70,9 +69,10 @@ const NotificationSection = ({ icon, title, color, sectionKey, section, onFieldC
     const enabled = section?.enabled ?? true;
     const showModal = section?.showModal ?? true;
     const sound = useMemo(() => {
-        const current = section?.sound ?? 'chime';
+        const defaultSound = 'none';
+        const current = section?.sound ?? defaultSound;
         const isValid = soundOptions.some((option) => option.value === current);
-        return isValid ? current : 'chime';
+        return isValid ? current : defaultSound;
     }, [section?.sound, soundOptions]);
     const volume = section?.volume ?? 100;
     const frequency = section?.frequency ?? 'every';

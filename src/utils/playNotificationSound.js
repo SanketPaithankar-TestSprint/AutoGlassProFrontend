@@ -25,7 +25,7 @@ const clampVolume = (volume) => {
     return Math.max(0, Math.min(100, value));
 };
 
-const resolveSoundKey = ({ sound = 'chime', type = 'inquiries' } = {}) => {
+const resolveSoundKey = ({ sound = 'none', type = 'inquiries' } = {}) => {
     const normalized = typeof sound === 'string'
         ? sound.toLowerCase().replace(/[\s_-]+/g, '')
         : '';
@@ -43,7 +43,6 @@ const resolveSoundKey = ({ sound = 'chime', type = 'inquiries' } = {}) => {
     if (normalized === 'messagesent' || normalized === 'messagereceived') {
         return 'chatSpecific';
     }
-    if (normalized === 'bell') return 'chime';
 
     return type === 'liveChat' ? 'chatSpecific' : 'serviceSpecific';
 };
@@ -70,7 +69,7 @@ const primeAudio = () => {
     document.addEventListener(evt, primeAudio);
 });
 
-export const playNotificationSound = ({ sound = 'chime', volume = 70, type = 'inquiries' } = {}) => {
+export const playNotificationSound = ({ sound = 'none', volume = 70, type = 'inquiries' } = {}) => {
     if (!primed) return;
 
     const soundKey = resolveSoundKey({ sound, type });

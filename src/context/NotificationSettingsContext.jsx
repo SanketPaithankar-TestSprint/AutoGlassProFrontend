@@ -8,7 +8,7 @@ import { getValidToken } from '../api/getValidToken';
 const DEFAULT_SECTION = {
     enabled: true,
     showModal: true,
-    sound: 'chime',
+    sound: 'none',
     volume: 100,
     frequency: '1m',
     delay: 0,
