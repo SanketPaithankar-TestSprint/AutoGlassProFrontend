@@ -31,7 +31,7 @@ const CustomerSidebarFilters = ({
     const [expandedPanels, setExpandedPanels] = useState(['properties', 'dateRange']); // Expand by default
     const { t } = useTranslation();
 
-    const dateRangeOptions = getDateRangeOptions();
+    const dateRangeOptions = getDateRangeOptions(t);
 
     const handleDateRangeTypeChange = (value) => {
         setDateRangeFilter(value);
@@ -87,7 +87,7 @@ const CustomerSidebarFilters = ({
                     header={
                         <div className="flex items-center gap-2">
                             <CalendarOutlined className="text-slate-400" />
-                            <span className="font-semibold text-slate-700">Date Added</span>
+                            <span className="font-semibold text-slate-700">{t('customers.filters.dateAdded')}</span>
                         </div>
                     }
                     key="dateRange"

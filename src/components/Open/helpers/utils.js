@@ -339,35 +339,35 @@ const formatDate = (date) => {
  * Get document status options for filter
  * @returns {Array} Array of status options
  */
-const getStatusOptions = () => [
-    { value: 'all', label: 'All Statuses' },
-    { value: 'pending', label: 'Pending' },
-    { value: 'in_progress', label: 'In Progress' },
-    { value: 'completed', label: 'Completed' },
-    { value: 'paid', label: 'Paid' },
-    { value: 'cancelled', label: 'Cancelled' },
+const getStatusOptions = (t) => [
+    { value: 'all', label: t ? t('openRoute.statusOptions.all') : 'All Statuses' },
+    { value: 'pending', label: t ? t('openRoute.status.pending') : 'Pending' },
+    { value: 'in_progress', label: t ? t('openRoute.status.in_progress') : 'In Progress' },
+    { value: 'completed', label: t ? t('openRoute.status.completed') : 'Completed' },
+    { value: 'paid', label: t ? t('openRoute.status.paid') : 'Paid' },
+    { value: 'cancelled', label: t ? t('openRoute.status.cancelled') : 'Cancelled' },
 ];
 
 /**
  * Get document type options for filter
  * @returns {Array} Array of document type options
  */
-const getDocumentTypeOptions = () => [
-    { value: 'all', label: 'All Types' },
-    { value: 'quote', label: 'Quote' },
-    { value: 'invoice', label: 'Invoice' },
-    { value: 'work_order', label: 'Work Order' },
+const getDocumentTypeOptions = (t) => [
+    { value: 'all', label: t ? t('openRoute.documentTypeOptions.all') : 'All Types' },
+    { value: 'quote', label: t ? t('openRoute.documentTypes.quote') : 'Quote' },
+    { value: 'invoice', label: t ? t('openRoute.documentTypes.invoice') : 'Invoice' },
+    { value: 'work_order', label: t ? t('openRoute.documentTypes.work_order') : 'Work Order' },
 ];
 
 /**
  * Get date range options for filter
  * @returns {Array} Array of date range options
  */
-const getDateRangeOptions = () => [
-    { value: 'all', label: 'All Time' },
-    { value: 'week', label: 'Last 7 Days' },
-    { value: 'month', label: 'Last 30 Days' },
-    { value: 'custom', label: 'Custom Range' },
+const getDateRangeOptions = (t) => [
+    { value: 'all', label: t ? t('openRoute.dateRangeOptions.all') : 'All Time' },
+    { value: 'week', label: t ? t('openRoute.dateRangeOptions.week') : 'Last 7 Days' },
+    { value: 'month', label: t ? t('openRoute.dateRangeOptions.month') : 'Last 30 Days' },
+    { value: 'custom', label: t ? t('openRoute.dateRangeOptions.custom') : 'Custom Range' },
 ];
 
 // =====================================================

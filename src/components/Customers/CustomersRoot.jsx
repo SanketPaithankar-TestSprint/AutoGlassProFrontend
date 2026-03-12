@@ -307,11 +307,11 @@ const CustomersRoot = () => {
 
     const handleDeleteCustomer = (customer) => {
         modal.confirm({
-            title: 'Delete Customer',
-            content: `Are you sure you want to delete ${customer.firstName || ''} ${customer.lastName || ''}? This action cannot be undone.`,
-            okText: 'Yes, Delete',
+            title: t('customers.deleteModal.title'),
+            content: t('customers.deleteModal.message', { name: `${customer.firstName || ''} ${customer.lastName || ''}` }),
+            okText: t('customers.deleteModal.confirm'),
             okType: 'danger',
-            cancelText: 'Cancel',
+            cancelText: t('common.cancel'),
             onOk: async () => {
                 await performDeleteCustomer(customer.customerId, false, customer);
             }
@@ -751,35 +751,35 @@ const CustomersRoot = () => {
                         <div className="mt-4 space-y-5">
                             {/* Company Info */}
                             <Descriptions column={2} bordered size="small">
-                                <Descriptions.Item label="Company Name" span={2}>
+                                <Descriptions.Item label={t('customers.details.companyName')} span={2}>
                                     <span className="font-semibold">{orgDetailData.companyName || "-"}</span>
                                     {orgDetailData.taxExempt && <Tag color="green" className="ml-2">Tax Exempt</Tag>}
                                 </Descriptions.Item>
-                                <Descriptions.Item label="Contact Name">{orgDetailData.contactName || "-"}</Descriptions.Item>
-                                <Descriptions.Item label="Tax ID"><span className="font-mono">{orgDetailData.taxId || "-"}</span></Descriptions.Item>
-                                <Descriptions.Item label="Email">{orgDetailData.email || "-"}</Descriptions.Item>
-                                <Descriptions.Item label="Phone">{orgDetailData.phone || "-"}</Descriptions.Item>
+                                <Descriptions.Item label={t('customers.details.contactName')}>{orgDetailData.contactName || "-"}</Descriptions.Item>
+                                <Descriptions.Item label={t('customers.details.taxId')}><span className="font-mono">{orgDetailData.taxId || "-"}</span></Descriptions.Item>
+                                <Descriptions.Item label={t('customers.details.email')}>{orgDetailData.email || "-"}</Descriptions.Item>
+                                <Descriptions.Item label={t('customers.details.phone')}>{orgDetailData.phone || "-"}</Descriptions.Item>
                                 {orgDetailData.alternatePhone && (
-                                    <Descriptions.Item label="Alt. Phone" span={2}>{orgDetailData.alternatePhone}</Descriptions.Item>
+                                    <Descriptions.Item label={t('customers.details.altPhone')} span={2}>{orgDetailData.alternatePhone}</Descriptions.Item>
                                 )}
                             </Descriptions>
 
                             {/* Address */}
-                            <Descriptions column={2} bordered size="small" title={<span className="text-xs font-bold text-gray-400 uppercase">Address</span>}>
-                                <Descriptions.Item label="Address Line 1" span={2}>{orgDetailData.addressLine1 || "-"}</Descriptions.Item>
+                            <Descriptions column={2} bordered size="small" title={<span className="text-xs font-bold text-gray-400 uppercase">{t('customers.details.address')}</span>}>
+                                <Descriptions.Item label={t('customers.details.addressLine1')} span={2}>{orgDetailData.addressLine1 || "-"}</Descriptions.Item>
                                 {orgDetailData.addressLine2 && (
-                                    <Descriptions.Item label="Address Line 2" span={2}>{orgDetailData.addressLine2}</Descriptions.Item>
+                                    <Descriptions.Item label={t('customers.details.addressLine2')} span={2}>{orgDetailData.addressLine2}</Descriptions.Item>
                                 )}
-                                <Descriptions.Item label="City">{orgDetailData.city || "-"}</Descriptions.Item>
-                                <Descriptions.Item label="State">{orgDetailData.state || "-"}</Descriptions.Item>
-                                <Descriptions.Item label="Postal Code">{orgDetailData.postalCode || "-"}</Descriptions.Item>
-                                <Descriptions.Item label="Country">{orgDetailData.country || "-"}</Descriptions.Item>
+                                <Descriptions.Item label={t('customers.details.city')}>{orgDetailData.city || "-"}</Descriptions.Item>
+                                <Descriptions.Item label={t('customers.details.state')}>{orgDetailData.state || "-"}</Descriptions.Item>
+                                <Descriptions.Item label={t('customers.details.postalCode')}>{orgDetailData.postalCode || "-"}</Descriptions.Item>
+                                <Descriptions.Item label={t('customers.details.country')}>{orgDetailData.country || "-"}</Descriptions.Item>
                             </Descriptions>
 
                             {/* Notes */}
                             {orgDetailData.notes && (
                                 <Descriptions column={1} bordered size="small">
-                                    <Descriptions.Item label="Notes">{orgDetailData.notes}</Descriptions.Item>
+                                    <Descriptions.Item label={t('customers.details.notes')}>{orgDetailData.notes}</Descriptions.Item>
                                 </Descriptions>
                             )}
 
@@ -812,8 +812,8 @@ const CustomersRoot = () => {
 
                             {/* Timestamps */}
                             <div className="flex justify-between text-xs text-gray-400 pt-2 border-t border-gray-100">
-                                <span>Created: {orgDetailData.createdAt ? new Date(orgDetailData.createdAt).toLocaleDateString() : "-"}</span>
-                                <span>Last Updated: {orgDetailData.updatedAt ? new Date(orgDetailData.updatedAt).toLocaleDateString() : "-"}</span>
+                                <span>{t('customers.details.created')}: {orgDetailData.createdAt ? new Date(orgDetailData.createdAt).toLocaleDateString() : "-"}</span>
+                                <span>{t('customers.details.lastUpdated')}: {orgDetailData.updatedAt ? new Date(orgDetailData.updatedAt).toLocaleDateString() : "-"}</span>
                             </div>
                         </div>
                     ) : null}
@@ -821,7 +821,7 @@ const CustomersRoot = () => {
 
                 {/* Customer Detail View Modal */}
                 <Modal
-                    title={customerDetailData ? `${customerDetailData.firstName} ${customerDetailData.lastName}` : "Customer Details"}
+                    title={customerDetailData ? `${customerDetailData.firstName} ${customerDetailData.lastName}` : t('customers.details.title')}
                     open={customerDetailVisible}
                     onCancel={() => { setCustomerDetailVisible(false); setCustomerDetailData(null); }}
                     footer={null}
@@ -831,23 +831,24 @@ const CustomersRoot = () => {
                     {customerDetailData ? (
                         <div className="mt-4 space-y-5">
                             <Descriptions column={2} bordered size="small">
-                                <Descriptions.Item label="Name" span={2}>
+                                <Descriptions.Item label={t('customers.details.name')} span={2}>
                                     <span className="font-semibold">{customerDetailData.firstName} {customerDetailData.lastName}</span>
                                 </Descriptions.Item>
-                                <Descriptions.Item label="Email">{customerDetailData.email || "-"}</Descriptions.Item>
-                                <Descriptions.Item label="Phone" span={2}>{customerDetailData.phone || "-"}</Descriptions.Item>
+                                <Descriptions.Item label={t('customers.details.email')}>{customerDetailData.email || "-"}</Descriptions.Item>
+                                <Descriptions.Item label={t('customers.details.phone')} span={2}>{customerDetailData.phone || "-"}</Descriptions.Item>
                             </Descriptions>
 
-                            <Descriptions column={2} bordered size="small" title={<span className="text-xs font-bold text-gray-400 uppercase">Address</span>}>
-                                <Descriptions.Item label="Address Line 1" span={2}>{customerDetailData.addressLine1 || "-"}</Descriptions.Item>
-                                <Descriptions.Item label="City">{customerDetailData.city || "-"}</Descriptions.Item>
-                                <Descriptions.Item label="State">{customerDetailData.state || "-"}</Descriptions.Item>
-                                <Descriptions.Item label="Postal Code">{customerDetailData.postalCode || "-"}</Descriptions.Item>
-                                <Descriptions.Item label="Country">{customerDetailData.country || "-"}</Descriptions.Item>
+                            <Descriptions column={2} bordered size="small" title={<span className="text-xs font-bold text-gray-400 uppercase">{t('customers.details.address')}</span>}>
+                                <Descriptions.Item label={t('customers.details.addressLine1')} span={2}>{customerDetailData.addressLine1 || "-"}</Descriptions.Item>
+                                <Descriptions.Item label={t('customers.details.city')}>{customerDetailData.city || "-"}</Descriptions.Item>
+                                <Descriptions.Item label={t('customers.details.state')}>{customerDetailData.state || "-"}</Descriptions.Item>
+                                <Descriptions.Item label={t('customers.details.postalCode')}>{customerDetailData.postalCode || "-"}</Descriptions.Item>
+                                <Descriptions.Item label={t('customers.details.country')}>{customerDetailData.country || "-"}</Descriptions.Item>
                             </Descriptions>
 
                             <div className="flex justify-between text-xs text-gray-400 pt-2 border-t border-gray-100">
-                                <span>Created: {customerDetailData.createdAt ? new Date(customerDetailData.createdAt).toLocaleDateString() : "-"}</span>
+                                <span>{t('customers.details.created')}: {customerDetailData.createdAt ? new Date(customerDetailData.createdAt).toLocaleDateString() : "-"}</span>
+                                <span>{t('customers.details.lastUpdated')}: {customerDetailData.updatedAt ? new Date(customerDetailData.updatedAt).toLocaleDateString() : "-"}</span>
                             </div>
                         </div>
                     ) : null}
