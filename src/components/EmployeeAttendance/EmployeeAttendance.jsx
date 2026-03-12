@@ -14,7 +14,7 @@ const EmployeeAttendance = () => {
     }, []);
 
     return (
-        <div className="p-6 h-full flex flex-col bg-slate-50 overflow-y-auto">
+        <div className="p-3 md:p-6 h-full flex flex-col bg-slate-50 overflow-y-auto">
             <AttendanceView token={token} isMobile={isMobile} />
         </div>
     );

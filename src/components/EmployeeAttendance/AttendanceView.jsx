@@ -2,19 +2,21 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     Button, Modal, Form, Input, Select, DatePicker,
-    TimePicker, notification, Spin, Empty, InputNumber, Space, Tooltip
+    TimePicker, notification, Spin, Empty, InputNumber, Space, Tooltip, Switch, Segmented
 } from "antd";
 import {
     CalendarOutlined, UserOutlined, CheckCircleOutlined,
     CloseCircleOutlined, ClockCircleOutlined, TeamOutlined,
     PlusOutlined, FieldTimeOutlined, ThunderboltOutlined,
-    DownloadOutlined, SearchOutlined, UnorderedListOutlined, InfoCircleOutlined
+    DownloadOutlined, SearchOutlined, UnorderedListOutlined, InfoCircleOutlined,
+    CheckOutlined, CloseOutlined
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { getAllAttendance, recordAttendance, bulkRecordAttendance } from "../../api/attendance";
 import AttendanceCalendarView from "./AttendanceCalendarView";
 import { getEmployees } from "../../api/getEmployees";
 import { getAllShops } from "../../api/getAllShops";
+import { PresentBox, AbsentBox, WeekendBox, LateBox } from "./UIComponents";
 
 const { Option } = Select;
 
@@ -202,11 +204,17 @@ const AttendanceView = ({ token, isMobile }) => {
     /* ─── Stats ─── */
     const stats = useMemo(() => {
         const records = Array.isArray(attendanceData) ? attendanceData : [];
+        const todayStr = dayjs().format("YYYY-MM-DD");
+        const todayRecords = records.filter(r => dayjs(r.date).format("YYYY-MM-DD") === todayStr);
+
         return {
             total: records.length,
             present: records.filter(r => r.status === "PRESENT").length,
             absent: records.filter(r => r.status === "ABSENT").length,
             late: records.filter(r => r.status === "LATE").length,
+            todayPresent: todayRecords.filter(r => r.status === "PRESENT").length,
+            todayAbsent: todayRecords.filter(r => r.status === "ABSENT").length,
+            todayLate: todayRecords.filter(r => r.status === "LATE").length,
         };
     }, [attendanceData]);
 
@@ -396,7 +404,7 @@ const AttendanceView = ({ token, isMobile }) => {
         return (
             <div className="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden flex flex-col flex-1 min-h-0">
                 <div className="overflow-x-auto overflow-y-auto flex-1 min-h-[400px] max-h-[calc(100vh-280px)] custom-scrollbar" ref={tableRef}>
-                    <table className="w-full min-w-[1200px] border-collapse text-[13px] border-spacing-0">
+                    <table className="w-full border-collapse text-[13px] border-spacing-0 border border-slate-200">
                         <thead>
                             <tr>
                                 <th className="sticky left-0 z-20 bg-slate-50 min-w-[200px] max-w-[220px] px-4 py-3 border-r-2 border-slate-200 font-bold text-xs uppercase tracking-wider text-slate-600">Employee</th>
@@ -406,7 +414,7 @@ const AttendanceView = ({ token, isMobile }) => {
                                     return (
                                         <th
                                             key={day}
-                                            className={`sticky top-0 z-10 px-1 py-2.5 text-center font-semibold text-[11px] min-w-[42px] w-[42px] border-b-2 border-slate-200 select-none ${isToday ? 'bg-violet-50 text-violet-600 font-extrabold' :
+                                            className={`sticky top-0 z-10 px-0.5 py-2 text-center font-semibold text-[10px] min-w-[32px] w-[32px] border-b-2 border-r border-slate-200 select-none ${isToday ? 'bg-violet-50 text-violet-600 font-extrabold' :
                                                 weekend ? 'bg-red-50 text-rose-600' :
                                                     'bg-slate-50 text-slate-500'
                                                 }`}
@@ -472,12 +480,12 @@ const AttendanceView = ({ token, isMobile }) => {
                                             const isToday = isCurrentMonth && day === today;
 
                                             // Determine styles for day cells
-                                            let cellClass = "p-1 text-center align-middle min-w-[42px] w-[42px] cursor-pointer transition-colors border-b border-r border-slate-50 hover:bg-slate-100 ";
+                                            let cellClass = "p-0 text-center align-middle min-w-[32px] w-[32px] cursor-pointer transition-colors border-b border-r border-slate-200 hover:bg-slate-100 ";
                                             if (isToday) cellClass += "bg-purple-50 ";
                                             else if (weekend) cellClass += "bg-red-50/30 ";
 
                                             // Determine styles for badges
-                                            let badgeStyle = { width: 30, height: 26, borderRadius: 6, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, lineHeight: 1, color: "#e2e8f0" };
+                                            let badgeStyle = { width: 24, height: 20, borderRadius: 4, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, lineHeight: 1, color: "#e2e8f0" };
                                             if (info) {
                                                 const s = STATUS_MAP[info.status];
                                                 if (s) {
@@ -492,30 +500,41 @@ const AttendanceView = ({ token, isMobile }) => {
                                                     className={cellClass}
                                                     onClick={() => handleCellClick(emp.employeeId, day)}
                                                 >
-                                                    {info ? (
+                                                    {weekend && !info ? (
+                                                        <Tooltip
+                                                            title={`${monthName} ${day} – Weekend`}
+                                                            placement="top"
+                                                            color="#1e293b"
+                                                        >
+                                                            <WeekendBox />
+                                                        </Tooltip>
+                                                    ) : info ? (
                                                         <Tooltip
                                                             title={renderTooltip(info, day)}
                                                             placement="top"
                                                             color="#1e293b"
                                                         >
-                                                            <span style={badgeStyle}>
-                                                                {STATUS_MAP[info.status]?.short || "?"}
-                                                            </span>
+                                                            {info.status === 'PRESENT' && <PresentBox showIcon={true} showNumber={false} />}
+                                                            {info.status === 'ABSENT' && <AbsentBox showIcon={true} showNumber={false} />}
+                                                            {info.status === 'LATE' && <LateBox showIcon={true} showNumber={false} />}
+                                                            {info.status === 'HALF_DAY' && <LateBox showIcon={true} showNumber={false} />}
                                                         </Tooltip>
                                                     ) : (
-                                                        <span className="inline-flex items-center justify-center w-[30px] h-[26px] rounded-md text-base text-slate-300 font-normal leading-none" style={{ color: "#e2e8f0" }}>·</span>
+                                                        <div className="w-full h-full flex items-center justify-center">
+                                                            <span className="text-slate-300 text-sm">·</span>
+                                                        </div>
                                                     )}
                                                 </td>
                                             );
                                         })}
-                                        <td className="px-2 py-1.5 text-center font-bold text-[13px] border-b border-l-2 border-slate-100 min-w-[48px] text-green-500">
-                                            <span className="bg-green-50 px-2.5 py-1 rounded-md">{emp.totals.P}</span>
+                                        <td className="px-1 py-1 text-center border-b border-l-2 border-slate-100 min-w-[48px]">
+                                            <PresentBox count={emp.totals.P} showIcon={false} showNumber={true} />
                                         </td>
-                                        <td className="px-2 py-1.5 text-center font-bold text-[13px] border-b border-slate-100 min-w-[48px] text-red-500">
-                                            <span className="bg-red-50 px-2.5 py-1 rounded-md">{emp.totals.A}</span>
+                                        <td className="px-1 py-1 text-center border-b border-slate-100 min-w-[48px]">
+                                            <AbsentBox count={emp.totals.A} showIcon={false} showNumber={true} />
                                         </td>
-                                        <td className="px-2 py-1.5 text-center font-bold text-[13px] border-b border-slate-100 min-w-[48px] text-amber-500">
-                                            <span className="bg-amber-50 px-2.5 py-1 rounded-md">{emp.totals.L}</span>
+                                        <td className="px-1 py-1 text-center border-b border-slate-100 min-w-[48px]">
+                                            <LateBox count={emp.totals.L} showIcon={false} showNumber={true} />
                                         </td>
                                     </tr>
                                 ))
@@ -524,41 +543,24 @@ const AttendanceView = ({ token, isMobile }) => {
                     </table>
                 </div>
 
-                {/* Footer stats bar */}
-                {matrixData.length > 0 && (
-                    <div style={{
-                        display: "flex", justifyContent: "space-between", alignItems: "center",
-                        padding: "12px 20px", borderTop: "1px solid #f0f0f0",
-                        background: "#fafbfc", fontSize: 13, color: "#64748b",
-                    }}>
-                        <span>{matrixData.length} employee{matrixData.length !== 1 ? "s" : ""} · {monthName} {year}</span>
-                        <div style={{ display: "flex", gap: 16 }}>
-                            <span>Total Records: <strong style={{ color: "#1e293b" }}>{stats.total}</strong></span>
-                            <span style={{ color: "#22c55e" }}>Present: <strong>{stats.present}</strong></span>
-                            <span style={{ color: "#ef4444" }}>Absent: <strong>{stats.absent}</strong></span>
-                            <span style={{ color: "#f59e0b" }}>Late: <strong>{stats.late}</strong></span>
-                        </div>
-                    </div>
-                )}
-            </div>
+                            </div>
         );
     };
 
     return (
-        <div className="flex-1 flex flex-col font-sans animate-fadeIn">
+        <div className="flex-1 flex flex-col font-sans animate-fadeIn bg-slate-50">
             {/* ─── Header Container ─── */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-                <div className="flex items-center gap-4">
-                    <h1 className="!text-[30px] font-bold text-slate-900 m-0">Attendance</h1>
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 mb-4">
+                <div className="flex flex-wrap items-center gap-3">
+                    <h1 className="!text-[24px] md:!text-[30px] font-bold text-slate-900 m-0">Attendance</h1>
                     <Tooltip title="View and manage employee attendance records" placement="right">
                         <InfoCircleOutlined className="text-slate-400 text-base cursor-pointer hover:text-violet-500 transition-colors" />
                     </Tooltip>
-                    <div className="bg-slate-100 p-1 rounded-lg flex gap-1 hidden sm:flex">
+                    <div className="bg-white border p-1 rounded-lg flex">
                         <Button
                             type={viewMode === 'list' ? 'primary' : 'text'}
                             icon={<UnorderedListOutlined />}
                             onClick={() => setViewMode('list')}
-                            className={`border-0 ${viewMode === 'list' ? 'bg-white shadow-sm text-violet-600 font-medium' : 'text-slate-500 hover:text-slate-700'}`}
                             size="small"
                         >
                             List
@@ -567,18 +569,17 @@ const AttendanceView = ({ token, isMobile }) => {
                             type={viewMode === 'calendar' ? 'primary' : 'text'}
                             icon={<CalendarOutlined />}
                             onClick={() => setViewMode('calendar')}
-                            className={`border-0 ${viewMode === 'calendar' ? 'bg-white shadow-sm text-violet-600 font-medium' : 'text-slate-500 hover:text-slate-700'}`}
                             size="small"
                         >
                             Calendar
                         </Button>
                     </div>
                 </div>
-                <div className="flex flex-wrap gap-2 w-full md:w-auto">
+                <div className="flex flex-wrap gap-2 w-full lg:w-auto">
                     <Button
                         type="primary"
                         icon={<PlusOutlined />}
-                        className="bg-gradient-to-r from-violet-600 to-indigo-600 border-0 hover:from-violet-500 hover:to-indigo-500 shadow-md"
+                        className="bg-blue-600 border-blue-600 hover:!bg-blue-500 hover:!border-blue-500 shadow-md flex-1 sm:flex-none"
                         onClick={() => {
                             recordForm.resetFields();
                             const n = dayjs();
@@ -590,12 +591,14 @@ const AttendanceView = ({ token, isMobile }) => {
                     </Button>
                     <Button
                         icon={<TeamOutlined />}
+                        className="flex-1 sm:flex-none"
                         onClick={() => { bulkForm.resetFields(); setBulkModalOpen(true); }}
                     >
                         Bulk
                     </Button>
                     <Button
                         icon={<DownloadOutlined />}
+                        className="flex-1 sm:flex-none"
                         onClick={handleExportCSV}
                     >
                         Export
@@ -604,12 +607,12 @@ const AttendanceView = ({ token, isMobile }) => {
             </div>
 
             {/* Controls row */}
-            <div className="mb-4 bg-white px-4 py-2 rounded-lg shadow-sm border border-slate-100">
-                <div className="flex flex-col md:flex-row md:flex-nowrap md:items-center gap-2 md:gap-3">
+            <div className="mb-4 flex flex-col xl:flex-row xl:flex-nowrap xl:items-center gap-2 xl:gap-3">
+                <div className="bg-white px-3 sm:px-4 py-2 rounded-lg shadow-sm border border-slate-100 flex items-center gap-2 overflow-x-auto pr-3 sm:pr-6 w-full xl:w-auto">
                     <Select
                         value={month}
                         onChange={setMonth}
-                        className="w-[120px] shrink-0"
+                        className="w-[100px] shrink-0"
                         popupMatchSelectWidth={false}
                         size="small"
                     >
@@ -620,7 +623,7 @@ const AttendanceView = ({ token, isMobile }) => {
                     <Select
                         value={year}
                         onChange={setYear}
-                        className="w-[80px] shrink-0"
+                        className="w-[70px] shrink-0"
                         size="small"
                     >
                         {yearOptions.map(y => (
@@ -634,7 +637,7 @@ const AttendanceView = ({ token, isMobile }) => {
                         optionFilterProp="children"
                         value={filterEmployee}
                         onChange={setFilterEmployee}
-                        className="w-[200px] shrink-0"
+                        className="w-[160px] shrink-0"
                         loading={loadingEmployees}
                         size="small"
                     >
@@ -650,9 +653,38 @@ const AttendanceView = ({ token, isMobile }) => {
                         allowClear
                         value={searchText}
                         onChange={e => setSearchText(e.target.value)}
-                        className="w-full md:w-[220px]"
+                        className="!w-[220px] md:!w-[300px] shrink-0"
                         size="small"
                     />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 w-full xl:w-auto xl:ml-auto">
+                    <div className="flex items-center bg-white px-3 sm:px-4 py-2 rounded-lg shadow-sm border border-slate-100">
+                        <div className="rounded-md p-1.5 mr-3 flex items-center justify-center" style={{ backgroundColor: '#dcfce7' }}>
+                            <CheckOutlined className="text-lg" style={{ color: '#166534' }} />
+                        </div>
+                        <div>
+                            <div className="text-sm font-medium text-gray-800">Present Today</div>
+                            <div className="text-xs text-gray-400">{stats.todayPresent}</div>
+                        </div>
+                    </div>
+                    <div className="flex items-center bg-white px-3 sm:px-4 py-2 rounded-lg shadow-sm border border-slate-100">
+                        <div className="rounded-md p-1.5 mr-3 flex items-center justify-center" style={{ backgroundColor: '#fee2e2' }}>
+                            <CloseOutlined className="text-lg" style={{ color: '#991b1b' }} />
+                        </div>
+                        <div>
+                            <div className="text-sm font-medium text-gray-800">Absent Today</div>
+                            <div className="text-xs text-gray-400">{stats.todayAbsent}</div>
+                        </div>
+                    </div>
+                    <div className="flex items-center bg-white px-3 sm:px-4 py-2 rounded-lg shadow-sm border border-slate-100">
+                        <div className="rounded-md p-1.5 mr-3 flex items-center justify-center" style={{ backgroundColor: '#fef9c3' }}>
+                            <ClockCircleOutlined className="text-lg" style={{ color: '#854d0e' }} />
+                        </div>
+                        <div>
+                            <div className="text-sm font-medium text-gray-800">Late Today</div>
+                            <div className="text-xs text-gray-400">{stats.todayLate}</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -662,8 +694,6 @@ const AttendanceView = ({ token, isMobile }) => {
                     <Spin size="large" />
                     <div style={{ marginTop: 12, color: "#94a3b8" }}>Loading attendance data...</div>
                 </div>
-            ) : isMobile ? (
-                renderMobileView()
             ) : viewMode === 'calendar' ? (
                 <AttendanceCalendarView
                     attendanceData={attendanceData}
@@ -673,15 +703,31 @@ const AttendanceView = ({ token, isMobile }) => {
                         setYear(d.year());
                     }}
                 />
+            ) : isMobile ? (
+                renderMobileView()
             ) : (
                 renderSpreadsheet()
             )}
+
+            {/* ─── Stats Bar (shown for both views) ─── */}
+            <div className="mt-4 mb-4 px-2 sm:px-4 py-3">
+                <div className="flex flex-col gap-2 md:flex-row md:justify-between md:items-center">
+                    <span className="text-sm text-gray-600">
+                        {matrixData.length} employee{matrixData.length !== 1 ? "s" : ""} · {monthName} {year}
+                    </span>
+                    <div className="flex flex-wrap gap-3 text-sm">
+                        <span>Total Records: <strong style={{ color: "#1e293b" }}>{stats.total}</strong></span>
+                        <span style={{ color: "#22c55e" }}>Present: <strong>{stats.present}</strong></span>
+                        <span style={{ color: "#ef4444" }}>Absent: <strong>{stats.absent}</strong></span>
+                        <span style={{ color: "#f59e0b" }}>Late: <strong>{stats.late}</strong></span>
+                    </div>
+                </div>
+            </div>
 
             {/* ─── Record Attendance Modal ─── */}
             <Modal
                 title={
                     <Space>
-                        <PlusOutlined style={{ color: "#7c3aed" }} />
                         <span>Record Attendance</span>
                     </Space>
                 }
@@ -690,8 +736,8 @@ const AttendanceView = ({ token, isMobile }) => {
                 onOk={handleRecordSubmit}
                 confirmLoading={recordMutation.isPending}
                 okText="Save"
-                okButtonProps={{ style: { background: "#7c3aed", borderColor: "#7c3aed" } }}
-                width={isMobile ? "95%" : 520}
+                okButtonProps={{ style: { background: "#2563eb", borderColor: "#2563eb" } }}
+                width={isMobile ? "95%" : 400}
                 destroyOnClose
             >
                 <Form form={recordForm} layout="vertical" style={{ marginTop: 16 }}>
@@ -703,24 +749,24 @@ const AttendanceView = ({ token, isMobile }) => {
                             loading={loadingEmployees}
                         >
                             {employees.map(e => (
-                                <Option key={e.employeeId} value={e.employeeId}>{e.firstName} {e.lastName} (ID: {e.employeeId})</Option>
+                                <Option key={e.employeeId} value={e.employeeId}>{e.firstName} {e.lastName}</Option>
                             ))}
                         </Select>
                     </Form.Item>
-                    <div style={{ display: "flex", gap: 12 }}>
-                        <Form.Item name="date" label="Date" rules={[{ required: true, message: "Select a date" }]} style={{ flex: 1 }}>
-                            <DatePicker style={{ width: "100%" }} />
-                        </Form.Item>
-                        <Form.Item name="status" label="Status" rules={[{ required: true, message: "Select status" }]} style={{ flex: 1 }}>
-                            <Select placeholder="Select status">
-                                {STATUS_OPTIONS.map(s => (
-                                    <Option key={s.value} value={s.value}>
-                                        <Space>{s.icon}{s.label}</Space>
-                                    </Option>
-                                ))}
-                            </Select>
-                        </Form.Item>
-                    </div>
+                    <Form.Item name="date" label="Date" rules={[{ required: true, message: "Select a date" }]}>
+                        <DatePicker style={{ width: "100%" }} />
+                    </Form.Item>
+                    <Form.Item name="status" label="Status" rules={[{ required: true, message: "Select status" }]}>
+                        <Segmented
+                            options={[
+                                { label: 'Present', value: 'PRESENT' },
+                                { label: 'Absent', value: 'ABSENT' },
+                                { label: 'Late', value: 'LATE' }
+                            ]}
+                            className="w-full bg-slate-100 p-1"
+                            block
+                        />
+                    </Form.Item>
                     <div style={{ display: "flex", gap: 12 }}>
                         <Form.Item name="clockInTime" label="Clock In" style={{ flex: 1 }}>
                             <TimePicker format="HH:mm" style={{ width: "100%" }} />
@@ -739,7 +785,7 @@ const AttendanceView = ({ token, isMobile }) => {
             <Modal
                 title={
                     <Space>
-                        <TeamOutlined style={{ color: "#7c3aed" }} />
+                        <TeamOutlined style={{ color: "#2563eb" }} />
                         <span>Bulk Record Attendance</span>
                     </Space>
                 }
@@ -748,7 +794,7 @@ const AttendanceView = ({ token, isMobile }) => {
                 onOk={handleBulkSubmit}
                 confirmLoading={bulkMutation.isPending}
                 okText="Apply to All"
-                okButtonProps={{ style: { background: "#7c3aed", borderColor: "#7c3aed" } }}
+                okButtonProps={{ style: { background: "#2563eb", borderColor: "#2563eb" } }}
                 width={isMobile ? "95%" : 420}
                 destroyOnClose
             >
@@ -764,21 +810,23 @@ const AttendanceView = ({ token, isMobile }) => {
                         <DatePicker style={{ width: "100%" }} />
                     </Form.Item>
                     <Form.Item name="status" label="Status" rules={[{ required: true, message: "Select status" }]}>
-                        <Select placeholder="Select status">
-                            {STATUS_OPTIONS.map(s => (
-                                <Option key={s.value} value={s.value}>
-                                    <Space>{s.icon}{s.label}</Space>
-                                </Option>
-                            ))}
-                        </Select>
+                        <Segmented
+                            options={[
+                                { label: 'Present', value: 'PRESENT' },
+                                { label: 'Absent', value: 'ABSENT' },
+                                { label: 'Late', value: 'LATE' }
+                            ]}
+                            className="w-full bg-slate-100 p-1"
+                            block
+                        />
                     </Form.Item>
                     <div style={{
-                        background: "#f5f3ff",
+                        background: "#eff6ff",
                         padding: "10px 14px",
                         borderRadius: 8,
                         fontSize: 13,
-                        color: "#7c3aed",
-                        border: "1px solid #ede9fe",
+                        color: "#2563eb",
+                        border: "1px solid #dbeafe",
                     }}>
                         <ThunderboltOutlined style={{ marginRight: 6 }} />
                         This will apply the selected status to <strong>all employees</strong> in the specified shop for the given date.
