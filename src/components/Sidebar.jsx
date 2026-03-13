@@ -308,7 +308,7 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
                 </div>
 
                 {/* Middle: Navigation */}
-                <div className="flex-1 pt-6 pb-4 overflow-y-auto custom-scrollbar">
+                <div className="flex-1 pt-6 pb-4 overflow-y-auto overflow-x-hidden custom-scrollbar">
                     <Menu
                         theme="dark"
                         mode="inline"
@@ -388,10 +388,9 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
                     /* Round the left side, keep right side flat */
                     border-radius: 30px 0 0 30px !important; 
                     
-                    /* Overlap the edge slightly to perfectly hide any vertical subpixel gaps */
-                    margin-right: -1px !important; 
+                    /* Align perfectly with the margin-left to prevent horizontal overflow */
                     margin-left: 12px !important;
-                    width: calc(100% - 11px) !important;
+                    width: calc(100% - 12px) !important;
                     position: relative;
                     
                     /* Remove any native shadows or borders */
