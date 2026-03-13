@@ -116,11 +116,11 @@ const ValuePropSection = () => {
     ];
 
     return (
-        <div className="relative py-16 md:py-24 px-6 md:px-12 lg:px-20 overflow-hidden bg-transparent">
+        <div className="relative py-12 md:py-16 px-6 md:px-12 lg:px-20 overflow-hidden bg-transparent">
 
             {/* 1. Value Proposition Header */}
             <AnimatedSection>
-                <div className="max-w-4xl mx-auto text-center mb-20 lg:mb-24">
+                <div className="max-w-4xl mx-auto text-center mb-12 lg:mb-16">
                     <h2 className="text-3xl md:text-5xl font-bold mb-6 font-outfit text-slate-900">
                         {t('valuePropSection.title')}
                     </h2>
@@ -134,7 +134,7 @@ const ValuePropSection = () => {
             </AnimatedSection>
 
             {/* 2. Pillars Sections (Zig-Zag Layout) */}
-            <div className="flex flex-col gap-16 lg:gap-20 mb-32 max-w-7xl mx-auto">
+            <div className="flex flex-col gap-12 lg:gap-16 mb-20 max-w-7xl mx-auto">
                 {pillars.map((pillar, idx) => (
                     <AnimatedSection key={idx} delay="0.1s">
                         <div className={`flex flex-col-reverse ${idx % 2 === 0 ? 'lg:flex-row' : 'lg:flex-row-reverse'} items-center gap-8 lg:gap-16`}>
@@ -205,9 +205,9 @@ const ValuePropSection = () => {
             </div>
 
             {/* 3. Unmatched Accuracy - 2x3 Grid Layout */}
-            <div className="max-w-7xl mx-auto mb-24 pt-12 border-t border-slate-100 relative">
+            <div className="max-w-7xl mx-auto mb-16 pt-8 border-t border-slate-100 relative">
                 <AnimatedSection>
-                    <div className="text-center mb-20 pt-16">
+                    <div className="text-center mb-12 pt-12">
                         <h2 className="text-3xl md:text-4xl font-bold mb-4 font-outfit text-slate-900">
                             {t('valuePropSection.accuracy.title')}
                         </h2>
@@ -293,7 +293,7 @@ const ValuePropSection = () => {
                 </div>
 
                 {/* CTA */}
-                <div className="pt-20 text-center">
+                <div className="pt-12 text-center">
                     <Button
                         type="primary"
                         size="large"
@@ -310,7 +310,7 @@ const ValuePropSection = () => {
                 </div>
 
                 {/* Additional Feature Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-24">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-16">
                     {/* Custom Contact Form Card */}
                     <AnimatedSection delay="0.1s">
                         <div className="bg-white/70 backdrop-blur-sm border border-slate-200/60 p-10 rounded-3xl shadow-lg relative overflow-hidden group hover:border-violet-300 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-violet-200/50 h-full">
@@ -345,7 +345,7 @@ const ValuePropSection = () => {
 
                 {/* Security & Reliability Section */}
                 <AnimatedSection delay="0.3s">
-                    <div className="mt-20 text-center max-w-4xl mx-auto bg-white/70 backdrop-blur-sm border border-slate-200/60 rounded-3xl p-8 md:p-12 shadow-lg relative overflow-hidden group hover:border-violet-300 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-violet-200/50">
+                    <div className="mt-12 text-center max-w-4xl mx-auto bg-white/70 backdrop-blur-sm border border-slate-200/60 rounded-3xl p-8 md:p-12 shadow-lg relative overflow-hidden group hover:border-violet-300 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-violet-200/50">
                         <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
                             <LockOutlined style={{ fontSize: '150px', color: '#7c3aed' }} />
                         </div>

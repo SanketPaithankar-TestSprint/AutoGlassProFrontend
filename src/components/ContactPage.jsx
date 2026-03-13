@@ -221,7 +221,7 @@ ${userMessage || 'No message provided'}
 
                                         <Form.Item
                                             name="businessType"
-                                            label={<span className="font-medium text-slate-700">{t('contact.newBusinessPrompt')} <span className="font-normal text-slate-400 text-sm">{t('common.optional')}</span></span>}
+                                            label={<span className="font-medium text-slate-700">{t('contact.newBusinessPrompt')}</span>}
                                             className="mb-3"
                                         >
                                             <Radio.Group className="flex gap-6">
@@ -232,7 +232,7 @@ ${userMessage || 'No message provided'}
 
                                         <Form.Item
                                             name="message"
-                                            label={<span className="font-medium text-slate-700">{t('contact.message')} <span className="font-normal text-slate-400 text-sm">{t('common.optional')}</span></span>}
+                                            label={<span className="font-medium text-slate-700">{t('contact.message')}</span>}
                                             className="mb-6"
                                         >
                                             <Input.TextArea
@@ -247,7 +247,7 @@ ${userMessage || 'No message provided'}
                                                 type="primary"
                                                 htmlType="submit"
                                                 loading={loading}
-                                                className="!bg-[#FF7A50] hover:!bg-[#E06945] !border-none !h-11 !px-8 !rounded-lg !text-base !font-semibold shadow-lg shadow-orange-200 w-full md:w-auto"
+                                                className="!bg-[#7E5CFE] hover:!bg-[#6a4deb] !border-none !h-11 !px-8 !rounded-lg !text-base !font-semibold shadow-lg shadow-violet-200 w-full md:w-auto"
                                             >
                                                 {t('common.submit')}
                                             </Button>
