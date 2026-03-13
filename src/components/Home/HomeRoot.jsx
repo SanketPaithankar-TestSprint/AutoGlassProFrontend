@@ -112,7 +112,7 @@ const Home = () => {
                             </p>
 
                             <motion.div
-                                className="flex flex-row justify-center gap-3 w-full mr-6"
+                                className="flex flex-row justify-center lg:justify-start lg:ml-12 gap-3 w-full"
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: 0.9 }}
@@ -156,7 +156,7 @@ const Home = () => {
                                         onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
                                         onClick={() => setIsVideoOpen(true)}
                                     >
-                                        <span className="font-medium">Watch a Demo</span>
+                                        <span className="font-medium">{t('home.watchDemo')}</span>
                                     </Button>
                                 </motion.div>
                             </motion.div>
@@ -192,6 +192,39 @@ const Home = () => {
                     className={`transition-all duration-700 ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
                 >
                     <ValuePropSection />
+                </div>
+
+                {/* CTA Section */}
+                <div className="relative py-16 px-4 sm:px-6 lg:px-8">
+                    <div className="max-w-5xl mx-auto text-center">
+                        <motion.div
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: 0.3 }}
+                            className="bg-gradient-to-r from-[#7E5CFE] to-[#7E5CFE] rounded-3xl p-8 md:p-20 shadow-2xl"
+                        >
+                            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+                                {t('home.ctaTitle')}
+                            </h2>
+                            <p className="text-violet-100 mb-8 text-lg">
+                                {t('home.ctaDescription')}
+                            </p>
+                            <motion.div
+                                className="flex justify-center"
+                                whileTap={{ scale: 0.95 }}
+                                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                            >
+                                <Button
+                                    type="primary"
+                                    size="large"
+                                    className="!bg-white !text-violet-600 !border-none !rounded-full !px-10 !h-14 !text-base !font-bold shadow-lg hover:shadow-xl transition-all duration-300"
+                                    onClick={() => navigate('/contact')}
+                                >
+                                    {t('home.ctaContactButton')}
+                                </Button>
+                            </motion.div>
+                        </motion.div>
+                    </div>
                 </div>
             </div>
 
