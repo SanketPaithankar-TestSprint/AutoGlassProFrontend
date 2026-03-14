@@ -1,13 +1,23 @@
-import React, { useState } from 'react';
-import { Switch, Select, Slider, Radio, Divider } from 'antd';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Switch, Select, Slider, Radio, Divider, Button, App } from 'antd';
 import { BellOutlined, MessageOutlined, SoundOutlined, ClockCircleOutlined, FieldTimeOutlined } from '@ant-design/icons';
+import { useNotificationSettings } from '../../context/NotificationSettingsContext';
+import { playNotificationSound } from '../../utils/playNotificationSound';
 
-const SOUND_OPTIONS = [
-    { value: 'chime', label: '🔔 Chime' },
-    { value: 'bell', label: '🛎 Bell' },
-    { value: 'ping', label: '📳 Ping' },
-    { value: 'ding', label: '✨ Ding' },
-    { value: 'none', label: '🔇 None' },
+const SHARED_SOUND_OPTIONS = [
+    { value: 'chime', label: 'Chime' },
+    { value: 'ping', label: 'Ping' },
+    { value: 'none', label: 'None' },
+];
+
+const INQUIRY_SOUND_OPTIONS = [
+    { value: 'ding', label: 'Service specific' },
+    ...SHARED_SOUND_OPTIONS,
+];
+
+const LIVE_CHAT_SOUND_OPTIONS = [
+    { value: 'ding', label: 'Chat specific' },
+    ...SHARED_SOUND_OPTIONS,
 ];
 
 const FREQUENCY_OPTIONS = [
@@ -55,13 +65,18 @@ const SettingRow = ({ icon, label, description, children }) => (
     </div>
 );
 
-const NotificationSection = ({ icon, title, color }) => {
-    const [enabled, setEnabled] = useState(true);
-    const [sound, setSound] = useState('chime');
-    const [volume, setVolume] = useState(70);
-    const [frequency, setFrequency] = useState('every');
-    const [delay, setDelay] = useState(0);
-    const [showModal, setShowModal] = useState(true);
+const NotificationSection = ({ icon, title, color, sectionKey, section, onFieldChange, soundOptions }) => {
+    const enabled = section?.enabled ?? true;
+    const showModal = section?.showModal ?? true;
+    const sound = useMemo(() => {
+        const defaultSound = 'none';
+        const current = section?.sound ?? defaultSound;
+        const isValid = soundOptions.some((option) => option.value === current);
+        return isValid ? current : defaultSound;
+    }, [section?.sound, soundOptions]);
+    const volume = section?.volume ?? 100;
+    const frequency = section?.frequency ?? 'every';
+    const delay = section?.delay ?? 0;
 
     return (
         <SectionCard icon={icon} title={title} color={color}>
@@ -73,7 +88,7 @@ const NotificationSection = ({ icon, title, color }) => {
             >
                 <Switch
                     checked={enabled}
-                    onChange={setEnabled}
+                    onChange={(checked) => onFieldChange(sectionKey, 'enabled', checked)}
                     style={enabled ? { background: color } : {}}
                 />
             </SettingRow>
@@ -88,7 +103,7 @@ const NotificationSection = ({ icon, title, color }) => {
             >
                 <Switch
                     checked={showModal}
-                    onChange={setShowModal}
+                    onChange={(checked) => onFieldChange(sectionKey, 'showModal', checked)}
                     disabled={!enabled}
                     style={showModal && enabled ? { background: color } : {}}
                 />
@@ -104,8 +119,8 @@ const NotificationSection = ({ icon, title, color }) => {
             >
                 <Select
                     value={sound}
-                    onChange={setSound}
-                    options={SOUND_OPTIONS}
+                    onChange={(value) => onFieldChange(sectionKey, 'sound', value)}
+                    options={soundOptions}
                     disabled={!enabled}
                     style={{ width: 160 }}
                     size="small"
@@ -120,7 +135,7 @@ const NotificationSection = ({ icon, title, color }) => {
             >
                 <Slider
                     value={volume}
-                    onChange={setVolume}
+                    onChange={(value) => onFieldChange(sectionKey, 'volume', value)}
                     disabled={!enabled || sound === 'none'}
                     style={{ width: 140 }}
                     min={0}
@@ -140,7 +155,7 @@ const NotificationSection = ({ icon, title, color }) => {
             >
                 <Select
                     value={frequency}
-                    onChange={setFrequency}
+                    onChange={(value) => onFieldChange(sectionKey, 'frequency', value)}
                     options={FREQUENCY_OPTIONS}
                     disabled={!enabled}
                     style={{ width: 200 }}
@@ -156,7 +171,7 @@ const NotificationSection = ({ icon, title, color }) => {
             >
                 <Radio.Group
                     value={delay}
-                    onChange={e => setDelay(e.target.value)}
+                    onChange={(e) => onFieldChange(sectionKey, 'delay', e.target.value)}
                     disabled={!enabled}
                     size="small"
                 >
@@ -169,25 +184,111 @@ const NotificationSection = ({ icon, title, color }) => {
     );
 };
 
-const NotificationSettings = () => (
-    <div className="space-y-6">
-        {/* Header */}
-        <h2 className="text-xl font-bold text-gray-800 m-0 mb-2">Notification Settings</h2>
+const NotificationSettings = () => {
+    const { message } = App.useApp();
+    const { settings, loading, error, fetchSettings, replaceSettings, saving } = useNotificationSettings();
+    const [draftSettings, setDraftSettings] = useState(settings);
+    const [isDirty, setIsDirty] = useState(false);
 
-        {/* Inquiries */}
-        <NotificationSection
-            icon={<BellOutlined />}
-            title="Inquiries"
-            color="#1677ff"
-        />
+    useEffect(() => {
+        setDraftSettings(settings);
+        setIsDirty(false);
+    }, [settings]);
 
-        {/* Live Chat */}
-        <NotificationSection
-            icon={<MessageOutlined />}
-            title="Live Chat"
-            color="#1677ff"
-        />
-    </div>
-);
+    const onFieldChange = (sectionKey, field, value) => {
+        const nextSection = {
+            ...draftSettings?.[sectionKey],
+            [field]: value,
+        };
+
+        setDraftSettings((prev) => ({
+            ...prev,
+            [sectionKey]: {
+                ...prev?.[sectionKey],
+                [field]: value,
+            },
+        }));
+        setIsDirty(true);
+
+        // Play a local demo when user changes sound or volume.
+        if (field === 'sound' || field === 'volume') {
+            if (nextSection?.sound === 'none') {
+                return;
+            }
+
+            playNotificationSound({
+                sound: nextSection?.sound,
+                volume: nextSection?.volume,
+                type: sectionKey === 'liveChat' ? 'liveChat' : 'inquiries',
+            });
+        }
+    };
+
+    const handleSave = async () => {
+        try {
+            await replaceSettings(draftSettings);
+            setIsDirty(false);
+            message.success('Notification settings saved.');
+        } catch (saveError) {
+            message.error('Failed to save notification settings.');
+        }
+    };
+
+    return (
+        <div className="space-y-6">
+            {/* Header */}
+            <div className="flex items-center justify-between gap-3">
+                <h2 className="text-xl font-bold text-gray-800 m-0 mb-2">Notification Settings</h2>
+                <Button
+                    type="primary"
+                    onClick={handleSave}
+                    disabled={!isDirty || loading}
+                    loading={saving}
+                >
+                    Save
+                </Button>
+            </div>
+
+            {loading && (
+                <div className="text-sm text-gray-500">Loading notification settings...</div>
+            )}
+
+            {error && (
+                <div className="text-sm text-red-500">
+                    Failed to load the latest settings. Showing defaults.
+                    <button
+                        type="button"
+                        className="ml-2 text-blue-600 hover:text-blue-700 underline"
+                        onClick={fetchSettings}
+                    >
+                        Retry
+                    </button>
+                </div>
+            )}
+
+            {/* Inquiries */}
+            <NotificationSection
+                icon={<BellOutlined />}
+                title="Inquiries"
+                color="#1677ff"
+                sectionKey="inquiries"
+                section={draftSettings?.inquiries}
+                onFieldChange={onFieldChange}
+                soundOptions={INQUIRY_SOUND_OPTIONS}
+            />
+
+            {/* Live Chat */}
+            <NotificationSection
+                icon={<MessageOutlined />}
+                title="Live Chat"
+                color="#1677ff"
+                sectionKey="liveChat"
+                section={draftSettings?.liveChat}
+                onFieldChange={onFieldChange}
+                soundOptions={LIVE_CHAT_SOUND_OPTIONS}
+            />
+        </div>
+    );
+};
 
 export default NotificationSettings;

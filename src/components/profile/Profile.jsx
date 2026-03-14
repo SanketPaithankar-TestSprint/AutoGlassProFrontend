@@ -22,10 +22,12 @@ import EmployeeManagement from "./EmployeeManagement";
 import TerminalConfiguration from "./TerminalConfiguration";
 import SlugConfig from "../SlugConfig/SlugConfig";
 import NotificationSettings from "./NotificationSettings";
+
 import { getStatesOrProvinces, getCities, COUNTRIES } from "../../const/locations";
 import { useSidebarStore } from '../../store/useSidebarStore';
 import { getPageBackground } from '../../const/pageBackgrounds';
 import { useTranslation } from 'react-i18next';
+import SubscriptionManagement from "./SubscriptionManagement";
 
 const Profile = () => {
     const [activeTab, setActiveTab] = useState('profile');
@@ -447,6 +449,7 @@ const Profile = () => {
                             { id: 'profile', label: t('auth.profile'), icon: <UserOutlined /> },
                             { id: 'shops', label: t('profile.shops'), icon: <ShopOutlined /> },
                             { id: 'manageEmployees', label: t('profile.manageEmployees'), icon: <TeamOutlined /> },
+                            { id: 'subscription', label: 'Subscription', icon: <DollarOutlined /> },
                             { id: 'distributorCredentials', label: t('profile.distributorCredentials'), icon: <KeyOutlined /> },
                             { id: 'laborRate', label: t('profile.laborRate'), icon: <CalculatorOutlined /> },
                             { id: 'taxRates', label: t('profile.taxSettings'), icon: <PercentageOutlined /> },
@@ -482,6 +485,7 @@ const Profile = () => {
                             {renderMenuItem('profile', t('auth.profile'), <UserOutlined />)}
                             {renderMenuItem('shops', t('profile.shops'), <ShopOutlined />)}
                             {renderMenuItem('manageEmployees', t('profile.manageEmployees'), <TeamOutlined />)}
+                            {renderMenuItem('subscription', 'Subscription', <DollarOutlined />)}
                             {renderMenuItem('distributorCredentials', t('profile.distributorCredentials'), <KeyOutlined />)}
                             {renderMenuItem('laborRate', t('profile.laborRate'), <CalculatorOutlined />)}
                             {renderMenuItem('taxRates', t('profile.taxSettings'), <PercentageOutlined />)}
@@ -503,6 +507,7 @@ const Profile = () => {
                     {activeTab === 'profile' && renderProfileContent()}
                     {activeTab === 'shops' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><Shops userProfile={profile} /></div>}
                     {activeTab === 'manageEmployees' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><EmployeeManagement token={token} isMobile={isMobile} /></div>}
+                    {activeTab === 'subscription' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><SubscriptionManagement /></div>}
                     {activeTab === 'distributorCredentials' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><DistributorCredentials /></div>}
                     {activeTab === 'laborRate' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><LaborRateConfiguration /></div>}
                     {activeTab === 'taxRates' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><TaxRateConfiguration /></div>}

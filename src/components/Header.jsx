@@ -19,7 +19,13 @@ const ProfileDropdown = ({ onLogout }) => {
   const items = [
     {
       key: "profile",
-      label: <Link to="/profile">{t('auth.userProfile')}</Link>,
+      label: <Link to="/profile" title="">{t('auth.userProfile')}</Link>,
+      title: "",
+    },
+    {
+      key: "help",
+      label: <Link to="/contact" title="">Help & Support</Link>,
+      title: "",
     },
 
     {
@@ -33,6 +39,7 @@ const ProfileDropdown = ({ onLogout }) => {
         </span>
       ),
       danger: true,
+      title: "",
     },
   ];
 
@@ -177,7 +184,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
       <AntHeader
         className={`fixed top-0 left-0 right-0 z-40 flex items-center px-4 sm:px-6 md:px-8 transition-all duration-500 h-16
           ${scrolled
-            ? '!bg-white/95 backdrop-blur-md border-b border-slate-200/80'
+            ? '!bg-white/80 backdrop-blur-md border-b border-slate-200/80'
             : '!bg-transparent border-b border-transparent'
           }
         `}
@@ -225,7 +232,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
           </div>
         ) : (
           <div className="hidden lg:flex items-center gap-2 sm:gap-3 ml-auto min-w-0">
-            <LanguageToggle />
+            <LanguageToggle compact />
             <ProfileDropdown
               onLogout={() => {
                 localStorage.removeItem("ApiToken");

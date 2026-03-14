@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -36,6 +36,16 @@ const AttendanceCalendarView = ({ attendanceData, currentDate, setCurrentDate })
     const [showModal, setShowModal] = useState(false);
     const [selectedDateRecords, setSelectedDateRecords] = useState([]);
     const [selectedDateStr, setSelectedDateStr] = useState("");
+    const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
+
+    useEffect(() => {
+        const onResize = () => setViewportWidth(window.innerWidth);
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
+
+    const isMobileView = viewportWidth < 768;
+    const isTabletView = viewportWidth >= 768 && viewportWidth < 1024;
 
     // Process attendance data into aggregated calendar events
     const events = useMemo(() => {
@@ -104,13 +114,16 @@ const AttendanceCalendarView = ({ attendanceData, currentDate, setCurrentDate })
     };
 
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden flex flex-col flex-1 min-h-0 p-4 relative z-0">
+        <div className="attendance-calendar bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden flex flex-col flex-1 min-h-0 p-2 sm:p-4 relative z-0" style={{ boxShadow: '4px 6px 12px rgba(0, 0, 0, 0.1), 2px 4px 6px rgba(0, 0, 0, 0.05)' }}>
             <Calendar
                 localizer={localizer}
                 events={events}
                 startAccessor="start"
                 endAccessor="end"
-                style={{ height: 'calc(100vh - 280px)' }}
+                style={{
+                    height: isMobileView ? '72vh' : isTabletView ? '68vh' : 'calc(100vh - 280px)',
+                    minHeight: isMobileView ? 480 : isTabletView ? 560 : 640,
+                }}
                 eventPropGetter={eventStyleGetter}
                 components={{
                     event: CustomEvent
@@ -132,7 +145,8 @@ const AttendanceCalendarView = ({ attendanceData, currentDate, setCurrentDate })
                 open={showModal}
                 onCancel={() => setShowModal(false)}
                 footer={null}
-                className="rounded-lg overflow-hidden"
+                width={isMobileView ? '95%' : isTabletView ? '86%' : 620}
+                className="rounded-2xl overflow-hidden"
             >
                 {selectedDateRecords.length === 0 ? (
                     <Empty description="No records found." />
@@ -144,8 +158,8 @@ const AttendanceCalendarView = ({ attendanceData, currentDate, setCurrentDate })
                                 <Card
                                     key={record.employeeId}
                                     size="small"
-                                    className="border border-slate-200"
-                                    style={{ borderLeft: `4px solid ${statusInfo?.color}` }}
+                                    className="border border-slate-200 rounded-xl"
+                                    style={{ borderLeft: `4px solid ${statusInfo?.color}`, boxShadow: '2px 4px 8px rgba(0, 0, 0, 0.1), 1px 2px 4px rgba(0, 0, 0, 0.05)' }}
                                 >
                                     <div className="flex justify-between items-center">
                                         <div>
@@ -158,7 +172,7 @@ const AttendanceCalendarView = ({ attendanceData, currentDate, setCurrentDate })
                                         />
                                     </div>
                                     {record.notes && (
-                                        <div className="mt-2 text-xs italic text-slate-600 bg-slate-50 p-2 rounded">
+                                        <div className="mt-2 text-xs italic text-slate-600 bg-slate-50 p-2 rounded-lg" style={{ boxShadow: '1px 2px 4px rgba(0, 0, 0, 0.05)' }}>
                                             "{record.notes}"
                                         </div>
                                     )}
@@ -168,6 +182,77 @@ const AttendanceCalendarView = ({ attendanceData, currentDate, setCurrentDate })
                     </div>
                 )}
             </Modal>
+
+            <style>{`
+                .attendance-calendar .rbc-toolbar {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 8px;
+                    align-items: center;
+                    justify-content: space-between;
+                }
+
+                .attendance-calendar .rbc-toolbar-label {
+                    font-size: 16px;
+                    font-weight: 700;
+                    color: #0f172a;
+                }
+
+                .attendance-calendar .rbc-month-view,
+                .attendance-calendar .rbc-time-view,
+                .attendance-calendar .rbc-agenda-view {
+                    border-radius: 12px;
+                    overflow: hidden;
+                }
+
+                @media (max-width: 1024px) {
+                    .attendance-calendar .rbc-toolbar-label {
+                        font-size: 15px;
+                    }
+
+                    .attendance-calendar .rbc-date-cell {
+                        padding-right: 4px;
+                        font-size: 12px;
+                    }
+
+                    .attendance-calendar .rbc-row-content {
+                        z-index: 1;
+                    }
+                }
+
+                @media (max-width: 767px) {
+                    .attendance-calendar .rbc-toolbar {
+                        justify-content: center;
+                        padding-bottom: 4px;
+                    }
+
+                    .attendance-calendar .rbc-toolbar-label {
+                        order: -1;
+                        width: 100%;
+                        text-align: center;
+                        font-size: 14px;
+                    }
+
+                    .attendance-calendar .rbc-btn-group button {
+                        font-size: 12px;
+                        padding: 4px 8px;
+                        height: auto;
+                    }
+
+                    .attendance-calendar .rbc-header {
+                        font-size: 11px;
+                        padding: 6px 2px;
+                    }
+
+                    .attendance-calendar .rbc-date-cell {
+                        font-size: 11px;
+                    }
+
+                    .attendance-calendar .rbc-event {
+                        padding: 1px;
+                    }
+                }
+            `}</style>
         </div>
     );
 };

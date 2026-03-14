@@ -273,8 +273,15 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
     const profileMenuItems = [
         {
             key: 'profile',
-            label: <Link to="/profile">{t('auth.profile')}</Link>,
-            icon: <UserOutlined />
+            label: <Link to="/profile" title="">{t('auth.profile')}</Link>,
+            icon: <UserOutlined />,
+            title: ""
+        },
+        {
+            key: 'help',
+            label: <Link to="/contact" title="">Help & Support</Link>,
+            icon: <InfoCircleOutlined />,
+            title: ""
         },
         /* {
              key: 'work',
@@ -289,7 +296,8 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
             label: t('auth.logout'),
             icon: <LogoutOutlined />,
             danger: true,
-            onClick: onLogout
+            onClick: onLogout,
+            title: ""
         }
     ];
 
@@ -324,9 +332,8 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
                     />
                 </div>
 
-                {/* Bottom: Language Toggle + Profile */}
                 <div className="p-4 border-t border-white/5 flex flex-col gap-1">
-                    <LanguageToggle compact={collapsed} dark={true} sidebarMode={true} />
+                    <LanguageToggle compact={true} dark={true} sidebarMode={true} />
                     <Dropdown menu={{ items: profileMenuItems }} trigger={['click']} placement="topRight">
                         <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between'} p-2 rounded-lg hover:bg-white/10 cursor-pointer transition-colors group`}>                        <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full border-2 border-slate-600 group-hover:border-violet-400 transition-colors flex items-center justify-center">

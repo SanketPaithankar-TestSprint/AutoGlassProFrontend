@@ -5,6 +5,7 @@ import { BellOutlined } from '@ant-design/icons';
 import { playNotificationSound } from '../utils/playNotificationSound';
 import { getValidToken } from '../api/getValidToken';
 import { useAuth } from './auth/useAuth';
+import { useNotificationSettings } from './NotificationSettingsContext';
 import urls from '../config';
 
 const InquiryContext = createContext();
@@ -20,6 +21,7 @@ export const useInquiry = () => {
 export const InquiryProvider = ({ children }) => {
     const { notification } = App.useApp();
     const { isAuthenticated } = useAuth();
+    const { settings: notificationSettings } = useNotificationSettings();
     const location = useLocation();
     const navigate = useNavigate();
     const [badgeCount, setBadgeCount] = useState(0);
@@ -27,9 +29,40 @@ export const InquiryProvider = ({ children }) => {
     const [lastInquiryName, setLastInquiryName] = useState(null);
     const [showInquiryModal, setShowInquiryModal] = useState(false);
     const prevAuthRef = useRef(false);
+    const previousBadgeCountRef = useRef(null);
+    const initializedInquiryBaselineRef = useRef(false);
     const dismissedCountRef = useRef(0); // track the badgeCount at time of dismissal
     const badgeCountRef = useRef(0);     // always reflects latest badgeCount for interval callbacks
     const soundIntervalRef = useRef(null);
+    const soundDelayTimeoutRef = useRef(null);
+
+    const inquirySettings = notificationSettings?.inquiries;
+    const inquiryEnabled = inquirySettings?.enabled !== false;
+    const inquiryShowModal = inquirySettings?.showModal !== false;
+    const inquirySound = inquirySettings?.sound || 'none';
+    const inquiryVolume = typeof inquirySettings?.volume === 'number' ? inquirySettings.volume : 100;
+    const inquiryFrequency = typeof inquirySettings?.frequency === 'string' ? inquirySettings.frequency : 'every';
+    const inquiryDelay = typeof inquirySettings?.delay === 'number' ? inquirySettings.delay : 0;
+
+    const parseFrequencyMs = (frequency) => {
+        if (!frequency || frequency === 'every') return null;
+        if (frequency === '10s') return 10000;
+        if (frequency === '30s') return 30000;
+        if (frequency === '1m') return 60000;
+        if (frequency === '5m') return 300000;
+        return null;
+    };
+
+    const playInquirySound = () => {
+        if (!inquiryEnabled) return;
+        if (typeof inquirySound === 'string' && inquirySound.toLowerCase() === 'none') return;
+
+        playNotificationSound({
+            sound: inquirySound,
+            volume: inquiryVolume,
+            type: 'inquiries',
+        });
+    };
 
     // Function to fetch inquiry count
     const fetchInquiryCount = async () => {
@@ -87,19 +120,13 @@ export const InquiryProvider = ({ children }) => {
             setBadgeCount(0);
             setShowInquiryModal(false);
             dismissedCountRef.current = 0;
+            previousBadgeCountRef.current = null;
+            initializedInquiryBaselineRef.current = false;
         }
         prevAuthRef.current = isAuthenticated;
     }, [isAuthenticated]);
 
-    // Continuous polling every 30s as a safety net alongside the SSE stream
-    useEffect(() => {
-        if (!isAuthenticated) return undefined;
-        const pollId = setInterval(() => {
-            fetchInquiryCount();
-        }, 30000);
-        return () => clearInterval(pollId);
-    }, [isAuthenticated]);
-
+    
     // Listen to inquiry events
     useEffect(() => {
         // console.log('📡 InquiryContext: Setting up event listeners...');
@@ -163,51 +190,83 @@ export const InquiryProvider = ({ children }) => {
     // Dismissing the modal does NOT stop the sound — only visiting the tab does.
     useEffect(() => {
         badgeCountRef.current = badgeCount;
+        const isFirstBadgeBaseline = previousBadgeCountRef.current === null;
+        const previousBadgeCount = isFirstBadgeBaseline ? badgeCount : previousBadgeCountRef.current;
+        const hasNewInquiry = !isFirstBadgeBaseline && badgeCount > previousBadgeCount;
+        previousBadgeCountRef.current = badgeCount;
+
+        if (isFirstBadgeBaseline && !initializedInquiryBaselineRef.current) {
+            // Do not treat existing unread inquiries as new when a tab first opens.
+            dismissedCountRef.current = badgeCount;
+            initializedInquiryBaselineRef.current = true;
+        }
 
         // Tear down any previous interval first
         if (soundIntervalRef.current) {
             clearInterval(soundIntervalRef.current);
             soundIntervalRef.current = null;
         }
+        if (soundDelayTimeoutRef.current) {
+            clearTimeout(soundDelayTimeoutRef.current);
+            soundDelayTimeoutRef.current = null;
+        }
 
         const onInquiryPage = location.pathname === '/service-contact-form'
             || location.pathname.startsWith('/service-inquiry-view/');
-        if (badgeCount <= 0 || onInquiryPage) return undefined;
+        if (badgeCount <= 0 || onInquiryPage || !inquiryEnabled || isFirstBadgeBaseline) return undefined;
 
-        // Play once right away, then repeat every 10 s
-        try { playNotificationSound(); } catch (e) { /* ignore */ }
+        const delayMs = Math.max(0, inquiryDelay) * 1000;
+        const frequencyMs = parseFrequencyMs(inquiryFrequency);
 
-        soundIntervalRef.current = setInterval(() => {
-            // Always use ref to get latest value — avoids stale closure
-            if (badgeCountRef.current <= 0
-                || window.location.pathname === '/service-contact-form'
-                || window.location.pathname.startsWith('/service-inquiry-view/')) {
-                clearInterval(soundIntervalRef.current);
-                soundIntervalRef.current = null;
-                return;
+        if (inquiryFrequency === 'every') {
+            if (hasNewInquiry) {
+                soundDelayTimeoutRef.current = setTimeout(() => {
+                    try { playInquirySound(); } catch (e) { /* ignore */ }
+                }, delayMs);
             }
-            try { playNotificationSound(); } catch (e) { /* ignore */ }
-        }, 10000);
+        } else {
+            soundDelayTimeoutRef.current = setTimeout(() => {
+                try { playInquirySound(); } catch (e) { /* ignore */ }
+
+                if (frequencyMs) {
+                    soundIntervalRef.current = setInterval(() => {
+                        // Always use ref to get latest value — avoids stale closure
+                        if (badgeCountRef.current <= 0
+                            || window.location.pathname === '/service-contact-form'
+                            || window.location.pathname.startsWith('/service-inquiry-view/')) {
+                            clearInterval(soundIntervalRef.current);
+                            soundIntervalRef.current = null;
+                            return;
+                        }
+                        try { playInquirySound(); } catch (e) { /* ignore */ }
+                    }, frequencyMs);
+                }
+            }, delayMs);
+        }
 
         return () => {
+            if (soundDelayTimeoutRef.current) {
+                clearTimeout(soundDelayTimeoutRef.current);
+                soundDelayTimeoutRef.current = null;
+            }
             if (soundIntervalRef.current) {
                 clearInterval(soundIntervalRef.current);
                 soundIntervalRef.current = null;
             }
         };
-    }, [badgeCount, location.pathname]);
+    }, [badgeCount, location.pathname, inquiryEnabled, inquirySound, inquiryVolume, inquiryDelay, inquiryFrequency]);
 
     // ── Modal visibility ─────────────────────────────────────────────────────
     // Separate from sound so dismissing the modal doesn't stop the alert sound.
     useEffect(() => {
         const onInquiryPage = location.pathname === '/service-contact-form'
             || location.pathname.startsWith('/service-inquiry-view/');
-        if (badgeCount <= 0 || onInquiryPage || badgeCount <= dismissedCountRef.current) {
+        if (!inquiryEnabled || !inquiryShowModal || badgeCount <= 0 || onInquiryPage || badgeCount <= dismissedCountRef.current) {
             setShowInquiryModal(false);
             return;
         }
         setShowInquiryModal(true);
-    }, [badgeCount, location.pathname]);
+    }, [badgeCount, location.pathname, inquiryEnabled, inquiryShowModal]);
 
     return (
         <InquiryContext.Provider value={value}>
