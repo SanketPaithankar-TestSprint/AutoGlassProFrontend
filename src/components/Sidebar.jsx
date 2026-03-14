@@ -18,8 +18,8 @@ import {
     FormOutlined,
     MessageOutlined,
     AuditOutlined,
-    AudioOutlined,
-    InfoCircleOutlined
+    InfoCircleOutlined,
+    BarcodeOutlined
 } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 import Logo from '../assets/APAI.png';
@@ -175,6 +175,11 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
             key: '/search-by-root',
             icon: <FormOutlined />,
             label: <Link to="/search-by-root">{t('nav.quote')}</Link>,
+        },
+        {
+            key: '/internal-vin-decoder',
+            icon: <BarcodeOutlined />,
+            label: <Link to="/internal-vin-decoder">{t('nav.vinDecoder') || 'VIN Decoder'}</Link>,
         },
         {
             key: '/schedule',

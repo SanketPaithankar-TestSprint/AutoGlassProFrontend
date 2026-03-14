@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { MdSupportAgent } from "react-icons/md";
 import { Layout, Button, Space, Drawer, Modal, Dropdown, Badge } from "antd";
-import { MenuOutlined, UserOutlined, DownOutlined, PieChartOutlined, TeamOutlined, FormOutlined, CalendarOutlined, FolderOpenOutlined, BarChartOutlined, MessageOutlined, AuditOutlined } from "@ant-design/icons";
+import { MenuOutlined, UserOutlined, DownOutlined, PieChartOutlined, TeamOutlined, FormOutlined, CalendarOutlined, FolderOpenOutlined, BarChartOutlined, MessageOutlined, AuditOutlined, BarcodeOutlined } from "@ant-design/icons";
 import Logo from "./logo";
 import { getValidToken } from "../api/getValidToken";
 import { Link, useNavigate } from "react-router-dom";
@@ -120,6 +120,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
       { key: "analytics", label: t('nav.analytics'), href: "/analytics", icon: <PieChartOutlined /> },
       { key: "customers", label: t('nav.customers'), href: "/customers", icon: <TeamOutlined /> },
       { key: "Quote", label: t('nav.quote'), href: "/search-by-root", icon: <FormOutlined /> },
+      { key: "internal-vin-decoder", label: t('nav.vinDecoder') || 'VIN Decoder', href: "/internal-vin-decoder", icon: <BarcodeOutlined /> },
       { key: "schedule", label: t('nav.schedule'), href: "/schedule", icon: <CalendarOutlined /> },
       { key: "dashboard", label: t('nav.dashboard'), href: "/open", icon: <FolderOpenOutlined /> },
       { key: "reports", label: t('nav.reports'), href: "/reports", icon: <BarChartOutlined /> },

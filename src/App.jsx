@@ -45,6 +45,7 @@ const ShopChatPanel = React.lazy(() => import('./components/Chat/ShopChatPanel.j
 import { ChatProvider } from './context/ChatContext';
 const SetPassword = React.lazy(() => import('./components/auth/SetPassword.jsx'));
 const VinDecoderRoot = React.lazy(() => import('./components/VinDecoder/VinDecoderRoot.jsx'));
+const InternalVinDecoderRoot = React.lazy(() => import('./components/InternalVinDecoder/InternalVinDecoderRoot.jsx'));
 const PublicChatRoot = React.lazy(() => import('./components/PublicChat/PublicChatRoot.jsx'));
 import RestrictedAccessModal from './components/RestrictedAccessModal';
 import { useSubscriptionRestriction } from './hooks/useSubscriptionRestriction';
@@ -222,6 +223,7 @@ function AppContent() {
                         <Route path="/sitemap" element={<SitemapPage />} />
                         <Route path="/sitemap" element={<SitemapPage />} />
                         <Route path="/vin-decoder" element={<VinDecoderRoot />} />
+                        <Route path="/internal-vin-decoder" element={<InternalVinDecoderRoot />} />
                         <Route path="/chat" element={<ShopChatPanel />} />
                       </Routes >
                     </Suspense >
