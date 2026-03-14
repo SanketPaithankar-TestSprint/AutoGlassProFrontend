@@ -126,15 +126,7 @@ export const InquiryProvider = ({ children }) => {
         prevAuthRef.current = isAuthenticated;
     }, [isAuthenticated]);
 
-    // Continuous polling every 30s as a safety net alongside the SSE stream
-    useEffect(() => {
-        if (!isAuthenticated) return undefined;
-        const pollId = setInterval(() => {
-            fetchInquiryCount();
-        }, 30000);
-        return () => clearInterval(pollId);
-    }, [isAuthenticated]);
-
+    
     // Listen to inquiry events
     useEffect(() => {
         // console.log('📡 InquiryContext: Setting up event listeners...');
