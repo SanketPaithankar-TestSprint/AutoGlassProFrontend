@@ -931,7 +931,7 @@ const PublicContactContent = () => {
                                                 </motion.div>
                                             )}
 
-                                            {/* Your Information - 2x2 Grid */}
+                                            {/* Your Information - Grid */}
                                             <div className="space-y-2">
                                                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Your Information <span className="text-red-500">*</span></label>
                                                 <div className="grid grid-cols-2 gap-2">
@@ -960,16 +960,7 @@ const PublicContactContent = () => {
                                                         onChange={handleInputChange}
                                                         placeholder="Email Address"
                                                         required
-                                                        className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
-                                                    />
-                                                    <input
-                                                        type="text"
-                                                        name="location"
-                                                        value={formData.location}
-                                                        onChange={handleInputChange}
-                                                        placeholder="State"
-                                                        required={!isMobile}
-                                                        className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
+                                                        className="col-span-2 w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
                                                     />
                                                 </div>
                                             </div>
@@ -1026,13 +1017,22 @@ const PublicContactContent = () => {
                                                             className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
                                                         />
                                                     </div>
-                                                    <div className="grid grid-cols-2 gap-3">
+                                                    <div className="grid grid-cols-3 gap-3">
                                                         <input
                                                             type="text"
                                                             name="city"
                                                             value={formData.city}
                                                             onChange={handleInputChange}
                                                             placeholder="City"
+                                                            required
+                                                            className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
+                                                        />
+                                                        <input
+                                                            type="text"
+                                                            name="location"
+                                                            value={formData.location}
+                                                            onChange={handleInputChange}
+                                                            placeholder="State"
                                                             required
                                                             className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
                                                         />
@@ -1064,16 +1064,18 @@ const PublicContactContent = () => {
                                             </div>
 
                                             {/* File Upload */}
-                                            <div className="space-y-3">
-                                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Upload Image (Optional)</label>
-                                                <Upload
-                                                    beforeUpload={() => false}
-                                                    fileList={fileList}
-                                                    onChange={({ fileList }) => setFileList(fileList)}
-                                                    accept="image/*"
-                                                >
-                                                    <Button icon={<UploadOutlined />} className="w-full">Click to Upload</Button>
-                                                </Upload>
+                                            <div className="flex items-center gap-4">
+                                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Upload Image (Optional)</label>
+                                                <div className="flex-1">
+                                                    <Upload
+                                                        beforeUpload={() => false}
+                                                        fileList={fileList}
+                                                        onChange={({ fileList }) => setFileList(fileList)}
+                                                        accept="image/*"
+                                                    >
+                                                        <Button icon={<UploadOutlined />} className="w-full">Click to Upload</Button>
+                                                    </Upload>
+                                                </div>
                                             </div>
 
                                             {/* Submit Button */}
@@ -1285,7 +1287,6 @@ const ShopInfo = ({ businessInfo, themeColor, className }) => {
                                 <a href={`tel:${businessInfo.phone}`} className="hover:opacity-75 transition-opacity leading-tight text-xs break-all">
                                     {formatPhoneNumber(businessInfo.phone)}
                                 </a>
-                                <p className="text-[9px] text-gray-400 mt-0.5">24/7 Support</p>
                             </div>
                         </div>
                     )}

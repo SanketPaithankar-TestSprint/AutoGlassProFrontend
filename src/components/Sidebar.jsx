@@ -18,8 +18,8 @@ import {
     FormOutlined,
     MessageOutlined,
     AuditOutlined,
-    AudioOutlined,
-    InfoCircleOutlined
+    InfoCircleOutlined,
+    BarcodeOutlined
 } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 import Logo from '../assets/APAI.png';
@@ -177,6 +177,11 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
             label: <Link to="/search-by-root">{t('nav.quote')}</Link>,
         },
         {
+            key: '/internal-vin-decoder',
+            icon: <BarcodeOutlined />,
+            label: <Link to="/internal-vin-decoder">{t('nav.vinDecoder') || 'VIN Decoder'}</Link>,
+        },
+        {
             key: '/schedule',
             icon: <CalendarOutlined />,
             label: <Link to="/schedule">{t('nav.schedule')}</Link>,
@@ -308,7 +313,7 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
                 </div>
 
                 {/* Middle: Navigation */}
-                <div className="flex-1 pt-6 pb-4 overflow-y-auto custom-scrollbar">
+                <div className="flex-1 pt-6 pb-4 overflow-y-auto overflow-x-hidden custom-scrollbar">
                     <Menu
                         theme="dark"
                         mode="inline"
@@ -388,10 +393,9 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
                     /* Round the left side, keep right side flat */
                     border-radius: 30px 0 0 30px !important; 
                     
-                    /* Overlap the edge slightly to perfectly hide any vertical subpixel gaps */
-                    margin-right: -1px !important; 
+                    /* Align perfectly with the margin-left to prevent horizontal overflow */
                     margin-left: 12px !important;
-                    width: calc(100% - 11px) !important;
+                    width: calc(100% - 12px) !important;
                     position: relative;
                     
                     /* Remove any native shadows or borders */
