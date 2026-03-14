@@ -59,7 +59,7 @@ ${userMessage || 'No message provided'}
     };
 
     return (
-        <div className="min-h-screen py-8 md:py-16 px-4 sm:px-6 lg:px-8 flex flex-col items-center animate-fade-in relative overflow-hidden bg-slate-50">
+        <div className="min-h-screen py-4 md:py-8 px-4 sm:px-6 lg:px-8 flex flex-col items-center animate-fade-in relative overflow-hidden bg-slate-50">
             {/* Background Decorations */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
                 <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-100/40 rounded-full blur-[120px] animate-pulse"></div>
@@ -72,66 +72,66 @@ ${userMessage || 'No message provided'}
             />
 
             <div className="w-full max-w-6xl flex flex-col items-center relative z-10">
-                {/* Header Section - Refined Typography */}
-                <div className="text-center mb-10 md:mb-16">
-                    <h1 className="text-4xl md:text-6xl font-black tracking-tight text-slate-900 mb-4 bg-clip-text text-transparent bg-gradient-to-b from-slate-900 via-slate-800 to-slate-600">
+                {/* Header Section - Aggressively Compact */}
+                <div className="text-center mb-6 md:mb-8">
+                    <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-900 mb-2 bg-clip-text text-transparent bg-gradient-to-b from-slate-900 via-slate-800 to-slate-600">
                         {t('contact.getInTouch')}
                     </h1>
-                    <p className="text-lg md:text-xl text-slate-500 font-medium max-w-2xl mx-auto leading-relaxed">
+                    <p className="text-base md:text-lg text-slate-500 font-medium max-w-2xl mx-auto leading-tight">
                         {t('contact.loveToHear')}
                     </p>
                 </div>
 
-                {/* Main Content Grid - Compact & Polished */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center w-full">
+                {/* Main Content Grid - Very Compact & Polished */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start w-full">
                     
-                    {/* Left Column: Artistic Illustration */}
-                    <div className="lg:col-span-5 relative order-2 lg:order-1">
-                        <div className="absolute -inset-4 bg-gradient-to-tr from-blue-100/50 to-violet-100/50 rounded-[2rem] blur-2xl -z-10"></div>
-                        <div className="relative group">
+                    {/* Left Column: Artistic Illustration - Enlarged and Moved Up */}
+                    <div className="lg:col-span-6 relative order-2 lg:order-1 lg:-mt-20">
+                        <div className="absolute -inset-10 bg-gradient-to-tr from-blue-100/40 to-violet-100/40 rounded-full blur-[120px] -z-10"></div>
+                        <div className="relative group mt-20">
                             <img
                                 src={contactImage2}
                                 alt="Dashboard Mockup"
-                                className="w-full h-auto drop-shadow-2xl rounded-2xl transition-transform duration-700 group-hover:scale-105"
+                                className="w-full h-auto drop-shadow-[0_20px_60px_rgba(0,0,0,0.1)] rounded-3xl transition-transform duration-700 group-hover:scale-105"
                             />
-                            <div className="absolute -bottom-8 -right-8 w-48 md:w-64 animate-float">
+                            <div className="absolute -bottom-24 -right-12 w-64 md:w-80 lg:w-96 animate-float">
                                 <img
                                     src={contactImage}
                                     alt="Support Character"
-                                    className="w-full h-auto drop-shadow-xl"
+                                    className="w-full h-auto drop-shadow-2xl"
                                 />
                             </div>
                         </div>
                     </div>
 
-                    {/* Right Column: Premium Glassmorphism Form */}
-                    <div className="lg:col-span-7 order-1 lg:order-2">
-                        <div className="bg-white/70 backdrop-blur-xl rounded-[2.5rem] p-6 md:p-10 border border-white/50 shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
+                    {/* Right Column: Premium Glassmorphism Form - Ultra Compact & Shifted Right */}
+                    <div className="lg:col-span-5 lg:col-start-8 order-1 lg:order-2">
+                        <div className="bg-white/70 backdrop-blur-xl rounded-[2rem] p-5 md:p-6 border border-white/50 shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
                             {submitted ? (
-                                <div className="text-center py-10 animate-fade-in">
-                                    <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-100/50">
-                                        <CheckCircleOutlined className="text-3xl text-green-500" />
+                                <div className="text-center py-8 animate-fade-in">
+                                    <div className="w-14 h-14 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-green-100/50">
+                                        <CheckCircleOutlined className="text-2xl text-green-500" />
                                     </div>
-                                    <h2 className="text-2xl font-bold text-slate-800 mb-2">{t('contact.messageSent')}</h2>
-                                    <p className="text-slate-500 mb-8 max-w-xs mx-auto">
+                                    <h2 className="text-xl font-bold text-slate-800 mb-1">{t('contact.messageSent')}</h2>
+                                    <p className="text-slate-500 text-sm mb-6 max-w-xs mx-auto">
                                         {t('contact.messageSentDesc')}
                                     </p>
                                     <Button
                                         onClick={handleReset}
-                                        className="h-12 px-10 rounded-xl text-base font-bold bg-[#7E5CFE] text-white hover:!bg-[#6a4deb] !border-none transition-all shadow-lg shadow-violet-200"
+                                        className="h-11 px-8 rounded-xl text-sm font-bold bg-[#7E5CFE] text-white hover:!bg-[#6a4deb] !border-none transition-all shadow-lg shadow-violet-200"
                                     >
                                         {t('contact.sendAnother')}
                                     </Button>
                                 </div>
                             ) : (
                                 <>
-                                    <div className="flex items-center gap-4 mb-8">
-                                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-violet-500 flex items-center justify-center text-white text-lg shadow-lg">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-violet-500 flex items-center justify-center text-white text-base shadow-md">
                                             <UserOutlined />
                                         </div>
                                         <div>
-                                            <h3 className="text-xl font-bold text-slate-900 m-0">{t('contact.tellUsAboutYourself')}</h3>
-                                            <p className="text-slate-500 text-sm m-0">We typically reply within 24 hours.</p>
+                                            <h3 className="text-base font-bold text-slate-900 m-0">{t('contact.tellUsAboutYourself')}</h3>
+                                            <p className="text-slate-400 text-[10px] m-0">Typically replies within 24 hours.</p>
                                         </div>
                                     </div>
 
@@ -140,56 +140,56 @@ ${userMessage || 'No message provided'}
                                         layout="vertical"
                                         onFinish={onFinish}
                                         requiredMark={false}
-                                        size="large"
+                                        size="middle"
                                         className="form-compact"
                                         initialValues={{ phonePrefix: '+1', businessType: 'new' }}
                                     >
                                         <Form.Item
                                             name="shopName"
-                                            label={<span className="text-sm font-semibold text-slate-600 uppercase tracking-wider">{t('contact.companyName')}</span>}
+                                            label={<span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('contact.companyName')}</span>}
                                             rules={[{ required: true, message: 'Required' }]}
-                                            className="mb-4"
+                                            className="mb-2"
                                         >
-                                            <Input className="!rounded-xl bg-white/50 border-slate-200 hover:border-blue-400 focus:border-blue-500 focus:bg-white transition-all h-12" placeholder="e.g. Acme Auto Glass" />
+                                            <Input className="!rounded-lg bg-white/50 border-slate-200 hover:border-blue-400 focus:border-blue-500 transition-all h-10 text-xs" placeholder="e.g. Acme Auto Glass" />
                                         </Form.Item>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                        <div className="grid grid-cols-2 gap-3 mb-2">
                                             <Form.Item
                                                 name="firstName"
-                                                label={<span className="text-sm font-semibold text-slate-600 uppercase tracking-wider">{t('contact.firstName')}</span>}
-                                                rules={[{ required: true, message: 'Required' }]}
+                                                label={<span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('contact.firstName')}</span>}
+                                                rules={[{ required: true, message: '!' }]}
                                                 className="mb-0"
                                             >
-                                                <Input className="!rounded-xl bg-white/50 border-slate-200 hover:border-blue-400 focus:border-blue-500 focus:bg-white transition-all h-12" placeholder="John" />
+                                                <Input className="!rounded-lg bg-white/50 border-slate-200 hover:border-blue-400 focus:border-blue-500 transition-all h-10 text-xs" placeholder="John" />
                                             </Form.Item>
                                             <Form.Item
                                                 name="lastName"
-                                                label={<span className="text-sm font-semibold text-slate-600 uppercase tracking-wider">{t('contact.lastName')}</span>}
-                                                rules={[{ required: true, message: 'Required' }]}
+                                                label={<span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('contact.lastName')}</span>}
+                                                rules={[{ required: true, message: '!' }]}
                                                 className="mb-0"
                                             >
-                                                <Input className="!rounded-xl bg-white/50 border-slate-200 hover:border-blue-400 focus:border-blue-500 focus:bg-white transition-all h-12" placeholder="Doe" />
+                                                <Input className="!rounded-lg bg-white/50 border-slate-200 hover:border-blue-400 focus:border-blue-500 transition-all h-10 text-xs" placeholder="Doe" />
                                             </Form.Item>
                                         </div>
 
                                         <Form.Item
                                             name="email"
-                                            label={<span className="text-sm font-semibold text-slate-600 uppercase tracking-wider">{t('contact.email')}</span>}
-                                            rules={[{ required: true, type: 'email', message: 'Valid email required' }]}
-                                            className="mb-4"
+                                            label={<span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('contact.email')}</span>}
+                                            rules={[{ required: true, type: 'email', message: '!' }]}
+                                            className="mb-2"
                                         >
-                                            <Input className="!rounded-xl bg-white/50 border-slate-200 hover:border-blue-400 focus:border-blue-500 focus:bg-white transition-all h-12" placeholder="john@example.com" />
+                                            <Input className="!rounded-lg bg-white/50 border-slate-200 hover:border-blue-400 focus:border-blue-500 transition-all h-10 text-xs" placeholder="john@example.com" />
                                         </Form.Item>
 
                                         <Form.Item
-                                            label={<span className="text-sm font-semibold text-slate-600 uppercase tracking-wider">{t('contact.phone')}</span>}
-                                            className="mb-4"
+                                            label={<span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('contact.phone')}</span>}
+                                            className="mb-2"
                                         >
                                             <div className="flex gap-2">
                                                 <Form.Item name="phonePrefix" noStyle>
                                                     <Select
-                                                        style={{ width: 100 }}
-                                                        className="[&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!h-12 [&_.ant-select-selector]:!py-1 [&_.ant-select-selector]:!bg-white/50 [&_.ant-select-selector]:!border-slate-200"
+                                                        style={{ width: 75 }}
+                                                        className="[&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!h-10 [&_.ant-select-selector]:!bg-white/50 [&_.ant-select-selector]:!border-slate-200 text-xs"
                                                         optionLabelProp="label"
                                                     >
                                                         {countryOptions.map(opt => (
@@ -199,20 +199,20 @@ ${userMessage || 'No message provided'}
                                                         ))}
                                                     </Select>
                                                 </Form.Item>
-                                                <Form.Item name="phone" noStyle rules={[{ required: true, message: 'Required' }]}>
-                                                    <Input className="flex-1 !rounded-xl bg-white/50 border-slate-200 hover:border-blue-400 focus:border-blue-500 focus:bg-white transition-all h-12" placeholder="(555) 000-0000" />
+                                                <Form.Item name="phone" noStyle rules={[{ required: true, message: '!' }]}>
+                                                    <Input className="flex-1 !rounded-lg bg-white/50 border-slate-200 hover:border-blue-400 focus:border-blue-500 transition-all h-10 text-xs" placeholder="(555) 000-0000" />
                                                 </Form.Item>
                                             </div>
                                         </Form.Item>
 
                                         <Form.Item
                                             name="message"
-                                            label={<span className="text-sm font-semibold text-slate-600 uppercase tracking-wider">{t('contact.message')}</span>}
-                                            className="mb-6"
+                                            label={<span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('contact.message')}</span>}
+                                            className="mb-4"
                                         >
                                             <Input.TextArea
-                                                rows={3}
-                                                className="!rounded-xl bg-white/50 border-slate-200 hover:border-blue-400 focus:border-blue-500 focus:bg-white transition-all"
+                                                rows={1}
+                                                className="!rounded-lg bg-white/50 border-slate-200 hover:border-blue-400 focus:border-blue-500 transition-all text-xs"
                                                 placeholder={t('contact.howCanWeHelp')}
                                             />
                                         </Form.Item>
@@ -222,7 +222,7 @@ ${userMessage || 'No message provided'}
                                                 type="primary"
                                                 htmlType="submit"
                                                 loading={loading}
-                                                className="w-full !h-14 !rounded-2xl !text-lg !font-bold !bg-[#7E5CFE] hover:!bg-[#6a4deb] !border-none shadow-xl shadow-violet-200 transition-all hover:-translate-y-1 active:scale-[0.98]"
+                                                className="w-full !h-11 !rounded-xl !text-sm !font-bold !bg-[#7E5CFE] hover:!bg-[#6a4deb] !border-none shadow-lg shadow-violet-200 transition-all hover:-translate-y-1 active:scale-[0.98]"
                                             >
                                                 {t('common.submit')}
                                             </Button>
@@ -244,7 +244,7 @@ ${userMessage || 'No message provided'}
                         <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-6 tracking-tight">
                             3 Simple Steps to Get Started
                         </h2>
-                        <h3 className="text-lg md:text-xl font-black text-slate-900 mb-6 tracking-tight">We&apos;ve made it easy for you to transition from a manual "grind" to a streamlined, AI-powered operation. <br/>Here is what happens after you hit submit</h3>
+                        <h3 className="text-lg md:text-xl font-black text-slate-900 mb-6 tracking-tight">We&apos;ve made it easy for you to transition from a manual "grind" to a streamlined, AI-powered operation. <br />Here is what happens after you hit submit</h3>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
@@ -256,20 +256,20 @@ ${userMessage || 'No message provided'}
                         {[
                             {
                                 step: "01",
-                                title: "Submit Details",
-                                desc: "Tell us about your shop's journey—new or existing.",
+                                title: "Submit Your Details",
+                                desc: "Fill out the form with your company name and contact info. Whether you are an existing shop or a new business, we want to know where you are in your journey.",
                                 icon: <UserOutlined />
                             },
                             {
                                 step: "02",
-                                title: "30-Day Free Trial",
-                                desc: "Immediate access to quoting, NAGS & work orders.",
+                                title: "Sign Up for a Free 30-Day Trial",
+                                desc: "Get full access to the APAI platform immediately. No strings attached—take 30 days to explore the VIN-driven quoting, NAGS integration, and digital work orders to see the impact on your bottom line.",
                                 icon: <CheckCircleOutlined />
                             },
                             {
                                 step: "03",
-                                title: "Custom Setup",
-                                desc: "We'll align APAI perfectly with your operations.",
+                                title: "Custom Configuration",
+                                desc: "We’ll help you understand how to integrate your NAGS data and NHTSA VPIC access so your quoting process is 100% accurate from day one.",
                                 icon: <MailOutlined />
                             }
                         ].map((item, index) => (
@@ -294,22 +294,22 @@ ${userMessage || 'No message provided'}
                     
                     <div className="p-10 md:p-20 flex flex-col lg:flex-row gap-16 items-center">
                         <div className="lg:w-2/5">
-                            <span className="text-violet-600 font-bold tracking-[0.2em] uppercase text-xs mb-3 block">Why Us</span>
+                            <span className="text-violet-600 font-bold tracking-[0.2em] uppercase text-xs mb-3 block">Why</span>
                             <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 mb-6 leading-[1.1]">
-                                Your Partner in <br />
-                                <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#7E5CFE] to-blue-500">Auto Glass Growth.</span>
+                                Connect with <br />
+                                <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#7E5CFE] to-blue-500">APAI?</span>
                             </h2>
                             <p className="text-slate-500 text-lg leading-relaxed">
-                                Choosing the right software is a big decision. We're here to make it the best one you've ever made.
+                                Choosing the right software is a big decision for your shop. When you reach out to our team, you’re gaining more than just technical support—you’re gaining a partner in growth.
                             </p>
                         </div>
 
                         <div className="lg:w-3/5 grid grid-cols-1 sm:grid-cols-2 gap-4">
                             {[
-                                { title: "Expert Guidance", desc: "Speak with auto glass specialists.", icon: "💡" },
-                                { title: "Tailored Solutions", desc: "Role-based management setup.", icon: "⚙️" },
-                                { title: "Zero-Pressure Demos", desc: "Explore AI-driven VIN decoding.", icon: "🎬" },
-                                { title: "Rapid Support", desc: "Dedicated team for your shop.", icon: "⚡" }
+                                { title: "Expert Guidance", desc: "Speak with specialists who understand the specific challenges of the auto glass industry", icon: "💡" },
+                                { title: "Tailored Solutions", desc: "Whether you have a single mobile unit or a multi-state operation, we show you how to set up Role-Based Management so your team can work independently.", icon: "⚙️" },
+                                { title: "Zero-Pressure Demos", desc: "See exactly how the AI-driven VIN decoding works and how it can save you hours of manual cross-referencing every week.", icon: "🎬" },
+                                { title: "Rapid Support", desc: " Have a specific question about NAGS integration or billing? Our support team is dedicated to getting your shop up and running without downtime.", icon: "⚡" }
                             ].map((item, index) => (
                                 <div key={index} className="bg-white/80 p-6 rounded-[1.5rem] border border-white shadow-sm hover:shadow-md transition-all group hover:-translate-y-1">
                                     <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-xl mb-4 group-hover:bg-[#7E5CFE]/5 group-hover:scale-110 transition-all">
