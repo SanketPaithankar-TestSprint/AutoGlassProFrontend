@@ -195,7 +195,7 @@ const Home = () => {
                 </div>
 
                 {/* CTA Section */}
-                <div className="relative py-16 px-4 sm:px-6 lg:px-8">
+                <div className="relative section-padding px-4 sm:px-6 lg:px-8">
                     <div className="max-w-5xl mx-auto text-center">
                         <motion.div
                             initial={{ opacity: 0, y: 30 }}

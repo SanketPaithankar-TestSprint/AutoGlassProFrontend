@@ -1,10 +1,18 @@
 /* Glassmorphism Navbar */
 .ant-layout-header.glass-navbar {
   background: transparent !important;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: #0f172a !important;
-  border-bottom: none;
+  backdrop-filter: blur(0);
+  -webkit-backdrop-filter: blur(0);
+  transition: all 0.5s ease;
+  border-bottom: 1px solid transparent;
+}
+
+.ant-layout-header.glass-navbar.scrolled {
+  background: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 /* Clean light background for main page */
@@ -104,15 +112,55 @@ body,
   animation: fadeIn 0.2s ease-out;
 }
 
+/* Global Section Spacing for Premium Depth */
+.section-padding {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
+
+@media (min-width: 1024px) {
+  .section-padding {
+    padding-top: 8rem;
+    padding-bottom: 8rem;
+  }
+}
+
+/* Premium SaaS Card Style */
+.premium-card {
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.04) !important;
+  transition: all 0.3s ease;
+}
+
+.premium-card:hover {
+  box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.06) !important;
+  transform: translateY(-4px);
+}
+
+
 /* Base font configuration - Applied globally */
 html,
 body,
 #root {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Poppins', sans-serif !important;
+}
+
+/* Force Poppins on every element and specifically Ant Design components */
+html,
+body,
+#root,
+.ant-app,
+.ant-layout,
+.ant-typography,
+button,
+input,
+select,
+textarea {
+  font-family: 'Poppins', sans-serif !important;
 }
 
 :root {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Poppins', sans-serif !important;
   line-height: 1.5;
   font-weight: 400;
 

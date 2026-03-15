@@ -116,7 +116,7 @@ const ValuePropSection = () => {
     ];
 
     return (
-        <div className="relative py-12 md:py-16 px-6 md:px-12 lg:px-20 overflow-hidden bg-transparent">
+        <div className="relative section-padding px-6 md:px-12 lg:px-20 overflow-hidden bg-transparent">
 
             {/* 1. Value Proposition Header */}
             <AnimatedSection>
@@ -313,7 +313,7 @@ const ValuePropSection = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-16">
                     {/* Custom Contact Form Card */}
                     <AnimatedSection delay="0.1s">
-                        <div className="bg-white/70 backdrop-blur-sm border border-slate-200/60 p-10 rounded-3xl shadow-lg relative overflow-hidden group hover:border-violet-300 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-violet-200/50 h-full">
+                        <div className="premium-card bg-white/70 backdrop-blur-sm p-10 rounded-3xl relative overflow-hidden group h-full">
                             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                                 <FormOutlined style={{ fontSize: '120px', color: '#7c3aed' }} />
                             </div>
@@ -329,7 +329,7 @@ const ValuePropSection = () => {
 
                     {/* AI Chatbot Card */}
                     <AnimatedSection delay="0.2s">
-                        <div className="bg-white/70 backdrop-blur-sm border border-slate-200/60 p-10 rounded-3xl shadow-lg relative overflow-hidden group hover:border-violet-300 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-violet-200/50 h-full">
+                        <div className="premium-card bg-white/70 backdrop-blur-sm p-10 rounded-3xl relative overflow-hidden group h-full">
                             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                                 <MessageOutlined style={{ fontSize: '120px', color: '#7c3aed' }} />
                             </div>
@@ -345,7 +345,7 @@ const ValuePropSection = () => {
 
                 {/* Security & Reliability Section */}
                 <AnimatedSection delay="0.3s">
-                    <div className="mt-12 text-center max-w-4xl mx-auto bg-white/70 backdrop-blur-sm border border-slate-200/60 rounded-3xl p-8 md:p-12 shadow-lg relative overflow-hidden group hover:border-violet-300 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-violet-200/50">
+                    <div className="mt-12 text-center max-w-4xl mx-auto premium-card bg-white/70 backdrop-blur-sm rounded-3xl p-8 md:p-12 relative overflow-hidden group">
                         <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
                             <LockOutlined style={{ fontSize: '150px', color: '#7c3aed' }} />
                         </div>

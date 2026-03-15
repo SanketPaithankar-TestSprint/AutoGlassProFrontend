@@ -69,7 +69,7 @@ const BusinessModelsSection = () => {
     }, []);
 
     return (
-        <section ref={sectionRef} className="py-16 px-4 max-w-7xl mx-auto">
+        <section ref={sectionRef} className="section-padding px-4 max-w-7xl mx-auto">
             <div className="text-center mb-16">
                 <h2
                     className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text mb-4 opacity-0"
@@ -86,18 +86,10 @@ const BusinessModelsSection = () => {
                 {models.map((model, index) => (
                     <div
                         key={index}
-                        className="bg-white rounded-xl p-8 shadow-sm border border-slate-200 transition-all duration-200 text-center flex flex-col h-full group opacity-0"
+                        className="premium-card bg-white rounded-xl p-8 text-center flex flex-col h-full group opacity-0"
                         style={isVisible ? {
                             animation: `fadeInUp 0.6s ease-out ${0.5 + (index * 0.2)}s forwards`
                         } : {}}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor = '#ffffff';
-                            e.currentTarget.style.boxShadow = '0 0 40px rgba(0, 168, 228, 0.4)'; // Blue glow
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = '#e2e8f0'; // slate-200
-                            e.currentTarget.style.boxShadow = '0 1px 2px 0 rgba(0, 0, 0, 0.05)';
-                        }}
                     >
                         <div className="mb-6 transform group-hover:scale-110 transition-transform duration-200">
                             <div className="text-4xl bg-slate-50 w-20 h-20 mx-auto rounded-2xl flex items-center justify-center">

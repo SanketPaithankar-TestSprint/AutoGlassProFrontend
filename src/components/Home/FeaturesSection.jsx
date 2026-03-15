@@ -73,7 +73,7 @@ const FeaturesSection = () => {
     }, []);
 
     return (
-        <section ref={sectionRef} className="py-16 px-4 max-w-7xl mx-auto">
+        <section ref={sectionRef} className="section-padding px-4 max-w-7xl mx-auto">
             <div className="text-center mb-12">
                 <h2
                     className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text opacity-0"
@@ -90,19 +90,11 @@ const FeaturesSection = () => {
                 {features.map((feature, index) => (
                     <div
                         key={index}
-                        className="bg-white rounded-xl p-8 shadow-sm border border-slate-100 transition-all duration-300 group opacity-0"
+                        className="premium-card bg-white rounded-xl p-8 transition-all duration-300 group opacity-0"
                         style={isVisible ? {
                             // Start card animations after heading (0.2s heading delay + ~0.4s to start cards)
                             animation: `fadeInUp 0.6s ease-out ${0.4 + (index * 0.1)}s forwards`
                         } : {}}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor = '#ffffff'; // White outline
-                            e.currentTarget.style.boxShadow = '0 0 40px rgba(126, 92, 254, 0.6)'; // Even bigger glow
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = '#f1f5f9'; // slate-100
-                            e.currentTarget.style.boxShadow = '0 1px 2px 0 rgba(0, 0, 0, 0.05)'; // shadow-sm
-                        }}
                     >
                         <div className="mb-6">
                             <div
