@@ -616,11 +616,6 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
                 message: messageText,
             };
             currentSocket.send('sendMessage', payload);
-
-            const isCurrentlyOpen = activeConversationIdRef.current === conversationId;
-            if (isCurrentlyOpen && isChatTabActive()) {
-                playInChatDing();
-            }
         }
     };
 
@@ -650,10 +645,6 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
             email: email || "no-email@test.com",
         };
         currentSocket.send('sendMessage', payload);
-
-        if (isChatTabActive()) {
-            playInChatDing();
-        }
     };
 
     const sendQuoteNotification = (quoteData) => {

@@ -5,6 +5,8 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { Modal, Empty, Card, Badge } from 'antd';
 import { CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, FieldTimeOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import 'dayjs/locale/es';
+import { useTranslation } from 'react-i18next';
 
 const localizer = momentLocalizer(moment);
 
@@ -32,6 +34,7 @@ const CustomEvent = ({ event }) => {
 };
 
 const AttendanceCalendarView = ({ attendanceData, currentDate, setCurrentDate }) => {
+    const { t, i18n } = useTranslation();
     const [view, setView] = useState(Views.MONTH);
     const [showModal, setShowModal] = useState(false);
     const [selectedDateRecords, setSelectedDateRecords] = useState([]);
@@ -136,12 +139,22 @@ const AttendanceCalendarView = ({ attendanceData, currentDate, setCurrentDate })
                 selectable={true}
                 onSelectSlot={handleSelectSlot}
                 onSelectEvent={handleSelectEvent}
+                messages={{
+                    today: t('attendance.today'),
+                    previous: t('attendance.back'),
+                    next: t('attendance.next'),
+                    month: t('attendance.monthWeekDayLabels.month') || "Month",
+                    week: t('attendance.monthWeekDayLabels.week') || "Week",
+                    day: t('attendance.monthWeekDayLabels.day') || "Day",
+                    agenda: "Agenda",
+                    showMore: (total) => `+${total} ${t('attendance.more')}`,
+                }}
                 popup
             />
 
             {/* Modal for all employees on a specific date */}
             <Modal
-                title={`Attendance Details - ${dayjs(selectedDateStr).format("MMMM D, YYYY")}`}
+                title={`${t('attendance.attendanceDetails')} - ${dayjs(selectedDateStr).locale(i18n.language?.split('-')[0] || 'en').format("MMMM D, YYYY")}`}
                 open={showModal}
                 onCancel={() => setShowModal(false)}
                 footer={null}
@@ -149,7 +162,7 @@ const AttendanceCalendarView = ({ attendanceData, currentDate, setCurrentDate })
                 className="rounded-2xl overflow-hidden"
             >
                 {selectedDateRecords.length === 0 ? (
-                    <Empty description="No records found." />
+                    <Empty description={t("attendance.noRecordsFound")} />
                 ) : (
                     <div className="space-y-3 mt-4 max-h-[60vh] overflow-y-auto custom-scrollbar px-1">
                         {selectedDateRecords.map(record => {
@@ -167,7 +180,7 @@ const AttendanceCalendarView = ({ attendanceData, currentDate, setCurrentDate })
                                             <div className="text-xs text-slate-500">ID: {record.employeeId}</div>
                                         </div>
                                         <Badge
-                                            count={statusInfo?.label}
+                                            count={t(`attendance.${record.status.toLowerCase().replace(/_([a-z])/g, (_, letter) => letter.toUpperCase())}`) || statusInfo?.label}
                                             style={{ backgroundColor: statusInfo?.bg, color: statusInfo?.color, borderColor: statusInfo?.color }}
                                         />
                                     </div>

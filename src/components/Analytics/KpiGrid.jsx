@@ -1,14 +1,17 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { TrendingUp, TrendingDown, DollarSign, CheckCircle, Clock, FileText } from 'lucide-react';
 
 const KpiGrid = ({ data }) => {
+    const { t } = useTranslation();
+    
     if (!data) return null;
 
     const { financial_metrics, job_productivity_metrics, outstanding_balance } = data;
 
     const kpis = [
         {
-            label: 'Total Revenue',
+            label: t('analytics.totalRevenue'),
             value: `$${(financial_metrics?.total_revenue || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
             trend: financial_metrics?.month_over_month_change,
             icon: DollarSign,
@@ -16,25 +19,25 @@ const KpiGrid = ({ data }) => {
             lightBg: 'bg-blue-50/80',
         },
         {
-            label: 'Total Paid',
+            label: t('analytics.totalPaid'),
             value: `$${(financial_metrics?.total_paid || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-            subtitle: `Avg: $${(financial_metrics?.average_job_value || 0).toLocaleString()}`,
+            subtitle: `${t('analytics.avg')}: $${(financial_metrics?.average_job_value || 0).toLocaleString()}`,
             icon: CheckCircle,
             gradient: 'from-emerald-500 to-teal-600',
             lightBg: 'bg-emerald-50/80',
         },
         {
-            label: 'Outstanding Balance',
+            label: t('analytics.outstandingBalance'),
             value: `$${(outstanding_balance || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-            subtitle: `Unpaid: $${(financial_metrics?.total_unpaid || 0).toLocaleString()}`,
+            subtitle: `${t('analytics.unpaid')}: $${(financial_metrics?.total_unpaid || 0).toLocaleString()}`,
             icon: Clock,
             gradient: 'from-amber-500 to-orange-600',
             lightBg: 'bg-amber-50/80',
         },
         {
-            label: 'Total Jobs Completed',
+            label: t('analytics.totalJobsCompleted'),
             value: job_productivity_metrics?.total_jobs_completed || 0,
-            subtitle: `This Month: ${job_productivity_metrics?.jobs_this_month || 0}`,
+            subtitle: `${t('analytics.thisMonth')}: ${job_productivity_metrics?.jobs_this_month || 0}`,
             icon: FileText,
             gradient: 'from-violet-500 to-purple-600',
             lightBg: 'bg-violet-50/80',
@@ -72,7 +75,7 @@ const KpiGrid = ({ data }) => {
                                         <span className={`text-xs font-semibold ${kpi.trend >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                                             {kpi.trend >= 0 ? '+' : ''}{kpi.trend.toFixed(1)}%
                                         </span>
-                                        <span className="text-xs text-slate-400">vs last month</span>
+                                        <span className="text-xs text-slate-400">{t('analytics.vsLastMonth')}</span>
                                     </div>
                                 )}
                             </div>

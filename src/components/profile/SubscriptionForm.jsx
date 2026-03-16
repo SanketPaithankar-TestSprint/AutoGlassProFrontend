@@ -159,7 +159,7 @@ const SubscriptionForm = ({ initialValues = {}, onSubmit, loading, submitLabel =
         </Col>
       </Row>
       <Form.Item className="mt-8">
-        <Button type="primary" htmlType="submit" loading={loading} className="bg-violet-600 hover:bg-violet-700 w-full md:w-auto h-11 px-8 rounded-lg font-semibold">
+        <Button type="primary" htmlType="submit" loading={loading} style={{ background: '#2563eb', borderColor: '#2563eb', color: '#ffffff' }} className="w-full md:w-auto h-11 px-8 rounded-lg font-semibold">
           {submitLabel}
         </Button>
       </Form.Item>

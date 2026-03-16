@@ -196,10 +196,7 @@ const SmtpConfiguration = () => {
     return (
         <div className="smtp-configuration">
             <div className="flex justify-between items-center mb-4">
-                <div>
-                    <h3 className="text-lg font-semibold mb-1">{t('settings.emailConfig', { defaultValue: 'Email Configuration (SMTP)' })}</h3>
-                    <p className="text-sm text-gray-500">{t('settings.emailConfigDesc', { defaultValue: 'Manage SMTP settings for sending emails from the system' })}</p>
-                </div>
+                <h2 className="text-2xl font-bold text-gray-800">{t('settings.emailConfig', { defaultValue: 'Email Settings' })}</h2>
                 <Button
                     type="primary"
                     icon={<PlusOutlined />}

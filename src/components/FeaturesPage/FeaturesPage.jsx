@@ -170,7 +170,7 @@ const FeatureCarousel = ({ features, color, sectionId, readMoreText }) => {
 
     useEffect(() => {
         if (hovered) return;
-        const id = setInterval(next, 1100);
+        const id = setInterval(next, 4000); // Slower speed
         return () => clearInterval(id);
     }, [hovered, current]);
 

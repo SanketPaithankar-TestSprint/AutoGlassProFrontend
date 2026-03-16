@@ -232,7 +232,7 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
         {
             key: '/employee-attendance',
             icon: <AuditOutlined />,
-            label: <Link to="/employee-attendance">Attendance</Link>,
+            label: <Link to="/employee-attendance">{t('nav.employeeAttendance')}</Link>,
         },
 
         {
