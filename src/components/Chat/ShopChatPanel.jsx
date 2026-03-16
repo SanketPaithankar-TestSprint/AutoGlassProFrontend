@@ -1,19 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useChat } from '../../context/ChatContext';
-import { Input, Button, List, Avatar, Badge, Empty, Spin } from 'antd';
-import { SendOutlined, UserOutlined, DeleteOutlined, MessageOutlined, CloseOutlined } from '@ant-design/icons';
+import { Input, Button, List, Avatar, Badge, Dropdown } from 'antd';
+import {
+    SendOutlined, UserOutlined, DeleteOutlined, MessageOutlined,
+    CloseOutlined, ArrowLeftOutlined, MoreOutlined, CheckOutlined, SearchOutlined,
+} from '@ant-design/icons';
 import moment from 'moment';
+import ShopChatMobile from './ShopChatMobile';
 
 // Deterministic blue/violet shade from conversation id
 const AVATAR_COLORS = [
-    { bg: '#ede9fe', text: '#6d28d9' }, // violet-100 / violet-700
-    { bg: '#ddd6fe', text: '#5b21b6' }, // violet-200 / violet-800
-    { bg: '#c4b5fd', text: '#4c1d95' }, // violet-300 / violet-900
-    { bg: '#e0e7ff', text: '#3730a3' }, // indigo-100 / indigo-800
-    { bg: '#c7d2fe', text: '#3730a3' }, // indigo-200 / indigo-800
-    { bg: '#a5b4fc', text: '#312e81' }, // indigo-300 / indigo-900
-    { bg: '#dbeafe', text: '#1d4ed8' }, // blue-100 / blue-700
-    { bg: '#bfdbfe', text: '#1e40af' }, // blue-200 / blue-800
+    { bg: '#bfdbfe', text: '#1e40af' },
 ];
 
 const getAvatarColor = (id = '') => {
@@ -22,6 +19,10 @@ const getAvatarColor = (id = '') => {
     return AVATAR_COLORS[hash % AVATAR_COLORS.length];
 };
 
+// Mobile header height matches pt-16 = 4rem in App.jsx
+const MOBILE_HEADER_H = '4rem';
+const LONG_PRESS_DELAY = 500; // ms
+
 const ShopChatPanel = () => {
     const {
         conversations,
@@ -29,36 +30,69 @@ const ShopChatPanel = () => {
         sendMessage,
         connectionStatus,
         markAsRead,
-        markAllNotificationsRead,
-        clearAllConversationsUnread,
         deleteConversation,
         loadHistory,
-        setActiveConversationId
+        setActiveConversationId,
     } = useChat();
 
     const [inputText, setInputText] = useState('');
     const messagesEndRef = useRef(null);
 
-    // Convert conversations map to array and sort by latest update
-    const sortedConversations = Object.values(conversations).sort((a, b) => {
-        return (b.updatedAt || 0) - (a.updatedAt || 0);
-    });
+    // Explicit mobile detection to avoid CSS breakpoint leakages
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    // Mobile navigation state
+    const [mobileView, setMobileView] = useState('list'); // 'list' | 'chat'
+
+    // Search state
+    const [searchQuery, setSearchQuery] = useState('');
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const searchInputRef = useRef(null);
+
+    // ── Multi-select state ────────────────────────────────────────────────────
+    const [isSelecting, setIsSelecting] = useState(false);
+    const [selectedIds, setSelectedIds] = useState(new Set());
+    const longPressTimer = useRef(null);
+    const isLongPressing = useRef(false);
+
+    const sortedConversations = Object.values(conversations).sort(
+        (a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)
+    );
+
+    // Filter by search query (name or last message)
+    const q = searchQuery.trim().toLowerCase();
+    const filteredConversations = q
+        ? sortedConversations.filter(c =>
+            (c.customerName || '').toLowerCase().includes(q) ||
+            (c.lastMessage || '').toLowerCase().includes(q)
+        )
+        : sortedConversations;
+
+    const openSearch = () => {
+        setIsSearchOpen(true);
+        setTimeout(() => searchInputRef.current?.focus(), 50);
+    };
+
+    const closeSearch = () => {
+        setIsSearchOpen(false);
+        setSearchQuery('');
+    };
 
     const activeConversation = conversations[activeConversationId];
 
-    // Auto-scroll to bottom
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
-    useEffect(() => {
-        scrollToBottom();
-    }, [activeConversation?.messages]);
+    useEffect(() => { scrollToBottom(); }, [activeConversation?.messages]);
 
-    // Handle sending message
     const handleSend = () => {
         if (!inputText.trim() || !activeConversationId) return;
-
         sendMessage(activeConversationId, inputText);
         setInputText('');
     };
@@ -67,178 +101,450 @@ const ShopChatPanel = () => {
         setActiveConversationId(id);
         markAsRead(id);
         loadHistory(id);
+        setMobileView('chat');
     };
 
-    return (
-        <div className="h-screen overflow-hidden bg-slate-100 p-4">
-            <div className="flex h-full bg-white rounded-xl shadow-sm overflow-hidden border border-slate-200">
-                {/* Sidebar List */}
-                <div className="w-1/3 border-r border-slate-200 flex flex-col">
-                    <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                        <h2 className="font-semibold text-lg text-slate-700">Conversations</h2>
-                        <Badge status={connectionStatus === 'connected' ? 'success' : 'error'} text={connectionStatus} />
+    const handleBackToList = () => {
+        setMobileView('list');
+        setActiveConversationId(null);
+    };
+
+    // ── Selection helpers ─────────────────────────────────────────────────────
+    const enterSelectMode = (id) => {
+        setIsSelecting(true);
+        setSelectedIds(new Set([id]));
+    };
+
+    const exitSelectMode = () => {
+        setIsSelecting(false);
+        setSelectedIds(new Set());
+    };
+
+    const toggleSelect = (id) => {
+        setSelectedIds(prev => {
+            const next = new Set(prev);
+            next.has(id) ? next.delete(id) : next.add(id);
+            return next;
+        });
+    };
+
+    const selectAll = () => {
+        setSelectedIds(new Set(sortedConversations.map(c => c.id)));
+    };
+
+    const handleBulkDelete = () => {
+        const count = selectedIds.size;
+        if (!window.confirm(`Delete ${count} conversation${count > 1 ? 's' : ''}?`)) return;
+        selectedIds.forEach(id => deleteConversation(id));
+        // If active conversation was among deleted, close it
+        if (selectedIds.has(activeConversationId)) {
+            setActiveConversationId(null);
+            setMobileView('list');
+        }
+        exitSelectMode();
+    };
+
+    // ── Long press handlers (clean implementation) ───────────────────────────
+    const handlePointerDown = (id) => (e) => {
+        // Only react to primary touch/click
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+        isLongPressing.current = false;
+        longPressTimer.current = setTimeout(() => {
+            isLongPressing.current = true;
+            if (!isSelecting) {
+                enterSelectMode(id);
+            } else {
+                toggleSelect(id);
+            }
+            if (navigator.vibrate) navigator.vibrate(40);
+        }, LONG_PRESS_DELAY);
+    };
+
+    const handlePointerUpOrLeave = () => {
+        clearTimeout(longPressTimer.current);
+    };
+
+    // ── Item tap (normal click) ───────────────────────────────────────────────
+    const handleItemClick = (id) => {
+        // If the pointerup fired after a long press, ignore this click
+        if (isLongPressing.current) {
+            isLongPressing.current = false;
+            return;
+        }
+
+        if (isSelecting) {
+            toggleSelect(id);
+        } else {
+            handleSelectConversation(id);
+        }
+    };
+
+    // ── Right-click on desktop ────────────────────────────────────────────────
+    const handleContextMenu = (id) => (e) => {
+        e.preventDefault();
+        if (!isSelecting) {
+            enterSelectMode(id);
+        }
+    };
+
+
+    // ─── Conversation List Panel ──────────────────────────────────────────────
+    const allSelected = selectedIds.size === sortedConversations.length && sortedConversations.length > 0;
+
+    const ConversationList = (
+        <div className="flex flex-col" style={{ height: '100%', minHeight: 0 }}>
+
+            {/* ── List Header ── */}
+            {isSelecting ? (
+                /* Selection-mode header */
+                <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 flex items-center justify-between flex-shrink-0">
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={exitSelectMode}
+                            className="text-slate-500 hover:text-slate-700 transition-colors"
+                            aria-label="Cancel selection"
+                        >
+                            <CloseOutlined className="text-base" />
+                        </button>
+                        <span className="text-slate-700 font-semibold text-sm">
+                            {selectedIds.size} selected
+                        </span>
                     </div>
-                    <div className="flex-1 overflow-y-auto custom-scrollbar">
-                        {sortedConversations.length === 0 ? (
-                            <div className="p-8 text-center text-slate-400">
-                                No conversations yet
-                            </div>
-                        ) : (
-                            <List
-                                itemLayout="horizontal"
-                                dataSource={sortedConversations}
-                                renderItem={item => {
-                                    const color = getAvatarColor(item.id);
-                                    const isActive = activeConversationId === item.id;
-                                    return (
-                                        <div
-                                            className={`cursor-pointer transition-colors border-b border-slate-100 ${isActive ? 'bg-violet-50 border-l-4 border-l-violet-500' : 'border-l-4 border-l-transparent'
-                                                }`}
-                                            onClick={() => handleSelectConversation(item.id)}
-                                        >
-                                            <div className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors">
-                                                {/* Avatar */}
-                                                <div className="flex-shrink-0">
-                                                    <Badge count={item.unreadCount} size="small">
-                                                        <Avatar
-                                                            icon={<UserOutlined />}
-                                                            style={{ backgroundColor: color.bg, color: color.text }}
-                                                        />
-                                                    </Badge>
-                                                </div>
-                                                {/* Content */}
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center justify-between mb-0.5">
-                                                        <span className={`text-sm truncate pr-2 ${item.unreadCount > 0
-                                                            ? 'font-bold text-slate-800'
-                                                            : 'font-medium text-slate-600'
-                                                            }`}>
-                                                            {item.customerName || `Customer ${item.id.substring(0, 6)}...`}
-                                                        </span>
-                                                        <span className="text-[11px] text-slate-400 flex-shrink-0 pl-1">
-                                                            {moment(item.updatedAt).format('HH:mm')}
-                                                        </span>
-                                                    </div>
-                                                    <p className="truncate text-xs text-slate-400">
-                                                        {item.lastMessage || <i>No messages</i>}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                }}
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={allSelected ? () => setSelectedIds(new Set()) : selectAll}
+                            className="font-semibold text-xs transition-colors hover:opacity-80 active:opacity-75"
+                            style={{ color: '#0284c7' }}
+                        >
+                            {allSelected ? 'Deselect all' : 'Select all'}
+                        </button>
+                        <button
+                            disabled={selectedIds.size === 0}
+                            onClick={handleBulkDelete}
+                            className="px-4 py-1.5 rounded-full text-xs font-bold transition-all"
+                            style={
+                                selectedIds.size > 0
+                                    ? { backgroundColor: '#ef4444', color: '#ffffff', boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }
+                                    : { backgroundColor: '#e2e8f0', color: '#94a3b8', cursor: 'not-allowed' }
+                            }
+                        >
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            ) : (
+                /* Normal header */
+                <div className="flex-shrink-0">
+                    {/* Title row */}
+                    <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                        <h2 className="font-semibold text-lg text-slate-700">Conversations</h2>
+                        <div className="flex items-center gap-1">
+                            <Badge
+                                status={connectionStatus === 'connected' ? 'success' : 'error'}
+                                text={<span className="text-xs text-slate-500">{connectionStatus}</span>}
                             />
+                            <button
+                                onClick={openSearch}
+                                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 transition-colors"
+                                aria-label="Search conversations"
+                            >
+                                <SearchOutlined className="text-slate-500 text-base" />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Animated search bar */}
+                    <div
+                        className="overflow-hidden transition-all duration-200"
+                        style={{ maxHeight: isSearchOpen ? '56px' : '0px', opacity: isSearchOpen ? 1 : 0 }}
+                    >
+                        <div className="flex items-center gap-2 px-3 py-2 bg-white border-b border-slate-100">
+                            <SearchOutlined className="text-slate-400 text-sm flex-shrink-0" />
+                            <input
+                                ref={searchInputRef}
+                                type="text"
+                                placeholder="Search conversations..."
+                                value={searchQuery}
+                                onChange={e => setSearchQuery(e.target.value)}
+                                className="flex-1 text-sm text-slate-700 placeholder-slate-400 outline-none bg-transparent"
+                            />
+                            {searchQuery && (
+                                <button
+                                    onClick={() => setSearchQuery('')}
+                                    className="text-slate-400 hover:text-slate-600 transition-colors"
+                                    aria-label="Clear search"
+                                >
+                                    <CloseOutlined className="text-xs" />
+                                </button>
+                            )}
+                            <button
+                                onClick={closeSearch}
+                                className="text-slate-400 hover:text-slate-600 transition-colors ml-1 text-xs font-medium"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Scrollable list ── */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar" style={{ minHeight: 0 }}>
+                {filteredConversations.length === 0 ? (
+                    <div className="p-8 text-center">
+                        {q ? (
+                            <>
+                                <SearchOutlined className="text-3xl text-slate-300 mb-3" />
+                                <p className="text-slate-400 text-sm">No chats found for <strong>&quot;{searchQuery}&quot;</strong></p>
+                            </>
+                        ) : (
+                            <p className="text-slate-400 text-sm">No conversations yet</p>
                         )}
                     </div>
-                </div>
+                ) : (
+                    <List
+                        itemLayout="horizontal"
+                        dataSource={filteredConversations}
+                        renderItem={item => {
+                            const color = getAvatarColor(item.id);
+                            const isActive = activeConversationId === item.id;
+                            const isChecked = selectedIds.has(item.id);
 
-                {/* Chat Area */}
-                <div className="w-2/3 flex flex-col bg-white">
-                    {activeConversationId ? (
-                        <>
-                            {/* Header */}
-                            <div className="p-4 border-b border-slate-100 flex items-center justify-between shadow-sm z-10">
-                                <div className="flex items-center gap-3">
-                                    <Avatar
-                                        icon={<UserOutlined />}
-                                        style={(() => { const c = getAvatarColor(activeConversationId); return { backgroundColor: c.bg, color: c.text }; })()}
-                                    />
-                                    <div>
-                                        <h3 className="font-medium text-slate-800">
-                                            {activeConversation ? (activeConversation.customerName || `Customer ${activeConversationId}`) : 'Select a Chat'}
-                                        </h3>
-                                        <p className="text-xs text-slate-500">
-                                            {connectionStatus === 'connected' ? 'Online' : 'Offline'}
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                    <Button
-                                        type="text"
-                                        danger
-                                        icon={<DeleteOutlined />}
-                                        onClick={() => {
-                                            if (window.confirm('Are you sure you want to delete this conversation?')) {
-                                                deleteConversation(activeConversationId);
-                                            }
-                                        }}
-                                        title="Delete Conversation"
-                                    />
-                                    <Button
-                                        type="text"
-                                        icon={<CloseOutlined className="text-slate-400" />}
-                                        onClick={() => setActiveConversationId(null)}
-                                        className="hover:bg-slate-100"
-                                        title="Close Chat"
-                                    />
-                                </div>
-                            </div>
+                            return (
+                                <div
+                                        className={`
+                                        cursor-pointer select-none transition-all border-b border-slate-100
+                                        ${isSelecting
+                                            ? isChecked
+                                                ? 'bg-slate-100 border-l-4 border-l-slate-400'
+                                                : 'border-l-4 border-l-transparent'
+                                            : isActive
+                                                ? 'bg-violet-50 border-l-4 border-l-violet-500'
+                                                : 'border-l-4 border-l-transparent'
+                                        }
+                                    `}
+                                    onClick={() => handleItemClick(item.id)}
+                                    onContextMenu={handleContextMenu(item.id)}
+                                    onPointerDown={handlePointerDown(item.id)}
+                                    onPointerUp={handlePointerUpOrLeave}
+                                    onPointerLeave={handlePointerUpOrLeave}
+                                    onPointerCancel={handlePointerUpOrLeave}
+                                >
+                                    <div className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors">
 
-                            {/* Messages */}
-                            <div className="flex-1 overflow-y-auto p-4 bg-slate-50 space-y-4 custom-scrollbar">
-                                {activeConversation?.messages && activeConversation.messages.length > 0 ? (
-                                    activeConversation.messages.map((msg, idx) => {
-                                        const isMe = msg.senderType === 'SHOP'; // Or check ID
-                                        return (
-                                            <div key={idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                        {/* Checkbox / Avatar */}
+                                        <div className="flex-shrink-0 relative">
+                                            {isSelecting ? (
                                                 <div
                                                     className={`
-                                                    max-w-[70%] rounded-xl px-4 py-2 text-sm shadow-sm
-                                                    ${isMe
-                                                            ? 'bg-violet-600 text-white rounded-br-none'
-                                                            : 'bg-white text-slate-700 border border-slate-200 rounded-bl-none'
+                                                        w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all duration-150
+                                                        ${isChecked
+                                                            ? 'bg-blue-500 border-blue-500'
+                                                            : 'bg-white border-slate-300'
                                                         }
-                                                `}
+                                                    `}
                                                 >
-                                                    <p>{msg.message}</p>
-                                                    <div className={`text-[10px] mt-1 text-right ${isMe ? 'text-violet-200' : 'text-slate-400'}`}>
-                                                        {moment(msg.timestamp).format('HH:mm')}
-                                                    </div>
+                                                    {isChecked && <CheckOutlined className="text-white text-xs" />}
                                                 </div>
-                                            </div>
-                                        );
-                                    })
-                                ) : (
-                                    <div className="h-full flex flex-col items-center justify-center text-slate-400">
-                                        <p>No messages yet.</p>
-                                        <p className="text-xs">Start the conversation!</p>
-                                    </div>
-                                )}
-                                <div ref={messagesEndRef} />
-                            </div>
+                                            ) : (
+                                                <Badge count={item.unreadCount} size="small">
+                                                    <Avatar
+                                                        icon={<UserOutlined />}
+                                                        style={{ backgroundColor: color.bg, color: color.text }}
+                                                    />
+                                                </Badge>
+                                            )}
+                                        </div>
 
-                            {/* Input */}
-                            <div className="p-4 bg-white border-t border-slate-100">
-                                <div className="flex items-center gap-2">
-                                    <Input
-                                        placeholder="Type a message..."
-                                        className="rounded-full px-4 py-2"
-                                        value={inputText}
-                                        onChange={e => setInputText(e.target.value)}
-                                        onPressEnter={handleSend}
-                                        disabled={connectionStatus !== 'connected'}
-                                    />
-                                    <Button
-                                        type="primary"
-                                        shape="circle"
-                                        icon={<SendOutlined />}
-                                        onClick={handleSend}
-                                        disabled={connectionStatus !== 'connected' || !inputText.trim()}
-                                        className="bg-violet-600 hover:bg-violet-700 border-none shadow-md flex items-center justify-center"
-                                    />
+                                        {/* Content */}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center justify-between mb-0.5">
+                                                <span className={`text-sm truncate pr-2 ${item.unreadCount > 0 && !isSelecting
+                                                        ? 'font-bold text-slate-800'
+                                                        : 'font-medium text-slate-600'
+                                                    }`}>
+                                                    {item.customerName || `Customer ${item.id.substring(0, 6)}...`}
+                                                </span>
+                                                <span className="text-[11px] text-slate-400 flex-shrink-0 pl-1">
+                                                    {moment(item.updatedAt).format('HH:mm')}
+                                                </span>
+                                            </div>
+                                            <p className="truncate text-xs text-slate-400">
+                                                {item.lastMessage || <i>No messages</i>}
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
+                            );
+                        }}
+                    />
+                )}
+            </div>
+
+
+        </div>
+    );
+
+
+    // ─── Chat Area Panel ──────────────────────────────────────────────────────
+    const ChatArea = (
+        <div className="flex flex-col bg-white" style={{ height: '100%', minHeight: 0 }}>
+            {activeConversationId ? (
+                <>
+                    {/* ── Fixed Chat Header ── */}
+                    <div className="flex-shrink-0 p-4 border-b border-slate-100 bg-white flex items-center justify-between shadow-sm z-10">
+                        <div className="flex items-center gap-3">
+                            {/* Back button — mobile only */}
+                            <button
+                                className="md:hidden flex items-center justify-center w-8 h-8 rounded-full hover:bg-slate-100 transition-colors mr-1"
+                                onClick={handleBackToList}
+                                aria-label="Back to conversations"
+                            >
+                                <ArrowLeftOutlined className="text-slate-600 text-base" />
+                            </button>
+                            <Avatar
+                                icon={<UserOutlined />}
+                                style={(() => {
+                                    const c = getAvatarColor(activeConversationId);
+                                    return { backgroundColor: c.bg, color: c.text };
+                                })()}
+                            />
+                            <div>
+                                <h3 className="font-medium text-slate-800 text-sm leading-tight">
+                                    {activeConversation
+                                        ? activeConversation.customerName || `Customer ${activeConversationId}`
+                                        : 'Select a Chat'}
+                                </h3>
+                                <p className="text-xs text-slate-500">
+                                    {connectionStatus === 'connected' ? 'Online' : 'Offline'}
+                                </p>
                             </div>
-                        </>
-                    ) : (
-                        <div className="h-full flex flex-col items-center justify-center text-slate-500 bg-white">
-                            <div className="w-24 h-24 bg-violet-50 rounded-full flex items-center justify-center mb-6">
-                                <MessageOutlined className="text-4xl text-violet-600" />
-                            </div>
-                            <h2 className="text-xl font-semibold text-slate-700 mb-2">Select a conversation to start chatting</h2>
-                            <p className="text-sm text-slate-500">Choose a customer from the list to view and send messages</p>
                         </div>
-                    )}
+                        <Dropdown
+                            trigger={['click']}
+                            menu={{
+                                items: [
+                                    {
+                                        key: 'close',
+                                        icon: <CloseOutlined />,
+                                        label: 'Close Chat',
+                                        onClick: () => {
+                                            setActiveConversationId(null);
+                                            setMobileView('list');
+                                        },
+                                    },
+                                    {
+                                        key: 'delete',
+                                        icon: <DeleteOutlined />,
+                                        label: 'Delete Conversation',
+                                        danger: true,
+                                        onClick: () => {
+                                            if (window.confirm('Are you sure you want to delete this conversation?')) {
+                                                deleteConversation(activeConversationId);
+                                                setMobileView('list');
+                                            }
+                                        },
+                                    },
+                                ],
+                            }}
+                        >
+                            <Button
+                                type="text"
+                                icon={<MoreOutlined className="text-slate-500 text-lg" />}
+                                className="hover:bg-slate-100 rounded-full"
+                            />
+                        </Dropdown>
+                    </div>
+
+                    {/* ── Scrollable Messages ── */}
+                    <div className="flex-1 min-h-0 overflow-y-auto p-4 bg-slate-50 space-y-4 custom-scrollbar">
+                        {activeConversation?.messages && activeConversation.messages.length > 0 ? (
+                            activeConversation.messages.map((msg, idx) => {
+                                const isMe = msg.senderType === 'SHOP';
+                                return (
+                                    <div key={idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                        <div className={`
+                                            max-w-[75%] rounded-xl px-4 py-2 text-sm shadow-sm
+                                            ${isMe
+                                                ? 'bg-violet-600 text-white rounded-br-none'
+                                                : 'bg-white text-slate-700 border border-slate-200 rounded-bl-none'
+                                            }
+                                        `}>
+                                            <p>{msg.message}</p>
+                                            <div className={`text-[10px] mt-1 text-right ${isMe ? 'text-violet-200' : 'text-slate-400'}`}>
+                                                {moment(msg.timestamp).format('HH:mm')}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <div className="h-full flex flex-col items-center justify-center text-slate-400">
+                                <p>No messages yet.</p>
+                                <p className="text-xs">Start the conversation!</p>
+                            </div>
+                        )}
+                        <div ref={messagesEndRef} />
+                    </div>
+
+                    {/* ── Fixed Typing Bar ── */}
+                    <div className="flex-shrink-0 p-4 bg-white border-t border-slate-100">
+                        <div className="flex items-center gap-2">
+                            <Input
+                                placeholder="Type a message..."
+                                className="rounded-full px-4 py-2"
+                                value={inputText}
+                                onChange={e => setInputText(e.target.value)}
+                                onPressEnter={handleSend}
+                                disabled={connectionStatus !== 'connected'}
+                            />
+                            <Button
+                                type="primary"
+                                shape="circle"
+                                icon={<SendOutlined />}
+                                onClick={handleSend}
+                                disabled={connectionStatus !== 'connected' || !inputText.trim()}
+                                className="bg-violet-600 hover:bg-violet-700 border-none shadow-md flex items-center justify-center flex-shrink-0"
+                            />
+                        </div>
+                    </div>
+                </>
+            ) : (
+                /* Empty state — desktop only */
+                <div className="flex-1 flex flex-col items-center justify-center text-slate-500 bg-white min-h-0">
+                    <div className="w-24 h-24 bg-violet-50 rounded-full flex items-center justify-center mb-6">
+                        <MessageOutlined className="text-4xl text-violet-600" />
+                    </div>
+                    <h2 className="text-xl font-semibold text-slate-700 mb-2">Select a conversation to start chatting</h2>
+                    <p className="text-sm text-slate-500">Choose a customer from the list to view and send messages</p>
                 </div>
+            )}
+        </div>
+    );
+
+    // ─── Root Render ──────────────────────────────────────────────────────────
+    if (isMobile) {
+        return (
+            <ShopChatMobile 
+                mobileView={mobileView} 
+                ConversationList={ConversationList} 
+                ChatArea={ChatArea} 
+                mobileHeaderHeight={MOBILE_HEADER_H} 
+            />
+        );
+    }
+    
+    return (
+        <div
+            className="flex bg-white rounded-xl shadow-sm overflow-hidden border border-slate-200 m-4"
+            style={{ height: 'calc(100vh - 2rem)' }}
+        >
+            <div className="w-1/3 border-r border-slate-200 flex flex-col overflow-hidden" style={{ minHeight: 0 }}>
+                {ConversationList}
+            </div>
+            <div className="w-2/3 flex flex-col overflow-hidden" style={{ minHeight: 0 }}>
+                {ChatArea}
             </div>
         </div>
     );
