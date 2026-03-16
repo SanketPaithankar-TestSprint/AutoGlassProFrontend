@@ -222,12 +222,13 @@ const EmployeeManagement = ({ token, isMobile }) => {
 
     return (
         <div className="space-y-6 animate-fadeIn">
-            <div className="flex justify-end items-center mb-4">
+            <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-gray-800">{t('profile.manageEmployees')}</h2>
                 <Button
                     type="primary"
                     icon={<PlusOutlined />}
                     onClick={handleAddEmployee}
-                    style={{ background: "#7c3aed", borderColor: "#7c3aed" }}
+                    style={{ background: "#2563eb", borderColor: "#2563eb" }}
                 >
                     {t('employees.addEmployee')}
                 </Button>

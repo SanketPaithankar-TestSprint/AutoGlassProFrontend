@@ -93,10 +93,9 @@ const SlugConfig = () => {
     };
 
     return (
-        <Card
-            title="Contact Form Configuration"
-            className="w-full shadow-sm rounded-2xl border-gray-100"
-            extra={
+        <div className="space-y-6 animate-fadeIn">
+            <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-gray-800">Contact Form Configuration</h2>
                 <Button
                     type="text"
                     icon={<ReloadOutlined />}
@@ -105,101 +104,105 @@ const SlugConfig = () => {
                 >
                     <span className="hidden sm:inline">Refresh</span>
                 </Button>
-            }
-        >
-            {fetching && !initialLoaded ? (
-                <div className="text-center py-8">
-                    <Spin tip="Loading configuration..." />
-                </div>
-            ) : (
-                <Form
-                    form={form}
-                    layout="vertical"
-                    onFinish={onFinish}
-                    initialValues={{
-                        themeColor: "#1677ff",
-                        backgroundColorHex: "#ffffff"
-                    }}
-                >
-                    <Form.Item name="id" hidden>
-                        <Input />
-                    </Form.Item>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <Form.Item
-                            label="User Slug"
-                            name="slug"
-                            tooltip="Unique identifier for your public profile/shop."
-                            rules={[
-                                { required: true, message: 'Please enter a slug' },
-                                { pattern: /^[a-z0-9-]+$/, message: 'Slug must be lowercase alphanumeric with hyphens only.' }
-                            ]}
-                        >
-                            <Input placeholder="e.g. my-auto-glass-shop" />
-                        </Form.Item>
-
-                        <Form.Item
-                            label="Business Name"
-                            name="businessName"
-                            rules={[{ required: true, message: 'Please enter your business name' }]}
-                        >
-                            <Input placeholder="e.g. Auto Glass Pro" />
-                        </Form.Item>
-
-                        <Form.Item
-                            label="Tagline"
-                            name="tagline"
-                        >
-                            <Input placeholder="e.g. Best Glass in Town" />
-                        </Form.Item>
-
-                        <Form.Item
-                            label="Contact Name"
-                            name="name"
-                            tooltip="Name displayed on contact forms."
-                        >
-                            <Input placeholder="e.g. John Doe" />
-                        </Form.Item>
-
-                        <div className="flex items-center justify-between border border-gray-100 rounded-lg p-3 bg-white hover:border-violet-100 transition-colors">
-                            <div className="flex items-center gap-2">
-                                <span className="text-gray-600">Theme Color</span>
-                                <Tooltip title="Primary color for your public pages.">
-                                    <InfoCircleOutlined className="text-gray-300 text-xs" />
-                                </Tooltip>
-                            </div>
-                            <Form.Item name="themeColor" noStyle>
-                                <ColorPicker showText size="small" />
-                            </Form.Item>
-                        </div>
-
-                        <div className="flex items-center justify-between border border-gray-100 rounded-lg p-3 bg-white hover:border-violet-100 transition-colors">
-                            <div className="flex items-center gap-2">
-                                <span className="text-gray-600">Background Color</span>
-                                <Tooltip title="Background color for your public pages.">
-                                    <InfoCircleOutlined className="text-gray-300 text-xs" />
-                                </Tooltip>
-                            </div>
-                            <Form.Item name="backgroundColorHex" noStyle>
-                                <ColorPicker showText size="small" />
-                            </Form.Item>
-                        </div>
+            </div>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                {fetching && !initialLoaded ? (
+                    <div className="text-center py-8">
+                        <Spin tip="Loading configuration..." />
                     </div>
+                ) : (
+                    <Form
+                        form={form}
+                        layout="vertical"
+                        onFinish={onFinish}
+                        initialValues={{
+                            themeColor: "#1677ff",
+                            backgroundColorHex: "#ffffff"
+                        }}
+                    >
+                        <Form.Item name="id" hidden>
+                            <Input />
+                        </Form.Item>
 
-                    <Form.Item className="pt-1 mt-8">
-                        <Button
-                            type="primary"
-                            htmlType="submit"
-                            icon={<SaveOutlined />}
-                            loading={loading}
-                            className="bg-violet-600 hover:bg-violet-700 min-w-[200px]"
-                        >
-                            Save Configuration
-                        </Button>
-                    </Form.Item>
-                </Form>
-            )}
-        </Card>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <Form.Item
+                                label="User Slug"
+                                name="slug"
+                                tooltip="Unique identifier for your public profile/shop."
+                                rules={[
+                                    { required: true, message: 'Please enter a slug' },
+                                    { pattern: /^[a-z0-9-]+$/, message: 'Slug must be lowercase alphanumeric with hyphens only.' }
+                                ]}
+                            >
+                                <Input placeholder="e.g. my-auto-glass-shop" />
+                            </Form.Item>
+
+                            <Form.Item
+                                label="Business Name"
+                                name="businessName"
+                                rules={[{ required: true, message: 'Please enter your business name' }]}
+                            >
+                                <Input placeholder="e.g. Auto Glass Pro" />
+                            </Form.Item>
+
+                            <Form.Item
+                                label="Tagline"
+                                name="tagline"
+                            >
+                                <Input placeholder="e.g. Best Glass in Town" />
+                            </Form.Item>
+
+                            <Form.Item
+                                label="Contact Name"
+                                name="name"
+                                tooltip="Name displayed on contact forms."
+                            >
+                                <Input placeholder="e.g. John Doe" />
+                            </Form.Item>
+
+                            <div className="flex items-center justify-between border border-gray-100 rounded-lg p-3 bg-white hover:border-violet-100 transition-colors">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-gray-600">Theme Color</span>
+                                    <Tooltip title="Primary color for your public pages.">
+                                        <InfoCircleOutlined className="text-gray-300 text-xs" />
+                                    </Tooltip>
+                                </div>
+                                <Form.Item name="themeColor" noStyle>
+                                    <ColorPicker showText size="small" />
+                                </Form.Item>
+                            </div>
+
+                            <div className="flex items-center justify-between border border-gray-100 rounded-lg p-3 bg-white hover:border-violet-100 transition-colors">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-gray-600">Background Color</span>
+                                    <Tooltip title="Background color for your public pages.">
+                                        <InfoCircleOutlined className="text-gray-300 text-xs" />
+                                    </Tooltip>
+                                </div>
+                                <Form.Item name="backgroundColorHex" noStyle>
+                                    <ColorPicker showText size="small" />
+                                </Form.Item>
+                            </div>
+                        </div>
+
+                        <Form.Item className="pt-1 mt-8 mb-0">
+                            <div className="flex justify-end">
+                                <Button
+                                    type="primary"
+                                    htmlType="submit"
+                                    icon={<SaveOutlined />}
+                                    loading={loading}
+                                    style={{ background: '#2563eb', borderColor: '#2563eb' }}
+                                    className="min-w-[200px]"
+                                >
+                                    Save Configuration
+                                </Button>
+                            </div>
+                        </Form.Item>
+                    </Form>
+                )}
+            </div>
+        </div>
     );
 };
 

@@ -34,9 +34,7 @@ const SubscriptionOverviewCard = ({ details, loading, onAdd, onUpdate, onActivat
     >
       <div className="px-6 py-5 border-b border-gray-100">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-            <DollarOutlined className="text-violet-500" /> Subscription Plan
-          </h2>
+          <h2 className="text-2xl font-bold text-gray-800">Subscription Plan</h2>
           <span className={`inline-flex items-center px-3 py-1 rounded-full border text-xs font-semibold shadow-sm ${getBadgeClass(details?.status)}`}>
             {status.icon} <span className="ml-1.5">{status.text}</span>
           </span>
@@ -62,7 +60,7 @@ const SubscriptionOverviewCard = ({ details, loading, onAdd, onUpdate, onActivat
           )}
           {!!details?.plan && (
             <>
-              <Button onClick={onUpdate} size="large">Update</Button>
+              <Button type="primary" onClick={onUpdate} size="large" style={{ background: '#2563eb', borderColor: '#2563eb', color: '#ffffff' }}>Update</Button>
               {details.status === "INACTIVE" && (
                 <Button type="primary" onClick={onActivate} className={subscriptionStyles.primaryBtn} size="large">
                   Activate

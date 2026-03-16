@@ -9,6 +9,7 @@ import useServiceInquiries from './hooks/useServiceInquiries';
 import useInquiryDetails from './hooks/useInquiryDetails';
 import { useInquiry } from '../../context/InquiryContext';
 import { createQuoteFromInquiry } from '../../utils/createQuoteFromInquiry';
+import { useTranslation } from 'react-i18next';
 
 const { Title } = Typography;
 
@@ -39,6 +40,7 @@ const ModalInquiryDetails = ({ inquiryId }) => {
 };
 
 const ServiceContactFormRoot = () => {
+    const { t } = useTranslation();
     const [viewDetailsModalOpen, setViewDetailsModalOpen] = useState(false);
     const [selectedInquiryId, setSelectedInquiryId] = useState(null);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -54,7 +56,7 @@ const ServiceContactFormRoot = () => {
     useEffect(() => {
         if (badgeCount > prevBadgeRef.current) {
             fetchInquiries(currentPage - 1);
-            message.info('New inquiry received — list refreshed.');
+            message.info(t('serviceContactForm.newInquiryReceived'));
         }
         prevBadgeRef.current = badgeCount;
     }, [badgeCount, fetchInquiries, currentPage]);
@@ -97,7 +99,7 @@ const ServiceContactFormRoot = () => {
             navigate('/search-by-root', { state: { prefillData } });
         } catch (err) {
             console.error('[handleCreateQuote] Failed:', err);
-            message.error('Failed to prepare quote. Please try again.');
+            message.error(t('serviceContactForm.failedToPrepareQuote'));
         } finally {
             setCreatingQuoteId(null);
         }
@@ -106,21 +108,21 @@ const ServiceContactFormRoot = () => {
 
     const columns = [
         {
-            title: 'Name',
+            title: t('serviceContactForm.name'),
             dataIndex: 'name',
             key: 'name',
             ellipsis: true,
             width: 150,
         },
         {
-            title: 'Vehicle',
+            title: t('serviceContactForm.vehicle'),
             dataIndex: 'vehicle',
             key: 'vehicle',
             ellipsis: true,
             responsive: ['md'],
         },
         {
-            title: 'Service',
+            title: t('serviceContactForm.service'),
             dataIndex: 'serviceType',
             key: 'serviceType',
             responsive: ['lg'],
@@ -136,7 +138,7 @@ const ServiceContactFormRoot = () => {
             ),
         },
         {
-            title: 'Status',
+            title: t('serviceContactForm.status'),
             dataIndex: 'status',
             key: 'status',
             width: 80,
@@ -147,7 +149,7 @@ const ServiceContactFormRoot = () => {
             ),
         },
         {
-            title: 'Date',
+            title: t('serviceContactForm.date'),
             dataIndex: 'createdAt',
             key: 'createdAt',
             width: 120,
@@ -155,20 +157,20 @@ const ServiceContactFormRoot = () => {
             render: (date) => date ? new Date(date).toLocaleDateString() : '-',
         },
         {
-            title: 'Actions',
+            title: t('serviceContactForm.actions'),
             key: 'actions',
             width: 130,
             fixed: 'right',
             render: (text, record) => (
                 <div className="flex gap-2">
-                    <Tooltip title="View Details">
+                    <Tooltip title={t('serviceContactForm.viewDetails')}>
                         <Button
                             icon={<EyeOutlined />}
                             onClick={() => handleViewDetails(record)}
                             size="small"
                         />
                     </Tooltip>
-                    <Tooltip title="Create Quote">
+                    <Tooltip title={t('serviceContactForm.createQuote')}>
                         <Button
                             icon={<FileAddOutlined />}
                             onClick={() => handleCreateQuote(record)}
@@ -179,7 +181,7 @@ const ServiceContactFormRoot = () => {
                     </Tooltip>
                     <Popconfirm
                         title="Delete Inquiry"
-                        description="Are you sure you want to delete this inquiry?"
+                        description={t('serviceContactForm.deleteInquiryConfirm')}
                         onConfirm={() => handleDelete(record.id)}
                         okText="Yes"
                         cancelText="No"
@@ -225,8 +227,8 @@ const ServiceContactFormRoot = () => {
         <div className="min-h-screen p-4 md:p-6 bg-slate-100">
             <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div className="flex items-center gap-2">
-                    <h1 className="!text-[30px] md:text-2xl font-bold text-slate-900 m-0">Service Inquiries</h1>
-                    <Tooltip title="View and manage incoming service requests from customers" placement="right">
+                    <h1 className="!text-[30px] md:text-2xl font-bold text-slate-900 m-0">{t('serviceContactForm.serviceInquiries')}</h1>
+                    <Tooltip title={t('serviceContactForm.viewAndManageTooltip')} placement="right">
                         <InfoCircleOutlined className="text-slate-400 text-base cursor-pointer hover:text-violet-500 transition-colors" />
                     </Tooltip>
                 </div>
@@ -238,15 +240,13 @@ const ServiceContactFormRoot = () => {
                     }}
                     loading={loading}
                     className="w-full sm:w-auto"
-                >
-                    Refresh
-                </Button>
+                >{t('serviceContactForm.refresh')}</Button>
             </div>
 
             <Row gutter={[16, 16]} className="mb-6">
                 <Col xs={24} sm={12} md={8}>
                     <Card>
-                        <Statistic title="Total Inquiries" value={total} />
+                        <Statistic title={t('serviceContactForm.totalInquiries')} value={total} />
                     </Card>
                 </Col>
             </Row>
@@ -275,19 +275,19 @@ const ServiceContactFormRoot = () => {
                                     <Tag color={item.status === 'NEW' ? 'green' : 'default'}>{item.status || 'NEW'}</Tag>
                                 </div>}
                                 actions={[
-                                    <Button icon={<EyeOutlined />} onClick={() => handleViewDetails(item)}>View</Button>,
+                                    <Button icon={<EyeOutlined />} onClick={() => handleViewDetails(item)}>{t('serviceContactForm.view')}</Button>,
                                     <Button
                                         icon={<FileAddOutlined />}
                                         onClick={() => handleCreateQuote(item)}
                                         loading={creatingQuoteId === item.id}
                                         style={{ color: '#16a34a', borderColor: '#16a34a' }}
-                                    >Create Quote</Button>,
+                                    >{t('serviceContactForm.createQuote')}</Button>,
                                     <Popconfirm
-                                        title="Delete Inquiry"
-                                        description="Are you sure?"
+                                        title={t('serviceContactForm.deleteInquiry')}
+                                        description={t('serviceContactForm.deleteInquiryConfirm')}
                                         onConfirm={() => handleDelete(item.id)}
-                                        okText="Yes"
-                                        cancelText="No"
+                                        okText={t('serviceContactForm.yes')}
+                                        cancelText={t('serviceContactForm.no')}
                                     >
                                         <Button icon={<DeleteOutlined />} danger>Delete</Button>
                                     </Popconfirm>

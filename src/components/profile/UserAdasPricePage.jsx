@@ -132,15 +132,7 @@ const UserAdasPricePage = () => {
 
             <Card className="shadow-sm border border-slate-200">
                 <div className="space-y-6">
-                    <div className="flex items-center gap-3 mb-2">
-                        <DollarOutlined className="text-2xl text-violet-600" />
-                        <div>
-                            <h3 className="text-lg font-semibold text-gray-800">{t('pricing.manageAdasPrices', { defaultValue: 'Manage ADAS Prices' })}</h3>
-                            <p className="text-sm text-gray-500">
-                                {t('pricing.manageAdasPricesDesc', { defaultValue: 'Set your standard pricing for ADAS calibration types.' })}
-                            </p>
-                        </div>
-                    </div>
+                    {/* Table content */}
 
                     {/* Desktop Table View */}
                     {!isMobile && (

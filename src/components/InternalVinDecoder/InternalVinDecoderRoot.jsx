@@ -17,19 +17,15 @@ async function decodeVin(vin, modelYear = '') {
     return json.Results[0];
 }
 
-const DATA_MAPPING = [
-    { title: 'Core Identity', fields: ['Make', 'Model', 'ModelYear', 'VehicleType', 'BodyClass', 'Series', 'Trim', 'Trim2'] },
-    { title: 'Powertrain', fields: ['EngineModel', 'EngineCylinders', 'DisplacementCC', 'DisplacementL', 'EngineHP', 'EngineKW', 'FuelTypePrimary', 'FuelTypeSecondary', 'DriveType', 'TransmissionStyle', 'TransmissionSpeeds'] },
-    { title: 'Safety & Dimensions', fields: ['AirBagLocFront', 'AirBagLocSide', 'AirBagLocCurtain', 'AirBagLocKnee', 'TPMS', 'ESC', 'ABS', 'LaneDepartureWarning', 'ForwardCollisionWarning', 'DynamicBrakeSupport', 'Doors', 'Windows', 'WheelBaseLong', 'WheelBaseShort', 'TrackWidth', 'GVWR', 'Seats', 'SeatRows'] },
-    { title: 'Origin', fields: ['Manufacturer', 'PlantCity', 'PlantCountry', 'PlantState', 'OriginCountry'] },
-];
-
-function formatLabel(key) {
-    return key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim();
-}
-
 const InternalVinDecoderRoot = () => {
     const { t } = useTranslation();
+    
+    const DATA_MAPPING = [
+        { title: t('internalVinDecoder.coreIdentity'), fields: ['Make', 'Model', 'ModelYear', 'VehicleType', 'BodyClass', 'Series', 'Trim', 'Trim2'] },
+        { title: t('internalVinDecoder.powertrain'), fields: ['EngineModel', 'EngineCylinders', 'DisplacementCC', 'DisplacementL', 'EngineHP', 'EngineKW', 'FuelTypePrimary', 'FuelTypeSecondary', 'DriveType', 'TransmissionStyle', 'TransmissionSpeeds'] },
+        { title: t('internalVinDecoder.safetyDimensions'), fields: ['AirBagLocFront', 'AirBagLocSide', 'AirBagLocCurtain', 'AirBagLocKnee', 'TPMS', 'ESC', 'ABS', 'LaneDepartureWarning', 'ForwardCollisionWarning', 'DynamicBrakeSupport', 'Doors', 'Windows', 'WheelBaseLong', 'WheelBaseShort', 'TrackWidth', 'GVWR', 'Seats', 'SeatRows'] },
+        { title: t('internalVinDecoder.origin'), fields: ['Manufacturer', 'PlantCity', 'PlantCountry', 'PlantState', 'OriginCountry'] },
+    ];
     const [vin, setVin] = useState('');
     const [modelYear, setModelYear] = useState('');
     const [loading, setLoading] = useState(false);
@@ -62,7 +58,7 @@ const InternalVinDecoderRoot = () => {
                         <h1 className="!text-[30px] font-extrabold text-slate-800 m-0">
                             {t('nav.vinDecoder') || 'VIN Decoder'}
                         </h1>
-                        <Tooltip title="Decode any vehicle VIN instantly using official NHTSA data" placement="right">
+                        <Tooltip title={t('internalVinDecoder.decodeTooltip')} placement="right">
                             <InfoCircleOutlined className="text-slate-400 text-base cursor-pointer hover:text-violet-500 transition-colors" />
                         </Tooltip>
                     </div>
@@ -70,7 +66,7 @@ const InternalVinDecoderRoot = () => {
 
                 {error && (
                     <Alert
-                        message="Decoding Failed"
+                        message={t('internalVinDecoder.decodingFailed')}
                         description={error}
                         type="error"
                         showIcon
@@ -80,11 +76,11 @@ const InternalVinDecoderRoot = () => {
                 <Card className="shadow-sm border-slate-200" styles={{ body: { padding: '24px' } }}>
                     <form onSubmit={handleDecode} className="flex flex-col md:flex-row gap-4 items-end">
                         <div className="flex-1 w-full">
-                            <label className="block text-sm font-medium text-slate-700 mb-2">Vehicle Identification Number (VIN)</label>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">{t('internalVinDecoder.vehicleIdentificationNumber')}</label>
                             <Input
                                 ref={inputRef}
                                 size="large"
-                                placeholder="Enter 17-character VIN"
+                                placeholder={t('internalVinDecoder.enter17CharacterVin')}
                                 value={vin}
                                 onChange={e => setVin(e.target.value.toUpperCase())}
                                 maxLength={17}
@@ -92,11 +88,11 @@ const InternalVinDecoderRoot = () => {
                             />
                         </div>
                         <div className="w-full md:w-48">
-                            <label className="block text-sm font-medium text-slate-700 mb-2">Year (Optional)</label>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">{t('internalVinDecoder.yearOptional')}</label>
                             <Select
                                 size="large"
                                 className="w-full h-11"
-                                placeholder="Year"
+                                placeholder={t('internalVinDecoder.year')}
                                 value={modelYear || undefined}
                                 onChange={val => setModelYear(val)}
                                 allowClear
@@ -113,7 +109,7 @@ const InternalVinDecoderRoot = () => {
                             icon={<SearchOutlined />}
                             disabled={!vin.trim()}
                         >
-                            Decode
+                            {t('internalVinDecoder.decode')}
                         </Button>
                     </form>
                 </Card>
@@ -126,7 +122,7 @@ const InternalVinDecoderRoot = () => {
 
                 {!result && !loading && !error && (
                     <Empty 
-                        description={<span className="text-slate-500 font-medium">Search for a VIN to view vehicle details</span>} 
+                        description={<span className="text-slate-500 font-medium">{t('internalVinDecoder.searchVinToView')}</span>} 
                         className="my-16" 
                         image={Empty.PRESENTED_IMAGE_SIMPLE}
                     />
@@ -136,7 +132,7 @@ const InternalVinDecoderRoot = () => {
                     <div className="space-y-6 mt-6">
                         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden" style={{ borderLeft: '4px solid #8b5cf6' }}>
                             <div className="p-6">
-                                <p className="text-xs font-bold uppercase tracking-widest text-violet-500 mb-2">Decoded Vehicle</p>
+                                <p className="text-xs font-bold uppercase tracking-widest text-violet-500 mb-2">{t('internalVinDecoder.decodedVehicle')}</p>
                                 <h2 className="text-3xl font-black text-slate-900 mb-4">
                                     {[result.ModelYear, result.Make, result.Model].filter(Boolean).join(' ')}
                                 </h2>

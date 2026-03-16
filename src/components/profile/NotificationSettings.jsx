@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Switch, Select, Slider, Radio, Divider, Button, App } from 'antd';
-import { BellOutlined, MessageOutlined, SoundOutlined, ClockCircleOutlined, FieldTimeOutlined } from '@ant-design/icons';
+import { Switch, Select, Slider, Divider, Button, App } from 'antd';
+import { BellOutlined, MessageOutlined, SoundOutlined, SoundFilled, ClockCircleOutlined, FieldTimeOutlined, AlertOutlined, NotificationOutlined } from '@ant-design/icons';
 import { useNotificationSettings } from '../../context/NotificationSettingsContext';
 import { playNotificationSound } from '../../utils/playNotificationSound';
 
@@ -53,7 +53,7 @@ const SectionCard = ({ icon, title, color, children }) => (
 );
 
 const SettingRow = ({ icon, label, description, children }) => (
-    <div className="flex items-start justify-between gap-4">
+    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div className="flex items-start gap-3 flex-1 min-w-0">
             <span className="text-gray-400 text-base mt-0.5">{icon}</span>
             <div className="min-w-0">
@@ -61,7 +61,7 @@ const SettingRow = ({ icon, label, description, children }) => (
                 {description && <p className="text-xs text-gray-400 m-0 mt-0.5">{description}</p>}
             </div>
         </div>
-        <div className="flex-shrink-0">{children}</div>
+        <div className="flex-shrink-0 ml-7 sm:ml-0">{children}</div>
     </div>
 );
 
@@ -82,7 +82,7 @@ const NotificationSection = ({ icon, title, color, sectionKey, section, onFieldC
         <SectionCard icon={icon} title={title} color={color}>
             {/* Master toggle */}
             <SettingRow
-                icon={<BellOutlined />}
+                icon={<NotificationOutlined />}
                 label="Enable Notifications"
                 description="Show modal alert and play sound when a new notification arrives"
             >
@@ -97,7 +97,7 @@ const NotificationSection = ({ icon, title, color, sectionKey, section, onFieldC
 
             {/* Show modal toggle */}
             <SettingRow
-                icon={<BellOutlined />}
+                icon={<AlertOutlined />}
                 label="Show Alert Modal"
                 description="Pop-up modal in the centre of the screen"
             >
@@ -129,7 +129,7 @@ const NotificationSection = ({ icon, title, color, sectionKey, section, onFieldC
 
             {/* Volume slider */}
             <SettingRow
-                icon={<SoundOutlined />}
+                icon={<SoundFilled />}
                 label="Volume"
                 description={`${volume}%`}
             >
@@ -169,16 +169,14 @@ const NotificationSection = ({ icon, title, color, sectionKey, section, onFieldC
                 label="Delay Before First Alert"
                 description="Wait before showing the notification"
             >
-                <Radio.Group
+                <Select
                     value={delay}
-                    onChange={(e) => onFieldChange(sectionKey, 'delay', e.target.value)}
+                    onChange={(value) => onFieldChange(sectionKey, 'delay', value)}
                     disabled={!enabled}
+                    options={DELAY_OPTIONS}
+                    style={{ width: 150 }}
                     size="small"
-                >
-                    {DELAY_OPTIONS.map(o => (
-                        <Radio.Button key={o.value} value={o.value}>{o.label}</Radio.Button>
-                    ))}
-                </Radio.Group>
+                />
             </SettingRow>
         </SectionCard>
     );

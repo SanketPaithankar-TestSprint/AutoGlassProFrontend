@@ -346,15 +346,15 @@ const TaxRateConfiguration = () => {
                                     <div key={rate.taxRateId} className="bg-gray-50 rounded-lg border border-gray-200 p-3">
                                         <div className="flex justify-between items-start mb-2">
                                             <div>
-                                                <h3 className="text-sm font-bold text-gray-900">{rate.state}</h3>
-                                                <p className="text-xs text-gray-500">{US_STATES.find(s => s.code === rate.state)?.name}</p>
+                                                <h3 className="text-sm font-bold text-gray-900">{rate.stateCode}</h3>
+                                                <p className="text-xs text-gray-500">{rate.stateName || US_STATES.find(s => s.code === rate.stateCode)?.name}</p>
                                             </div>
                                             {rate.isDefault && <StarFilled className="text-yellow-500 text-lg" />}
                                         </div>
                                         <div className="space-y-1 text-xs mb-3">
                                             <div className="flex justify-between">
                                                 <span className="text-gray-500">{t('pricing.taxRate', { defaultValue: 'Tax Rate' })}:</span>
-                                                <span className="font-mono font-bold text-gray-900">{rate.taxRate}%</span>
+                                                <span className="font-mono font-bold text-gray-900">{rate.taxPercent}%</span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-gray-500">{t('employees.status', { defaultValue: 'Status' })}:</span>

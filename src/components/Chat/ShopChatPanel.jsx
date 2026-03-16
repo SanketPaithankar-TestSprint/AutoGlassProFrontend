@@ -3,6 +3,7 @@ import { useChat } from '../../context/ChatContext';
 import { Input, Button, List, Avatar, Badge, Empty, Spin } from 'antd';
 import { SendOutlined, UserOutlined, DeleteOutlined, MessageOutlined, CloseOutlined } from '@ant-design/icons';
 import moment from 'moment';
+import { useTranslation } from 'react-i18next';
 
 // Deterministic blue/violet shade from conversation id
 const AVATAR_COLORS = [
@@ -23,6 +24,7 @@ const getAvatarColor = (id = '') => {
 };
 
 const ShopChatPanel = () => {
+    const { t } = useTranslation();
     const {
         conversations,
         activeConversationId,
@@ -75,13 +77,13 @@ const ShopChatPanel = () => {
                 {/* Sidebar List */}
                 <div className="w-1/3 border-r border-slate-200 flex flex-col">
                     <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                        <h2 className="font-semibold text-lg text-slate-700">Conversations</h2>
-                        <Badge status={connectionStatus === 'connected' ? 'success' : 'error'} text={connectionStatus} />
+                        <h2 className="font-semibold text-lg text-slate-700">{t('chat.conversations')}</h2>
+                        <Badge status={connectionStatus === 'connected' ? 'success' : 'error'} text={t(`chat.${connectionStatus}`)} />
                     </div>
                     <div className="flex-1 overflow-y-auto custom-scrollbar">
                         {sortedConversations.length === 0 ? (
                             <div className="p-8 text-center text-slate-400">
-                                No conversations yet
+                                {t('chat.noConversationsYet')}
                             </div>
                         ) : (
                             <List
@@ -113,14 +115,14 @@ const ShopChatPanel = () => {
                                                             ? 'font-bold text-slate-800'
                                                             : 'font-medium text-slate-600'
                                                             }`}>
-                                                            {item.customerName || `Customer ${item.id.substring(0, 6)}...`}
+                                                            {item.customerName || `${t('chat.customer')} ${item.id.substring(0, 6)}...`}
                                                         </span>
                                                         <span className="text-[11px] text-slate-400 flex-shrink-0 pl-1">
                                                             {moment(item.updatedAt).format('HH:mm')}
                                                         </span>
                                                     </div>
                                                     <p className="truncate text-xs text-slate-400">
-                                                        {item.lastMessage || <i>No messages</i>}
+                                                        {item.lastMessage || <i>{t('chat.noMessages')}</i>}
                                                     </p>
                                                 </div>
                                             </div>
@@ -145,10 +147,10 @@ const ShopChatPanel = () => {
                                     />
                                     <div>
                                         <h3 className="font-medium text-slate-800">
-                                            {activeConversation ? (activeConversation.customerName || `Customer ${activeConversationId}`) : 'Select a Chat'}
+                                            {activeConversation ? (activeConversation.customerName || `${t('chat.customer')} ${activeConversationId}`) : t('chat.selectChat')}
                                         </h3>
                                         <p className="text-xs text-slate-500">
-                                            {connectionStatus === 'connected' ? 'Online' : 'Offline'}
+                                            {connectionStatus === 'connected' ? t('chat.online') : t('chat.offline')}
                                         </p>
                                     </div>
                                 </div>
@@ -158,18 +160,18 @@ const ShopChatPanel = () => {
                                         danger
                                         icon={<DeleteOutlined />}
                                         onClick={() => {
-                                            if (window.confirm('Are you sure you want to delete this conversation?')) {
+                                            if (window.confirm(t('chat.deleteConversationConfirm'))) {
                                                 deleteConversation(activeConversationId);
                                             }
                                         }}
-                                        title="Delete Conversation"
+                                        title={t('chat.deleteConversation')}
                                     />
                                     <Button
                                         type="text"
                                         icon={<CloseOutlined className="text-slate-400" />}
                                         onClick={() => setActiveConversationId(null)}
                                         className="hover:bg-slate-100"
-                                        title="Close Chat"
+                                        title={t('chat.closeChat')}
                                     />
                                 </div>
                             </div>
@@ -200,8 +202,8 @@ const ShopChatPanel = () => {
                                     })
                                 ) : (
                                     <div className="h-full flex flex-col items-center justify-center text-slate-400">
-                                        <p>No messages yet.</p>
-                                        <p className="text-xs">Start the conversation!</p>
+                                        <p>{t('chat.noMessagesYet')}</p>
+                                        <p className="text-xs">{t('chat.startConversation')}</p>
                                     </div>
                                 )}
                                 <div ref={messagesEndRef} />
@@ -211,7 +213,7 @@ const ShopChatPanel = () => {
                             <div className="p-4 bg-white border-t border-slate-100">
                                 <div className="flex items-center gap-2">
                                     <Input
-                                        placeholder="Type a message..."
+                                        placeholder={t('chat.typeMessage')}
                                         className="rounded-full px-4 py-2"
                                         value={inputText}
                                         onChange={e => setInputText(e.target.value)}
@@ -234,8 +236,8 @@ const ShopChatPanel = () => {
                             <div className="w-24 h-24 bg-violet-50 rounded-full flex items-center justify-center mb-6">
                                 <MessageOutlined className="text-4xl text-violet-600" />
                             </div>
-                            <h2 className="text-xl font-semibold text-slate-700 mb-2">Select a conversation to start chatting</h2>
-                            <p className="text-sm text-slate-500">Choose a customer from the list to view and send messages</p>
+                            <h2 className="text-xl font-semibold text-slate-700 mb-2">{t('chat.selectConversationToStart')}</h2>
+                            <p className="text-sm text-slate-500">{t('chat.chooseCustomerToList')}</p>
                         </div>
                     )}
                 </div>

@@ -7,7 +7,7 @@ import { updateShop } from "../../api/updateShop";
 import { deleteShop } from "../../api/deleteShop";
 import { getValidToken } from "../../api/getValidToken";
 import { ShopOutlined, PlusOutlined, EditOutlined, DeleteOutlined, EnvironmentOutlined, PhoneOutlined, MailOutlined, GlobalOutlined, ReloadOutlined, ClockCircleOutlined, InfoCircleOutlined, PushpinOutlined } from "@ant-design/icons";
-import { Modal, Form, Input, Button, notification, Popconfirm, Card, Empty, Tag, Switch, TimePicker, Tooltip, Divider } from "antd";
+import { Modal, Form, Input, Button, notification, Popconfirm, Switch, TimePicker, Tooltip, Divider } from "antd";
 import dayjs from "dayjs";
 import { useTranslation } from 'react-i18next';
 
@@ -205,10 +205,7 @@ const Shops = ({ userProfile }) => {
     return (
         <div className="space-y-6 animate-fadeIn">
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                    <ShopOutlined className="text-violet-500" />
-                    {t('shops.title')}
-                </h2>
+                <h2 className="text-2xl font-bold text-gray-800">{t('shops.title')}</h2>
                 <div className="flex gap-2">
                     <Button
                         icon={<ReloadOutlined />}
@@ -222,7 +219,7 @@ const Shops = ({ userProfile }) => {
                         type="primary"
                         icon={<PlusOutlined />}
                         onClick={handleAdd}
-                        className="bg-violet-600 hover:bg-violet-700"
+                        style={{ background: '#2563eb', borderColor: '#2563eb' }}
                     >
                         {t('shops.addShop')}
                     </Button>
@@ -236,12 +233,70 @@ const Shops = ({ userProfile }) => {
                     <p className="text-sm text-gray-400 mt-2">{t('shops.createShopToStart')}</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                     {Array.isArray(shops) && shops.map((shop) => (
-                        <Card
+                        <div
                             key={shop.id}
-                            actions={[
-                                <Button type="text" icon={<EditOutlined />} onClick={() => handleEdit(shop)} key="edit">{t('shops.editShop')}</Button>,
+                            className="bg-white rounded-xl border border-gray-200 hover:shadow-md transition-shadow duration-200 flex flex-col"
+                        >
+                            {/* Card Header */}
+                            <div className="px-4 pt-4 pb-3 border-b border-gray-100 flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <ShopOutlined className="text-blue-500 flex-shrink-0" />
+                                    <span className="font-semibold text-gray-800 text-sm truncate">{shop.name}</span>
+                                </div>
+                                <span className={`flex-shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${shop.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                                    {shop.isActive ? 'Active' : 'Inactive'}
+                                </span>
+                            </div>
+
+                            {/* Card Body */}
+                            <div className="px-4 py-3 space-y-1.5 flex-1 text-sm text-gray-600">
+                                {shop.address && (
+                                    <div className="flex items-start gap-2">
+                                        <EnvironmentOutlined className="mt-0.5 flex-shrink-0 text-gray-400" />
+                                        <span className="text-xs leading-snug">{shop.address}</span>
+                                    </div>
+                                )}
+                                {shop.phone && (
+                                    <div className="flex items-center gap-2">
+                                        <PhoneOutlined className="flex-shrink-0 text-gray-400" />
+                                        <span className="text-xs">{shop.phone}</span>
+                                    </div>
+                                )}
+                                {shop.email && (
+                                    <div className="flex items-center gap-2">
+                                        <MailOutlined className="flex-shrink-0 text-gray-400" />
+                                        <span className="text-xs truncate">{shop.email}</span>
+                                    </div>
+                                )}
+                                {(shop.website || shop.maps) && (
+                                    <div className="flex items-center gap-3 pt-0.5">
+                                        {shop.website && (
+                                            <a href={shop.website} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline flex items-center gap-1">
+                                                <GlobalOutlined /> Website
+                                            </a>
+                                        )}
+                                        {shop.maps && (
+                                            <a href={shop.maps} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline flex items-center gap-1">
+                                                <PushpinOutlined /> Maps
+                                            </a>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Card Footer */}
+                            <div className="px-4 py-2.5 border-t border-gray-100 flex items-center justify-end gap-1">
+                                <Button
+                                    type="text"
+                                    size="small"
+                                    icon={<EditOutlined />}
+                                    onClick={() => handleEdit(shop)}
+                                    className="text-gray-500 hover:text-blue-600 text-xs"
+                                >
+                                    Edit
+                                </Button>
                                 <Popconfirm
                                     title={t('shops.deleteShop')}
                                     description={t('shops.deleteConfirm')}
@@ -249,73 +304,16 @@ const Shops = ({ userProfile }) => {
                                     okText="Yes"
                                     cancelText="No"
                                     okButtonProps={{ danger: true }}
-                                    key="delete"
                                 >
-                                    <Button type="text" danger icon={<DeleteOutlined />}>{t('shops.deleteShop')}</Button>
+                                    <Button type="text" size="small" danger icon={<DeleteOutlined />} className="text-xs">
+                                        Delete
+                                    </Button>
                                 </Popconfirm>
-                            ]}
-                        >
-                            <Card.Meta
-                                title={
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-lg font-semibold">{shop.name}</span>
-                                        <Tag color={shop.isActive ? "green" : "gray"}>
-                                            {shop.isActive ? "Active" : "Inactive"}
-                                        </Tag>
-                                    </div>
-                                }
-                                description={
-                                    <div className="space-y-2 mt-2">
-                                        {shop.address && (
-                                            <div className="flex items-start gap-2 text-gray-600">
-                                                <EnvironmentOutlined className="mt-1 flex-shrink-0" />
-                                                <span className="text-sm">{shop.address}</span>
-                                            </div>
-                                        )}
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                            {shop.phone && (
-                                                <div className="flex items-center gap-2 text-gray-600">
-                                                    <PhoneOutlined className="flex-shrink-0" />
-                                                    <span className="text-sm">{shop.phone}</span>
-                                                </div>
-                                            )}
-                                            {shop.alternatePhone && (
-                                                <div className="flex items-center gap-2 text-gray-600">
-                                                    <PhoneOutlined className="flex-shrink-0 opacity-70" />
-                                                    <span className="text-sm">{shop.alternatePhone}</span>
-                                                </div>
-                                            )}
-                                        </div>
-                                        {shop.email && (
-                                            <div className="flex items-center gap-2 text-gray-600">
-                                                <MailOutlined className="flex-shrink-0" />
-                                                <span className="text-sm">{shop.email}</span>
-                                            </div>
-                                        )}
-                                        <div className="flex flex-wrap gap-3">
-                                            {shop.website && (
-                                                <div className="flex items-center gap-2 text-gray-600">
-                                                    <GlobalOutlined className="flex-shrink-0" />
-                                                    <a href={shop.website} target="_blank" rel="noopener noreferrer" className="text-sm text-violet-600 hover:underline truncate max-w-[150px]">
-                                                        Website
-                                                    </a>
-                                                </div>
-                                            )}
-                                            {shop.maps && (
-                                                <div className="flex items-center gap-2 text-gray-600">
-                                                    <PushpinOutlined className="flex-shrink-0" />
-                                                    <a href={shop.maps} target="_blank" rel="noopener noreferrer" className="text-sm text-violet-600 hover:underline">
-                                                        Maps
-                                                    </a>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                }
-                            />
-                        </Card>
+                            </div>
+                        </div>
                     ))}
                 </div>
+
             )}
 
             <Modal

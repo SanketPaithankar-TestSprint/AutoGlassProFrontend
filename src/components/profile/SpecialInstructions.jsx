@@ -89,37 +89,32 @@ const SpecialInstructions = () => {
 
     return (
         <div className="space-y-6 animate-fadeIn">
-            <Card
-                title={<span className="flex items-center gap-2"><FileTextOutlined className="text-violet-500" /> {t('pricing.specialInstructions', { defaultValue: 'Special Instructions' })}</span>}
-                className="shadow-sm border border-gray-100 rounded-2xl"
-            >
-                <div>
-                    <p className="text-gray-500 mb-4">
-                        {t('pricing.instructionsIncluded', { defaultValue: 'These instructions will be included in the PDF generation.' })}
-                    </p>
-                    <div className="mb-4 bg-white rounded-lg">
-                        {/* Wrapper div to ensure styles don't leak or break layout */}
-                        <ReactQuill
-                            theme="snow"
-                            value={instructions}
-                            onChange={(content) => setInstructions(content)}
-                            modules={modules}
-                            className={`${isMobile ? 'h-40' : 'h-64'} mb-12`}
-                        />
-                    </div>
-                    <div className="flex justify-end pt-8">
-                        <Button
-                            type="primary"
-                            icon={<SaveOutlined />}
-                            onClick={handleSave}
-                            loading={isSaving}
-                            className="bg-violet-600 hover:bg-violet-700"
-                        >
-                            {t('pricing.saveInstructions', { defaultValue: 'Save Instructions' })}
-                        </Button>
-                    </div>
+            <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-gray-800">{t('pricing.specialInstructions', { defaultValue: 'Special Instructions' })}</h2>
+                <Button
+                    type="primary"
+                    icon={<SaveOutlined />}
+                    onClick={handleSave}
+                    loading={isSaving}
+                    style={{ background: '#2563eb', borderColor: '#2563eb' }}
+                >
+                    {t('pricing.saveInstructions', { defaultValue: 'Save Instructions' })}
+                </Button>
+            </div>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <p className="text-gray-500 mb-4">
+                    {t('pricing.instructionsIncluded', { defaultValue: 'These instructions will be included in the PDF generation.' })}
+                </p>
+                <div className="mb-4 bg-white rounded-lg">
+                    <ReactQuill
+                        theme="snow"
+                        value={instructions}
+                        onChange={(content) => setInstructions(content)}
+                        modules={modules}
+                        className={`${isMobile ? 'h-40' : 'h-64'} mb-12`}
+                    />
                 </div>
-            </Card>
+            </div>
         </div>
     );
 };

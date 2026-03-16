@@ -211,10 +211,14 @@ const Profile = () => {
     const renderMenuItem = (id, label, icon) => (
         <button
             onClick={() => setActiveTab(id)}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left font-medium ${activeTab === id
-                ? "bg-violet-600 text-white shadow-md shadow-violet-200"
-                : "text-gray-600 hover:bg-violet-50 hover:text-violet-600"
-                }`}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-left font-medium ${
+                activeTab === id
+                ? "shadow-md"
+                : "text-gray-600 hover:bg-blue-50 hover:text-blue-600"
+            }`}
+            style={activeTab === id
+                ? { background: '#2563eb', color: '#ffffff', boxShadow: '0 4px 6px -1px rgba(37,99,235,0.25)' }
+                : {}}
         >
             <span className="text-lg">{icon}</span>
             <span>{label}</span>
@@ -313,7 +317,7 @@ const Profile = () => {
                     <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
                         <PhoneOutlined className="text-violet-500" /> {t('profile.contactInformation')}
                     </h2>
-                    <div className="grid grid-cols-2 gap-4 md:gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                         <div className="space-y-1">
                             <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{t('auth.email')}</span>
                             <p className="text-gray-900 font-medium">{profile.email || "-"}</p>
@@ -440,7 +444,7 @@ const Profile = () => {
 
 
     return (
-        <div className={`flex flex-col md:flex-row ${isMobile ? 'h-auto' : 'h-screen'} bg-gray-50/50`}>
+        <div className={`flex flex-col md:flex-row ${isMobile ? 'h-auto' : 'h-screen overflow-hidden'} bg-gray-50/50`}>
             {/* Mobile Menu Grid */}
             {isMobile && (
                 <div className="w-full bg-white border-b border-gray-200 p-4">
@@ -465,7 +469,8 @@ const Profile = () => {
                                 <button
                                     key={item.id}
                                     onClick={() => setActiveTab(item.id)}
-                                    className={`flex flex-col items-center justify-center p-3 rounded-lg transition-all duration-200 text-center ${isActive ? 'bg-violet-600 text-white shadow-md' : 'bg-gray-50 text-gray-600 hover:bg-violet-50 hover:text-violet-600'}`}
+                                    className={`flex flex-col items-center justify-center p-3 rounded-lg transition-all duration-200 text-center ${isActive ? 'shadow-md' : 'bg-gray-50 text-gray-600 hover:bg-blue-50 hover:text-blue-600'}`}
+                                    style={isActive ? { background: '#2563eb', color: '#ffffff' } : {}}
                                 >
                                     <span className="text-lg mb-1">{item.icon}</span>
                                     <span className="text-xs font-semibold leading-tight">{item.label}</span>
@@ -478,7 +483,7 @@ const Profile = () => {
 
             {/* Desktop Sidebar */}
             {!isMobile && (
-                <div className="w-64 bg-white border-r border-gray-200 flex-shrink-0 md:h-[calc(100vh-64px)] overflow-y-auto">
+                <div className="w-64 bg-white border-r border-gray-200 flex-shrink-0 overflow-y-auto">
                     <div className="p-6">
                         <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">{t('profile.menu')}</h2>
                         <div className="space-y-2">
@@ -502,8 +507,8 @@ const Profile = () => {
             )}
 
             {/* Main Content */}
-            <div className={`${isMobile ? 'w-full h-auto' : 'flex-1 md:h-[calc(100vh-64px)]'} overflow-y-auto overflow-x-hidden p-3 md:p-8`}>
-                <div className={`${isMobile ? 'w-full' : 'max-w-4xl'} mx-auto`}>
+            <div className={`${isMobile ? 'w-full h-auto' : 'flex-1'} overflow-y-auto overflow-x-hidden p-3 md:p-8`}>
+                <div className="w-full mx-auto">
                     {activeTab === 'profile' && renderProfileContent()}
                     {activeTab === 'shops' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><Shops userProfile={profile} /></div>}
                     {activeTab === 'manageEmployees' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><EmployeeManagement token={token} isMobile={isMobile} /></div>}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -20,20 +21,22 @@ ChartJS.register(
 );
 
 const ArAgingChart = ({ data }) => {
+    const { t } = useTranslation();
+    
     if (!data) {
         return (
             <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 p-6 h-full flex items-center justify-center"
                 style={{ boxShadow: '0 4px 24px -4px rgba(0, 0, 0, 0.06)' }}>
-                <p className="text-slate-400">No AR aging data available</p>
+                <p className="text-slate-400">{t('analytics.noArAgingData')}</p>
             </div>
         );
     }
 
     const chartData = {
-        labels: ['0-30 Days', '31-60 Days', '61+ Days'],
+        labels: [t('analytics.days0_30'), t('analytics.days31_60'), t('analytics.days61Plus')],
         datasets: [
             {
-                label: 'Outstanding Balance',
+                label: t('analytics.outstandingBalance'),
                 data: [
                     data['0_30_days'],
                     data['31_60_days'],
@@ -62,7 +65,7 @@ const ArAgingChart = ({ data }) => {
                 cornerRadius: 10,
                 callbacks: {
                     label: function (context) {
-                        return `Amount: $${context.parsed.y.toLocaleString()}`;
+                        return `${t('analytics.amount')}: $${context.parsed.y.toLocaleString()}`;
                     }
                 }
             },
@@ -100,9 +103,9 @@ const ArAgingChart = ({ data }) => {
         <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 p-6 h-full flex flex-col"
             style={{ boxShadow: '0 4px 24px -4px rgba(0, 0, 0, 0.06)' }}>
             <div className="mb-4">
-                <h3 className="text-base font-bold text-slate-700">Unpaid Invoices by Age</h3>
+                <h3 className="text-base font-bold text-slate-700">{t('analytics.unpaidInvoicesByAge')}</h3>
                 <p className="text-xs text-slate-400 mt-0.5">
-                    Total Outstanding: <span className="font-semibold text-slate-600">${total.toLocaleString()}</span>
+                    {t('analytics.totalOutstanding')}: <span className="font-semibold text-slate-600">${total.toLocaleString()}</span>
                 </p>
             </div>
 

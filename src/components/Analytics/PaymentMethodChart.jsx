@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 import { CreditCard, Smartphone, Banknote, FileCheck, Wallet } from 'lucide-react';
@@ -6,11 +7,13 @@ import { CreditCard, Smartphone, Banknote, FileCheck, Wallet } from 'lucide-reac
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const PaymentMethodChart = ({ data }) => {
+    const { t } = useTranslation();
+    
     if (!data || data.length === 0) {
         return (
             <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 p-6 h-full flex items-center justify-center"
                 style={{ boxShadow: '0 4px 24px -4px rgba(0, 0, 0, 0.06)' }}>
-                <p className="text-slate-400">No payment method data available</p>
+                <p className="text-slate-400">{t('analytics.noPaymentMethodData')}</p>
             </div>
         );
     }
@@ -18,7 +21,14 @@ const PaymentMethodChart = ({ data }) => {
     const totalJobs = data.reduce((acc, curr) => acc + curr.count, 0);
 
     const formatMethodName = (method) => {
-        return method.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+        const methodTranslations = {
+            'CREDIT_CARD': t('analytics.creditCard'),
+            'CASH': t('analytics.cash'),
+            'BANK_TRANSFER': t('analytics.bankTransfer'),
+            'CHECK': t('analytics.check'),
+            'OTHER': t('analytics.other')
+        };
+        return methodTranslations[method] || method.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
     };
 
     const getIcon = (method) => {
@@ -92,13 +102,13 @@ const PaymentMethodChart = ({ data }) => {
     return (
         <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 p-4 sm:p-5 lg:p-6 h-full flex flex-col"
             style={{ boxShadow: '0 4px 24px -4px rgba(0, 0, 0, 0.06)' }}>
-            <h3 className="text-sm sm:text-base font-bold text-slate-700 mb-1 sm:mb-2">Payment Methods</h3>
+            <h3 className="text-sm sm:text-base font-bold text-slate-700 mb-1 sm:mb-2">{t('analytics.paymentMethods')}</h3>
 
             <div className="flex items-center justify-center mb-0 sm:mb-2 mt-[-8px]">
                 <div className="relative w-44 h-44 sm:w-48 sm:h-48">
                     <Doughnut data={chartData} options={options} />
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Payments</p>
+                        <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">{t('analytics.payments')}</p>
                         <p className="text-base font-bold text-slate-800">{totalJobs}</p>
                     </div>
                 </div>

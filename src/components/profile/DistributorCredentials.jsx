@@ -130,13 +130,13 @@ const DistributorCredentials = () => {
     return (
         <div className="space-y-6 animate-fadeIn">
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                    <KeyOutlined className="text-violet-500" />
-                    {t('distributors.title')}
-                </h2>
+                <h2 className="text-2xl font-bold text-gray-800">{t('distributors.title')}</h2>
                 <button
                     onClick={handleAdd}
-                    className="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                    className="px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
+                    style={{ background: '#2563eb', color: '#ffffff', borderColor: '#2563eb' }}
+                    onMouseOver={e => e.currentTarget.style.background = '#1d4ed8'}
+                    onMouseOut={e => e.currentTarget.style.background = '#2563eb'}
                 >
                     <PlusOutlined /> {t('distributors.addCredential')}
                 </button>

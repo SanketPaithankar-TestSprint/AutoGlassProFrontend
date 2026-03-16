@@ -30,7 +30,7 @@ const AnalyticsRoot = () => {
     const [userId, setUserId] = React.useState(null);
     const [checkingUserId, setCheckingUserId] = React.useState(true);
     const [dateParams, setDateParams] = React.useState({ startDate: null, endDate: null });
-    const [activeLabel, setActiveLabel] = React.useState('All time');
+    const [activeLabel, setActiveLabel] = React.useState(t('analytics.allTime'));
 
     const handleDateChange = ({ startDate, endDate, label }) => {
         setDateParams({ startDate, endDate });
@@ -69,8 +69,8 @@ const AnalyticsRoot = () => {
         return (
             <div className="p-8 bg-slate-100">
                 <Alert
-                    message="Error Loading Dashboard"
-                    description={error.message || "Failed to fetch analytics data."}
+                    message={t('analytics.errorLoadingDashboard')}
+                    description={error.message || t('analytics.failedToFetchAnalyticsData')}
                     type="error"
                     showIcon
                 />
@@ -87,12 +87,12 @@ const AnalyticsRoot = () => {
                         <h1 className="!text-[30px] font-extrabold text-slate-800 m-0">
                             {t('analytics.title')}
                         </h1>
-                        <Tooltip title="Comprehensive business analytics and insights" placement="right">
+                        <Tooltip title={t('analytics.comprehensiveBusinessAnalytics')} placement="right">
                             <InfoCircleOutlined className="text-slate-400 text-base cursor-pointer hover:text-violet-500 transition-colors" />
                         </Tooltip>
                     </div>
 
-                    <AnalyticsDatePicker onChange={handleDateChange} activeLabel={activeLabel} />
+                    <AnalyticsDatePicker onChange={handleDateChange} />
                 </header>
 
                 {/* KPI Overview */}
@@ -102,7 +102,7 @@ const AnalyticsRoot = () => {
                 <section>
                     <div className="flex items-center gap-2 mb-3 md:mb-4">
                         <div className="w-1 h-5 sm:h-6 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></div>
-                        <h2 className="text-base sm:text-lg font-bold text-slate-700">Financial Overview</h2>
+                        <h2 className="text-base sm:text-lg font-bold text-slate-700">{t('analytics.financialOverview')}</h2>
                     </div>
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                         <div className="lg:col-span-2 h-[300px] sm:h-[350px] lg:h-[400px]">
@@ -118,7 +118,7 @@ const AnalyticsRoot = () => {
                 <section>
                     <div className="flex items-center gap-2 mb-3 md:mb-4">
                         <div className="w-1 h-5 sm:h-6 bg-gradient-to-b from-emerald-500 to-teal-600 rounded-full"></div>
-                        <h2 className="text-base sm:text-lg font-bold text-slate-700">Job Analysis</h2>
+                        <h2 className="text-base sm:text-lg font-bold text-slate-700">{t('analytics.jobAnalysis')}</h2>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                         <div className="h-[300px] sm:h-[350px] lg:h-[400px]">
@@ -137,7 +137,7 @@ const AnalyticsRoot = () => {
                 <section>
                     <div className="flex items-center gap-2 mb-3 md:mb-4">
                         <div className="w-1 h-5 sm:h-6 bg-gradient-to-b from-violet-500 to-purple-600 rounded-full"></div>
-                        <h2 className="text-base sm:text-lg font-bold text-slate-700">Operational Insights</h2>
+                        <h2 className="text-base sm:text-lg font-bold text-slate-700">{t('analytics.operationalInsights')}</h2>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                         <div className="h-[300px] sm:h-[350px] lg:h-[400px]">
@@ -156,7 +156,7 @@ const AnalyticsRoot = () => {
                 <section>
                     <div className="flex items-center gap-2 mb-3 md:mb-4">
                         <div className="w-1 h-5 sm:h-6 bg-gradient-to-b from-amber-500 to-orange-600 rounded-full"></div>
-                        <h2 className="text-base sm:text-lg font-bold text-slate-700">Product Analysis</h2>
+                        <h2 className="text-base sm:text-lg font-bold text-slate-700">{t('analytics.productAnalysis')}</h2>
                     </div>
                     <div className="h-[300px] sm:h-[350px] lg:h-[400px]">
                         <GlassTypeChart data={data?.glass_type_breakdown} />
