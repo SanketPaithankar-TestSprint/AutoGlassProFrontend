@@ -283,11 +283,11 @@ ${userMessage || 'No message provided'}
                 {/* How It Works Section */}
                 <div className="w-full mb-24">
                     <div className="text-center mb-16">
-                        <span className="text-[#00A8E4] font-bold tracking-[0.2em] uppercase text-xs mb-3 block">How It Works</span>
+                        <span className="text-[#00A8E4] font-bold tracking-[0.2em] uppercase text-xs mb-3 block">{t('contact.howItWorks')}</span>
                         <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-6 tracking-tight">
-                            3 <span className="text-[#00A8E4]">Simple Steps</span> to Get Started
+                            3 <span className="text-[#00A8E4]">{t('contact.simpleSteps')}</span> {t('contact.toGetStarted')}
                         </h2>
-                        <h3 className="text-lg md:text-xl font-medium text-slate-600 mb-6 max-w-3xl mx-auto">We&apos;ve made it easy for you to transition from a manual "grind" to a streamlined, AI-powered operation. Here is what happens after you hit submit:</h3>
+                        <h3 className="text-lg md:text-xl font-medium text-slate-600 mb-6 max-w-3xl mx-auto">{t('contact.howItWorksDesc')}</h3>
                     </div>
 
                     <div ref={stepsContainerRef} className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
@@ -299,20 +299,20 @@ ${userMessage || 'No message provided'}
                         {[
                             {
                                 step: "01",
-                                title: "Submit Your Details",
-                                desc: "Fill out the form with your company name and contact info. Whether you are an existing shop or a new business, we want to know where you are in your journey.",
+                                title: t('contact.step1Title'),
+                                desc: t('contact.step1Desc'),
                                 icon: <UserOutlined />
                             },
                             {
                                 step: "02",
-                                title: "Sign Up for a Free Trial",
-                                desc: "Get full access to the APAI platform immediately. No strings attached—take 30 days to explore the VIN-driven quoting, NAGS integration, and digital work orders to see the impact on your bottom line.",
+                                title: t('contact.step2Title'),
+                                desc: t('contact.step2Desc'),
                                 icon: <CheckCircleOutlined />
                             },
                             {
                                 step: "03",
-                                title: "Custom Configuration",
-                                desc: "We’ll help you understand how to integrate your NAGS data and NHTSA VPIC access so your quoting process is 100% accurate from day one.",
+                                title: t('contact.step3Title'),
+                                desc: t('contact.step3Desc'),
                                 icon: <MailOutlined />
                             }
                         ].map((item, index) => (
@@ -336,21 +336,21 @@ ${userMessage || 'No message provided'}
                 <div className="w-full mb-32 bg-slate-50 rounded-[3rem] p-10 md:p-16 border border-slate-100">
                     <div className="flex flex-col lg:flex-row gap-16 items-center">
                         <div className="lg:w-2/5">
-                            <span className="text-[#00A8E4] font-bold tracking-[0.2em] uppercase text-xs mb-3 block">Why</span>
+                            <span className="text-[#00A8E4] font-bold tracking-[0.2em] uppercase text-xs mb-3 block">{t('contact.why')}</span>
                             <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 mb-6 leading-[1.1]">
-                                Connect with <span className="text-[#00A8E4]">APAI?</span>
+                                {t('contact.connectWith')} <span className="text-[#00A8E4]">APAI?</span>
                             </h2>
                             <p className="text-slate-500 text-lg leading-relaxed">
-                                Choosing the right software is a big decision for your shop. When you reach out to our team, you’re gaining more than just technical support—you’re gaining a partner in growth.
+                                {t('contact.whyConnectDesc')}
                             </p>
                         </div>
 
                         <div className="lg:w-3/5 grid grid-cols-1 sm:grid-cols-2 gap-6">
                             {[
-                                { title: "Expert Guidance", desc: "Speak with specialists who understand the specific challenges of the auto glass industry", icon: <BulbOutlined style={{ color: '#ffffff' }} /> },
-                                { title: "Tailored Solutions", desc: "Whether you have a single mobile unit or a multi-state operation, we show you how to set up Role-Based Management so your team can work independently.", icon: <SettingOutlined style={{ color: '#ffffff' }} /> },
-                                { title: "Zero-Pressure Demos", desc: "See exactly how the AI-driven VIN decoding works and how it can save you hours of manual cross-referencing every week.", icon: <PlaySquareOutlined style={{ color: '#ffffff' }} /> },
-                                { title: "Rapid Support", desc: "Have a specific question about NAGS integration or billing? Our support team is dedicated to getting your shop up and running without downtime.", icon: <ThunderboltOutlined style={{ color: '#ffffff' }} /> }
+                                { title: t('contact.expertGuidance'), desc: t('contact.expertGuidanceDesc'), icon: <BulbOutlined style={{ color: '#ffffff' }} /> },
+                                { title: t('contact.tailoredSolutions'), desc: t('contact.tailoredSolutionsDesc'), icon: <SettingOutlined style={{ color: '#ffffff' }} /> },
+                                { title: t('contact.zeroPressureDemos'), desc: t('contact.zeroPressureDemosDesc'), icon: <PlaySquareOutlined style={{ color: '#ffffff' }} /> },
+                                { title: t('contact.rapidSupport'), desc: t('contact.rapidSupportDesc'), icon: <ThunderboltOutlined style={{ color: '#ffffff' }} /> }
                             ].map((item, index) => (
                                 <div key={index} className="bg-[#00A8E4] p-6 rounded-[1.5rem] shadow-md transition-all hover:-translate-y-1 hover:shadow-lg shadow-cyan-500/20">
                                     <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl mb-4 border border-white/30 shadow-inner backdrop-blur-sm">

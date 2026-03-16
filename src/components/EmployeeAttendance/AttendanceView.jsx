@@ -12,6 +12,7 @@ import {
     CheckOutlined, CloseOutlined
 } from "@ant-design/icons";
 import dayjs from "dayjs";
+import { useTranslation } from "react-i18next";
 import { getAllAttendance, recordAttendance, bulkRecordAttendance } from "../../api/attendance";
 import AttendanceCalendarView from "./AttendanceCalendarView";
 import { getEmployees } from "../../api/getEmployees";
@@ -35,6 +36,7 @@ const MONTHS = [
 ];
 
 const AttendanceView = ({ token, isMobile }) => {
+    const { t } = useTranslation();
     const queryClient = useQueryClient();
     const [recordModalOpen, setRecordModalOpen] = useState(false);
     const [bulkModalOpen, setBulkModalOpen] = useState(false);
@@ -169,7 +171,7 @@ const AttendanceView = ({ token, isMobile }) => {
             if (!empMap[id]) {
                 empMap[id] = {
                     employeeId: id,
-                    employeeName: record.employeeName || `Employee ${id}`,
+                    employeeName: record.employeeName || `${t("attendance.employee")} ${id}`,
                     days: {},
                     totals: { P: 0, A: 0, L: 0, H: 0 },
                 };
@@ -315,7 +317,7 @@ const AttendanceView = ({ token, isMobile }) => {
     const handleExportCSV = () => {
         if (matrixData.length === 0) return;
         const dayHeaders = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-        let csv = "Employee," + dayHeaders.join(",") + ",Present,Absent,Late\n";
+        let csv = `${t("attendance.employee")},` + dayHeaders.join(",") + ",Present,Absent,Late\n";
         matrixData.forEach(emp => {
             const row = [emp.employeeName];
             dayHeaders.forEach(d => {
@@ -364,7 +366,7 @@ const AttendanceView = ({ token, isMobile }) => {
             return (
                 <Empty
                     image={Empty.PRESENTED_IMAGE_SIMPLE}
-                    description="No attendance records found"
+                    description={t("attendance.noRecordsFound")}
                     style={{ padding: 40 }}
                 >
                     <Button
@@ -378,7 +380,7 @@ const AttendanceView = ({ token, isMobile }) => {
                         }}
                         style={{ background: "#7c3aed", borderColor: "#7c3aed" }}
                     >
-                        Record First Attendance
+                        {t("attendance.recordFirstAttendance")}
                     </Button>
                 </Empty>
             );
@@ -453,7 +455,7 @@ const AttendanceView = ({ token, isMobile }) => {
                     <table className="w-full border-collapse text-[13px] border-spacing-0 border border-slate-200">
                         <thead>
                             <tr>
-                                <th className="sticky left-0 z-20 bg-slate-50 min-w-[200px] max-w-[220px] px-4 py-3 border-r-2 border-slate-200 font-bold text-xs uppercase tracking-wider text-slate-600">Employee</th>
+                                <th className="sticky left-0 z-20 bg-slate-50 min-w-[200px] max-w-[220px] px-4 py-3 border-r-2 border-slate-200 font-bold text-xs uppercase tracking-wider text-slate-600">{t("attendance.employee")}</th>
                                 {days.map(day => {
                                     const weekend = isWeekend(day);
                                     const isToday = isCurrentMonth && day === today;
@@ -482,7 +484,7 @@ const AttendanceView = ({ token, isMobile }) => {
                                         <div style={{ position: "sticky", left: 0, width: "100%", display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
                                             <Empty
                                                 image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                                description={<span style={{ color: "#94a3b8" }}>No attendance records for this month</span>}
+                                                description={<span style={{ color: "#94a3b8" }}>{t("attendance.noRecordsForMonth")}</span>}
                                             >
                                                 <Button
                                                     type="primary"
@@ -495,7 +497,7 @@ const AttendanceView = ({ token, isMobile }) => {
                                                     }}
                                                     style={{ background: "#7c3aed", borderColor: "#7c3aed" }}
                                                 >
-                                                    Record Attendance
+                                                    {t("attendance.recordAttendance")}
                                                 </Button>
                                             </Empty>
                                         </div>
@@ -603,8 +605,8 @@ const AttendanceView = ({ token, isMobile }) => {
             {/* ─── Header Container ─── */}
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 mb-4">
                 <div className="flex flex-wrap items-center gap-3">
-                    <h1 className="!text-[24px] md:!text-[30px] font-bold text-slate-900 m-0">Attendance</h1>
-                    <Tooltip title="View and manage employee attendance records" placement="right">
+                    <h1 className="!text-[24px] md:!text-[30px] font-bold text-slate-900 m-0">{t("attendance.title")}</h1>
+                    <Tooltip title={t("attendance.infoTooltip")} placement="right">
                         <InfoCircleOutlined className="text-slate-400 text-base cursor-pointer hover:text-violet-500 transition-colors" />
                     </Tooltip>
                     <div className="bg-white border p-1 rounded-lg flex">
@@ -614,7 +616,7 @@ const AttendanceView = ({ token, isMobile }) => {
                             onClick={() => setViewMode('list')}
                             size="small"
                         >
-                            List
+                            {t("attendance.list")}
                         </Button>
                         <Button
                             type={viewMode === 'calendar' ? 'primary' : 'text'}
@@ -622,7 +624,7 @@ const AttendanceView = ({ token, isMobile }) => {
                             onClick={() => setViewMode('calendar')}
                             size="small"
                         >
-                            Calendar
+                            {t("attendance.calendar")}
                         </Button>
                     </div>
                 </div>
@@ -638,21 +640,21 @@ const AttendanceView = ({ token, isMobile }) => {
                             setRecordModalOpen(true);
                         }}
                     >
-                        Record
+                        {t("attendance.recordAttendance")}
                     </Button>
                     <Button
                         icon={<TeamOutlined />}
                         className="flex-1 sm:flex-none"
                         onClick={() => { bulkForm.resetFields(); setBulkModalOpen(true); }}
                     >
-                        Bulk
+                        {t("attendance.bulk")}
                     </Button>
                     <Button
                         icon={<DownloadOutlined />}
                         className="flex-1 sm:flex-none"
                         onClick={handleExportCSV}
                     >
-                        Export
+                        {t("attendance.export")}
                     </Button>
                 </div>
             </div>
@@ -682,7 +684,7 @@ const AttendanceView = ({ token, isMobile }) => {
                         ))}
                     </Select>
                     <Select
-                        placeholder="All Employees"
+                        placeholder={t("attendance.allEmployees")}
                         allowClear
                         showSearch
                         optionFilterProp="children"
@@ -700,7 +702,7 @@ const AttendanceView = ({ token, isMobile }) => {
                     </Select>
                     <Input
                         prefix={<SearchOutlined className="text-slate-400" />}
-                        placeholder="Search name..."
+                        placeholder={t("attendance.searchName")}
                         allowClear
                         value={searchText}
                         onChange={e => setSearchText(e.target.value)}
@@ -714,7 +716,7 @@ const AttendanceView = ({ token, isMobile }) => {
                             <CheckOutlined className="text-lg" style={{ color: '#166534' }} />
                         </div>
                         <div>
-                            <div className="text-sm font-medium text-gray-800">Present Today</div>
+                            <div className="text-sm font-medium text-gray-800">{t("attendance.presentToday")}</div>
                             <div className="text-xs text-gray-400">{stats.todayPresent}</div>
                         </div>
                     </div>
@@ -723,7 +725,7 @@ const AttendanceView = ({ token, isMobile }) => {
                             <CloseOutlined className="text-lg" style={{ color: '#991b1b' }} />
                         </div>
                         <div>
-                            <div className="text-sm font-medium text-gray-800">Absent Today</div>
+                            <div className="text-sm font-medium text-gray-800">{t("attendance.absentToday")}</div>
                             <div className="text-xs text-gray-400">{stats.todayAbsent}</div>
                         </div>
                     </div>
@@ -732,7 +734,7 @@ const AttendanceView = ({ token, isMobile }) => {
                             <ClockCircleOutlined className="text-lg" style={{ color: '#854d0e' }} />
                         </div>
                         <div>
-                            <div className="text-sm font-medium text-gray-800">Late Today</div>
+                            <div className="text-sm font-medium text-gray-800">{t("attendance.lateToday")}</div>
                             <div className="text-xs text-gray-400">{stats.todayLate}</div>
                         </div>
                     </div>
@@ -743,7 +745,7 @@ const AttendanceView = ({ token, isMobile }) => {
             {loadingAttendance ? (
                 <div style={{ textAlign: "center", padding: 80 }}>
                     <Spin size="large" />
-                    <div style={{ marginTop: 12, color: "#94a3b8" }}>Loading attendance data...</div>
+                    <div style={{ marginTop: 12, color: "#94a3b8" }}>{t("attendance.loadingData")}</div>
                 </div>
             ) : viewMode === 'calendar' ? (
                 <AttendanceCalendarView
@@ -764,13 +766,13 @@ const AttendanceView = ({ token, isMobile }) => {
             <div className="mt-4 mb-4 px-2 sm:px-4 py-3">
                 <div className="flex flex-col gap-2 md:flex-row md:justify-between md:items-center">
                     <span className="text-sm text-gray-600">
-                        {matrixData.length} employee{matrixData.length !== 1 ? "s" : ""} · {monthName} {year}
+                        {matrixData.length} {t("attendance.employee").toLowerCase()}{matrixData.length !== 1 ? "s" : ""} · {monthName} {year}
                     </span>
                     <div className="flex flex-wrap gap-3 text-sm">
-                        <span>Total Records: <strong style={{ color: "#1e293b" }}>{stats.total}</strong></span>
-                        <span style={{ color: "#22c55e" }}>Present: <strong>{stats.present}</strong></span>
-                        <span style={{ color: "#ef4444" }}>Absent: <strong>{stats.absent}</strong></span>
-                        <span style={{ color: "#f59e0b" }}>Late: <strong>{stats.late}</strong></span>
+                        <span>{t("attendance.totalRecords")}: <strong style={{ color: "#1e293b" }}>{stats.total}</strong></span>
+                        <span style={{ color: "#22c55e" }}>{t("attendance.present")}: <strong>{stats.present}</strong></span>
+                        <span style={{ color: "#ef4444" }}>{t("attendance.absent")}: <strong>{stats.absent}</strong></span>
+                        <span style={{ color: "#f59e0b" }}>{t("attendance.late")}: <strong>{stats.late}</strong></span>
                     </div>
                 </div>
             </div>
@@ -779,22 +781,23 @@ const AttendanceView = ({ token, isMobile }) => {
             <Modal
                 title={
                     <Space>
-                        <span>Record Attendance</span>
+                        <span>{t("attendance.recordAttendance")}</span>
                     </Space>
                 }
                 open={recordModalOpen}
                 onCancel={() => setRecordModalOpen(false)}
                 onOk={handleRecordSubmit}
                 confirmLoading={recordMutation.isPending}
-                okText="Save"
+                okText={t("attendance.save")}
+                cancelText={t("attendance.cancel")}
                 okButtonProps={{ style: { background: "#2563eb", borderColor: "#2563eb" } }}
                 width={isMobile ? "95%" : 400}
                 destroyOnClose
             >
                 <Form form={recordForm} layout="vertical" style={{ marginTop: 16 }}>
-                    <Form.Item name="employeeId" label="Employee" rules={[{ required: true, message: "Select an employee" }]}>
+                    <Form.Item name="employeeId" label={t("attendance.employee")} rules={[{ required: true, message: t("attendance.selectEmployee") }]}>
                         <Select
-                            placeholder="Select employee"
+                            placeholder={t("attendance.selectEmployee")}
                             showSearch
                             optionFilterProp="children"
                             loading={loadingEmployees}
@@ -804,30 +807,30 @@ const AttendanceView = ({ token, isMobile }) => {
                             ))}
                         </Select>
                     </Form.Item>
-                    <Form.Item name="date" label="Date" rules={[{ required: true, message: "Select a date" }]}>
-                        <DatePicker style={{ width: "100%" }} />
+                    <Form.Item name="date" label={t("attendance.date")} rules={[{ required: true, message: t("attendance.selectDate") }]}>
+                        <DatePicker style={{ width: "100%" }} placeholder={t("attendance.selectDate")} />
                     </Form.Item>
-                    <Form.Item name="status" label="Status" rules={[{ required: true, message: "Select status" }]}>
+                    <Form.Item name="status" label={t("attendance.status")} rules={[{ required: true, message: t("attendance.selectStatus") }]}>
                         <Segmented
                             options={[
-                                { label: 'Present', value: 'PRESENT' },
-                                { label: 'Absent', value: 'ABSENT' },
-                                { label: 'Late', value: 'LATE' }
+                                { label: t("attendance.present"), value: 'PRESENT' },
+                                { label: t("attendance.absent"), value: 'ABSENT' },
+                                { label: t("attendance.late"), value: 'LATE' }
                             ]}
                             className="w-full bg-slate-100 p-1"
                             block
                         />
                     </Form.Item>
                     <div style={{ display: "flex", gap: 12 }}>
-                        <Form.Item name="clockInTime" label="Clock In" style={{ flex: 1 }}>
-                            <TimePicker format="HH:mm" style={{ width: "100%" }} />
+                        <Form.Item name="clockInTime" label={t("attendance.clockIn")} style={{ flex: 1 }}>
+                            <TimePicker format="HH:mm" style={{ width: "100%" }} placeholder={t("attendance.selectTime")} />
                         </Form.Item>
-                        <Form.Item name="clockOutTime" label="Clock Out" style={{ flex: 1 }}>
-                            <TimePicker format="HH:mm" style={{ width: "100%" }} />
+                        <Form.Item name="clockOutTime" label={t("attendance.clockOut")} style={{ flex: 1 }}>
+                            <TimePicker format="HH:mm" style={{ width: "100%" }} placeholder={t("attendance.selectTime")} />
                         </Form.Item>
                     </div>
-                    <Form.Item name="notes" label="Notes">
-                        <Input.TextArea rows={2} placeholder="Optional notes..." />
+                    <Form.Item name="notes" label={t("attendance.notes")}>
+                        <Input.TextArea rows={2} placeholder={t("attendance.optionalNotes")} />
                     </Form.Item>
                 </Form>
             </Modal>
@@ -837,35 +840,36 @@ const AttendanceView = ({ token, isMobile }) => {
                 title={
                     <Space>
                         <TeamOutlined style={{ color: "#2563eb" }} />
-                        <span>Bulk Record Attendance</span>
+                        <span>{t("attendance.bulkRecordAttendance")}</span>
                     </Space>
                 }
                 open={bulkModalOpen}
                 onCancel={() => setBulkModalOpen(false)}
                 onOk={handleBulkSubmit}
                 confirmLoading={bulkMutation.isPending}
-                okText="Apply to All"
+                okText={t("attendance.applyToAll")}
+                cancelText={t("attendance.cancel")}
                 okButtonProps={{ style: { background: "#2563eb", borderColor: "#2563eb" } }}
                 width={isMobile ? "95%" : 420}
                 destroyOnClose
             >
                 <Form form={bulkForm} layout="vertical" style={{ marginTop: 16 }}>
-                    <Form.Item name="shopId" label="Shop" rules={[{ required: true, message: "Select a shop" }]}>
-                        <Select placeholder="Select a shop" loading={loadingShops}>
+                    <Form.Item name="shopId" label={t("attendance.shop")} rules={[{ required: true, message: t("attendance.selectShop") }]}>
+                        <Select placeholder={t("attendance.selectShop")} loading={loadingShops}>
                             {shops.map(shop => (
                                 <Option key={shop.shopId} value={shop.shopId}>{shop.name || `Shop #${shop.shopId}`}</Option>
                             ))}
                         </Select>
                     </Form.Item>
-                    <Form.Item name="date" label="Date" rules={[{ required: true, message: "Select a date" }]}>
-                        <DatePicker style={{ width: "100%" }} />
+                    <Form.Item name="date" label={t("attendance.date")} rules={[{ required: true, message: t("attendance.selectDate") }]}>
+                        <DatePicker style={{ width: "100%" }} placeholder={t("attendance.selectDate")} />
                     </Form.Item>
-                    <Form.Item name="status" label="Status" rules={[{ required: true, message: "Select status" }]}>
+                    <Form.Item name="status" label={t("attendance.status")} rules={[{ required: true, message: t("attendance.selectStatus") }]}>
                         <Segmented
                             options={[
-                                { label: 'Present', value: 'PRESENT' },
-                                { label: 'Absent', value: 'ABSENT' },
-                                { label: 'Late', value: 'LATE' }
+                                { label: t("attendance.present"), value: 'PRESENT' },
+                                { label: t("attendance.absent"), value: 'ABSENT' },
+                                { label: t("attendance.late"), value: 'LATE' }
                             ]}
                             className="w-full bg-slate-100 p-1"
                             block
@@ -880,7 +884,7 @@ const AttendanceView = ({ token, isMobile }) => {
                         border: "1px solid #dbeafe",
                     }}>
                         <ThunderboltOutlined style={{ marginRight: 6 }} />
-                        This will apply the selected status to <strong>all employees</strong> in the specified shop for the given date.
+                        {t("attendance.bulkWarning")}
                     </div>
                 </Form>
             </Modal>

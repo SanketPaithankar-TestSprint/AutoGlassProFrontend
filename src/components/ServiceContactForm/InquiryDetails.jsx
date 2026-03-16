@@ -4,6 +4,7 @@ import { FileAddOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import useSecureImage from './hooks/useSecureImage';
 import { createQuoteFromInquiry } from '../../utils/createQuoteFromInquiry';
+import { useTranslation } from 'react-i18next';
 
 const { Title } = Typography;
 
@@ -26,6 +27,7 @@ const SecureImage = ({ attachment }) => {
 
 const InquiryDetails = ({ inquiry }) => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [creatingQuote, setCreatingQuote] = useState(false);
 
     const handleCreateQuote = async () => {
@@ -110,15 +112,15 @@ const InquiryDetails = ({ inquiry }) => {
                 </Descriptions.Item>
             </Descriptions>
 
-            <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
+            <div style={{ marginTop: 16, display: 'flex', justifyContent: 'center' }}>
                 <Button
                     type="primary"
                     icon={<FileAddOutlined />}
                     loading={creatingQuote}
                     onClick={handleCreateQuote}
-                    style={{ backgroundColor: '#7c3aed', borderColor: '#7c3aed' }}
+                    style={{ backgroundColor: '#2563eb', borderColor: '#2563eb' }}
                 >
-                    Create Quote
+                    {t('serviceInquiries.createQuote')}
                 </Button>
             </div>
         </Card>

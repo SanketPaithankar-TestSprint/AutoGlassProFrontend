@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useChat } from '../../context/ChatContext';
-import { Input, Button, List, Avatar, Badge, Dropdown } from 'antd';
+import { Input, Button, List, Avatar, Badge, Dropdown, Skeleton } from 'antd';
 import {
     SendOutlined, UserOutlined, DeleteOutlined, MessageOutlined,
     CloseOutlined, ArrowLeftOutlined, MoreOutlined, CheckOutlined, SearchOutlined,
@@ -38,6 +38,7 @@ const ShopChatPanel = () => {
     } = useChat();
 
     const [inputText, setInputText] = useState('');
+    const [messagesLoading, setMessagesLoading] = useState(false);
     const messagesEndRef = useRef(null);
 
     // Explicit mobile detection to avoid CSS breakpoint leakages
@@ -86,12 +87,21 @@ const ShopChatPanel = () => {
     };
 
     const activeConversation = conversations[activeConversationId];
+    const prevConversationId = useRef(activeConversationId);
 
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const scrollToBottom = (behavior = 'smooth') => {
+        messagesEndRef.current?.scrollIntoView({ behavior });
     };
 
-    useEffect(() => { scrollToBottom(); }, [activeConversation?.messages]);
+    useEffect(() => { 
+        const isNewChat = prevConversationId.current !== activeConversationId;
+        scrollToBottom(isNewChat ? 'auto' : 'smooth');
+        prevConversationId.current = activeConversationId;
+
+        if (activeConversation?.messages && activeConversation.messages.length > 0) {
+            setMessagesLoading(false);
+        }
+    }, [activeConversation?.messages, activeConversationId]);
 
     const handleSend = () => {
         if (!inputText.trim() || !activeConversationId) return;
@@ -102,6 +112,16 @@ const ShopChatPanel = () => {
     const handleSelectConversation = (id) => {
         setActiveConversationId(id);
         markAsRead(id);
+        // Guarantee the skeleton is visible for a short time if we have no messages
+        if (!conversations[id]?.messages || conversations[id].messages.length === 0) {
+            setMessagesLoading(true);
+            // Dismiss skeleton and show 'Empty State' if server history returns nothing
+            setTimeout(() => {
+                setMessagesLoading(false);
+            }, 800);
+        } else {
+            setMessagesLoading(false);
+        }
         loadHistory(id);
         setMobileView('chat');
     };
@@ -205,12 +225,12 @@ const ShopChatPanel = () => {
                         <button
                             onClick={exitSelectMode}
                             className="text-slate-500 hover:text-slate-700 transition-colors"
-                            aria-label="Cancel selection"
+                            aria-label={t('chat.cancelSelection')}
                         >
                             <CloseOutlined className="text-base" />
                         </button>
                         <span className="text-slate-700 font-semibold text-sm">
-                            {selectedIds.size} selected
+                            {selectedIds.size} {t('chat.selected')}
                         </span>
                     </div>
                     <div className="flex items-center gap-3">
@@ -219,7 +239,7 @@ const ShopChatPanel = () => {
                             className="font-semibold text-xs transition-colors hover:opacity-80 active:opacity-75"
                             style={{ color: '#0284c7' }}
                         >
-                            {allSelected ? 'Deselect all' : 'Select all'}
+                            {allSelected ? t('chat.deselectAll') : t('chat.selectAll')}
                         </button>
                         <button
                             disabled={selectedIds.size === 0}
@@ -231,7 +251,7 @@ const ShopChatPanel = () => {
                                     : { backgroundColor: '#e2e8f0', color: '#94a3b8', cursor: 'not-allowed' }
                             }
                         >
-                            Delete
+                            {t('chat.delete')}
                         </button>
                     </div>
                 </div>
@@ -240,7 +260,7 @@ const ShopChatPanel = () => {
                 <div className="flex-shrink-0">
                     {/* Title row */}
                     <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                        <h2 className="font-semibold text-lg text-slate-700">Conversations</h2>
+                        <h2 className="font-semibold text-lg text-slate-700">{t('chat.conversations')}</h2>
                         <div className="flex items-center gap-1">
                             <Badge
                                 status={connectionStatus === 'connected' ? 'success' : 'error'}
@@ -430,7 +450,7 @@ const ShopChatPanel = () => {
                                     {
                                         key: 'close',
                                         icon: <CloseOutlined />,
-                                        label: 'Close Chat',
+                                        label: t('chat.closeChat'),
                                         onClick: () => {
                                             setActiveConversationId(null);
                                             setMobileView('list');
@@ -439,10 +459,10 @@ const ShopChatPanel = () => {
                                     {
                                         key: 'delete',
                                         icon: <DeleteOutlined />,
-                                        label: 'Delete Conversation',
+                                        label: t('chat.deleteConversation'),
                                         danger: true,
                                         onClick: () => {
-                                            if (window.confirm('Are you sure you want to delete this conversation?')) {
+                                            if (window.confirm(t('chat.deleteConversationConfirm'))) {
                                                 deleteConversation(activeConversationId);
                                                 setMobileView('list');
                                             }
@@ -461,7 +481,16 @@ const ShopChatPanel = () => {
 
                     {/* ── Scrollable Messages ── */}
                     <div className="flex-1 min-h-0 overflow-y-auto p-4 bg-slate-50 space-y-4 custom-scrollbar">
-                        {activeConversation?.messages && activeConversation.messages.length > 0 ? (
+                        {messagesLoading ? (
+                            // Show skeletons while loading
+                            <>
+                                {[...Array(6)].map((_, idx) => (
+                                    <div key={idx} className={`flex ${idx % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
+                                        <Skeleton.Button active style={{ width: 180, height: 32, borderRadius: 16, marginBottom: 8 }} />
+                                    </div>
+                                ))}
+                            </>
+                        ) : activeConversation?.messages && activeConversation.messages.length > 0 ? (
                             activeConversation.messages.map((msg, idx) => {
                                 const isMe = msg.senderType === 'SHOP';
                                 return (

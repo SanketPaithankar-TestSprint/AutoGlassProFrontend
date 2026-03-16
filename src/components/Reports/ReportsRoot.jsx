@@ -149,7 +149,6 @@ const ReportsRoot = () => {
                                 placeholder={t('reports.selectDocType')}
                                 maxTagCount="responsive"
                                 className="w-full"
-                                getPopupContainer={(trigger) => trigger.parentElement}
                             >
                                 <Option value={0}>{t('reports.invoice')}</Option>
                                 <Option value={1}>{t('reports.workOrder')}</Option>
@@ -174,7 +173,6 @@ const ReportsRoot = () => {
                                     size="middle"
                                     className="w-full rounded-lg"
                                     allowClear={false}
-                                    getPopupContainer={(trigger) => trigger.parentElement}
                                     disabledDate={(current) => {
                                         // Disable dates after the "To" date
                                         return dateRange && dateRange[1] && current && current.isAfter(dateRange[1], 'day');
@@ -196,7 +194,6 @@ const ReportsRoot = () => {
                                     size="middle"
                                     className="w-full rounded-lg"
                                     allowClear={false}
-                                    getPopupContainer={(trigger) => trigger.parentElement}
                                     disabledDate={(current) => {
                                         // Disable dates before the "From" date
                                         return dateRange && dateRange[0] && current && current.isBefore(dateRange[0], 'day');
