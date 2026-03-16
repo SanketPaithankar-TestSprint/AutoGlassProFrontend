@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -25,11 +26,13 @@ ChartJS.register(
 );
 
 const RevenueTrendChart = ({ data }) => {
+    const { t } = useTranslation();
+    
     if (!data || data.length === 0) {
         return (
             <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 p-6 h-full flex items-center justify-center"
                 style={{ boxShadow: '0 4px 24px -4px rgba(0, 0, 0, 0.06)' }}>
-                <p className="text-slate-400">No revenue data available</p>
+                <p className="text-slate-400">{t('analytics.noRevenueData')}</p>
             </div>
         );
     }
@@ -40,7 +43,7 @@ const RevenueTrendChart = ({ data }) => {
         labels: dates.map(d => d.format('YYYY-MM-DD')),
         datasets: [
             {
-                label: 'Daily Revenue',
+                label: t('analytics.dailyRevenue'),
                 data: data.map(item => item.total),
                 fill: true,
                 backgroundColor: (context) => {
@@ -92,7 +95,7 @@ const RevenueTrendChart = ({ data }) => {
                         return dayjs(dateStr).format('MMM DD, YYYY');
                     },
                     label: function (context) {
-                        return `  Revenue: $${context.parsed.y.toLocaleString()}`;
+                        return `  ${t('analytics.revenue')}: $${context.parsed.y.toLocaleString()}`;
                     }
                 }
             },
@@ -149,12 +152,12 @@ const RevenueTrendChart = ({ data }) => {
             style={{ boxShadow: '0 4px 24px -4px rgba(0, 0, 0, 0.06)' }}>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 gap-2">
                 <div>
-                    <h3 className="text-sm sm:text-base font-bold text-slate-700">Revenue Trend</h3>
-                    <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">Daily cash collection overview</p>
+                    <h3 className="text-sm sm:text-base font-bold text-slate-700">{t('analytics.revenueTrend')}</h3>
+                    <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">{t('analytics.dailyCashCollectionOverview')}</p>
                 </div>
                 <div className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 rounded-lg self-start sm:self-auto">
                     <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
-                    <span className="text-xs font-medium text-indigo-600">Revenue</span>
+                    <span className="text-xs font-medium text-indigo-600">{t('analytics.revenue')}</span>
                 </div>
             </div>
             <div className="flex-1 min-h-[200px] sm:min-h-[250px]">

@@ -1,23 +1,26 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const JobStatusChart = ({ data }) => {
+    const { t } = useTranslation();
+    
     if (!data || data.length === 0) {
         return (
             <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 p-6 h-full flex items-center justify-center"
                 style={{ boxShadow: '0 4px 24px -4px rgba(0, 0, 0, 0.06)' }}>
-                <p className="text-slate-400">No job status data available</p>
+                <p className="text-slate-400">{t('analytics.noJobStatusData')}</p>
             </div>
         );
     }
 
     const documentTypeNames = {
-        0: 'Invoice',
-        1: 'Work Order',
-        2: 'Quote',
+        0: t('analytics.invoice'),
+        1: t('analytics.workOrder'),
+        2: t('analytics.quote'),
     };
 
     const statusColors = [
@@ -33,7 +36,7 @@ const JobStatusChart = ({ data }) => {
     const total = data.reduce((sum, item) => sum + item.count, 0);
 
     const chartData = {
-        labels: data.map(item => documentTypeNames[item.document_type] || `Type ${item.document_type}`),
+        labels: data.map(item => documentTypeNames[item.document_type] || `${t('analytics.type')} ${item.document_type}`),
         datasets: [
             {
                 data: data.map(item => item.count),
@@ -68,13 +71,13 @@ const JobStatusChart = ({ data }) => {
     return (
         <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 p-5 h-full flex flex-col"
             style={{ boxShadow: '0 4px 24px -4px rgba(0, 0, 0, 0.06)' }}>
-            <h3 className="text-base font-bold text-slate-700 mb-3">Job Status Distribution</h3>
+            <h3 className="text-base font-bold text-slate-700 mb-3">{t('analytics.jobStatusDistribution')}</h3>
 
             <div className="flex items-center justify-center mb-3">
                 <div className="relative w-36 h-36">
                     <Doughnut data={chartData} options={options} />
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Total</p>
+                        <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">{t('analytics.total')}</p>
                         <p className="text-base font-bold text-slate-800">{total}</p>
                     </div>
                 </div>
@@ -89,13 +92,13 @@ const JobStatusChart = ({ data }) => {
                                 style={{ backgroundColor: statusColors[index % statusColors.length] }}
                             ></div>
                             <span className="text-sm text-slate-500">
-                                {documentTypeNames[item.document_type] || `Type ${item.document_type}`}
+                                {documentTypeNames[item.document_type] || `${t('analytics.type')} ${item.document_type}`}
                             </span>
                         </div>
                         <div className="text-right">
                             <span className="text-sm font-semibold text-slate-700">{item.count}</span>
                             <span className="text-xs text-slate-400 ml-1">
-                                ({((item.count / total) * 100).toFixed(1)}%)
+                                ({total > 0 ? ((item.count / total) * 100).toFixed(1) : 0}%)
                             </span>
                         </div>
                     </div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -31,10 +32,11 @@ import dayjs from 'dayjs';
 const { Option } = Select;
 
 const RevenueChart = ({ data }) => {
+    const { t } = useTranslation();
     const [viewType, setViewType] = React.useState('daily');
 
     if (!data || data.length === 0) {
-        return <div className="h-64 flex items-center justify-center text-gray-400">No revenue data available</div>;
+        return <div className="h-64 flex items-center justify-center text-gray-400">{t('analytics.noRevenueData')}</div>;
     }
 
     // Process data based on viewType
@@ -76,7 +78,7 @@ const RevenueChart = ({ data }) => {
         labels: processedData.labels,
         datasets: [
             {
-                label: 'Total Revenue',
+                label: t('analytics.totalRevenue'),
                 data: processedData.values,
                 fill: viewType === 'daily',
                 backgroundColor: viewType === 'monthly'
@@ -177,7 +179,7 @@ const RevenueChart = ({ data }) => {
     return (
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 h-full flex flex-col">
             <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-slate-800">Revenue Trend</h3>
+                <h3 className="text-lg font-semibold text-slate-800">{t('analytics.revenueTrend')}</h3>
                 <Select
                     value={viewType}
                     onChange={setViewType}
@@ -185,8 +187,8 @@ const RevenueChart = ({ data }) => {
                     style={{ width: 100 }}
                     className="rounded"
                 >
-                    <Option value="daily">Daily</Option>
-                    <Option value="monthly">Monthly</Option>
+                    <Option value="daily">{t('analytics.daily')}</Option>
+                    <Option value="monthly">{t('analytics.monthly')}</Option>
                 </Select>
             </div>
             <div className="flex-1 min-h-[300px]">

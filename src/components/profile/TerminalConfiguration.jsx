@@ -132,8 +132,8 @@ const TerminalConfiguration = () => {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-800 tracking-tight flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-violet-100 text-violet-600">
-                            <AppstoreOutlined />
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-600 text-white">
+                            <CreditCardOutlined />
                         </div>
                         Valor Pay Terminals
                     </h2>
@@ -145,7 +145,8 @@ const TerminalConfiguration = () => {
                     type="primary"
                     icon={<PlusOutlined />}
                     onClick={openAddModal}
-                    className="bg-violet-600 hover:bg-violet-700 h-10 px-5 rounded-lg shadow-sm font-medium"
+                    style={{ background: '#2563eb', borderColor: '#2563eb' }}
+                    className="h-10 px-5 rounded-lg shadow-sm font-medium"
                 >
                     Add Device
                 </Button>
@@ -170,14 +171,14 @@ const TerminalConfiguration = () => {
                     dataSource={terminals}
                     renderItem={item => (
                         <List.Item>
-                            <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm hover:shadow-md hover:border-violet-200 transition-all duration-300 relative group overflow-hidden">
+                            <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm hover:shadow-md hover:border-blue-200 transition-all duration-300 relative group overflow-hidden">
                                 {/* Decorative top accent */}
-                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-400 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
                                 <div className="flex justify-between items-start mb-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-violet-50 flex items-center justify-center">
-                                            <ShopOutlined className="text-violet-500 text-lg" />
+                                        <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
+                                            <AppstoreOutlined className="text-blue-500 text-lg" />
                                         </div>
                                         <div>
                                             <h3 className="font-bold text-gray-800 text-base m-0 leading-tight truncate max-w-[150px]" title={item.terminalName}>
@@ -213,7 +214,7 @@ const TerminalConfiguration = () => {
                                     </div>
                                     <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-200/50">
                                         <Text type="secondary" className="text-xs font-semibold">TXN TYPE</Text>
-                                        <Tag color="purple" bordered={false} className="m-0 text-[10px] leading-3 py-1 font-semibold">{item.txnType}</Tag>
+                                        <Tag color="blue" bordered={false} className="m-0 text-[10px] leading-3 py-1 font-semibold">{item.txnType}</Tag>
                                     </div>
                                 </div>
                             </div>
@@ -252,7 +253,7 @@ const TerminalConfiguration = () => {
                                 label={<span className="text-gray-700 font-medium text-sm">App ID</span>}
                                 rules={[{ required: true, message: 'App ID is required' }]}
                             >
-                                <Input prefix={<IdcardOutlined className="text-gray-400" />} placeholder="Enter App ID" className="rounded-md bg-gray-50 border-gray-200 hover:border-violet-400 focus:border-violet-500" />
+                                <Input prefix={<IdcardOutlined className="text-gray-400" />} placeholder="Enter App ID" className="rounded-md bg-gray-50 border-gray-200 hover:border-blue-400 focus:border-blue-500" />
                             </Form.Item>
 
                             <Form.Item
@@ -260,7 +261,7 @@ const TerminalConfiguration = () => {
                                 label={<span className="text-gray-700 font-medium text-sm">App Key</span>}
                                 rules={[{ required: true, message: 'App Key is required' }]}
                             >
-                                <Input.Password prefix={<KeyOutlined className="text-gray-400" />} placeholder="Enter App Key" className="rounded-md bg-gray-50 border-gray-200 hover:border-violet-400 focus:border-violet-500" />
+                                <Input.Password prefix={<KeyOutlined className="text-gray-400" />} placeholder="Enter App Key" className="rounded-md bg-gray-50 border-gray-200 hover:border-blue-400 focus:border-blue-500" />
                             </Form.Item>
 
                             {/* EPI & Channel ID */}
@@ -269,7 +270,7 @@ const TerminalConfiguration = () => {
                                 label={<span className="text-gray-700 font-medium text-sm">EPI</span>}
                                 rules={[{ required: true, message: 'EPI is required' }]}
                             >
-                                <Input prefix={<CodeOutlined className="text-gray-400" />} placeholder="e.g. 2418559012" className="rounded-md bg-gray-50 border-gray-200 hover:border-violet-400 focus:border-violet-500" />
+                                <Input prefix={<CodeOutlined className="text-gray-400" />} placeholder="e.g. 2418559012" className="rounded-md bg-gray-50 border-gray-200 hover:border-blue-400 focus:border-blue-500" />
                             </Form.Item>
 
                             <Form.Item
@@ -277,7 +278,7 @@ const TerminalConfiguration = () => {
                                 label={<span className="text-gray-700 font-medium text-sm">Channel ID</span>}
                                 rules={[{ required: true, message: 'Channel ID is required' }]}
                             >
-                                <Input prefix={<CodeOutlined className="text-gray-400" />} placeholder="e.g. f1e2d3c4b5a6987654..." className="rounded-md bg-gray-50 border-gray-200 hover:border-violet-400 focus:border-violet-500" />
+                                <Input prefix={<CodeOutlined className="text-gray-400" />} placeholder="e.g. f1e2d3c4b5a6987654..." className="rounded-md bg-gray-50 border-gray-200 hover:border-blue-400 focus:border-blue-500" />
                             </Form.Item>
 
                             {/* Terminal Name & ISV */}
@@ -286,7 +287,7 @@ const TerminalConfiguration = () => {
                                 label={<span className="text-gray-700 font-medium text-sm">Terminal Name</span>}
                                 rules={[{ required: true, message: 'Terminal Name is required' }]}
                             >
-                                <Input prefix={<ShopOutlined className="text-gray-400" />} placeholder="e.g. TERM-POS-9921" className="rounded-md bg-gray-50 border-gray-200 hover:border-violet-400 focus:border-violet-500" />
+                                <Input prefix={<ShopOutlined className="text-gray-400" />} placeholder="e.g. TERM-POS-9921" className="rounded-md bg-gray-50 border-gray-200 hover:border-blue-400 focus:border-blue-500" />
                             </Form.Item>
 
                             <Form.Item
@@ -294,7 +295,7 @@ const TerminalConfiguration = () => {
                                 label={<span className="text-gray-700 font-medium text-sm">ISV</span>}
                                 rules={[{ required: true, message: 'ISV is required' }]}
                             >
-                                <Input prefix={<CodeOutlined className="text-gray-400" />} placeholder="e.g. ISV-CERT-8842-X" className="rounded-md bg-gray-50 border-gray-200 hover:border-violet-400 focus:border-violet-500" />
+                                <Input prefix={<CodeOutlined className="text-gray-400" />} placeholder="e.g. ISV-CERT-8842-X" className="rounded-md bg-gray-50 border-gray-200 hover:border-blue-400 focus:border-blue-500" />
                             </Form.Item>
 
                             {/* Txn Type & Version (readonly or default) */}
@@ -324,7 +325,8 @@ const TerminalConfiguration = () => {
                                 htmlType="submit"
                                 loading={isSaving}
                                 icon={<SaveOutlined />}
-                                className="bg-violet-600 hover:bg-violet-700 rounded-md font-medium shadow-sm transition-all duration-200"
+                                style={{ background: '#2563eb', borderColor: '#2563eb' }}
+                                className="rounded-md font-medium shadow-sm transition-all duration-200"
                             >
                                 {isSaving ? "Saving..." : (editingId ? "Update Device" : "Add Device")}
                             </Button>
@@ -366,15 +368,15 @@ const TerminalConfiguration = () => {
                     margin-right: 32px;
                 }
                 .custom-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
-                    color: #7c3aed !important;
+                    color: #2563eb !important;
                 }
                 .custom-tabs .ant-tabs-ink-bar {
-                    background: #7c3aed;
+                    background: #2563eb;
                     height: 3px;
                     border-radius: 3px 3px 0 0;
                 }
                 .custom-tabs .ant-tabs-tab:hover .ant-tabs-tab-btn {
-                    color: #8b5cf6;
+                    color: #3b82f6;
                 }
                 .custom-modal .ant-modal-content {
                     border-radius: 16px;

@@ -1,15 +1,18 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const IncomeBreakdownCard = ({ data }) => {
+    const { t } = useTranslation();
+    
     if (!data) {
         return (
             <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 p-6 h-full flex items-center justify-center"
                 style={{ boxShadow: '0 4px 24px -4px rgba(0, 0, 0, 0.06)' }}>
-                <p className="text-slate-400">No income data available</p>
+                <p className="text-slate-400">{t('analytics.noIncomeData')}</p>
             </div>
         );
     }
@@ -18,7 +21,7 @@ const IncomeBreakdownCard = ({ data }) => {
     const total = parts + labor + tax;
 
     const chartData = {
-        labels: ['Parts', 'Labor', 'Tax'],
+        labels: [t('analytics.parts'), t('analytics.labor'), t('analytics.tax')],
         datasets: [
             {
                 data: [parts, labor, tax],
@@ -55,21 +58,21 @@ const IncomeBreakdownCard = ({ data }) => {
     };
 
     const breakdown = [
-        { label: 'Parts', value: parts, color: 'bg-indigo-500' },
-        { label: 'Labor', value: labor, color: 'bg-emerald-500' },
-        { label: 'Tax', value: tax, color: 'bg-amber-500' },
+        { label: t('analytics.parts'), value: parts, color: 'bg-indigo-500' },
+        { label: t('analytics.labor'), value: labor, color: 'bg-emerald-500' },
+        { label: t('analytics.tax'), value: tax, color: 'bg-amber-500' },
     ];
 
     return (
         <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 p-5 h-full flex flex-col"
             style={{ boxShadow: '0 4px 24px -4px rgba(0, 0, 0, 0.06)' }}>
-            <h3 className="text-base font-bold text-slate-700 mb-2">Income Breakdown</h3>
+            <h3 className="text-base font-bold text-slate-700 mb-2">{t('analytics.incomeBreakdown')}</h3>
 
             <div className="flex-1 flex items-center justify-center">
                 <div className="relative w-36 h-36">
                     <Doughnut data={chartData} options={options} />
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Total</p>
+                        <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">{t('analytics.total')}</p>
                         <p className="text-base font-bold text-slate-800">${total.toLocaleString()}</p>
                     </div>
                 </div>

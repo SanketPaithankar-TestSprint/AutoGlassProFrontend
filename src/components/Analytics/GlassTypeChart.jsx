@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -20,11 +21,13 @@ ChartJS.register(
 );
 
 const GlassTypeChart = ({ data }) => {
+    const { t } = useTranslation();
+    
     if (!data || data.length === 0) {
         return (
             <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 p-6 h-full flex items-center justify-center"
                 style={{ boxShadow: '0 4px 24px -4px rgba(0, 0, 0, 0.06)' }}>
-                <p className="text-slate-400">No glass type data available</p>
+                <p className="text-slate-400">{t('analytics.noGlassTypeData')}</p>
             </div>
         );
     }
@@ -72,7 +75,7 @@ const GlassTypeChart = ({ data }) => {
                 cornerRadius: 10,
                 callbacks: {
                     label: function (context) {
-                        return `Count: ${context.parsed.x}`;
+                        return `${t('analytics.count')}: ${context.parsed.x}`;
                     }
                 }
             },
@@ -108,9 +111,9 @@ const GlassTypeChart = ({ data }) => {
         <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/50 p-4 sm:p-5 lg:p-6 h-full flex flex-col overflow-hidden"
             style={{ boxShadow: '0 4px 24px -4px rgba(0, 0, 0, 0.06)' }}>
             <div className="mb-3 sm:mb-4">
-                <h3 className="text-sm sm:text-base font-bold text-slate-700">Glass Type Breakdown</h3>
+                <h3 className="text-sm sm:text-base font-bold text-slate-700">{t('analytics.glassTypeBreakdown')}</h3>
                 <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">
-                    Total Parts Installed: <span className="font-semibold text-slate-600">{total}</span>
+                    {t('analytics.totalPartsInstalled')}: <span className="font-semibold text-slate-600">{total}</span>
                 </p>
             </div>
 

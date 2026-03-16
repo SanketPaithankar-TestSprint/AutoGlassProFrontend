@@ -3,11 +3,13 @@ import { DatePicker, Button, Card, message, Spin, Empty, Select, Tooltip } from 
 import { FileTextOutlined, DownloadOutlined, SearchOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { getSalesReport } from '../../api/getSalesReport';
+import { useTranslation } from 'react-i18next';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
 
 const ReportsRoot = () => {
+    const { t } = useTranslation();
     const [dateRange, setDateRange] = useState([
         dayjs().subtract(1, 'month'),
         dayjs()
@@ -26,7 +28,7 @@ const ReportsRoot = () => {
         console.log('[ReportsRoot] Date range:', dateRange);
 
         if (!dateRange || dateRange.length !== 2) {
-            message.warning('Please select a date range');
+            message.warning(t('reports.pleaseSelectDateRange'));
             return;
         }
 
@@ -57,7 +59,7 @@ const ReportsRoot = () => {
             for (const key of Object.keys(localStorage)) {
                 console.log(`[ReportsRoot] ${key}:`, localStorage.getItem(key)?.substring(0, 200));
             }
-            message.error('User ID not found. Please log in again.');
+            message.error(t('reports.userIdNotFound'));
             return;
         }
 
@@ -79,10 +81,10 @@ const ReportsRoot = () => {
             setPdfUrl(url);
             setPdfBlob(blob);
 
-            message.success('Report generated successfully!');
+            message.success(t('reports.reportGeneratedSuccessfully'));
         } catch (error) {
             console.error('[ReportsRoot] Error generating report:', error);
-            message.error(error.message || 'Failed to generate report');
+            message.error(error.message || t('reports.failedToGenerateReport'));
         } finally {
             setLoading(false);
         }
@@ -90,7 +92,7 @@ const ReportsRoot = () => {
 
     const handleDownload = () => {
         if (!pdfBlob) {
-            message.warning('No report to download. Please generate a report first.');
+            message.warning(t('reports.noReportToDownload'));
             return;
         }
 
@@ -106,7 +108,7 @@ const ReportsRoot = () => {
         link.click();
         document.body.removeChild(link);
 
-        message.success('Report downloaded!');
+        message.success(t('reports.reportDownloaded'));
     };
 
     // Cleanup URL on unmount
@@ -124,9 +126,9 @@ const ReportsRoot = () => {
                 {/* Header */}
                 <div className="mb-4 sm:mb-6 md:mb-8 flex items-center gap-2">
                     <h1 className="!text-[30px] sm:text-xl md:text-2xl font-bold text-slate-900 m-0">
-                        Sales Reports
+                        {t('reports.salesReports')}
                     </h1>
-                    <Tooltip title="Generate and download sales breakdown reports" placement="right">
+                    <Tooltip title={t('reports.generateAndDownloadTooltip')} placement="right">
                         <InfoCircleOutlined className="text-slate-400 text-base cursor-pointer hover:text-violet-500 transition-colors" />
                     </Tooltip>
                 </div>
@@ -137,21 +139,21 @@ const ReportsRoot = () => {
                         {/* Document Type Filter */}
                         <div className="w-full">
                             <label className="block text-[10px] sm:text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">
-                                Document Type
+                                {t('reports.documentType')}
                             </label>
                             <Select
                                 mode="multiple"
                                 value={selectedDocTypes}
                                 onChange={setSelectedDocTypes}
                                 style={{ width: '100%' }}
-                                placeholder="Select Doc Type"
+                                placeholder={t('reports.selectDocType')}
                                 maxTagCount="responsive"
                                 className="w-full"
                                 getPopupContainer={(trigger) => trigger.parentElement}
                             >
-                                <Option value={0}>Invoice</Option>
-                                <Option value={1}>Work Order</Option>
-                                <Option value={2}>Quote</Option>
+                                <Option value={0}>{t('reports.invoice')}</Option>
+                                <Option value={1}>{t('reports.workOrder')}</Option>
+                                <Option value={2}>{t('reports.quote')}</Option>
                             </Select>
                         </div>
 
@@ -159,7 +161,7 @@ const ReportsRoot = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
                                 <label className="block text-[10px] sm:text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">
-                                    From Date
+                                    {t('reports.fromDate')}
                                 </label>
                                 <DatePicker
                                     value={dateRange ? dateRange[0] : null}
@@ -181,7 +183,7 @@ const ReportsRoot = () => {
                             </div>
                             <div>
                                 <label className="block text-[10px] sm:text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide">
-                                    To Date
+                                    {t('reports.toDate')}
                                 </label>
                                 <DatePicker
                                     value={dateRange ? dateRange[1] : null}
@@ -213,7 +215,7 @@ const ReportsRoot = () => {
                                 loading={loading}
                                 className="w-full sm:flex-1 h-9 sm:h-10 rounded-lg bg-gradient-to-r from-violet-600 to-purple-600 border-0 shadow-md hover:shadow-lg transition-all duration-300 text-xs sm:text-sm"
                             >
-                                Generate Report
+                                {t('reports.generateReport')}
                             </Button>
 
                             <Button
@@ -223,7 +225,7 @@ const ReportsRoot = () => {
                                 disabled={!pdfBlob}
                                 className="w-full sm:flex-1 h-9 sm:h-10 rounded-lg border-violet-300 text-violet-600 hover:bg-violet-50 hover:border-violet-400 transition-all duration-300 text-xs sm:text-sm"
                             >
-                                Download PDF
+                                {t('reports.downloadPDF')}
                             </Button>
                         </div>
                     </div>
@@ -237,13 +239,13 @@ const ReportsRoot = () => {
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-12 sm:py-16 md:py-20">
                             <Spin size="large" />
-                            <p className="mt-4 text-xs sm:text-sm text-slate-500">Generating report...</p>
+                            <p className="mt-4 text-xs sm:text-sm text-slate-500">{t('reports.generatingReport')}</p>
                         </div>
                     ) : pdfUrl ? (
                         <div className="w-full" style={{ height: 'calc(100vh - 280px)', minHeight: '400px' }}>
                             <iframe
                                 src={pdfUrl}
-                                title="Sales Report PDF"
+                                title={t('reports.salesReportPDF')}
                                 className="w-full h-full border-0"
                                 style={{ borderRadius: '0 0 12px 12px' }}
                             />
@@ -254,7 +256,7 @@ const ReportsRoot = () => {
                                 image={Empty.PRESENTED_IMAGE_SIMPLE}
                                 description={
                                     <span className="text-slate-400 text-xs sm:text-sm px-4 text-center block">
-                                        Select a date range and click "Generate Report" to view the sales breakdown
+                                        {t('reports.selectDateRangeAndGenerate')}
                                     </span>
                                 }
                             />
