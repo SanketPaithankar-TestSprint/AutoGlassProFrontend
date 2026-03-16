@@ -20,7 +20,7 @@ const LanguageToggle = ({ compact = false, dark = false, sidebarMode = false, mo
 
     const items = LANGUAGE_OPTIONS.map(opt => ({
         key: opt.key,
-        label: <div className="whitespace-nowrap px-1">{opt.long}</div>,
+        label: <div>{opt.long}</div>,
     }));
 
     const btnClasses = dark
@@ -56,12 +56,6 @@ const LanguageToggle = ({ compact = false, dark = false, sidebarMode = false, mo
 
     return (
         <>
-            <style>{`
-                .language-action-menu .ant-dropdown-menu-item {
-                    width: max-content;
-                    min-width: 130px;
-                }
-            `}</style>
 
             {sidebarMode ? (
                 <Dropdown overlayClassName="language-action-menu" menu={dropdownMenu} placement="topLeft" trigger={['click']}>
@@ -79,13 +73,14 @@ const LanguageToggle = ({ compact = false, dark = false, sidebarMode = false, mo
                     </div>
                 </Dropdown>
             ) : (
-                <Dropdown overlayClassName="language-action-menu" menu={dropdownMenu} placement="bottomRight" trigger={['click']}>
-                    <Button
-                        shape="circle"
-                        className={`shrink-0 flex items-center justify-center font-bold shadow-sm transition-colors ${btnClasses} ${compact ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'}`}
-                    >
-                        {activeOption?.short}
-                    </Button>
+                <Dropdown overlayClassName="language-action-menu" menu={dropdownMenu} placement="bottomRight" trigger={['click']} arrow={{ pointAtCenter: true }}>
+            <Button
+                type="text"
+                className={`nav-link-style !flex items-center gap-1.5 !bg-transparent !border-0 !shadow-none hover:!text-[#7E5CFE] transition-colors duration-300 ${compact ? '!h-8 !px-2 !text-sm' : '!h-9 !px-[0.2rem] !m-0 !py-0'}`}
+            >
+                <span className="leading-none font-semibold">{activeOption?.long.split(' ')[0]}</span>
+                <DownOutlined className="text-[10px] opacity-70" />
+            </Button>
                 </Dropdown>
             )}
         </>

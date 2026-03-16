@@ -3,8 +3,9 @@
   background: transparent !important;
   backdrop-filter: blur(0);
   -webkit-backdrop-filter: blur(0);
-  transition: all 0.5s ease;
+  transition: all 0.5s ease-in-out;
   border-bottom: 1px solid transparent;
+  z-index: 9999 !important;
 }
 
 .ant-layout-header.glass-navbar.scrolled {
@@ -12,7 +13,7 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px !important;
 }
 
 /* Clean light background for main page */
@@ -35,20 +36,65 @@ body,
   color: #fff !important;
 }
 
-.nav-link {
-  color: #334155 !important;
+.nav-link,
+.nav-link-style {
+  color: #212B36 !important;
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 1.1rem;
-  padding: 0.5rem 0.2rem;
+  padding: 0;
   margin: 0 0.5rem;
   position: relative;
-  transition: color 0.3s ease;
+  transition: all 0.5s ease-in-out;
   border-radius: 4px;
-  transition: color 0.2s, background 0.2s;
-  display: block;
+  display: flex;
+  align-items: center;
+  line-height: 1;
+  height: 2.25rem; /* Standardizing height to 36px (h-9) */
 }
 
+/* Language Dropdown Menu Refinement */
+.language-action-menu .ant-dropdown-menu {
+  padding: 8px !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  min-width: 160px !important;
+}
+
+.language-action-menu .ant-dropdown-menu-item {
+  padding: 12px 16px !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+  margin: 4px 0 !important;
+  position: relative !important;
+}
+
+/* Bold Charcoal Text */
+.language-action-menu .ant-dropdown-menu-item div {
+  color: #212B36 !important;
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+}
+
+/* Remove default blue background */
+.language-action-menu .ant-dropdown-menu-item-active,
+.language-action-menu .ant-dropdown-menu-item:hover,
+.language-action-menu .ant-dropdown-menu-item-selected {
+  background-color: #f4f6f8 !important;
+}
+
+/* Separator line between items */
+.language-action-menu .ant-dropdown-menu-item:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 8px;
+  right: 8px;
+  height: 1px;
+  background-color: rgba(0, 0, 0, 0.06);
+  pointer-events: none;
+}
 
 .nav-link:hover,
 .nav-link:focus,
@@ -65,7 +111,7 @@ body,
   width: 0;
   height: 3px;
   background: #7E5CFE;
-  transition: width 0.3s ease;
+  transition: width 0.5s ease-in-out;
   border-radius: 2px;
 }
 
@@ -110,6 +156,27 @@ body,
 
 .animate-fadeIn {
   animation: fadeIn 0.2s ease-out;
+}
+
+/* Rainbow Button Animation */
+@keyframes rainbow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.btn-rainbow {
+  background: linear-gradient(90deg, #A855F7, #3AB6FF, #82D955, #A855F7) !important;
+  background-size: 300% 300% !important;
+  animation: rainbow 3s ease infinite !important;
+  border: none !important;
+  color: white !important;
+  transition: transform 0.3s ease !important;
+}
+
+.btn-rainbow:hover {
+  transform: scale(1.05) !important;
+  box-shadow: 0 10px 20px rgba(168, 85, 247, 0.3) !important;
 }
 
 /* Global Section Spacing for Premium Depth */

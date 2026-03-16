@@ -16,6 +16,8 @@ const { Header: AntHeader } = Layout;
 // ProfileDropdown component
 const ProfileDropdown = ({ onLogout }) => {
   const { t } = useTranslation();
+  const [isOpen, setIsOpen] = useState(false);
+
   const items = [
     {
       key: "profile",
@@ -48,6 +50,7 @@ const ProfileDropdown = ({ onLogout }) => {
       menu={{ items }}
       placement="bottomRight"
       trigger={["click"]}
+      onOpenChange={(open) => setIsOpen(open)}
     >
       <Button
         type="text"
@@ -56,7 +59,7 @@ const ProfileDropdown = ({ onLogout }) => {
       >
         <span className="inline-flex items-center gap-1">
           <span>{t('auth.profile')}</span>
-          <DownOutlined className="text-[10px]" />
+          <DownOutlined className={`text-[10px] transition-transform duration-500 ${isOpen ? 'rotate-180' : ''}`} />
         </span>
       </Button>
     </Dropdown>
@@ -164,10 +167,10 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
   const NavLink = ({ label, href }) => (
     <Link
       to={href}
-      className="nav-link tracking-wide"
+      className="nav-link tracking-wide flex items-center"
       style={{ WebkitTapHighlightColor: "transparent" }}
     >
-      {label}
+      <span className="leading-none">{label}</span>
     </Link>
   );
 
@@ -186,12 +189,12 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
         style={{ paddingInline: 0, minWidth: 0 }}
       >
         {/* Left: Logo + small tag */}
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0 ml-4">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 ml-4 h-full">
           <Link
             to="/"
             className="flex items-center gap-2 hover:scale-[1.02] transition-transform duration-150 min-w-0"
           >
-            <Logo className="w-24 sm:w-28 h-auto min-w-0" />
+            <Logo className="w-24 sm:w-28 h-9 min-w-0 object-contain" />
           </Link>
         </div>
 
@@ -199,7 +202,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
         <nav className="hidden lg:flex flex-1 justify-center min-w-0">
           <ul className="flex items-center gap-4 sm:gap-8 xl:gap-12 group/navlink min-w-0 m-0 p-0">
             {menuItems.map((item) => (
-              <li key={item.key} className="list-none min-w-0 flex items-center h-full">
+              <li key={item.key} className="list-none min-w-0 flex items-center">
                 <NavLink label={item.label} href={item.href} />
               </li>
             ))}
@@ -211,18 +214,11 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
           <div className="hidden lg:flex ml-auto min-w-0 items-center gap-2 sm:gap-4 pr-6">
             <LanguageToggle />
             <Button
-              type="text"
-              className="!h-9 !px-2 sm:!px-3 !text-slate-700 hover:!text-[#7E5CFE] !bg-transparent hover:!bg-transparent !border-0 focus:!outline-none focus:!ring-0 focus:!shadow-none hover:!shadow-none active:!shadow-none transition-colors duration-300 !text-[1.1rem]"
-              onClick={() => navigate('/auth', { state: { mode: 'signin' } })}
-            >
-              {t('auth.login')}
-            </Button>
-            <Button
               type="primary"
-              onClick={() => navigate('/auth', { state: { mode: 'signup' } })}
-              className="relative !h-9 !px-6 !rounded-full !border-0 !bg-[#7E5CFE] hover:!bg-[#6a4deb] !text-white shadow-lg shadow-[#7E5CFE]/30 transition-all duration-300 hover:scale-105"
+              onClick={() => navigate('/auth', { state: { mode: 'signin' } })}
+              className="btn-rainbow !h-9 !px-8 !rounded-full font-semibold text-[1.1rem] !flex items-center justify-center"
             >
-              <span className="relative font-semibold text-[1.1rem]">{t('auth.signUp')}</span>
+              <span className="leading-none">{t('auth.login')}</span>
             </Button>
           </div>
         ) : (
@@ -277,7 +273,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
           placement="right"
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
-          styles={{ body: { padding: 0, background: "#f7f7fa", borderRadius: '16px 0 0 16px' } }}
+          styles={{ body: { padding: 0, background: "#f7f7fa", borderRadius: '24px 0 0 24px' } }}
           maskClosable
           destroyOnClose
           className="ap-header-drawer"
@@ -333,24 +329,13 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
             {!isAuthed && (
               <div className="px-4 pt-4 border-t border-slate-200 mt-4">
                 <Button
-                  className="w-full !h-10 !text-violet-600 !bg-white hover:!bg-violet-50 !border !border-violet-400 !rounded-lg text-base font-semibold"
+                  className="btn-rainbow w-full !h-12 !rounded-lg text-base font-semibold"
                   onClick={() => {
                     setDrawerOpen(false);
                     navigate('/auth', { state: { mode: 'signin' } });
                   }}
                 >
                   {t('auth.login')}
-                </Button>
-                <Button
-                  type="primary"
-                  onClick={() => {
-                    setDrawerOpen(false);
-                    navigate('/auth', { state: { mode: 'signup' } });
-                  }}
-                  className="w-full !h-10 !mt-2 !rounded-lg !bg-[#7E5CFE] hover:!bg-[#6a4deb] !border-0 !text-white text-base font-semibold shadow-lg"
-                  style={{ boxShadow: '0 4px 14px 0 rgba(126,92,254,0.4)' }}
-                >
-                  {t('auth.signUp')}
                 </Button>
               </div>
             )}
@@ -369,7 +354,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
           placement="right"
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
-          styles={{ body: { padding: 0, background: "#f7f7fa", borderRadius: '16px 0 0 16px' } }}
+          styles={{ body: { padding: 0, background: "#f7f7fa", borderRadius: '24px 0 0 24px' } }}
           maskClosable
           destroyOnClose
           className="ap-header-drawer"
@@ -394,24 +379,13 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
 
             <div className="px-4 pt-4 border-t border-slate-200 mt-4">
               <Button
-                className="w-full !h-10 !text-violet-600 !bg-white hover:!bg-violet-50 !border !border-violet-400 !rounded-lg text-base font-semibold"
+                className="btn-rainbow w-full !h-12 !rounded-lg text-base font-semibold"
                 onClick={() => {
                   setDrawerOpen(false);
                   navigate('/auth', { state: { mode: 'signin' } });
                 }}
               >
                 {t('auth.login')}
-              </Button>
-              <Button
-                type="primary"
-                onClick={() => {
-                  setDrawerOpen(false);
-                  navigate('/auth', { state: { mode: 'signup' } });
-                }}
-                className="w-full !h-10 !mt-2 !rounded-lg !bg-[#7E5CFE] hover:!bg-[#6a4deb] !border-0 !text-white text-base font-semibold shadow-lg"
-                style={{ boxShadow: '0 4px 14px 0 rgba(126,92,254,0.4)' }}
-              >
-                {t('auth.signUp')}
               </Button>
             </div>
           </nav>
