@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Input, Button, Collapse, Typography, Space, List, Tag, Select, Popconfirm, message, Skeleton, Badge } from 'antd';
+import { Card, Input, Button, Collapse, Typography, Space, List, Tag, Select, Popconfirm, message, Skeleton, Badge, Switch } from 'antd';
 import { SaveOutlined, DeleteOutlined, PlusOutlined, DeleteTwoTone, RobotOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
-import { getShopProxyKb, upsertShopProxyKb, deleteShopProxyKb } from '../../api/shopProxyKbApi';
+import { getShopProxyKb, upsertShopProxyKb, updateShopProxyKb, deleteShopProxyKb } from '../../api/shopProxyKbApi';
 
 const { TextArea } = Input;
 const { Title, Text, Paragraph } = Typography;
@@ -35,6 +35,7 @@ const ShopProxyKnowledgeBase = () => {
     
     // Core state
     const [shopContext, setShopContext] = useState('');
+    const [enableAiResponses, setEnableAiResponses] = useState(false);
     const [intentResponses, setIntentResponses] = useState({});
     
     // UI state for adding new responses
@@ -49,6 +50,7 @@ const ShopProxyKnowledgeBase = () => {
                 if (res && res.status === "retrieved") {
                     setConfigExists(true);
                     setShopContext(res.shop_context || '');
+                    setEnableAiResponses(res.enable_ai_responses === true);
                     // Normalize intent mappings
                     const incomingIntents = res.intent_responses || {};
                     let initIntents = {};
@@ -92,6 +94,7 @@ const ShopProxyKnowledgeBase = () => {
         try {
             const payload = {
                 shop_context: shopContext.trim(),
+                enable_ai_responses: enableAiResponses,
                 intent_responses: intentResponses
             };
             
@@ -119,6 +122,7 @@ const ShopProxyKnowledgeBase = () => {
             
             // Reset to empty
             setShopContext('');
+            setEnableAiResponses(false);
             let emptyIntents = {};
             INTENT_DICTIONARY.forEach(intent => { emptyIntents[intent.key] = []; });
             setIntentResponses(emptyIntents);
@@ -218,6 +222,27 @@ const ShopProxyKnowledgeBase = () => {
                         placeholder="e.g., 'Apai Auto Glass is a reliable local shop in NY specializing in dynamic windshield replacement. We focus on OEM glass and fast service...'"
                         className="rounded-lg shadow-inner bg-slate-50 border-slate-300"
                     />
+                </div>
+
+                <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+                    <div className="flex flex-col">
+                        <Text className="font-semibold text-[15px]">Enable AI Responses</Text>
+                        <Text className="text-slate-500 text-xs">
+                            When enabled, the AI will automatically reply to customer inquiries using the knowledge base below.
+                        </Text>
+                    </div>
+                    <Space size="middle">
+                        {enableAiResponses ? (
+                            <Tag color="success" className="m-0">Active</Tag>
+                        ) : (
+                            <Tag color="default" className="m-0">Disabled</Tag>
+                        )}
+                        <Switch 
+                            checked={enableAiResponses} 
+                            onChange={(checked) => setEnableAiResponses(checked)}
+                            className={enableAiResponses ? 'bg-green-500' : 'bg-slate-300'}
+                        />
+                    </Space>
                 </div>
             </Card>
 
