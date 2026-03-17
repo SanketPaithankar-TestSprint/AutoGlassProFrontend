@@ -1,8 +1,76 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useChat } from '../../context/ChatContext';
 import { Input, Button, Badge, Avatar } from 'antd';
-import { MessageOutlined, CloseOutlined, SendOutlined, UserOutlined, ShopOutlined } from '@ant-design/icons';
+import { MessageOutlined, CloseOutlined, SendOutlined, UserOutlined, ShopOutlined, RobotOutlined } from '@ant-design/icons';
 import moment from 'moment';
+
+const AiOptionsRenderer = ({ optionsData, themeColor, onSelect }) => {
+    const [selectedMulti, setSelectedMulti] = useState([]);
+
+    if (!optionsData || !optionsData.options || optionsData.options.length === 0) return null;
+
+    const { multiple, options } = optionsData;
+
+    if (multiple) {
+        const handleToggle = (optVal) => {
+            setSelectedMulti(prev => prev.includes(optVal) ? prev.filter(v => v !== optVal) : [...prev, optVal]);
+        };
+
+        const handleSubmit = () => {
+            if (selectedMulti.length > 0) {
+                onSelect(selectedMulti.join(' '));
+                setSelectedMulti([]); 
+            }
+        };
+
+        return (
+            <div className="mt-2 flex flex-col gap-2 bg-white/60 p-3 rounded-xl border border-slate-200 shadow-sm transition-all">
+                {options.map((opt, i) => {
+                    const val = opt.name || opt.desc || opt.id;
+                    const isSelected = selectedMulti.includes(val);
+                    return (
+                        <label key={i} className="flex items-center gap-2 text-[13px] text-slate-700 cursor-pointer hover:bg-slate-50 p-1.5 rounded-lg transition-colors">
+                            <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => handleToggle(val)}
+                                className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-600 cursor-pointer"
+                                style={{ accentColor: themeColor || '#7E5CFE' }}
+                            />
+                            <span className="leading-tight">{val}</span>
+                        </label>
+                    );
+                })}
+                <button
+                    onClick={handleSubmit}
+                    disabled={selectedMulti.length === 0}
+                    className="mt-2 py-2 px-4 rounded-lg text-white text-sm font-semibold transition-opacity disabled:opacity-50 w-full hover:opacity-90 active:scale-95 duration-150"
+                    style={{ backgroundColor: themeColor || '#7E5CFE' }}
+                >
+                    Submit Selection
+                </button>
+            </div>
+        );
+    }
+
+    return (
+        <div className="mt-2 flex flex-wrap gap-2">
+            {options.map((opt, i) => {
+                const val = opt.name || opt.desc || opt.id;
+                return (
+                    <button
+                        key={i}
+                        onClick={() => onSelect(val)}
+                        className="py-1.5 px-4 bg-white border border-slate-200 rounded-full text-[13px] font-medium text-slate-700 hover:bg-slate-50 hover:shadow-sm active:scale-95 transition-all text-left shadow-sm mt-1"
+                        style={{ borderColor: themeColor || '#e2e8f0', color: themeColor || '#475569' }}
+                    >
+                        {val}
+                    </button>
+                );
+            })}
+        </div>
+    );
+};
 
 const CustomerChatWidget = ({ themeColor, businessName, customerName, customerEmail }) => {
     const {
@@ -254,38 +322,56 @@ const CustomerChatWidget = ({ themeColor, businessName, customerName, customerEm
                                     messages.map((msg, idx) => {
                                         // SenderType 'SHOP' means incoming for us
                                         // Use case-insensitive check for robustness
-                                        const isShop = msg.senderType?.toUpperCase() === 'SHOP';
+                                        const isIncoming = ['SHOP', 'AI'].includes(msg.senderType?.toUpperCase());
+                                        const isAi = msg.senderType?.toUpperCase() === 'AI';
 
                                         return (
                                             <div
                                                 key={idx}
-                                                className={`flex w-full ${isShop ? 'justify-start' : 'justify-end'} mb-2`}
+                                                className={`flex w-full ${isIncoming ? 'justify-start' : 'justify-end'} mb-2`}
                                             >
-                                                {isShop && (
+                                                {isIncoming && (
                                                     <Avatar
                                                         size="small"
-                                                        icon={<ShopOutlined />}
+                                                        icon={isAi ? <RobotOutlined /> : <ShopOutlined />}
                                                         className="mr-2 mt-1 shrink-0"
-                                                        style={{ backgroundColor: themeColor || '#7E5CFE' }}
+                                                        style={{ backgroundColor: isAi ? '#10b981' : (themeColor || '#7E5CFE') }}
                                                     />
                                                 )}
-                                                <div
-                                                    className={`
-                                                        max-w-[75%] px-4 py-2.5 rounded-2xl text-sm shadow-sm break-words
-                                                        ${isShop
-                                                            ? 'bg-slate-100 text-slate-800 rounded-tl-none border border-slate-200'
-                                                            : 'text-white rounded-tr-none'
-                                                        }
-                                                    `}
-                                                    style={!isShop ? { backgroundColor: themeColor || '#7E5CFE' } : {}}
-                                                >
-                                                    <p className="m-0 leading-snug">{msg.message}</p>
+                                                <div className="flex flex-col gap-1 max-w-[80%]">
                                                     <div
-                                                        className={`text-[10px] mt-1 text-right opacity-70 ${isShop ? 'text-slate-500' : 'text-white'
-                                                            }`}
+                                                        className={`
+                                                            px-4 py-2.5 rounded-2xl text-sm shadow-sm break-words
+                                                            ${isIncoming
+                                                                ? isAi
+                                                                    ? 'bg-emerald-50 text-slate-800 rounded-tl-none border border-emerald-100'
+                                                                    : 'bg-slate-100 text-slate-800 rounded-tl-none border border-slate-200'
+                                                                : 'text-white rounded-tr-none'
+                                                            }
+                                                        `}
+                                                        style={!isIncoming ? { backgroundColor: themeColor || '#7E5CFE' } : {}}
                                                     >
-                                                        {moment(msg.timestamp).format('HH:mm')}
+                                                        <p className="m-0 leading-snug whitespace-pre-wrap">{msg.message}</p>
+                                                        <div
+                                                            className={`text-[10px] mt-1 text-right opacity-70 ${isIncoming ? 'text-slate-500' : 'text-white'
+                                                                }`}
+                                                        >
+                                                            {moment(msg.timestamp).format('HH:mm')}
+                                                        </div>
                                                     </div>
+                                                    {isIncoming && msg.aiAvailableOptions && (
+                                                        <AiOptionsRenderer
+                                                            optionsData={msg.aiAvailableOptions}
+                                                            themeColor={isAi ? '#10b981' : themeColor}
+                                                            onSelect={(val) => {
+                                                                if (conversation && conversation.id) {
+                                                                    sendMessage(conversation.id, val);
+                                                                } else {
+                                                                    sendMessage(null, val);
+                                                                }
+                                                            }}
+                                                        />
+                                                    )}
                                                 </div>
                                             </div>
                                         );
