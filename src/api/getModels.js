@@ -1,4 +1,5 @@
 import urls from "../config";
+import { fetchWithAuth } from "./fetchWithAuth";
 
 /**
  * Fetch available makes for a given year
@@ -6,15 +7,18 @@ import urls from "../config";
  * @returns {Promise<{makes: Array<{make_id: number, abbrev: string, name: string}>}>} - Array of makes
  */
 export const getMakes = async (year) => {
+    // Validation: Year between 1900 and 2100
+    const yearNum = Number(year);
+    if (isNaN(yearNum) || yearNum < 1900 || yearNum > 2100) {
+        throw new Error("Year must be between 1900 and 2100");
+    }
+
     const baseUrl = urls.pythonApiUrl + "agp/v1/model-lookup";
     const url = `${baseUrl}?year=${year}`;
 
     try {
-        const response = await fetch(url, {
-            method: "GET",
-            headers: {
-                accept: "application/json",
-            },
+        const response = await fetchWithAuth(url, {
+            method: "GET"
         });
 
         if (!response.ok) {
@@ -36,15 +40,21 @@ export const getMakes = async (year) => {
  * @returns {Promise<{models: Array<{make_model_id: number, model_name: string, veh_modifier_id: number|null}>}>} - Array of models with IDs
  */
 export const getModels = async (year, makeId) => {
+    // Validation: Year between 1900 and 2100
+    const yearNum = Number(year);
+    if (isNaN(yearNum) || yearNum < 1900 || yearNum > 2100) {
+        throw new Error("Year must be between 1900 and 2100");
+    }
+    if (makeId !== undefined && makeId !== null && makeId <= 0) {
+        throw new Error("Make ID must be greater than 0");
+    }
+
     const baseUrl = urls.pythonApiUrl + "agp/v1/model-lookup";
     const url = `${baseUrl}?year=${year}&make_id=${makeId}`;
 
     try {
-        const response = await fetch(url, {
-            method: "GET",
-            headers: {
-                accept: "application/json",
-            },
+        const response = await fetchWithAuth(url, {
+            method: "GET"
         });
 
         if (!response.ok) {
@@ -68,6 +78,15 @@ export const getModels = async (year, makeId) => {
  * @returns {Promise<{body_types: Array<{body_style_id: number, abbrev: string, desc: string}>}>} - Array of body types
  */
 export const getBodyTypes = async (year, makeId, makeModelId, vehModifierId = null) => {
+    // Validation
+    const yearNum = Number(year);
+    if (isNaN(yearNum) || yearNum < 1900 || yearNum > 2100) {
+        throw new Error("Year must be between 1900 and 2100");
+    }
+    if (makeId && makeId <= 0) throw new Error("Make ID must be greater than 0");
+    if (makeModelId && makeModelId <= 0) throw new Error("Model ID must be greater than 0");
+    if (vehModifierId && vehModifierId <= 0) throw new Error("Modifier ID must be greater than 0");
+
     const baseUrl = urls.pythonApiUrl + "agp/v1/model-lookup";
     let url = `${baseUrl}?year=${year}&make_id=${makeId}&make_model_id=${makeModelId}`;
 
@@ -77,11 +96,8 @@ export const getBodyTypes = async (year, makeId, makeModelId, vehModifierId = nu
     }
 
     try {
-        const response = await fetch(url, {
-            method: "GET",
-            headers: {
-                accept: "application/json",
-            },
+        const response = await fetchWithAuth(url, {
+            method: "GET"
         });
 
         if (!response.ok) {
@@ -106,6 +122,11 @@ export const getBodyTypes = async (year, makeId, makeModelId, vehModifierId = nu
  *   Response: list of year integers in descending order
  */
 export const getModelsReverse = async ({ makeModelId, vehModifierId, makeId } = {}) => {
+    // Validation
+    if (makeId && makeId <= 0) throw new Error("Make ID must be greater than 0");
+    if (makeModelId && makeModelId <= 0) throw new Error("Model ID must be greater than 0");
+    if (vehModifierId && vehModifierId <= 0) throw new Error("Modifier ID must be greater than 0");
+
     const baseUrl = urls.pythonApiUrl + "agp/v1/model-lookup-reverse";
     const params = new URLSearchParams();
 
@@ -122,11 +143,8 @@ export const getModelsReverse = async ({ makeModelId, vehModifierId, makeId } = 
     const url = params.toString() ? `${baseUrl}?${params.toString()}` : baseUrl;
 
     try {
-        const response = await fetch(url, {
-            method: "GET",
-            headers: {
-                accept: "application/json",
-            },
+        const response = await fetchWithAuth(url, {
+            method: "GET"
         });
 
         if (!response.ok) {
@@ -151,6 +169,16 @@ export const getModelsReverse = async ({ makeModelId, vehModifierId, makeId } = 
  * @returns {Promise<{veh_id: number, model_id: number, image: string, description: string}>} - Vehicle details
  */
 export const getVehicleDetails = async (year, makeId, makeModelId, bodyStyleId, vehModifierId = null) => {
+    // Validation
+    const yearNum = Number(year);
+    if (isNaN(yearNum) || yearNum < 1900 || yearNum > 2100) {
+        throw new Error("Year must be between 1900 and 2100");
+    }
+    if (makeId && makeId <= 0) throw new Error("Make ID must be greater than 0");
+    if (makeModelId && makeModelId <= 0) throw new Error("Model ID must be greater than 0");
+    if (bodyStyleId && bodyStyleId <= 0) throw new Error("Body Style ID must be greater than 0");
+    if (vehModifierId && vehModifierId <= 0) throw new Error("Modifier ID must be greater than 0");
+
     const baseUrl = urls.pythonApiUrl + "agp/v1/model-lookup";
     let url = `${baseUrl}?year=${year}&make_id=${makeId}&make_model_id=${makeModelId}&body_style_id=${bodyStyleId}`;
 
@@ -160,11 +188,8 @@ export const getVehicleDetails = async (year, makeId, makeModelId, bodyStyleId, 
     }
 
     try {
-        const response = await fetch(url, {
-            method: "GET",
-            headers: {
-                accept: "application/json",
-            },
+        const response = await fetchWithAuth(url, {
+            method: "GET"
         });
 
         if (!response.ok) {

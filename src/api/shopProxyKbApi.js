@@ -1,16 +1,7 @@
-import { getValidToken } from './getValidToken';
+import { fetchWithAuth } from './fetchWithAuth';
 import config from '../config';
 
 const BASE_URL = `${config.pythonApiUrl}agp/v1/shop-proxy-kb`;
-
-const getHeaders = () => {
-    const token = getValidToken();
-    return {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-    };
-};
 
 const handleResponse = async (response) => {
     if (!response.ok) {
@@ -34,9 +25,8 @@ const handleResponse = async (response) => {
  * Fetch the Shop Proxy Knowledge Base configuration.
  */
 export const getShopProxyKb = async () => {
-    const response = await fetch(BASE_URL, {
-        method: 'GET',
-        headers: getHeaders()
+    const response = await fetchWithAuth(BASE_URL, {
+        method: 'GET'
     });
     return handleResponse(response);
 };
@@ -45,9 +35,9 @@ export const getShopProxyKb = async () => {
  * Create or replace the Shop Proxy Knowledge Base configuration.
  */
 export const upsertShopProxyKb = async (data) => {
-    const response = await fetch(BASE_URL, {
+    const response = await fetchWithAuth(BASE_URL, {
         method: 'POST',
-        headers: getHeaders(),
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     });
     return handleResponse(response);
@@ -57,9 +47,9 @@ export const upsertShopProxyKb = async (data) => {
  * Partially update the Shop Proxy Knowledge Base configuration.
  */
 export const updateShopProxyKb = async (data) => {
-    const response = await fetch(BASE_URL, {
+    const response = await fetchWithAuth(BASE_URL, {
         method: 'PUT',
-        headers: getHeaders(),
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     });
     return handleResponse(response);
@@ -69,9 +59,8 @@ export const updateShopProxyKb = async (data) => {
  * Delete the Shop Proxy Knowledge Base configuration.
  */
 export const deleteShopProxyKb = async () => {
-    const response = await fetch(BASE_URL, {
-        method: 'DELETE',
-        headers: getHeaders()
+    const response = await fetchWithAuth(BASE_URL, {
+        method: 'DELETE'
     });
     return handleResponse(response);
 };

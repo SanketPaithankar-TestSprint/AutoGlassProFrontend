@@ -5,17 +5,25 @@
 
 const BASE_URL = "https://api.autopaneai.com/agp/v1";
 
+import { fetchWithAuth } from "./fetchWithAuth";
+
 /**
  * Fetches a sales report PDF for the given date range
- * @param {number} userId - User ID to filter records
  * @param {string} fromDate - Start date in YYYY-MM-DD format
  * @param {string} toDate - End date in YYYY-MM-DD format
  * @param {number[]} [doctypes=[0]] - Array of document types to filter (0: Invoice, 1: Work Order, 2: Quote)
  * @returns {Promise<Blob>} - PDF blob
  */
-export async function getSalesReport(userId, fromDate, toDate, doctypes = [0]) {
+export async function getSalesReport(fromDate, toDate, doctypes = [0]) {
+    // Validation: Dates must be exactly 10 characters in YYYY-MM-DD format
+    if (fromDate && fromDate.length !== 10) {
+        throw new Error("From date must be in YYYY-MM-DD format (10 characters)");
+    }
+    if (toDate && toDate.length !== 10) {
+        throw new Error("To date must be in YYYY-MM-DD format (10 characters)");
+    }
+
     const queryParams = new URLSearchParams({
-        user_id: userId,
         from_date: fromDate,
         to_date: toDate
     });
@@ -28,11 +36,8 @@ export async function getSalesReport(userId, fromDate, toDate, doctypes = [0]) {
 
     console.log('[getSalesReport] Fetching report from:', url);
 
-    const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-            'accept': 'application/json'
-        }
+    const response = await fetchWithAuth(url, {
+        method: 'GET'
     });
 
     console.log('[getSalesReport] Response status:', response.status);

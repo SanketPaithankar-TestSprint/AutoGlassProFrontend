@@ -1,25 +1,22 @@
 // src/api/getVendorPrices.js
+import { fetchWithAuth } from "./fetchWithAuth";
 import config from "../config";
 
 /**
  * Fetch vendor prices for a specific part number
- * @param {number|string} userId - User ID
  * @param {string} partNumber - Part number (e.g., "FD28887 GTY")
  * @returns {Promise<Object>} Vendor prices object with pilkington array
  */
-export async function getVendorPrices(userId, partNumber) {
-    const url = `${config.pythonApiUrl}agp/v1/vendor-prices?user_id=${userId}&part_number=${encodeURIComponent(partNumber)}`;
+export async function getVendorPrices(partNumber) {
+    const url = `${config.pythonApiUrl}agp/v1/vendor-prices?part_number=${encodeURIComponent(partNumber)}`;
 
     try {
-        const response = await fetch(url, {
-            method: "GET",
-            headers: {
-                "accept": "application/json",
-            },
+        const response = await fetchWithAuth(url, {
+            method: "GET"
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
+            const errorData = await response.json().catch(() => ({}));
             throw new Error(errorData.detail || `Error: ${response.status}`);
         }
 
@@ -33,13 +30,12 @@ export async function getVendorPrices(userId, partNumber) {
 
 /**
  * Get Pilkington price for a specific part number
- * @param {number|string} userId - User ID
  * @param {string} partNumber - Part number (e.g., "FD28887 GTY")
  * @returns {Promise<Object|null>} First Pilkington price object or null
  */
-export async function getPilkingtonPrice(userId, partNumber) {
+export async function getPilkingtonPrice(partNumber) {
     try {
-        const data = await getVendorPrices(userId, partNumber);
+        const data = await getVendorPrices(partNumber);
 
         // Return the first Pilkington price if available
         if (data?.pilkington && Array.isArray(data.pilkington) && data.pilkington.length > 0) {

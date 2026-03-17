@@ -1,4 +1,4 @@
-import config from "../config";
+import { fetchWithAuth } from "./fetchWithAuth";
 
 /**
  * Sends an email with an optional attachment.
@@ -10,13 +10,20 @@ import config from "../config";
  * @returns {Promise<any>} - Response from the server
  */
 export const sendEmail = async (email, subject, body, file) => {
-    try {
-        // Get userId from localStorage, fallback to 1 if not found
-        const userId = localStorage.getItem('userId') || '';
+    // Validation
+    if (!email || email.length < 5 || email.length > 255) {
+        throw new Error("Email must be between 5 and 255 characters");
+    }
+    if (!subject || subject.length < 1 || subject.length > 255) {
+        throw new Error("Subject must be between 1 and 255 characters");
+    }
+    if (!body || body.length < 1) {
+        throw new Error("Body cannot be empty");
+    }
 
-        // Build FormData with email content
+    try {
+        // Build FormData with email content - userId is now extracted from JWT on backend
         const formData = new FormData();
-        formData.append("user_id", userId);
         formData.append("email", email);
         formData.append("subject", subject);
         formData.append("body", body);
@@ -30,14 +37,11 @@ export const sendEmail = async (email, subject, body, file) => {
 
         console.log("[sendEmail] Sending email to:", email, "with subject:", subject);
 
-        // Use external API endpoint
-        const response = await fetch("https://api.autopaneai.com/agp/v1/send-email", {
+        // Use external API endpoint with auth wrapper
+        const response = await fetchWithAuth("https://api.autopaneai.com/agp/v1/send-email", {
             method: "POST",
-            headers: {
-                "accept": "application/json",
-                // Content-Type is automatically set by browser for FormData
-            },
             body: formData,
+            // Header Content-Type is handled automatically by browser for FormData
         });
 
         if (!response.ok) {

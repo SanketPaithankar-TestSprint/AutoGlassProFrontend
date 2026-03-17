@@ -185,7 +185,10 @@ export default function QuoteDetails({ prefill, parts, onRemovePart, activePanel
                 let info = p.glassInfo;
                 if (!info && p.part.nags_glass_id) {
                     try {
-                        const res = await fetch(`${config.pythonApiUrl}agp/v1/glass-info?nags_glass_id=${p.part.nags_glass_id}`);
+                        const { fetchWithAuth } = await import("../../api/fetchWithAuth");
+                        const res = await fetchWithAuth(`${config.pythonApiUrl}agp/v1/glass-info?nags_glass_id=${p.part.nags_glass_id}`, {
+                            method: "GET"
+                        });
                         if (res.ok) {
                             info = await res.json();
                         }

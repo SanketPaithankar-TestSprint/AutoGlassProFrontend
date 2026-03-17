@@ -158,7 +158,8 @@ export default function CarGlassViewer({
         params.append("make_model_id", modelId);
 
         const url = `${config.pythonApiUrl}agp/v1/glass-types?${params.toString()}`;
-        const res = await fetch(url, { headers: { accept: "application/json" } });
+        const { fetchWithAuth } = await import("../../api/fetchWithAuth");
+        const res = await fetchWithAuth(url, { method: "GET" });
 
         if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
         const data = await res.json();
@@ -293,7 +294,8 @@ export default function CarGlassViewer({
       if (side_cd && side_cd !== "NULL") params.append("side_cd", side_cd);
 
       const url = `${config.pythonApiUrl}agp/v1/glass-parts?${params.toString()}`;
-      const res = await fetch(url, { headers: { accept: "application/json" } });
+      const { fetchWithAuth } = await import("../../api/fetchWithAuth");
+      const res = await fetchWithAuth(url, { method: "GET" });
       const data = await res.json();
       const glassParts = Array.isArray(data?.glass_parts)
         ? data.glass_parts

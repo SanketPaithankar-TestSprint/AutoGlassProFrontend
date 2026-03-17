@@ -677,6 +677,13 @@ export default function SearchByYMM({
 
   // Handler for year selection
   const handleYear = (v) => {
+    // Validation: Year between 1900 and 2100
+    const yearNum = Number(v);
+    if (v && (isNaN(yearNum) || yearNum < 1900 || yearNum > 2100)) {
+      message.error("Year must be between 1900 and 2100");
+      return;
+    }
+    
     setYear(v);
 
     // If we are in reverse flow, changing year is the last step and doesn't invalidate Make/Model
