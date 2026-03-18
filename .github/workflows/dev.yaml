@@ -21,11 +21,14 @@ jobs:
           🌿 Branch: ${{ github.ref_name }}
           👤 Actor: ${{ github.actor }}"
 
-          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
-          -H "Content-Type: application/json" \
-          -d '{
-            "content": "🚀 **Build Started**\n\n📦 Repo: ${{ github.repository }}\n🌿 Branch: ${{ github.ref_name }}\n👤 Actor: ${{ github.actor }}"
-          }'
+      - name: 🚀 Notify Build Started (Discord)
+        uses: sarisia/actions-status-discord@v1
+        if: always()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: '🚀 [FRONTEND] Build Started'
+          description: 'A new commit was pushed to ${{ github.ref_name }}. Starting build process...\n📦 **Repo**: ${{ github.repository }}\n👤 **Actor**: ${{ github.actor }}'
+          color: 0x3498db
 
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -57,11 +60,14 @@ jobs:
           🌿 Branch: ${{ github.ref_name }}
           🔗 Commit: https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
 
-          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
-          -H "Content-Type: application/json" \
-          -d '{
-            "content": "❌ **Build Failed**\n\n📦 Repo: ${{ github.repository }}\n🌿 Branch: ${{ github.ref_name }}\n🔗 Commit: https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
-          }'
+      - name: ❌ Notify Build Failed (Discord)
+        uses: sarisia/actions-status-discord@v1
+        if: failure()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: '❌ [FRONTEND] Build Failed'
+          description: 'Application failed to compile. Deployment aborted.\n📦 **Repo**: ${{ github.repository }}\n🌿 **Branch**: ${{ github.ref_name }}\n🔗 **Commit**: https://github.com/${{ github.repository }}/commit/${{ github.sha }}'
+          color: 0xe74c3c
 
       - name: ✅ Notify Build Success
         if: success()
@@ -74,11 +80,14 @@ jobs:
           📦 Repo: ${{ github.repository }}
           🌿 Branch: ${{ github.ref_name }}"
 
-          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
-          -H "Content-Type: application/json" \
-          -d '{
-            "content": "✅ **Build Successful**\n\n📦 Repoo: ${{ github.repository }}\n🌿 Branch: ${{ github.ref_name }}"
-          }'
+      - name: 📦 Notify Build Success (Discord)
+        uses: sarisia/actions-status-discord@v1
+        if: success()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: '📦 [FRONTEND] Build Successful'
+          description: 'Application compiled successfully. Proceeding to AWS deployment.\n📦 **Repo**: ${{ github.repository }}\n🌿 **Branch**: ${{ github.ref_name }}'
+          color: 0xf1c40f
 
       - name: Upload build artifact
         if: success()
@@ -101,11 +110,14 @@ jobs:
           -d parse_mode=Markdown \
           -d text="🚀 *Deployment Started*"
 
-          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
-          -H "Content-Type: application/json" \
-          -d '{
-            "content": "🚀 **Deployment Started**"
-          }'
+      - name: 🚀 Notify Deploy Started (Discord)
+        uses: sarisia/actions-status-discord@v1
+        if: always()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: '🚀 [FRONTEND] Deployment Started'
+          description: 'Starting deployment process to AWS...'
+          color: 0x3498db
 
       - name: Download Artifact
         uses: actions/download-artifact@v4
@@ -140,11 +152,14 @@ jobs:
           -d parse_mode=Markdown \
           -d text="❌ *Deployment Failed*"
 
-          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
-          -H "Content-Type: application/json" \
-          -d '{
-            "content": "❌ **Deployment Failed**"
-          }'
+      - name: ❌ Notify Deploy Failed (Discord)
+        uses: sarisia/actions-status-discord@v1
+        if: failure()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: '❌ [FRONTEND] Deployment Failed'
+          description: 'The deployment process to AWS failed.'
+          color: 0xe74c3c
 
       - name: ✅ Notify Deploy Success
         if: success()
@@ -156,8 +171,11 @@ jobs:
           
           🌍 Environment: DEV- https://d3f9p46i81h600.cloudfront.net"
 
-          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
-          -H "Content-Type: application/json" \
-          -d '{
-            "content": "✅ **Deployment Successful**\n\n🌍 Environment: DEV - https://d3f9p46i81h600.cloudfront.net"
-          }'
+      - name: ✅ Final Discord Notification
+        uses: sarisia/actions-status-discord@v1
+        if: success()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: success
+          title: '[FRONTEND] Deployment Status'
+          description: 'The CI/CD pipeline has finished.\n🌍 **Environment**: DEV - https://d3f9p46i81h600.cloudfront.net'
