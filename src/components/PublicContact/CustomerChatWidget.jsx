@@ -7,11 +7,16 @@ import moment from 'moment';
 const AiOptionsRenderer = ({ optionsData, themeColor, onSelect }) => {
     const [selectedMulti, setSelectedMulti] = useState([]);
 
-    if (!optionsData || !optionsData.options || optionsData.options.length === 0) return null;
+    if (!optionsData) return null;
 
-    const { multiple, options } = optionsData;
+    const { multiple, options, grouped, groups } = optionsData;
 
-    if (multiple) {
+    const hasOptions = options && options.length > 0;
+    const hasGroups = grouped && groups && groups.length > 0;
+
+    if (!hasOptions && !hasGroups) return null;
+
+    if (multiple && hasOptions) {
         const handleToggle = (optVal) => {
             setSelectedMulti(prev => prev.includes(optVal) ? prev.filter(v => v !== optVal) : [...prev, optVal]);
         };
@@ -53,23 +58,56 @@ const AiOptionsRenderer = ({ optionsData, themeColor, onSelect }) => {
         );
     }
 
-    return (
-        <div className="mt-2 flex flex-wrap gap-2">
-            {options.map((opt, i) => {
-                const val = opt.name || opt.desc || opt.id;
-                return (
-                    <button
-                        key={i}
-                        onClick={() => onSelect(val)}
-                        className="py-1.5 px-4 bg-white border border-slate-200 rounded-full text-[13px] font-medium text-slate-700 hover:bg-slate-50 hover:shadow-sm active:scale-95 transition-all text-left shadow-sm mt-1"
-                        style={{ borderColor: themeColor || '#e2e8f0', color: themeColor || '#475569' }}
-                    >
-                        {val}
-                    </button>
-                );
-            })}
-        </div>
-    );
+    if (hasGroups) {
+        return (
+            <div className="mt-2 flex flex-col gap-3">
+                {groups.map((g, gIdx) => (
+                    <div key={gIdx} className="bg-white/80 border border-slate-200 rounded-xl p-3 shadow-sm">
+                        <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 pl-1">
+                            {g.group}
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            {g.options.map((opt, oIdx) => {
+                                const val = opt.name || opt.desc || opt.id;
+                                return (
+                                    <button
+                                        key={oIdx}
+                                        onClick={() => onSelect(val)}
+                                        className="py-1.5 px-3 bg-white border border-slate-200 w-full sm:w-auto text-left sm:text-center rounded-lg sm:rounded-full text-[13px] font-medium text-slate-700 hover:bg-slate-50 hover:shadow-sm active:scale-95 transition-all shadow-sm"
+                                        style={{ borderColor: themeColor || '#e2e8f0', color: themeColor || '#475569' }}
+                                    >
+                                        {val}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        );
+    }
+
+    if (hasOptions) {
+        return (
+            <div className="mt-2 flex flex-wrap gap-2">
+                {options.map((opt, i) => {
+                    const val = opt.name || opt.desc || opt.id;
+                    return (
+                        <button
+                            key={i}
+                            onClick={() => onSelect(val)}
+                            className="py-1.5 px-4 bg-white border border-slate-200 rounded-full text-[13px] font-medium text-slate-700 hover:bg-slate-50 hover:shadow-sm active:scale-95 transition-all text-left shadow-sm mt-1"
+                            style={{ borderColor: themeColor || '#e2e8f0', color: themeColor || '#475569' }}
+                        >
+                            {val}
+                        </button>
+                    );
+                })}
+            </div>
+        );
+    }
+
+    return null;
 };
 
 const CustomerChatWidget = ({ themeColor, businessName, customerName, customerEmail }) => {

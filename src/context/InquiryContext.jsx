@@ -4,6 +4,7 @@ import { App, Modal, Button } from 'antd';
 import { BellOutlined } from '@ant-design/icons';
 import { playNotificationSound } from '../utils/playNotificationSound';
 import { getValidToken } from '../api/getValidToken';
+import { getAiChatForms } from '../api/getAiChatForms';
 import { useAuth } from './auth/useAuth';
 import { useNotificationSettings } from './NotificationSettingsContext';
 import urls from '../config';
@@ -27,6 +28,7 @@ export const InquiryProvider = ({ children }) => {
     const [badgeCount, setBadgeCount] = useState(0);
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [lastInquiryName, setLastInquiryName] = useState(null);
+    const [targetTab, setTargetTab] = useState('contact-form');
     const [showInquiryModal, setShowInquiryModal] = useState(false);
     const prevAuthRef = useRef(false);
     const previousBadgeCountRef = useRef(null);
@@ -73,23 +75,33 @@ export const InquiryProvider = ({ children }) => {
         }
 
         try {
-            const response = await fetch(`${urls.javaApiUrl}/v1/service-inquiries/my?page=0&size=50&sort=createdAt,desc`, {
+            // ── 1. Fetch Java Service Inquiries (Traditional) ──
+            const javaPromise = fetch(`${urls.javaApiUrl}/v1/service-inquiries/my?page=0&size=50&sort=createdAt,desc`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Accept': '*/*'
                 }
-            });
+            }).then(res => res.ok ? res.json() : null);
 
-            if (!response.ok) return;
+            // ── 2. Fetch Python AI Chat Inquiries ──
+            const pythonPromise = getAiChatForms().catch(() => null);
 
-            const data = await response.json();
-            const content = Array.isArray(data?.content) ? data.content : [];
-            const count = content.filter(item => item?.status === 'NEW').length;
+            const [javaData, pythonData] = await Promise.all([javaPromise, pythonPromise]);
 
-            // console.log('InquiryContext: Updating badge count to', count);
-            setBadgeCount(count);
+            // Calculate Java unread count (status === 'NEW')
+            const javaContent = Array.isArray(javaData?.content) ? javaData.content : [];
+            const javaCount = javaContent.filter(item => item?.status === 'NEW').length;
+
+            // Calculate Python AI count
+            const pythonForms = Array.isArray(pythonData?.forms) ? pythonData.forms : [];
+            const pythonCount = pythonForms.filter(item => item?.read === false).length;
+
+            const totalCount = javaCount + pythonCount;
+
+            // console.log('InquiryContext: Updating badge count to', totalCount, '(Java:', javaCount, ', AI:', pythonCount, ')');
+            setBadgeCount(totalCount);
         } catch (error) {
-            console.error('Failed to fetch inquiry count', error);
+            console.error('Failed to fetch inquiry counts', error);
         }
     };
 
@@ -138,6 +150,14 @@ export const InquiryProvider = ({ children }) => {
                 || event?.detail?.name
                 || 'Customer';
             setLastInquiryName(name);
+
+            // Determine which tab to open
+            if (event?.detail?.type === 'ai_service_request') {
+                setTargetTab('ai-chat');
+            } else {
+                setTargetTab('contact-form');
+            }
+
             // Only reset dismissal (and show modal) if user is NOT already on the inquiry page
             if (window.location.pathname !== '/service-contact-form') {
                 dismissedCountRef.current = 0;
@@ -294,9 +314,11 @@ export const InquiryProvider = ({ children }) => {
                     }}>
                         <BellOutlined style={{ fontSize: 36, color: '#ffffff' }} />
                     </div>
-                    <div style={{ fontSize: 22, fontWeight: 700, color: '#ffffff' }}>New Service Inquiry</div>
+                    <div style={{ fontSize: 22, fontWeight: 700, color: '#ffffff' }}>
+                        {targetTab === 'ai-chat' ? 'New AI Inquiry' : 'New Service Inquiry'}
+                    </div>
                     <div style={{ fontSize: 16, color: '#bfdbfe' }}>
-                        <strong style={{ color: '#ffffff' }}>{lastInquiryName || 'A customer'}</strong> has submitted a new service inquiry
+                        <strong style={{ color: '#ffffff' }}>{lastInquiryName || 'A customer'}</strong> {targetTab === 'ai-chat' ? 'has submitted a new AI inquiry' : 'has submitted a new service inquiry'}
                     </div>
                     <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
                         <Button
@@ -306,7 +328,7 @@ export const InquiryProvider = ({ children }) => {
                             onClick={() => {
                                 dismissedCountRef.current = badgeCount;
                                 setShowInquiryModal(false);
-                                navigate('/service-contact-form');
+                                navigate('/service-contact-form', { state: { activeTab: targetTab } });
                             }}
                         >
                             View Inquiry →

@@ -260,6 +260,18 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
             case "NEW_QUOTE_REQUEST":
                 handleNewQuoteRequest(data);
                 break;
+            case "ai_service_request":
+                handleAiServiceRequest(data);
+                break;
+            case "NEW_NOTIFICATION":
+                if (data.notification && data.notification.type === "ai_service_request") {
+                    handleAiServiceRequest(data.notification);
+                } else if (data.notification && data.notification.type === "quote_request") {
+                    handleNewQuoteRequest(data.notification);
+                } else if (data.notification) {
+                    setNotifications(prev => [data.notification, ...prev]);
+                }
+                break;
             case "NOTIFICATION_UPDATED":
                 handleNotificationUpdated(data);
                 break;
@@ -462,27 +474,58 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
     const handleNewQuoteRequest = (data) => {
         if (isPublic) return; // Only shop sees these
 
+        const payload = data.data || data;
+
         const notifItem = {
-            PK: `USER#${data.tenantId || ''}`,
-            SK: `NOTIF#${data.timestamp || Date.now()}`,
+            PK: `USER#${payload.tenantId || ''}`,
+            SK: `NOTIF#${payload.timestamp || Date.now()}`,
             type: 'quote_request',
-            message: data.message || `${data.visitorName || 'Customer'} submitted a quote request`,
+            message: payload.message || `${payload.visitorName || 'Customer'} submitted a quote request`,
             read: false,
-            timestamp: data.timestamp || Date.now(),
-            visitorName: data.visitorName,
-            visitorPhone: data.visitorPhone,
-            visitorEmail: data.visitorEmail,
-            serviceType: data.serviceType,
-            city: data.city,
-            preference: data.preference,
-            details: data.details,
+            timestamp: payload.timestamp || Date.now(),
+            visitorName: payload.visitorName,
+            visitorPhone: payload.visitorPhone,
+            visitorEmail: payload.visitorEmail,
+            serviceType: payload.serviceType,
+            city: payload.city,
+            preference: payload.preference,
+            details: payload.details,
         };
 
         // Prepend to notification list
         setNotifications(prev => [notifItem, ...prev]);
 
         // Dispatch INQUIRY_RECEIVED event for Sidebar badge backward compat
-        const customEvent = new CustomEvent('INQUIRY_RECEIVED', { detail: data });
+        const customEvent = new CustomEvent('INQUIRY_RECEIVED', { detail: payload });
+        window.dispatchEvent(customEvent);
+    };
+
+    // ─── Handle ai_service_request (AI Chat Inquiry via WebSocket) ─────────
+    const handleAiServiceRequest = (data) => {
+        if (isPublic) return; // Only shop sees these
+
+        const payload = data.data || data;
+
+        const notifItem = {
+            PK: payload.PK || `USER#${payload.tenantId || ''}`,
+            SK: payload.SK || `NOTIF#${payload.timestamp || Date.now()}`,
+            type: 'ai_service_request',
+            message: payload.message || `${payload.visitorName || 'Customer'} submitted an AI service inquiry`,
+            read: payload.read || false,
+            timestamp: payload.timestamp || Date.now(),
+            visitorName: payload.visitorName,
+            visitorPhone: payload.visitorPhone,
+            visitorEmail: payload.visitorEmail,
+            details: payload.collectedData || payload.details,
+            conversationId: payload.conversationId,
+            visitorId: payload.visitorId,
+        };
+
+        // Prepend to notification list
+        setNotifications(prev => [notifItem, ...prev]);
+
+        // Dispatch INQUIRY_RECEIVED event for Sidebar badge backward compat
+        const customEvent = new CustomEvent('INQUIRY_RECEIVED', { detail: payload });
         window.dispatchEvent(customEvent);
     };
 
