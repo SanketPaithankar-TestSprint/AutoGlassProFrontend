@@ -27,7 +27,11 @@ jobs:
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           title: '🚀 [FRONTEND] Build Started'
-          description: 'A new commit was pushed to ${{ github.ref_name }}. Starting build process...\n📦 **Repo**: ${{ github.repository }}\n👤 **Actor**: ${{ github.actor }}'
+          description: |
+            A new commit was pushed to ${{ github.ref_name }}. Starting build process...
+
+            📦 **Repo**: ${{ github.repository }}
+            👤 **Actor**: ${{ github.actor }}
           color: 0x3498db
 
       - name: Checkout Code
@@ -66,7 +70,12 @@ jobs:
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           title: '❌ [FRONTEND] Build Failed'
-          description: 'Application failed to compile. Deployment aborted.\n📦 **Repo**: ${{ github.repository }}\n🌿 **Branch**: ${{ github.ref_name }}\n🔗 **Commit**: https://github.com/${{ github.repository }}/commit/${{ github.sha }}'
+          description: |
+            Application failed to compile. Deployment aborted.
+
+            📦 **Repo**: ${{ github.repository }}
+            🌿 **Branch**: ${{ github.ref_name }}
+            🔗 **Commit**: https://github.com/${{ github.repository }}/commit/${{ github.sha }}
           color: 0xe74c3c
 
       - name: ✅ Notify Build Success
@@ -86,7 +95,11 @@ jobs:
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           title: '📦 [FRONTEND] Build Successful'
-          description: 'Application compiled successfully. Proceeding to AWS deployment.\n📦 **Repo**: ${{ github.repository }}\n🌿 **Branch**: ${{ github.ref_name }}'
+          description: |
+            Application compiled successfully. Proceeding to AWS deployment.
+
+            📦 **Repo**: ${{ github.repository }}
+            🌿 **Branch**: ${{ github.ref_name }}
           color: 0xf1c40f
 
       - name: Upload build artifact
@@ -178,4 +191,7 @@ jobs:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: success
           title: '[FRONTEND] Deployment Status'
-          description: 'The CI/CD pipeline has finished.\n🌍 **Environment**: DEV - https://d3f9p46i81h600.cloudfront.net'
+          description: |
+            The CI/CD pipeline has finished.
+            
+            🌍 **Environment**: DEV - https://d3f9p46i81h600.cloudfront.net
