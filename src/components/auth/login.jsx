@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { Form, Input, Button, Checkbox, Alert, Space, notification } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
-import { loginUser, handleLoginSuccess } from '../../api/login';
+import { loginUser, loginEmployee, handleLoginSuccess } from '../../api/login';
 import { getTaxSettings } from '../../api/taxSettings';
 
 // Reusable style for form items to ensure consistent bordering and focus states
@@ -67,18 +67,29 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
     const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [isEmployee, setIsEmployee] = useState(false);
 
     const onFinish = async (values) => {
         setLoading(true);
         setError(null);
 
         try {
-            const res = await loginUser({
-                usernameOrEmail: values.email,
-                password: values.password,
-                deviceType: "WEB",
-                browserInfo: "",
-            });
+            let res;
+            if (isEmployee) {
+                res = await loginEmployee({
+                    email: values.email,
+                    password: values.password,
+                    deviceType: "WEB",
+                    browserInfo: "",
+                });
+            } else {
+                res = await loginUser({
+                    usernameOrEmail: values.email,
+                    password: values.password,
+                    deviceType: "WEB",
+                    browserInfo: "",
+                });
+            }
 
             if (res && res.success) {
                 // Handle post-login storage
@@ -177,6 +188,14 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
                 </Form.Item>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+                    <Form.Item style={{ marginBottom: 0 }}>
+                        <Checkbox 
+                            checked={isEmployee} 
+                            onChange={(e) => setIsEmployee(e.target.checked)}
+                        >
+                            {t('auth.loginAsEmployee', 'Login as Employee')}
+                        </Checkbox>
+                    </Form.Item>
                     <Form.Item name="remember" valuePropName="checked" noStyle>
                         <Checkbox>{t('auth.rememberMe')}</Checkbox>
                     </Form.Item>
