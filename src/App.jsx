@@ -48,6 +48,16 @@ const SetPassword = React.lazy(() => import('./components/auth/SetPassword.jsx')
 const VinDecoderRoot = React.lazy(() => import('./components/VinDecoder/VinDecoderRoot.jsx'));
 const InternalVinDecoderRoot = React.lazy(() => import('./components/InternalVinDecoder/InternalVinDecoderRoot.jsx'));
 const PublicChatRoot = React.lazy(() => import('./components/PublicChat/PublicChatRoot.jsx'));
+const HelpSupportRoot = React.lazy(() => import('./components/HelpSupport/HelpSupportRoot.jsx'));
+const HelpArticles = React.lazy(() => import('./components/HelpSupport/HelpArticles.jsx'));
+const ArticleView = React.lazy(() => import('./components/HelpSupport/ArticleView.jsx'));
+const SupportTickets = React.lazy(() => import('./components/HelpSupport/SupportTickets.jsx'));
+const CreateTicket = React.lazy(() => import('./components/HelpSupport/CreateTicket.jsx'));
+const TicketView = React.lazy(() => import('./components/HelpSupport/TicketView.jsx'));
+const LiveChat = React.lazy(() => import('./components/HelpSupport/LiveChat.jsx'));
+const RequestCall = React.lazy(() => import('./components/HelpSupport/RequestCall.jsx'));
+const EmailSupport = React.lazy(() => import('./components/HelpSupport/EmailSupport.jsx'));
+const TicketHistory = React.lazy(() => import('./components/HelpSupport/TicketHistory.jsx'));
 import RestrictedAccessModal from './components/RestrictedAccessModal';
 import { useSubscriptionRestriction } from './hooks/useSubscriptionRestriction';
 
@@ -226,6 +236,17 @@ function AppContent() {
                         <Route path="/vin-decoder" element={<VinDecoderRoot />} />
                         <Route path="/internal-vin-decoder" element={<InternalVinDecoderRoot />} />
                         <Route path="/chat" element={<ShopChatPanel />} />
+                        <Route path="/help-support" element={<HelpSupportRoot />}>
+                          <Route index element={<HelpArticles />} />
+                          <Route path="articles/:id" element={<ArticleView />} />
+                          <Route path="tickets" element={<SupportTickets />} />
+                          <Route path="tickets/new" element={<CreateTicket />} />
+                          <Route path="tickets/:id" element={<TicketView />} />
+                          <Route path="chat/:ticketId" element={<LiveChat />} />
+                          <Route path="request-call" element={<RequestCall />} />
+                          <Route path="email-support" element={<EmailSupport />} />
+                          <Route path="history" element={<TicketHistory />} />
+                        </Route>
                       </Routes >
                     </Suspense >
                   </ErrorBoundary >

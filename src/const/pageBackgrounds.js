@@ -9,6 +9,7 @@ export const PAGE_BACKGROUND_COLORS = {
     '/employee-attendance': '#f8fafc', // slate-50
     '/chat': '#f1f5f9', // slate-100
     '/profile': '#f9fafb', // gray-50 (sub-menu toggles white)
+    '/help-support': '#f1f5f9', // slate-100
 };
 
 export const getPageBackground = (pathname) => {

@@ -19,7 +19,8 @@ import {
     MessageOutlined,
     AuditOutlined,
     InfoCircleOutlined,
-    BarcodeOutlined
+    BarcodeOutlined,
+    QuestionCircleOutlined
 } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 import Logo from '../assets/APAI.png';
@@ -279,7 +280,7 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
         },
         {
             key: 'help',
-            label: <Link to="/contact" title="">Help & Support</Link>,
+            label: <Link to="/help-support" title="">{t('nav.helpSupport') || 'Help & Support'}</Link>,
             icon: <InfoCircleOutlined />,
             title: ""
         },
