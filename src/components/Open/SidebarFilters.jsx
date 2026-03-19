@@ -24,6 +24,9 @@ const SidebarFilters = ({
     // Overdue Filter
     overdueFilter,
     setOverdueFilter,
+    // Has Insurance Filter
+    hasInsuranceFilter,
+    setHasInsuranceFilter,
     // Clear all
     onClearAll,
     // Active filter count
@@ -134,11 +137,25 @@ const SidebarFilters = ({
                         />
                         <Checkbox
                             checked={overdueFilter}
-                            onChange={(e) => setOverdueFilter(e.target.checked)}
+                            onChange={(e) => {
+                                setOverdueFilter(e.target.checked);
+                                if (e.target.checked) {
+                                    setDocumentTypeFilter('all');
+                                }
+                            }}
                             className="text-slate-700"
                         >
                             <span className="text-sm flex items-center gap-1">
                                 {t('openRoute.filters.overdueDocuments')}
+                            </span>
+                        </Checkbox>
+                        <Checkbox
+                            checked={hasInsuranceFilter}
+                            onChange={(e) => setHasInsuranceFilter(e.target.checked)}
+                            className="text-slate-700"
+                        >
+                            <span className="text-sm flex items-center gap-1">
+                                {t('openRoute.filters.hasInsurance', 'Has Insurance')}
                             </span>
                         </Checkbox>
                     </div>
@@ -286,6 +303,11 @@ const SidebarFilters = ({
                         {overdueFilter && (
                             <Tag color="red" closable onClose={() => setOverdueFilter(false)}>
                                 {t('openRoute.filters.overdueOnly')}
+                            </Tag>
+                        )}
+                        {hasInsuranceFilter && (
+                            <Tag color="blue" closable onClose={() => setHasInsuranceFilter(false)}>
+                                {t('openRoute.filters.hasInsurance', 'Has Insurance')}
                             </Tag>
                         )}
                     </div>

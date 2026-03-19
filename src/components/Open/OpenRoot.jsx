@@ -61,6 +61,7 @@ const OpenRoot = () => {
     const [customDateRange, setCustomDateRange] = useState(null);
     const [amountRange, setAmountRange] = useState([0, 100000]);
     const [overdueFilter, setOverdueFilter] = useState(false);
+    const [hasInsuranceFilter, setHasInsuranceFilter] = useState(false);
 
     // Delete modal state
     const [deleteTarget, setDeleteTarget] = useState(null);
@@ -94,7 +95,7 @@ const OpenRoot = () => {
                     setLoading(false);
                     return;
                 }
-                const data = await getServiceDocuments(token, currentPage, pageSize, documentTypeFilter);
+                const data = await getServiceDocuments(token, currentPage, pageSize, documentTypeFilter, hasInsuranceFilter, overdueFilter);
                 const docs = data?.content || [];
                 const total = data?.totalElements || 0;
 
@@ -110,7 +111,7 @@ const OpenRoot = () => {
         };
 
         fetchDocuments();
-    }, [currentPage, pageSize, documentTypeFilter, message]);
+    }, [currentPage, pageSize, documentTypeFilter, hasInsuranceFilter, overdueFilter, message]);
 
     // Helper function to check if notifications were shown recently (within 6 hours)
     const wasNotificationShownRecently = () => {
@@ -189,6 +190,7 @@ const OpenRoot = () => {
             amountFrom: amountRange[0],
             amountTo: amountRange[1],
             overdueOnly: overdueFilter,
+            hasInsurance: hasInsuranceFilter,
         };
 
         const localFiltered = applyAllFilters(documents, filters);
@@ -202,7 +204,7 @@ const OpenRoot = () => {
             setFilteredDocuments(localFiltered);
             setSearchSource('local');
         }
-    }, [searchTerm, documentTypeFilter, statusFilter, dateRangeFilter, customDateRange, amountRange, overdueFilter, documents, apiSearchResults]);
+    }, [searchTerm, documentTypeFilter, statusFilter, dateRangeFilter, customDateRange, amountRange, overdueFilter, hasInsuranceFilter, documents, apiSearchResults]);
 
     // Two-tier search: Trigger API search when local results are insufficient
     useEffect(() => {
@@ -231,6 +233,7 @@ const OpenRoot = () => {
                 amountFrom: amountRange[0],
                 amountTo: amountRange[1],
                 overdueOnly: overdueFilter,
+                hasInsurance: hasInsuranceFilter,
             };
             const localFiltered = applyAllFilters(documents, filters);
 
@@ -260,7 +263,7 @@ const OpenRoot = () => {
                 clearTimeout(searchTimeoutRef.current);
             }
         };
-    }, [searchTerm, documents, documentTypeFilter, statusFilter, dateRangeFilter, customDateRange, amountRange, overdueFilter]);
+    }, [searchTerm, documents, documentTypeFilter, statusFilter, dateRangeFilter, customDateRange, amountRange, overdueFilter, hasInsuranceFilter]);
 
     // Calculate active filter count
     const activeFilterCount = useMemo(() => {
@@ -270,8 +273,9 @@ const OpenRoot = () => {
         if (dateRangeFilter && dateRangeFilter !== 'all') count++;
         if (amountRange[0] > 0 || amountRange[1] < 100000) count++;
         if (overdueFilter) count++;
+        if (hasInsuranceFilter) count++;
         return count;
-    }, [documentTypeFilter, statusFilter, dateRangeFilter, amountRange, overdueFilter]);
+    }, [documentTypeFilter, statusFilter, dateRangeFilter, amountRange, overdueFilter, hasInsuranceFilter]);
 
     // Clear all filters
     const handleClearAllFilters = useCallback(() => {
@@ -282,6 +286,7 @@ const OpenRoot = () => {
         setCustomDateRange(null);
         setAmountRange([0, 100000]);
         setOverdueFilter(false);
+        setHasInsuranceFilter(false);
     }, []);
 
     // Handle document click
@@ -372,6 +377,8 @@ const OpenRoot = () => {
             setCustomDateRange={setCustomDateRange}
             overdueFilter={overdueFilter}
             setOverdueFilter={setOverdueFilter}
+            hasInsuranceFilter={hasInsuranceFilter}
+            setHasInsuranceFilter={setHasInsuranceFilter}
             onClearAll={handleClearAllFilters}
             activeFilterCount={activeFilterCount}
         />
