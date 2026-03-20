@@ -23,7 +23,29 @@
         "terms": "Terms",
         "termsOfService": "Terms of Service",
         "language": "Language",
-        "myLanguage": "My Language"
+        "myLanguage": "My Language",
+        "vendors": "Vendors"
+    },
+    "vendors": {
+        "title": "Vendor Management",
+        "manageSubtitle": "Manage your parts suppliers and distributor contacts",
+        "addVendor": "Add Vendor",
+        "editVendor": "Edit Vendor",
+        "deleteTitle": "Delete Vendor",
+        "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
+        "searchPlaceholder": "Search by company name, phone, or account #...",
+        "noVendorsFound": "No vendors found",
+        "addFirst": "Add Your First Vendor",
+        "companyName": "Company Name",
+        "phone": "Phone Number",
+        "accountNumber": "Account Number",
+        "notes": "Internal Notes",
+        "createdSuccess": "Vendor created successfully",
+        "updatedSuccess": "Vendor updated successfully",
+        "deletedSuccess": "Vendor deleted successfully",
+        "createFailed": "Failed to create vendor",
+        "updateFailed": "Failed to update vendor",
+        "deleteFailed": "Failed to delete vendor"
     },
     "featuresPage": {
         "title": "APAI Features | VIN Decode, AI Chat, Quotes & NAGS Data",

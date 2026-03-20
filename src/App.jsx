@@ -26,6 +26,7 @@ import { NotificationSettingsProvider } from './context/NotificationSettingsCont
 const Home = React.lazy(() => import('./components/Home/HomeRoot.jsx'));
 const AnalyticsRoot = React.lazy(() => import('./components/Analytics/AnalyticsRoot.jsx'));
 const CustomersRoot = React.lazy(() => import('./components/Customers/CustomersRoot.jsx'));
+const VendorsRoot = React.lazy(() => import('./components/Vendors/VendorsRoot.jsx'));
 const SearchByRoot = React.lazy(() => import("./components/SearchBy/SearchByRoot"));
 const Schedule = React.lazy(() => import('./components/Schedule/ScheduleRoot.jsx'));
 const FeaturesPage = React.lazy(() => import('./components/FeaturesPage/FeaturesPage.jsx'));
@@ -206,8 +207,9 @@ function AppContent() {
                       <Routes>
                         <Route path="/" element={isAuthed ? <Navigate to="/search-by-root" replace /> : <Home />} />
                         <Route path="/analytics" element={<AnalyticsRoot />} />
-                        <Route path="/customers" element={<CustomersRoot />} />
-                        <Route path="/search-by-root" element={<SearchByRoot />} />
+                        <Route path="/customers" element={<Suspense fallback={<div>Loading Customers...</div>}><CustomersRoot /></Suspense>} />
+                  <Route path="/vendors" element={<Suspense fallback={<div>Loading Vendors...</div>}><VendorsRoot /></Suspense>} />
+                  <Route path="/search-by-root" element={<Suspense fallback={<div>Loading Search...</div>}><SearchByRoot /></Suspense>} />
                         <Route path="/schedule" element={<Schedule />} />
                         <Route path="/profile" element={<Profile />} />
 

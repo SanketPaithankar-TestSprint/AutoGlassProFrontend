@@ -23,7 +23,29 @@
         "terms": "T\u00e9rminos",
         "termsOfService": "T\u00e9rminos de Servicio",
         "language": "Idioma",
-        "myLanguage": "Mi Idioma"
+        "myLanguage": "Mi Idioma",
+        "vendors": "Proveedores"
+    },
+    "vendors": {
+        "title": "Gestión de Proveedores",
+        "manageSubtitle": "Gestione sus proveedores de piezas y contactos de distribuidores",
+        "addVendor": "Agregar Proveedor",
+        "editVendor": "Editar Proveedor",
+        "deleteTitle": "Eliminar Proveedor",
+        "deleteConfirm": "¿Está seguro de que desea eliminar a \"{{name}}\"? Esta acción no se puede deshacer.",
+        "searchPlaceholder": "Buscar por nombre de empresa, teléfono o cuenta #...",
+        "noVendorsFound": "No se encontraron proveedores",
+        "addFirst": "Agregue su primer proveedor",
+        "companyName": "Nombre de la Empresa",
+        "phone": "Número de Teléfono",
+        "accountNumber": "Número de Cuenta",
+        "notes": "Notas Internas",
+        "createdSuccess": "Proveedor creado con éxito",
+        "updatedSuccess": "Proveedor actualizado con éxito",
+        "deletedSuccess": "Proveedor eliminado con éxito",
+        "createFailed": "Error al crear el proveedor",
+        "updateFailed": "Error al actualizar el proveedor",
+        "deleteFailed": "Error al eliminar el proveedor"
     },
     "featuresPage": {
         "title": "Características de APAI | Decodificación VIN, Chat IA, Cotizaciones y Datos NAGS",
