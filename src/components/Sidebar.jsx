@@ -233,6 +233,7 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
             key: '/employee-attendance',
             icon: <AuditOutlined />,
             label: <Link to="/employee-attendance">{t('nav.employeeAttendance')}</Link>,
+            title: t('nav.employeeAttendance')
         },
 
         {
@@ -333,8 +334,13 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
                 </div>
 
                 <div className="p-4 border-t border-white/5 flex flex-col gap-1">
-                    <LanguageToggle compact={true} dark={true} sidebarMode={true} />
-                    <Dropdown menu={{ items: profileMenuItems }} trigger={['click']} placement="topRight">
+                    <LanguageToggle compact={collapsed} dark={true} sidebarMode={true} />
+                    <Dropdown 
+                        menu={{ items: profileMenuItems }} 
+                        trigger={['click']} 
+                        placement={collapsed ? 'right' : 'topRight'}
+                        getPopupContainer={() => document.body}
+                    >
                         <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between'} p-2 rounded-lg hover:bg-white/10 cursor-pointer transition-colors group`}>                        <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full border-2 border-slate-600 group-hover:border-violet-400 transition-colors flex items-center justify-center">
                                 {userLogo ? (
@@ -349,7 +355,7 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
                                 </div>
                             )}
                         </div>
-                            {!collapsed && <DownOutlined className="text-xs text-slate-500 group-hover:text-slate-300 transition-colors" />}
+                            {!collapsed && <DownOutlined className="text-xs !text-white group-hover:text-white transition-colors" />}
                         </div>
                     </Dropdown>
                 </div>

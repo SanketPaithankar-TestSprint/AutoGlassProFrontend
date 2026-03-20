@@ -136,12 +136,12 @@ ${userMessage || 'No message provided'}
                         <div className="mt-20 md:mt-24 lg:mt-32 w-full max-w-md mx-auto xl:ml-0 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm text-center lg:text-left">
                             <h3 className="text-xl md:text-2xl font-black text-slate-900 mb-3">{t('contact.emailUs')}</h3>
                             <p className="text-slate-500 text-sm md:text-base leading-relaxed mb-4">
-                                For any inquiries, support, or feedback, feel free to email us. Our team will get back to you within 24–48 hours.
+                                {t('contact.emailUsDesc')}
                             </p>
                             <div className="bg-slate-50 py-3 px-4 rounded-xl border border-slate-100 inline-block">
-                                <a href="mailto:support@autopaneai.com" className="inline-flex items-center gap-2 text-base font-bold text-[#00A8E4] hover:text-[#0082b3] transition-colors">
+                                <a href={`mailto:${t('contact.supportEmail')}`} className="inline-flex items-center gap-2 text-base font-bold text-[#00A8E4] hover:text-[#0082b3] transition-colors">
                                     <MailOutlined className="text-lg" />
-                                    support@autopaneai.com
+                                    {t('contact.supportEmail')}
                                 </a>
                             </div>
                         </div>
