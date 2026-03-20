@@ -65,6 +65,7 @@ const InquiryDetails = ({ inquiry }) => {
                     {inquiry.vehicleYear} {inquiry.vehicleMake} {inquiry.vehicleModel}
                 </Descriptions.Item>
                 <Descriptions.Item label="VIN">{inquiry.vin || '-'}</Descriptions.Item>
+                <Descriptions.Item label="Body Style">{inquiry.bodyType || '-'}</Descriptions.Item>
                 <Descriptions.Item label="License Plate">{inquiry.licensePlateNumber || '-'}</Descriptions.Item>
                 <Descriptions.Item label="Service Type">
                     {inquiry.serviceType?.map(type => (
