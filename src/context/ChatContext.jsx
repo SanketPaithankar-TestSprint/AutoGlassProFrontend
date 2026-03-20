@@ -157,7 +157,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
 
             const storedConversationId = localStorage.getItem("chat_conversationId");
 
-            // console.log("[ChatContext] Initializing PUBLIC connection for visitor:", visitorId);
+            console.log("[ChatContext] Initializing PUBLIC connection for visitor:", visitorId);
 
             chatSocket = new ChatSocket({
                 url: WS_URL,
@@ -173,7 +173,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
             // ── SHOP MODE ── (initial connect, no conversationId)
             const token = getValidToken();
             if (!token) {
-                // console.log("[ChatContext] Shop connection skipped: No token available (User not logged in)");
+                console.log("[ChatContext] Shop connection skipped: No token available (User not logged in)");
                 return null;
             }
 
@@ -191,11 +191,11 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
             }
 
             if (!userId) {
-                // console.log("[ChatContext] Shop connection skipped: Could not determine userId (TenantId)");
+                console.log("[ChatContext] Shop connection skipped: Could not determine userId (TenantId)");
                 return null;
             }
 
-            // console.log("[ChatContext] Connecting SHOP socket for user:", userId);
+            console.log("[ChatContext] Connecting SHOP socket for user:", userId);
 
             chatSocket = new ChatSocket({
                 url: WS_URL,
@@ -222,7 +222,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
 
         const handleStorageChange = (e) => {
             if (e.key === 'ApiToken' || e.key === 'userId') {
-                // console.log("[ChatContext] Auth storage changed, attempting to connect socket...");
+                console.log("[ChatContext] Auth storage changed, attempting to connect socket...");
                 if (!socketRef.current) {
                     connect();
                 }
@@ -234,7 +234,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
         return () => {
             window.removeEventListener('storage', handleStorageChange);
             if (socketInstance) {
-                // console.log("[ChatContext] Disconnecting socket...");
+                console.log("[ChatContext] Disconnecting socket...");
                 socketInstance.disconnect();
             }
         };
@@ -242,7 +242,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
 
     // ─── Message Router ──────────────────────────────────────────────────────
     const handleIncomingMessage = (data) => {
-        // console.log(`[ChatContext] Incoming notification type: "${data.type}"`);
+        console.log(`[ChatContext] Incoming notification type: "${data.type}"`);
 
         switch (data.type) {
             case "CONVERSATIONS_LIST":
@@ -259,6 +259,18 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
                 break;
             case "NEW_QUOTE_REQUEST":
                 handleNewQuoteRequest(data);
+                break;
+            case "ai_service_request":
+                handleAiServiceRequest(data);
+                break;
+            case "NEW_NOTIFICATION":
+                if (data.notification && data.notification.type === "ai_service_request") {
+                    handleAiServiceRequest(data.notification);
+                } else if (data.notification && data.notification.type === "quote_request") {
+                    handleNewQuoteRequest(data.notification);
+                } else if (data.notification) {
+                    setNotifications(prev => [data.notification, ...prev]);
+                }
                 break;
             case "NOTIFICATION_UPDATED":
                 handleNotificationUpdated(data);
@@ -310,7 +322,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
         const payload = data.data && data.data.messages ? data.data : data;
         let { conversationId, messages } = payload;
 
-        // console.log('[ChatContext] handleHistory received:', { conversationId, messageCount: messages?.length });
+        console.log('[ChatContext] handleHistory received:', { conversationId, messageCount: messages?.length });
 
         if (!Array.isArray(messages)) {
             console.warn('[ChatContext] handleHistory: messages is not an array, ignoring');
@@ -352,7 +364,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
 
     const handleNewMessage = (msg) => {
         const payload = msg.data || msg;
-        // console.log("[ChatContext] NEW_MESSAGE payload:", JSON.stringify(payload, null, 2));
+        console.log("[ChatContext] NEW_MESSAGE payload:", JSON.stringify(payload, null, 2));
         const { conversationId, message, senderType, timestamp, messageId } = payload;
         if (!conversationId) return;
 
@@ -368,7 +380,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
         // Execute side effects outside of the setState callback
         if (isFromCustomer && !isPublic && (!isCurrentlyOpen || !isTabActive)) {
             const senderName = payload.senderName || payload.name || payload.visitorName || payload.customerName || 'Customer';
-            // console.log("[ChatContext] Triggering persistent toast for new message from:", senderName);
+            console.log("[ChatContext] Triggering persistent toast for new message from:", senderName);
         }
 
         // Play in-chat ding for every incoming message while chat is open
@@ -462,27 +474,58 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
     const handleNewQuoteRequest = (data) => {
         if (isPublic) return; // Only shop sees these
 
+        const payload = data.data || data;
+
         const notifItem = {
-            PK: `USER#${data.tenantId || ''}`,
-            SK: `NOTIF#${data.timestamp || Date.now()}`,
+            PK: `USER#${payload.tenantId || ''}`,
+            SK: `NOTIF#${payload.timestamp || Date.now()}`,
             type: 'quote_request',
-            message: data.message || `${data.visitorName || 'Customer'} submitted a quote request`,
+            message: payload.message || `${payload.visitorName || 'Customer'} submitted a quote request`,
             read: false,
-            timestamp: data.timestamp || Date.now(),
-            visitorName: data.visitorName,
-            visitorPhone: data.visitorPhone,
-            visitorEmail: data.visitorEmail,
-            serviceType: data.serviceType,
-            city: data.city,
-            preference: data.preference,
-            details: data.details,
+            timestamp: payload.timestamp || Date.now(),
+            visitorName: payload.visitorName,
+            visitorPhone: payload.visitorPhone,
+            visitorEmail: payload.visitorEmail,
+            serviceType: payload.serviceType,
+            city: payload.city,
+            preference: payload.preference,
+            details: payload.details,
         };
 
         // Prepend to notification list
         setNotifications(prev => [notifItem, ...prev]);
 
         // Dispatch INQUIRY_RECEIVED event for Sidebar badge backward compat
-        const customEvent = new CustomEvent('INQUIRY_RECEIVED', { detail: data });
+        const customEvent = new CustomEvent('INQUIRY_RECEIVED', { detail: payload });
+        window.dispatchEvent(customEvent);
+    };
+
+    // ─── Handle ai_service_request (AI Chat Inquiry via WebSocket) ─────────
+    const handleAiServiceRequest = (data) => {
+        if (isPublic) return; // Only shop sees these
+
+        const payload = data.data || data;
+
+        const notifItem = {
+            PK: payload.PK || `USER#${payload.tenantId || ''}`,
+            SK: payload.SK || `NOTIF#${payload.timestamp || Date.now()}`,
+            type: 'ai_service_request',
+            message: payload.message || `${payload.visitorName || 'Customer'} submitted an AI service inquiry`,
+            read: payload.read || false,
+            timestamp: payload.timestamp || Date.now(),
+            visitorName: payload.visitorName,
+            visitorPhone: payload.visitorPhone,
+            visitorEmail: payload.visitorEmail,
+            details: payload.collectedData || payload.details,
+            conversationId: payload.conversationId,
+            visitorId: payload.visitorId,
+        };
+
+        // Prepend to notification list
+        setNotifications(prev => [notifItem, ...prev]);
+
+        // Dispatch INQUIRY_RECEIVED event for Sidebar badge backward compat
+        const customEvent = new CustomEvent('INQUIRY_RECEIVED', { detail: payload });
         window.dispatchEvent(customEvent);
     };
 
@@ -604,9 +647,14 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
             if (!activeConversationIdRef.current) {
                 setActiveConversationId(localConversationId);
             }
+            const fallbackName = localStorage.getItem('visitorName') || 'Visitor';
+            const fallbackEmail = localStorage.getItem('visitorEmail') || 'no-email@test.com';
+            
             const payload = {
                 visitorId: vId,
                 message: messageText,
+                name: fallbackName,
+                email: fallbackEmail
             };
             currentSocket.send('sendMessage', payload);
         } else {

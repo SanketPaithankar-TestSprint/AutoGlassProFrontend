@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button, Input, Card, List, Typography, Spin, FloatButton } from 'antd';
 import { MessageOutlined, CloseOutlined, SendOutlined, RobotOutlined, UserOutlined } from '@ant-design/icons';
-import axios from 'axios';
 import { useAuth } from '../context/auth/useAuth';
 
 const { Text } = Typography;
@@ -93,21 +92,16 @@ const Chatbot = () => {
         try {
             // Using the endpoint from the user request
             // Parameters: query (string)
-            const response = await axios.get(`https://api.autopaneai.com/agp/v1/chatbot-answer`, {
-                params: { query: userMessage.text }
+            const { fetchWithAuth } = await import("../api/fetchWithAuth");
+            const response = await fetchWithAuth(`https://api.autopaneai.com/agp/v1/chatbot-answer?query=${encodeURIComponent(userMessage.text)}`, {
+                method: "GET"
             });
 
-            // The API returns a string answer directly or in a specific field?
-            // Screenshot shows "Response Body" as a string or JSON. 
-            // Usually axios response.data holds the body.
-            // Screenshot shows "Get an answer string from the chatbot..."
-            // I'll assume response.data is the string or an object with the string.
-            // Let's inspect the screenshot again if possible or handle both.
-            // The swagger description says "Get String Answer", response type "string".
+            if (!response.ok) {
+                throw new Error(`Chatbot error: ${response.status}`);
+            }
 
-            const botResponseText = typeof response.data === 'string'
-                ? response.data
-                : response.data?.answer || JSON.stringify(response.data);
+            const botResponseText = await response.text();
 
             const botMessage = { id: Date.now() + 1, text: botResponseText, sender: 'bot' };
             setMessages(prev => [...prev, botMessage]);

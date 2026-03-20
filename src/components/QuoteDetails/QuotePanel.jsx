@@ -5,9 +5,7 @@ import { Modal, Input, Button, message, notification, Select, App } from "antd";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { getActiveTaxRates, getDefaultTaxRate } from "../../api/taxRateApi";
-import { getValidToken } from "../../api/getValidToken";
-import { extractGlassInfo } from "../carGlassViewer/carGlassHelpers";
-import { getPilkingtonPrice } from "../../api/getVendorPrices";
+import { fetchWithAuth } from "../../api/fetchWithAuth";
 import { getUserAdasPrices } from "../../api/userAdasPrices";
 import { ADAS_TYPES } from "../../const/adasTypes";
 import { getTaxSettings } from "../../api/taxSettings";
@@ -116,7 +114,6 @@ const QuotePanelContent = ({
 }) => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
-    const token = getValidToken();
     const { message, notification } = App.useApp();
     const { t } = useTranslation();
 
@@ -472,7 +469,9 @@ const QuotePanelContent = ({
         if (!partNo || partNo.trim() === '') return;
         const trimmedPartNo = partNo.trim();
         try {
-            const res = await fetch(`https://api.autopaneai.com/agp/v1/glass-info?nags_glass_id=${trimmedPartNo}`);
+            const res = await fetchWithAuth(`https://api.autopaneai.com/agp/v1/glass-info?nags_glass_id=${trimmedPartNo}`, {
+                method: "GET"
+            });
             if (!res.ok) { message.error(`${t('quoteDetails.partNotFound')} ${trimmedPartNo}`); return; }
             const data = await res.json();
             if (!data || !Array.isArray(data) || data.length === 0) {
@@ -585,8 +584,8 @@ const QuotePanelContent = ({
             if (glassData?.feature_span) partNumber = `${nagsId} ${glassData.feature_span}`.trim();
             partNumber = partNumber.replace(/N$/, '');
             const vendorPrice = await queryClient.fetchQuery({
-                queryKey: ['pilkingtonPrice', userId, partNumber],
-                queryFn: () => getPilkingtonPrice(userId, partNumber),
+                queryKey: ['pilkingtonPrice', partNumber],
+                queryFn: () => getPilkingtonPrice(partNumber),
                 staleTime: 1000 * 60 * 60
             });
             if (vendorPrice) {

@@ -32,48 +32,17 @@ const ReportsRoot = () => {
             return;
         }
 
-        // Get userId from agp_profile_data (where the profile is stored)
-        let userId = null;
-        try {
-            const profileData = localStorage.getItem('agp_profile_data');
-            console.log('[ReportsRoot] Profile data from localStorage:', profileData);
-            if (profileData) {
-                const profile = JSON.parse(profileData);
-                userId = profile.userId || profile.user_id || profile.id;
-                console.log('[ReportsRoot] Extracted userId from profile:', userId);
-            }
-        } catch (e) {
-            console.error('[ReportsRoot] Error parsing profile data:', e);
-        }
-
-        // Fallback to direct localStorage keys
-        if (!userId) {
-            userId = localStorage.getItem('userId') || localStorage.getItem('user_id') || localStorage.getItem('UserID');
-        }
-
-        console.log('[ReportsRoot] Final User ID:', userId);
-
-        if (!userId) {
-            // Debug: Show all localStorage keys and their values
-            console.log('[ReportsRoot] All localStorage keys:', Object.keys(localStorage));
-            for (const key of Object.keys(localStorage)) {
-                console.log(`[ReportsRoot] ${key}:`, localStorage.getItem(key)?.substring(0, 200));
-            }
-            message.error(t('reports.userIdNotFound'));
-            return;
-        }
-
         const fromDate = dateRange[0].format('YYYY-MM-DD');
         const toDate = dateRange[1].format('YYYY-MM-DD');
 
-        console.log('[ReportsRoot] Calling API with:', { userId, fromDate, toDate });
+        console.log('[ReportsRoot] Calling API with:', { fromDate, toDate });
 
         setLoading(true);
         setPdfUrl(null);
         setPdfBlob(null);
 
         try {
-            const blob = await getSalesReport(userId, fromDate, toDate, selectedDocTypes);
+            const blob = await getSalesReport(fromDate, toDate, selectedDocTypes);
             console.log('[ReportsRoot] API returned blob:', blob);
 
             // Create a URL for the blob to display in iframe

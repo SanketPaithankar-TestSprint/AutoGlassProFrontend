@@ -32,6 +32,34 @@ export async function loginUser({ usernameOrEmail, password, deviceType, browser
 }
 
 /**
+ * Employee Login API call
+ * @param {Object} credentials - Login credentials
+ * @param {string} credentials.email - Email
+ * @param {string} credentials.password - Password
+ * @param {string} credentials.deviceType - Device type (e.g., "WEB")
+ * @param {string} credentials.browserInfo - Browser information
+ * @returns {Promise<Object>} - Login response with token and user data
+ */
+export async function loginEmployee({ email, password, deviceType, browserInfo }) {
+    const response = await fetch(`https://javaapi.autopaneai.com/api/v1/employees/login`, {
+        method: 'POST',
+        headers: {
+            'accept': '*/*',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            email,
+            password,
+            deviceType,
+            browserInfo,
+        }),
+    });
+
+    const data = await response.json();
+    return data;
+}
+
+/**
  * Handle post-login storage and setup
  * @param {Object} loginResponse - Response from login API
  * @param {boolean} rememberMe - Whether to persist login

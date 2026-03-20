@@ -71,22 +71,33 @@ export default function SearchByVin({
   };
 
   const handleDecode = async () => {
+    if (vin.length !== 17) {
+      setError("VIN must be exactly 17 characters.");
+      return;
+    }
     if (!isValid) {
-      setError("VIN must be 17 characters and cannot contain I, O, or Q.");
+      setError("VIN cannot contain I, O, or Q.");
       return;
     }
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`${baseUrl}agp/v1/vin?vin=${vin}&lookup_ids=true`, {
-        headers: { accept: "application/json" },
+      const { fetchWithAuth } = await import("../../api/fetchWithAuth");
+      const res = await fetchWithAuth(`${baseUrl}agp/v1/vin?vin=${vin}&lookup_ids=true`, {
+        method: "GET"
       });
-      if (!res.ok) throw new Error(`Error: ${res.status}`);
+      if (!res.ok) {
+        if (res.status === 422) {
+          const detail = await res.json().catch(() => ({}));
+          throw new Error(detail.error || detail.detail || "Validation Error");
+        }
+        throw new Error(`Error: ${res.status}`);
+      }
       const data = await res.json();
       onDecoded?.(data);
     } catch (e) {
       console.error(e);
-      setError("Failed to decode VIN. Please try again.");
+      setError(e.message || "Failed to decode VIN. Please try again.");
     } finally {
       setLoading(false);
     }

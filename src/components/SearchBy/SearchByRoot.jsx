@@ -4,7 +4,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useQuoteStore } from "../../store";
 import { useQueryClient } from "@tanstack/react-query";
 import { useKitPrices } from "../../hooks/usePricing";
-import { getPilkingtonPrice } from "../../api/getVendorPrices";
+import { getPilkingtonPrice, getVendorPrices } from "../../api/getVendorPrices";
+import { fetchWithAuth } from "../../api/fetchWithAuth";
 import { Modal, Select } from "antd";
 import SearchByVin from "./SearchByvin";
 import SearchByYMM from "./SearchByYMM";
@@ -791,7 +792,9 @@ const SearchByRoot = () => {
       let rawInfo = glassInfo;
       if (!rawInfo && nagsId) {
         try {
-          const res = await fetch(`${config.pythonApiUrl}agp/v1/glass-info?nags_glass_id=${nagsId}`);
+          const res = await fetchWithAuth(`${config.pythonApiUrl}agp/v1/glass-info?nags_glass_id=${nagsId}`, {
+            method: "GET"
+          });
           if (res.ok) rawInfo = await res.json();
         } catch (err) { }
       }
@@ -847,15 +850,15 @@ const SearchByRoot = () => {
     const userId = localStorage.getItem('userId');
     const nagsListPrice = part.list_price || 0;
 
-    if (userId && nagsId) {
+    if (nagsId) {
       try {
         let partNumber = part.feature_span ? `${nagsId} ${part.feature_span}`.trim() : nagsId;
         partNumber = partNumber.replace(/N$/, '');
 
         // Use QueryClient to fetch with cache
         const vendorPrice = await queryClient.fetchQuery({
-          queryKey: ['pilkingtonPrice', userId, partNumber],
-          queryFn: () => getPilkingtonPrice(userId, partNumber),
+          queryKey: ['pilkingtonPrice', partNumber],
+          queryFn: () => getPilkingtonPrice(partNumber),
           staleTime: 1000 * 60 * 60
         });
 

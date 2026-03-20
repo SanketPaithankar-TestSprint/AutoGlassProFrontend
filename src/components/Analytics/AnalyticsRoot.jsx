@@ -27,8 +27,6 @@ const { Option } = Select;
 
 const AnalyticsRoot = () => {
     const { t } = useTranslation();
-    const [userId, setUserId] = React.useState(null);
-    const [checkingUserId, setCheckingUserId] = React.useState(true);
     const [dateParams, setDateParams] = React.useState({ startDate: null, endDate: null });
     const [activeLabel, setActiveLabel] = React.useState(t('analytics.allTime'));
 
@@ -37,27 +35,17 @@ const AnalyticsRoot = () => {
         if (label) setActiveLabel(label);
     };
 
-    React.useEffect(() => {
-        const id = sessionStorage.getItem('userId');
-        setUserId(id);
-        setCheckingUserId(false);
-    }, []);
-
     const { data, isLoading, isFetching, error } = useQuery({
-        queryKey: ['analyticsDashboard', userId, dateParams.startDate ?? 'all', dateParams.endDate ?? 'all'],
+        queryKey: ['analyticsDashboard', dateParams.startDate ?? 'all', dateParams.endDate ?? 'all'],
         queryFn: async () => {
-            if (!userId) {
-                throw new Error("User ID not found. Please ensure you are logged in.");
-            }
-            return getAnalyticsDashboard(userId, dateParams.startDate, dateParams.endDate);
+            return getAnalyticsDashboard(dateParams.startDate, dateParams.endDate);
         },
-        enabled: !!userId,
-        placeholderData: (prev) => prev,  // v5: keep old data visible during refetch
+        placeholderData: (prev) => prev,
     });
 
 
     // Only show full-screen spinner on the very first load (no data yet)
-    if (checkingUserId || !userId || (isLoading && !data)) {
+    if ((isLoading && !data)) {
         return (
             <div className="h-full flex items-center justify-center bg-slate-100">
                 <Loader tip={t('common.loading')} />

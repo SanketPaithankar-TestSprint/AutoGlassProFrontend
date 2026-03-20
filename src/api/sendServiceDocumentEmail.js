@@ -1,5 +1,5 @@
 import urls from "../config";
-import { getValidToken } from "./getValidToken";
+import { fetchWithAuth } from "./fetchWithAuth";
 
 /**
  * Sends the service document via email.
@@ -9,13 +9,8 @@ import { getValidToken } from "./getValidToken";
  */
 export const sendServiceDocumentEmail = async (documentNumber, recipientEmail) => {
     try {
-        const token = await getValidToken();
-        const response = await fetch(`${urls.javaApiUrl}/v1/service-documents/${documentNumber}/send-email?recipientEmail=${encodeURIComponent(recipientEmail)}`, {
-            method: 'POST',
-            headers: {
-                'accept': '*/*',
-                'Authorization': `Bearer ${token}`
-            }
+        const response = await fetchWithAuth(`${urls.javaApiUrl}/v1/service-documents/${documentNumber}/send-email?recipientEmail=${encodeURIComponent(recipientEmail)}`, {
+            method: 'POST'
         });
 
         if (!response.ok) {

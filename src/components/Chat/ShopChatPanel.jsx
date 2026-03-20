@@ -3,7 +3,7 @@ import { useChat } from '../../context/ChatContext';
 import { Input, Button, List, Avatar, Badge, Dropdown, Skeleton } from 'antd';
 import {
     SendOutlined, UserOutlined, DeleteOutlined, MessageOutlined,
-    CloseOutlined, ArrowLeftOutlined, MoreOutlined, CheckOutlined, SearchOutlined,
+    CloseOutlined, ArrowLeftOutlined, MoreOutlined, CheckOutlined, SearchOutlined, RobotOutlined
 } from '@ant-design/icons';
 import moment from 'moment';
 import { useTranslation } from 'react-i18next';
@@ -493,13 +493,24 @@ const ShopChatPanel = () => {
                         ) : activeConversation?.messages && activeConversation.messages.length > 0 ? (
                             activeConversation.messages.map((msg, idx) => {
                                 const isMe = msg.senderType === 'SHOP';
+                                const isAi = msg.senderType === 'AI';
                                 return (
                                     <div key={idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                        {!isMe && isAi && (
+                                            <Avatar 
+                                                size="small" 
+                                                icon={<RobotOutlined />} 
+                                                className="mr-2 mt-1 shrink-0" 
+                                                style={{ backgroundColor: '#10b981', color: 'white' }} 
+                                            />
+                                        )}
                                         <div className={`
                                             max-w-[75%] rounded-xl px-4 py-2 text-sm shadow-sm
                                             ${isMe
                                                 ? 'bg-violet-600 text-white rounded-br-none'
-                                                : 'bg-white text-slate-700 border border-slate-200 rounded-bl-none'
+                                                : isAi
+                                                    ? 'bg-emerald-50 text-slate-700 border border-emerald-100 rounded-bl-none'
+                                                    : 'bg-white text-slate-700 border border-slate-200 rounded-bl-none'
                                             }
                                         `}>
                                             <p>{msg.message}</p>

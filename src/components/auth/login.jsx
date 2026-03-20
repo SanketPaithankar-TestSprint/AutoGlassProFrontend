@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { Form, Input, Button, Checkbox, Alert, Space, notification } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
-import { loginUser, handleLoginSuccess } from '../../api/login';
+import { loginUser, loginEmployee, handleLoginSuccess } from '../../api/login';
 import { getTaxSettings } from '../../api/taxSettings';
 
 // Reusable style for form items to ensure consistent bordering and focus states
@@ -67,18 +67,29 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
     const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [isEmployee, setIsEmployee] = useState(false);
 
     const onFinish = async (values) => {
         setLoading(true);
         setError(null);
 
         try {
-            const res = await loginUser({
-                usernameOrEmail: values.email,
-                password: values.password,
-                deviceType: "WEB",
-                browserInfo: "",
-            });
+            let res;
+            if (isEmployee) {
+                res = await loginEmployee({
+                    email: values.email,
+                    password: values.password,
+                    deviceType: "WEB",
+                    browserInfo: "",
+                });
+            } else {
+                res = await loginUser({
+                    usernameOrEmail: values.email,
+                    password: values.password,
+                    deviceType: "WEB",
+                    browserInfo: "",
+                });
+            }
 
             if (res && res.success) {
                 // Handle post-login storage
@@ -160,7 +171,6 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
                 >
                     <Input
                         prefix={<UserOutlined style={{ color: '#a0aec0' }} />}
-                        placeholder={t('auth.emailOrUsername')}
                         className="custom-api-input"
                     />
                 </Form.Item>
@@ -173,17 +183,24 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
                 >
                     <Input.Password
                         prefix={<LockOutlined style={{ color: '#a0aec0' }} />}
-                        placeholder={t('auth.password')}
                         className="custom-api-input"
                     />
                 </Form.Item>
 
-                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', gap: '8px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+                    <Form.Item style={{ marginBottom: 0 }}>
+                        <Checkbox 
+                            checked={isEmployee} 
+                            onChange={(e) => setIsEmployee(e.target.checked)}
+                        >
+                            {t('auth.loginAsEmployee', 'Login as Employee')}
+                        </Checkbox>
+                    </Form.Item>
                     <Form.Item name="remember" valuePropName="checked" noStyle>
-                        <Checkbox className="font-['Inter'] text-sm text-[#484555]">{t('auth.rememberMe')}</Checkbox>
+                        <Checkbox>{t('auth.rememberMe')}</Checkbox>
                     </Form.Item>
                     <a
-                        className="text-sm font-medium text-[#7E5CFE] hover:text-[#6039de] transition-colors font-['Inter']"
+                        className="login-form-forgot"
                         href=""
                         onClick={(e) => {
                             e.preventDefault();
@@ -200,27 +217,19 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
                         htmlType="submit"
                         loading={loading}
                         block
-                        className="w-full py-4 !bg-gradient-to-r !from-[#6039de] !to-[#c128d4] text-white font-['Plus_Jakarta_Sans'] font-semibold rounded-xl !shadow-[0px_10px_40px_rgba(98,60,225,0.15)] hover:opacity-90 active:scale-[0.98] transition-all duration-200 !border-none h-[54px] text-lg"
+                        style={{
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            border: 'none',
+                            height: '50px',
+                            fontSize: '16px',
+                            fontWeight: 'bold',
+                            borderRadius: '12px',
+                            boxShadow: '0 4px 14px 0 rgba(118, 75, 162, 0.39)'
+                        }}
                     >
                         {loading ? t('auth.signingIn') : t('auth.signIn')}
                     </Button>
                 </Form.Item>
-
-                <div className="text-center mt-6">
-                    <p className="text-[#484555] font-['Inter'] text-sm">
-                        {t('auth.noAccount')}{' '}
-                        <a
-                            href=""
-                            onClick={(e) => {
-                                e.preventDefault();
-                                if (onSignUpClick) onSignUpClick();
-                            }}
-                            className="font-bold text-[#7E5CFE] hover:text-[#6039de] transition-colors"
-                        >
-                            {t('auth.signUp')}
-                        </a>
-                    </p>
-                </div>
             </Form>
         </div>
     );

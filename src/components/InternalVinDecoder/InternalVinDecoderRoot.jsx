@@ -17,6 +17,10 @@ async function decodeVin(vin, modelYear = '') {
     return json.Results[0];
 }
 
+function formatLabel(key) {
+    return key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim();
+}
+
 const InternalVinDecoderRoot = () => {
     const { t } = useTranslation();
     
