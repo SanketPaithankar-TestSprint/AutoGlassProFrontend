@@ -9,7 +9,7 @@ export const LANGUAGE_OPTIONS = [
 ];
 
 const LanguageToggle = ({ compact = false, dark = false, sidebarMode = false, mobileMenu = false }) => {
-    const { i18n } = useTranslation();
+    const { t, i18n } = useTranslation();
 
     const currentLang = i18n.language?.startsWith('es') ? 'es' : 'en';
     const activeOption = LANGUAGE_OPTIONS.find(opt => opt.key === currentLang);
@@ -20,7 +20,7 @@ const LanguageToggle = ({ compact = false, dark = false, sidebarMode = false, mo
 
     const items = LANGUAGE_OPTIONS.map(opt => ({
         key: opt.key,
-        label: <div className="whitespace-nowrap px-1">{opt.long}</div>,
+        label: <div className="whitespace-nowrap px-1 min-w-[120px]">{opt.long}</div>,
     }));
 
     const btnClasses = dark
@@ -34,7 +34,7 @@ const LanguageToggle = ({ compact = false, dark = false, sidebarMode = false, mo
         return (
             <div className="flex items-center gap-2 px-4 py-2">
                 <GlobalOutlined className="text-violet-500 text-base shrink-0" />
-                <span className="text-sm text-slate-500 font-medium mr-1">Language</span>
+                <span className="text-sm text-slate-500 font-medium mr-1">{t('nav.language')}</span>
                 <div className="flex flex-1 rounded-full border border-violet-200 overflow-hidden bg-slate-100 p-0.5 gap-0.5">
                     {LANGUAGE_OPTIONS.map(opt => (
                         <button
@@ -56,26 +56,28 @@ const LanguageToggle = ({ compact = false, dark = false, sidebarMode = false, mo
 
     return (
         <>
-            <style>{`
-                .language-action-menu .ant-dropdown-menu-item {
-                    width: max-content;
-                    min-width: 130px;
-                }
-            `}</style>
-
             {sidebarMode ? (
-                <Dropdown overlayClassName="language-action-menu" menu={dropdownMenu} placement="topLeft" trigger={['click']}>
-                    <div className={`flex items-center ${compact ? 'justify-center' : 'justify-between'} p-2 rounded-lg hover:bg-white/10 cursor-pointer transition-colors group w-full mb-2`}>
+                <Dropdown 
+                    menu={dropdownMenu} 
+                    placement={compact ? "right" : "topRight"} 
+                    trigger={['click']}
+                    getPopupContainer={() => document.body}
+                    overlayStyle={{ minWidth: '150px' }}
+                >
+                    <div className={`flex items-center ${compact ? 'justify-center' : 'justify-between'} p-2 rounded-lg hover:bg-white/10 cursor-pointer transition-colors group w-full mb-1`}>
                         <div className="flex items-center gap-3">
-                            <div className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold transition-colors ${dark ? 'bg-white text-violet-700' : 'bg-violet-100 text-violet-700'} ${compact ? 'w-8 h-8 text-xs' : 'text-sm'}`}>
+                            <div className="shrink-0 w-10 h-10 rounded-full border-2 border-slate-600 group-hover:border-violet-400 transition-colors flex items-center justify-center font-bold text-slate-300 group-hover:text-white text-xs">
                                 {activeOption?.short}
                             </div>
-                            {!compact && (<div className="flex flex-col min-w-0">
-                                <span className="text-sm font-medium text-slate-300 truncate group-hover:text-white transition-colors">My Language</span>
-                            </div>
+                            {!compact && (
+                                <div className="flex flex-col min-w-0">
+                                    <span className="text-sm font-medium text-slate-300 truncate group-hover:text-white transition-colors">
+                                        {t('nav.myLanguage')}
+                                    </span>
+                                </div>
                             )}
                         </div>
-                        {!compact && <DownOutlined className="text-xs text-slate-500 group-hover:text-slate-300 transition-colors ml-2" />}
+                        {!compact && <DownOutlined className="text-xs !text-white group-hover:text-white transition-colors ml-2" />}
                     </div>
                 </Dropdown>
             ) : (

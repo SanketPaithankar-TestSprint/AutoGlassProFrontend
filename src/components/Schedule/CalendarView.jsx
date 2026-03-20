@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -22,6 +23,7 @@ const useIsMobile = () => {
 
 // Mobile Calendar View for Tasks
 const MobileTaskCalendarView = ({ tasks = [], onEdit }) => {
+    const { t } = useTranslation();
     const [currentDate, setCurrentDate] = useState(moment());
     const [selectedDateTasks, setSelectedDateTasks] = useState([]);
     const [showModal, setShowModal] = useState(false);
@@ -89,7 +91,7 @@ const MobileTaskCalendarView = ({ tasks = [], onEdit }) => {
     };
 
     const calendarDays = renderCalendarDays();
-    const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const weekDays = moment.weekdaysShort();
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4">
@@ -154,7 +156,7 @@ const MobileTaskCalendarView = ({ tasks = [], onEdit }) => {
 
             {/* Modal for selected date tasks */}
             <Modal
-                title={`Tasks - ${moment(selectedDateTasks[0]?.dueDate).format('MMM DD, YYYY')}`}
+                title={`${t('schedule.tasksTab')} - ${moment(selectedDateTasks[0]?.dueDate).format('MMM DD, YYYY')}`}
                 open={showModal}
                 onCancel={() => setShowModal(false)}
                 footer={null}
@@ -162,7 +164,7 @@ const MobileTaskCalendarView = ({ tasks = [], onEdit }) => {
                 styles={{ body: { maxHeight: '500px', overflowY: 'auto' } }}
             >
                 {selectedDateTasks.length === 0 ? (
-                    <Empty description="No tasks" />
+                    <Empty description={t('schedule.noTasks')} />
                 ) : (
                     <div className="space-y-3">
                         {selectedDateTasks.map(task => (
@@ -179,7 +181,7 @@ const MobileTaskCalendarView = ({ tasks = [], onEdit }) => {
                                 <div className="flex justify-between items-start mb-2">
                                     <Tag color={getPriorityColor(task.priority)}>
                                         <FlagOutlined className="mr-1" />
-                                        {task.priority || 'NORMAL'}
+                                        {task.priority || t('schedule.normal')}
                                     </Tag>
                                     <Tag color="blue">ID: #{task.id}</Tag>
                                 </div>
@@ -189,17 +191,17 @@ const MobileTaskCalendarView = ({ tasks = [], onEdit }) => {
                                         {task.taskName}
                                     </div>
                                     <div className="text-xs text-slate-600 line-clamp-2">
-                                        {task.description || 'No description'}
+                                        {task.description || t('schedule.noDescription')}
                                     </div>
                                 </div>
 
                                 <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-200">
                                     <span className="text-xs font-semibold px-2 py-1 rounded" style={{ backgroundColor: getStatusColor(task.status) + '20', color: getStatusColor(task.status) }}>
-                                        {task.status === 'COMPLETED' ? 'Completed' : task.status === 'IN_PROGRESS' ? 'In Progress' : 'To Do'}
+                                        {task.status === 'COMPLETED' ? t('schedule.completed') : task.status === 'IN_PROGRESS' ? t('schedule.inProgress') : t('schedule.todo')}
                                     </span>
                                     <span className="text-xs text-slate-500">
                                         <ClockCircleOutlined className="mr-1" />
-                                        {task.dueDate ? moment(task.dueDate).format('MMM DD') : 'No Due Date'}
+                                        {task.dueDate ? moment(task.dueDate).format('MMM DD') : t('schedule.noDueDate')}
                                     </span>
                                 </div>
 
@@ -214,7 +216,7 @@ const MobileTaskCalendarView = ({ tasks = [], onEdit }) => {
                                             onEdit && onEdit(task);
                                         }}
                                     >
-                                        Complete
+                                        {t('schedule.complete')}
                                     </Button>
                                 )}
                             </Card>
@@ -228,6 +230,7 @@ const MobileTaskCalendarView = ({ tasks = [], onEdit }) => {
 
 // Desktop Calendar View for Tasks
 const DesktopTaskCalendarView = ({ tasks = [], onEdit }) => {
+    const { t } = useTranslation();
     const [view, setView] = useState(Views.MONTH);
     const [date, setDate] = useState(new Date());
 
@@ -299,7 +302,17 @@ const DesktopTaskCalendarView = ({ tasks = [], onEdit }) => {
                 onView={setView}
                 date={date}
                 onNavigate={setDate}
-                views={['month', 'week', 'day']}
+                messages={{
+                    today: t('schedule.today'),
+                    back: t('schedule.back'),
+                    next: t('schedule.next'),
+                    previous: t('schedule.previous'),
+                    month: t('schedule.month'),
+                    week: t('schedule.week'),
+                    day: t('schedule.day'),
+                    agenda: t('schedule.agenda'),
+                    showMore: (total) => `+${total} ${t('schedule.more')}`,
+                }}
                 popup
             />
         </div>

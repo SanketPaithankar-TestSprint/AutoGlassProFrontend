@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, Form, Select, Input, DatePicker, InputNumber, Button, message } from 'antd';
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -17,6 +18,7 @@ const { TextArea } = Input;
 
 
 const CreateTaskModal = ({ visible, onClose, task = null }) => {
+    const { t } = useTranslation();
     const [form] = Form.useForm();
     const queryClient = useQueryClient();
     const [token, setToken] = useState(getValidToken());
@@ -99,13 +101,13 @@ const CreateTaskModal = ({ visible, onClose, task = null }) => {
     const createTaskMutation = useMutation({
         mutationFn: (values) => assignTask(values),
         onSuccess: () => {
-            message.success('Task assigned successfully');
+            message.success(t('schedule.assignedSuccessfully'));
             queryClient.invalidateQueries(['employeeTasks']);
             form.resetFields();
             onClose();
         },
         onError: (error) => {
-            message.error(`Failed to assign task: ${error.message}`);
+            message.error(t('schedule.failedAssign') + `: ${error.message}`);
         }
     });
 
@@ -113,12 +115,12 @@ const CreateTaskModal = ({ visible, onClose, task = null }) => {
     const updateTaskMutation = useMutation({
         mutationFn: (values) => updateTask(task.id, values),
         onSuccess: () => {
-            message.success('Task updated successfully');
+            message.success(t('schedule.updatedSuccessfully'));
             queryClient.invalidateQueries(['employeeTasks']);
             onClose();
         },
         onError: (error) => {
-            message.error(`Failed to update task: ${error.message}`);
+            message.error(t('schedule.failedUpdate') + `: ${error.message}`);
         }
     });
 
@@ -126,12 +128,12 @@ const CreateTaskModal = ({ visible, onClose, task = null }) => {
     const deleteTaskMutation = useMutation({
         mutationFn: () => deleteTask(task.id),
         onSuccess: () => {
-            message.success('Task deleted successfully');
+            message.success(t('schedule.deletedSuccessfully'));
             queryClient.invalidateQueries(['employeeTasks']);
             onClose();
         },
         onError: (error) => {
-            message.error(`Failed to delete task: ${error.message}`);
+            message.error(t('schedule.failedDelete') + `: ${error.message}`);
         }
     });
 
@@ -163,30 +165,30 @@ const CreateTaskModal = ({ visible, onClose, task = null }) => {
 
     const handleDelete = () => {
         Modal.confirm({
-            title: 'Delete Task',
-            content: 'Are you sure you want to delete this task? This action cannot be undone.',
-            okText: 'Delete',
+            title: t('schedule.deleteTaskConfirmTitle'),
+            content: t('schedule.deleteTaskConfirmContent'),
+            okText: t('schedule.delete'),
             okType: 'danger',
-            cancelText: 'Cancel',
+            cancelText: t('schedule.cancel'),
             onOk: () => deleteTaskMutation.mutate()
         });
     };
 
     return (
         <Modal
-            title={<span className="text-violet-600 font-bold">{isEditMode ? 'Edit Task' : 'New Task Assignment'}</span>}
+            title={<span className="text-violet-600 font-bold">{isEditMode ? t('schedule.editTask') : t('schedule.newTaskAssignment')}</span>}
             open={visible}
             onCancel={onClose}
             onOk={handleCreate}
             confirmLoading={createTaskMutation.isPending || updateTaskMutation.isPending}
             width={600}
-            okText={isEditMode ? 'Update Task' : 'Assign Task'}
-            cancelText="Cancel"
+            okText={isEditMode ? t('schedule.updateTask') : t('schedule.assignTask')}
+            cancelText={t('schedule.cancel')}
             okButtonProps={{ className: 'bg-violet-600 hover:bg-violet-700' }}
             footer={
                 <div className="flex items-center gap-3 w-full">
                     <Button key="back" onClick={onClose} className="flex-1">
-                        Cancel
+                        {t('schedule.cancel')}
                     </Button>
                     {isEditMode && (
                         <Button
@@ -196,7 +198,7 @@ const CreateTaskModal = ({ visible, onClose, task = null }) => {
                             loading={deleteTaskMutation.isPending}
                             className="flex-1"
                         >
-                            Delete
+                            {t('schedule.delete')}
                         </Button>
                     )}
                     <Button
@@ -206,7 +208,7 @@ const CreateTaskModal = ({ visible, onClose, task = null }) => {
                         loading={createTaskMutation.isPending || updateTaskMutation.isPending}
                         onClick={handleCreate}
                     >
-                        {isEditMode ? 'Update Task' : 'Assign Task'}
+                        {isEditMode ? t('schedule.updateTask') : t('schedule.assignTask')}
                     </Button>
                 </div>
             }
@@ -219,12 +221,12 @@ const CreateTaskModal = ({ visible, onClose, task = null }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Form.Item
                         name="documentNumber"
-                        label="Service Document"
-                        rules={[{ required: true, message: 'Please select a document' }]}
+                        label={t('schedule.serviceDocument')}
+                        rules={[{ required: true, message: t('schedule.pleaseSelectDoc') }]}
                     >
                         <Select
                             showSearch
-                            placeholder="Select Document"
+                            placeholder={t('schedule.selectDocument')}
                             optionFilterProp="children"
                             filterOption={(input, option) =>
                                 (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
@@ -235,7 +237,7 @@ const CreateTaskModal = ({ visible, onClose, task = null }) => {
                                     {menu}
                                     {isFetchingNextPage && (
                                         <div className="p-2 flex justify-center text-slate-500">
-                                            <Spin size="small" /> Loading more...
+                                            <Spin size="small" /> {t('schedule.loadingMore')}
                                         </div>
                                     )}
                                 </>
@@ -243,7 +245,7 @@ const CreateTaskModal = ({ visible, onClose, task = null }) => {
                         >
                             {documents.map(doc => (
                                 <Option key={doc.id} value={doc.documentNumber}>
-                                    {doc.documentNumber} - {doc.customerName || 'Unknown Customer'}
+                                    {doc.documentNumber} - {doc.customerName || t('schedule.unknownCustomer')}
                                 </Option>
                             ))}
                         </Select>
@@ -251,12 +253,12 @@ const CreateTaskModal = ({ visible, onClose, task = null }) => {
 
                     <Form.Item
                         name="employeeId"
-                        label="Assign To"
-                        rules={[{ required: true, message: 'Please select an employee' }]}
+                        label={t('schedule.assignTo')}
+                        rules={[{ required: true, message: t('schedule.pleaseSelectEmployee') }]}
                     >
                         <Select
                             showSearch
-                            placeholder="Select Employee"
+                            placeholder={t('schedule.selectEmployee')}
                             optionFilterProp="label"
                             filterOption={(input, option) =>
                                 (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
@@ -272,30 +274,30 @@ const CreateTaskModal = ({ visible, onClose, task = null }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Form.Item
                         name="assignmentDate"
-                        label="Assignment Date"
-                        rules={[{ required: true, message: 'Please select assignment date' }]}
+                        label={t('schedule.assignmentDate')}
+                        rules={[{ required: true, message: t('schedule.pleaseSelectAssignmentDate') }]}
                     >
                         <DatePicker showTime format="YYYY-MM-DD HH:mm" className="w-full" />
                     </Form.Item>
 
                     <Form.Item
                         name="dueDate"
-                        label="Due Date"
-                        rules={[{ required: true, message: 'Please select a due date' }]}
+                        label={t('schedule.dueDate')}
+                        rules={[{ required: true, message: t('schedule.pleaseSelectDueDate') }]}
                     >
                         <DatePicker showTime format="YYYY-MM-DD HH:mm" className="w-full" />
                     </Form.Item>
 
                     <Form.Item
                         name="priority"
-                        label="Priority"
-                        rules={[{ required: true, message: 'Please select priority' }]}
+                        label={t('schedule.priority')}
+                        rules={[{ required: true, message: t('schedule.pleaseSelectPriority') }]}
                     >
                         <Select>
-                            <Option value="LOW">Low</Option>
-                            <Option value="MEDIUM">Medium</Option>
-                            <Option value="HIGH">High</Option>
-                            <Option value="URGENT">Urgent</Option>
+                            <Option value="LOW">{t('schedule.low')}</Option>
+                            <Option value="MEDIUM">{t('schedule.medium')}</Option>
+                            <Option value="HIGH">{t('schedule.high')}</Option>
+                            <Option value="URGENT">{t('schedule.urgent')}</Option>
                         </Select>
                     </Form.Item>
                 </div>
@@ -303,8 +305,8 @@ const CreateTaskModal = ({ visible, onClose, task = null }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Form.Item
                         name="estimatedDurationMinutes"
-                        label="Est. Duration (mins)"
-                        rules={[{ required: true, message: 'Please enter duration' }]}
+                        label={t('schedule.estDuration')}
+                        rules={[{ required: true, message: t('schedule.pleaseEnterDuration') }]}
                     >
                         <InputNumber min={0} className="w-full" />
                     </Form.Item>
@@ -312,20 +314,20 @@ const CreateTaskModal = ({ visible, onClose, task = null }) => {
 
                 <Form.Item
                     name="taskDescription"
-                    label="Task Description"
-                    rules={[{ required: true, message: 'Please enter task description' }]}
+                    label={t('schedule.taskDescriptionLabel')}
+                    rules={[{ required: true, message: t('schedule.pleaseEnterDescription') }]}
                 >
                     <TextArea
-                        placeholder="e.g. Replace windshield on customer vehicle"
+                        placeholder={t('schedule.taskDescriptionPlaceholder')}
                         autoSize={{ minRows: 2, maxRows: 8 }}
                     />
                 </Form.Item>
 
                 <Form.Item
                     name="notes"
-                    label="Notes"
+                    label={t('schedule.notes')}
                 >
-                    <TextArea rows={4} placeholder="Additional instructions..." />
+                    <TextArea rows={4} placeholder={t('schedule.notesPlaceholder')} />
                 </Form.Item>
 
             </Form>
