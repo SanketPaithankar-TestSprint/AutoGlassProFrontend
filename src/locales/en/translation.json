@@ -147,6 +147,8 @@
         "joinNetwork": "Join our network to access professional quoting and invoicing tools.",
         "loginDashboard": "Log in to your dashboard to manage quotes and invoices.",
         "emailOrUsername": "Email or Username",
+        "welcomeBack": "Welcome Back",
+        "enterCredentials": "Enter your credentials to access your workspace.",
         "signingIn": "Signing in...",
         "loginFailed": "Log In Failed",
         "signedInSuccess": "Signed in successfully.",

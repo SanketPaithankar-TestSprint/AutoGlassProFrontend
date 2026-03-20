@@ -8,28 +8,17 @@ import { useAuth } from '../../context/auth/useAuth';
 import { useProfileDataPrefetch } from '../../hooks/useProfileDataPrefetch';
 import { getValidToken } from '../../api/getValidToken';
 import { useNavigate, useLocation } from "react-router-dom";
-
-// Simple Logo Component if needed locally, or import shared
-const Logo = ({ className }) => {
-    return (
-        <div className={`flex items-center gap-2 ${className}`}>
-            <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
-                APAI
-            </span>
-        </div>
-    );
-};
+import authBg from '../../assets/images/auth-bg.png';
+import testimonialAvatar from '../../assets/images/testimonial-avatar.png';
 
 export default function AuthRoot() {
     const { t } = useTranslation();
-    // Mode: 'LOGIN', 'SIGNUP', 'FORGOT_PASSWORD'
     const [authMode, setAuthMode] = useState('LOGIN');
     const { login } = useAuth();
     const prefetchProfileData = useProfileDataPrefetch();
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Check location state for signup mode
     useEffect(() => {
         if (location.state?.mode === 'signup') {
             setAuthMode('SIGNUP');
@@ -41,14 +30,12 @@ export default function AuthRoot() {
     const handleLoginSuccess = async () => {
         const token = getValidToken();
         if (token) {
-            // Update context state
             if (login) login(token);
             try {
                 if (prefetchProfileData) await prefetchProfileData();
             } catch (error) {
                 console.error("Error prefetching data:", error);
             }
-            // Navigate to dashboard/home
             navigate("/search-by-root");
         }
     };
@@ -57,181 +44,110 @@ export default function AuthRoot() {
         setAuthMode('LOGIN');
     };
 
-    const isSignUpMode = authMode === 'SIGNUP';
-
     return (
-        <div className="w-full min-h-screen flex items-start justify-center p-4 pt-24 md:pt-32 pb-24 relative overflow-hidden"
-            style={{ background: 'linear-gradient(135deg, #f5f3ff 0%, #fdf4ff 50%, #eff6ff 100%)' }}
-        >
-            {/* Decorative gradient orbs */}
-            <div className="absolute top-[-80px] left-[-80px] w-[350px] h-[350px] rounded-full opacity-30 pointer-events-none blur-[80px]"
-                style={{ background: 'radial-gradient(circle, #7c3aed, transparent)' }} />
-            <div className="absolute bottom-[-60px] right-[-60px] w-[300px] h-[300px] rounded-full opacity-25 pointer-events-none blur-[80px]"
-                style={{ background: 'radial-gradient(circle, #c026d3, transparent)' }} />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full opacity-10 pointer-events-none blur-[120px]"
-                style={{ background: 'radial-gradient(circle, #7E5CFE, transparent)' }} />
+        <div className="bg-white font-['Inter'] text-[#191c1e] min-h-[calc(100vh-128px)] flex flex-col overflow-x-hidden">
             <PageHead
                 title="Login / Sign Up | APAI"
                 description="Sign in to your APAI dashboard or create a new account to scale your auto glass shop."
             />
+            
+            <div className="flex-grow flex">
+                {/* Left Column: Sign-in Form (45%) */}
+                <section className="w-full md:w-[45%] flex flex-col bg-white z-10 relative min-h-[600px]">
+                    <div className="flex-grow flex items-center justify-center px-4 md:px-16 lg:px-24 py-12">
+                        <div className="w-full max-w-md">
+                            <div className="mb-10 text-center md:text-left">
+                                <h1 className="text-3xl font-['Plus_Jakarta_Sans'] font-bold tracking-tight text-[#191c1e] mb-2 leading-tight">
+                                    {authMode === 'LOGIN' ? t('auth.welcomeBack') : authMode === 'SIGNUP' ? t('auth.joinUs') : t('auth.resetPassword')}
+                                </h1>
+                                <p className="text-[#484555] font-['Inter'] text-sm md:text-base">
+                                    {authMode === 'LOGIN' ? t('auth.enterCredentials') : ''}
+                                </p>
+                            </div>
 
-            <div
-                className="bg-white/90 backdrop-blur-md rounded-[24px] shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)] relative overflow-hidden w-full max-w-[800px] lg:max-w-[900px] min-h-[450px] md:min-h-[550px] flex flex-col md:block z-10 border border-white/20"
-            >
-                {/* DESKTOP LAYOUT */}
-                <div className="hidden md:block h-full relative min-h-[450px] md:min-h-[550px]">
+                            <div className="w-full">
+                                {authMode === 'LOGIN' && (
+                                    <Login
+                                        onLoginSuccess={handleLoginSuccess}
+                                        onForgotPasswordClick={() => setAuthMode('FORGOT_PASSWORD')}
+                                        onSignUpClick={() => setAuthMode('SIGNUP')}
+                                    />
+                                )}
 
-                    {/* SIGN UP FORM CONTAINER (Left Position) */}
-                    <div
-                        className={`absolute top-0 left-0 h-full w-[60%] transition-all duration-700 ease-in-out
-                    ${isSignUpMode ? 'opacity-100 z-10 translate-x-0' : 'opacity-0 z-0 translate-x-[20%]'}`}
-                    >
-                        <div className="h-full flex flex-col items-center justify-center p-8 bg-transparent">
-                            <div className="w-full h-full overflow-y-auto custom-scrollbar flex flex-col items-center">
-                                <div className="w-full max-w-xl pb-8">
-                                    <h1 className="text-3xl md:text-4xl font-extrabold mb-4 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent text-center mt-8 tracking-tight">{t('auth.joinUs')}</h1>
-                                    <SignUpForm onSuccess={handleSignUpSuccess} onCancel={() => setAuthMode('LOGIN')} />
+                                {authMode === 'SIGNUP' && (
+                                    <SignUpForm
+                                        onSuccess={handleSignUpSuccess}
+                                        onCancel={() => setAuthMode('LOGIN')}
+                                    />
+                                )}
+
+                                {authMode === 'FORGOT_PASSWORD' && (
+                                    <ForgotPasswordForm
+                                        onBackToLogin={() => setAuthMode('LOGIN')}
+                                        onSuccess={() => setAuthMode('LOGIN')}
+                                    />
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Right Column: Branding & Ethereal Content (55%) */}
+                <section className="hidden md:flex md:w-[55%] bg-ethereal-gradient relative overflow-hidden flex-col justify-between p-16 lg:p-24 text-white">
+                    {/* Decorative Elements */}
+                    <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-[#c128d4]/20 rounded-full blur-[120px]"></div>
+                    <div className="absolute bottom-[-5%] left-[-5%] w-[400px] h-[400px] bg-[#7E5CFE]/30 rounded-full blur-[100px]"></div>
+                    
+                    {/* Placeholder for Background Image */}
+                    <div className="absolute inset-0 opacity-20 mix-blend-overlay pointer-events-none bg-slate-800/10 flex items-center justify-center border-2 border-white/5 border-dashed">
+                        {/* [Placeholder for auth-bg.png] */}
+                    </div>
+
+                    <div className="relative z-10 space-y-8 mt-12">
+                        <h2 className="text-5xl lg:text-6xl font-['Plus_Jakarta_Sans'] font-extrabold tracking-tight leading-[1.1]">
+                            Revolutionize your workspace with <span className="text-[#cbbeff]">Smarter Automation</span>
+                        </h2>
+                        
+                        {/* Testimonial */}
+                        <div className="custom-glass p-8 rounded-2xl border border-white/10 max-w-xl">
+                            <p className="text-lg font-['Inter'] leading-relaxed text-[#e6deff] italic mb-6">
+                                "Autopane AI has transformed how our team manages complex workflows. It’s reliable, efficient, and ensures our results are top-notch."
+                            </p>
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-full border-2 border-[#e6deff]/30 bg-slate-200/20 flex items-center justify-center text-xs overflow-hidden">
+                                     {/* [Placeholder for testimonial-avatar.png] */}
+                                     Avatar
+                                </div>
+                                <div>
+                                    <p className="font-['Plus_Jakarta_Sans'] font-bold text-white">Michael Carter</p>
+                                    <p className="text-sm font-['Inter'] text-[#cbbeff] uppercase tracking-wider">Software Engineer</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* LOGIN / FORGOT PASSWORD CONTAINER (Right Position) */}
-                    <div
-                        className={`absolute top-0 right-0 h-full w-[60%] transition-all duration-700 ease-in-out
-                    ${!isSignUpMode ? 'opacity-100 z-10 translate-x-0' : 'opacity-0 z-0 translate-x-[-20%]'}`}
-                    >
-                        <div className="h-full flex flex-col items-center justify-center p-8 bg-transparent">
-                            <div className="w-full h-full overflow-y-auto custom-scrollbar flex flex-col items-center justify-center">
-
-                                <div className="w-full max-w-sm transition-opacity duration-300">
-                                    {authMode === 'LOGIN' && (
-                                        <>
-                                            <h1 className="text-3xl md:text-4xl font-extrabold mb-6 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent tracking-tight text-center p-5">{t('auth.signIn')}</h1>
-                                            <Login
-                                                onLoginSuccess={handleLoginSuccess}
-                                                onForgotPasswordClick={() => setAuthMode('FORGOT_PASSWORD')}
-                                                onSignUpClick={() => setAuthMode('SIGNUP')}
-                                            />
-                                        </>
-                                    )}
-
-                                    {authMode === 'FORGOT_PASSWORD' && (
-                                        <>
-                                            <h1 className="text-2xl md:text-3xl font-extrabold mb-6 bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent tracking-tight text-center">{t('auth.resetPassword')}</h1>
-                                            <ForgotPasswordForm
-                                                onBackToLogin={() => setAuthMode('LOGIN')}
-                                                onSuccess={() => setAuthMode('LOGIN')}
-                                            />
-                                        </>
-                                    )}
-                                </div>
+                    <div className="relative z-10">
+                        <p className="text-xs font-['Inter'] uppercase tracking-[0.2em] text-[#e6deff]/60 mb-6">Join 1K+ Teams</p>
+                        <div className="flex flex-wrap items-center gap-8 opacity-40 grayscale brightness-200">
+                            <div className="flex items-center gap-2">
+                                <span className="material-symbols-outlined text-2xl">hub</span>
+                                <span className="font-['Plus_Jakarta_Sans'] font-bold tracking-tighter">Discord</span>
+                            </div>
+                            <div className="flex items-center gap-2" >
+                                <span className="material-symbols-outlined text-2xl">mail</span>
+                                <span className="font-['Plus_Jakarta_Sans'] font-bold tracking-tighter">Mailchimp</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="material-symbols-outlined text-2xl">spellcheck</span>
+                                <span className="font-['Plus_Jakarta_Sans'] font-bold tracking-tighter">Grammarly</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="material-symbols-outlined text-2xl">architecture</span>
+                                <span className="font-['Plus_Jakarta_Sans'] font-bold tracking-tighter">Figma</span>
                             </div>
                         </div>
                     </div>
-
-                    {/* OVERLAY CONTAINER (40% Width) */}
-                    <div
-                        className={`absolute top-0 left-0 h-full w-[40%] overflow-hidden transition-transform duration-700 ease-in-out z-30
-                    ${isSignUpMode ? 'translate-x-[150%] rounded-l-[100px]' : 'translate-x-0 rounded-r-[100px]'}`}
-                        style={{ zIndex: 30 }}
-                    >
-                        <div
-                            className="h-full w-full relative text-white"
-                            style={{
-                                background: 'linear-gradient(to right, #7c3aed, #c026d3)',
-                            }}
-                        >
-
-                            {/* Overlay Content: LOGIN CTA (Visible when Overlay is Left -> Login/Forgot Mode) */}
-                            <div className={`absolute inset-0 flex flex-col items-center justify-center text-center px-8 transition-opacity duration-700
-                             ${!isSignUpMode ? 'opacity-100 delay-200 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
-                            >
-                                <h1 className="text-3xl md:text-5xl font-extrabold mb-4 tracking-tight">{t('auth.newHere')}</h1>
-                                <p className="text-lg mb-8 text-white/90 font-medium leading-relaxed">{t('auth.joinNetwork')}</p>
-                                <button
-                                    style={{
-                                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                                        color: '#7E5CFE',
-                                        border: '2px solid white'
-                                    }}
-                                    className="px-10 py-3 rounded-full font-bold uppercase tracking-wider cursor-pointer shadow-lg transition-all transform hover:scale-105 focus:outline-none hover:shadow-xl"
-                                    onClick={() => setAuthMode('SIGNUP')}
-                                >
-                                    {t('auth.signUp')}
-                                </button>
-                            </div>
-
-                            {/* Overlay Content: SIGNUP CTA (Visible when Overlay is Right -> SignUp Mode) */}
-                            <div className={`absolute inset-0 flex flex-col items-center justify-center text-center px-8 transition-opacity duration-700
-                            ${isSignUpMode ? 'opacity-100 delay-200 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
-                            >
-                                <h1 className="text-3xl md:text-4xl font-extrabold mb-4 tracking-tight">{t('auth.alreadyPartner')}</h1>
-                                <p className="text-lg mb-8 text-white/90 font-medium leading-relaxed">{t('auth.loginDashboard')}</p>
-                                <button
-                                    style={{
-                                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                                        color: '#7E5CFE',
-                                        border: '2px solid white'
-                                    }}
-                                    className="px-10 py-3 rounded-full font-bold uppercase tracking-wider cursor-pointer shadow-lg transition-all transform hover:scale-105 focus:outline-none hover:shadow-xl"
-                                    onClick={() => setAuthMode('LOGIN')}
-                                >
-                                    {t('auth.signIn')}
-                                </button>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-
-                {/* MOBILE LAYOUT */}
-                <div className="md:hidden p-6 flex flex-col items-center">
-
-                    <div className="w-full bg-slate-100 p-1 rounded-lg mb-6 flex">
-                        <button
-                            className={`flex-1 py-2 rounded-md font-semibold transition-all ${authMode === 'LOGIN' || authMode === 'FORGOT_PASSWORD' ? 'bg-violet-600 shadow-md text-white' : 'text-slate-500 hover:bg-slate-200'}`}
-                            onClick={() => setAuthMode('LOGIN')}
-                        >
-                            {t('auth.signIn')}
-                        </button>
-                        <button
-                            className={`flex-1 py-2 rounded-md font-semibold transition-all ${authMode === 'SIGNUP' ? 'bg-violet-600 shadow-md text-white' : 'text-slate-500 hover:bg-slate-200'}`}
-                            onClick={() => setAuthMode('SIGNUP')}
-                        >
-                            {t('auth.signUp')}
-                        </button>
-                    </div>
-
-                    <div className="w-full">
-                        {authMode === 'SIGNUP' && (
-                            <div className="animate-fade-in">
-                                <SignUpForm onSuccess={handleSignUpSuccess} onCancel={() => setAuthMode('LOGIN')} />
-                            </div>
-                        )}
-
-                        {authMode === 'LOGIN' && (
-                            <div className="animate-fade-in">
-                                <Login
-                                    onLoginSuccess={handleLoginSuccess}
-                                    onForgotPasswordClick={() => setAuthMode('FORGOT_PASSWORD')}
-                                    onSignUpClick={() => setAuthMode('SIGNUP')}
-                                />
-                            </div>
-                        )}
-
-                        {authMode === 'FORGOT_PASSWORD' && (
-                            <div className="animate-fade-in">
-                                <h2 className="text-xl font-bold mb-4 text-center">{t('auth.resetPassword')}</h2>
-                                <ForgotPasswordForm
-                                    onBackToLogin={() => setAuthMode('LOGIN')}
-                                    onSuccess={() => setAuthMode('LOGIN')}
-                                />
-                            </div>
-                        )}
-                    </div>
-                </div>
-
+                </section>
             </div>
         </div>
     );

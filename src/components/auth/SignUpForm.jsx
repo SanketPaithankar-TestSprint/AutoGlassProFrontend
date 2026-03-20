@@ -492,15 +492,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                         <Button
                             type="primary"
                             htmlType="submit"
-                            style={{
-                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                border: 'none',
-                                height: '50px',
-                                fontSize: '16px',
-                                fontWeight: 'bold',
-                                borderRadius: '12px',
-                                boxShadow: '0 4px 14px 0 rgba(118, 75, 162, 0.39)'
-                            }}
+                            className="!bg-gradient-to-r !from-[#6039de] !to-[#c128d4] text-white font-['Plus_Jakarta_Sans'] font-semibold rounded-xl !shadow-[0px_10px_40px_rgba(98,60,225,0.15)] hover:opacity-90 active:scale-[0.98] transition-all duration-200 !border-none h-[54px] px-10 text-lg flex items-center justify-center"
                             loading={loading}
                         >
                             {t('auth.continue')}

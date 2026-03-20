@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
+
 /* Glassmorphism Navbar */
 .ant-layout-header.glass-navbar {
   background: transparent !important;
@@ -478,8 +480,17 @@ input[type=number] {
   height: 31px;
   background: transparent;
   background-image: radial-gradient(circle at top left, transparent 31px, var(--active-bg, #F1F5F9) 31.5px);
-  pointer-events: none;
   z-index: 10;
+}
+
+.bg-ethereal-gradient {
+  background: radial-gradient(circle at 20% 30%, #7E5CFE 0%, #6039de 40%, #1d0061 100%);
+}
+
+.custom-glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
 }
 
 .sidebar-curve-bottom {
