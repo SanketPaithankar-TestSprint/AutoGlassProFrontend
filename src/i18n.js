@@ -1,6 +1,8 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
+import moment from 'moment';
+import 'moment/locale/es'; // Import the locales you need
 
 import en from './locales/en/translation.json';
 import es from './locales/es/translation.json';
@@ -22,5 +24,11 @@ i18n
             caches: ['localStorage'],
         },
     });
+
+// Sync moment locale
+moment.locale(i18n.language);
+i18n.on('languageChanged', (lng) => {
+    moment.locale(lng);
+});
 
 export default i18n;

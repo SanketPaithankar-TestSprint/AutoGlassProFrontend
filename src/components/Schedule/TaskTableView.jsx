@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Table, Tag, Button, Space, Tooltip, Card, Empty } from 'antd';
 import { EditOutlined, CheckCircleOutlined, DeleteOutlined, ClockCircleOutlined, FlagOutlined } from '@ant-design/icons';
 import moment from 'moment';
@@ -18,18 +19,19 @@ const useIsMobile = () => {
 
 // Mobile List View for Tasks
 const MobileTaskListView = ({ tasks = [], onStatusChange, onViewDetails }) => {
+    const { t } = useTranslation();
     const getStatusColor = (status) => {
         switch (status) {
             case 'COMPLETED':
-                return { tag: 'success', label: 'Completed', border: '#52c41a' };
+                return { tag: 'success', label: t('schedule.completed'), border: '#52c41a' };
             case 'IN_PROGRESS':
-                return { tag: 'processing', label: 'In Progress', border: '#1890ff' };
+                return { tag: 'processing', label: t('schedule.inProgress'), border: '#1890ff' };
             case 'PENDING':
-                return { tag: 'warning', label: 'To Do', border: '#faad14' };
+                return { tag: 'warning', label: t('schedule.todo'), border: '#faad14' };
             case 'OVERDUE':
-                return { tag: 'error', label: 'Overdue', border: '#ff4d4f' };
+                return { tag: 'error', label: t('schedule.overdue'), border: '#ff4d4f' };
             default:
-                return { tag: 'default', label: 'Unknown', border: '#8c8c8c' };
+                return { tag: 'default', label: t('schedule.unknown'), border: '#8c8c8c' };
         }
     };
 
@@ -47,7 +49,7 @@ const MobileTaskListView = ({ tasks = [], onStatusChange, onViewDetails }) => {
     return (
         <div className="space-y-3 p-2">
             {tasks.length === 0 ? (
-                <Empty description="No tasks" />
+                <Empty description={t('schedule.noTasks')} />
             ) : (
                 tasks.map(task => {
                     const statusConfig = getStatusColor(task.status);
@@ -67,7 +69,7 @@ const MobileTaskListView = ({ tasks = [], onStatusChange, onViewDetails }) => {
                                 </span>
                                 <span className={`text-xs font-bold px-2 py-1 rounded ${getPriorityColor(task.priority)}`}>
                                     <FlagOutlined className="mr-1" />
-                                    {task.priority || 'NORMAL'}
+                                    {task.priority || t('schedule.normal')}
                                 </span>
                             </div>
 
@@ -80,7 +82,7 @@ const MobileTaskListView = ({ tasks = [], onStatusChange, onViewDetails }) => {
                                 
                                 {/* Description */}
                                 <p className="text-slate-600 text-xs line-clamp-2">
-                                    {task.description || 'No description'}
+                                    {task.description || t('schedule.noDescription')}
                                 </p>
                             </div>
 
@@ -93,14 +95,14 @@ const MobileTaskListView = ({ tasks = [], onStatusChange, onViewDetails }) => {
                                 </div>
                                 <span className="text-xs text-slate-500">
                                     <ClockCircleOutlined className="mr-1" />
-                                    {task.dueDate ? moment(task.dueDate).format('MMM DD, YYYY') : 'No Due Date'}
+                                    {task.dueDate ? moment(task.dueDate).format('MMM DD, YYYY') : t('schedule.noDueDate')}
                                 </span>
                             </div>
 
                             {/* Action Button */}
                             <div className="flex justify-end gap-2">
                                 {task.status !== 'COMPLETED' && (
-                                    <Tooltip title="Mark Complete">
+                                    <Tooltip title={t('schedule.markComplete')}>
                                         <Button
                                             type="primary"
                                             size="small"
@@ -111,7 +113,7 @@ const MobileTaskListView = ({ tasks = [], onStatusChange, onViewDetails }) => {
                                             }}
                                             className="!bg-green-600 border-0"
                                         >
-                                            Complete
+                                            {t('schedule.complete')}
                                         </Button>
                                     </Tooltip>
                                 )}
@@ -124,7 +126,7 @@ const MobileTaskListView = ({ tasks = [], onStatusChange, onViewDetails }) => {
                                         onViewDetails && onViewDetails(task);
                                     }}
                                 >
-                                    Edit
+                                    {t('schedule.edit')}
                                 </Button>
                             </div>
                         </Card>
@@ -137,16 +139,17 @@ const MobileTaskListView = ({ tasks = [], onStatusChange, onViewDetails }) => {
 
 // Desktop Table View
 const DesktopTaskTableView = ({ tasks = [], onStatusChange, onViewDetails }) => {
+    const { t } = useTranslation();
     const columns = [
         {
-            title: 'ID',
+            title: t('schedule.id'),
             dataIndex: 'id',
             key: 'id',
             width: 80,
             render: (text) => <span className="text-xs text-slate-500">#{text}</span>
         },
         {
-            title: 'Task',
+            title: t('schedule.tasksTab'),
             dataIndex: 'taskName',
             key: 'taskName',
             render: (text, record) => (
@@ -157,50 +160,50 @@ const DesktopTaskTableView = ({ tasks = [], onStatusChange, onViewDetails }) => 
             )
         },
         {
-            title: 'Priority',
+            title: t('schedule.priority'),
             dataIndex: 'priority',
             key: 'priority',
             width: 100,
             render: (priority) => {
                 const color = priority === 'HIGH' ? 'red' : priority === 'MEDIUM' ? 'orange' : 'blue';
-                return <Tag color={color}>{priority || 'NORMAL'}</Tag>;
+                return <Tag color={color}>{priority || t('schedule.normal')}</Tag>;
             }
         },
         {
-            title: 'Due Date',
+            title: t('schedule.dueDate'),
             dataIndex: 'dueDate',
             key: 'dueDate',
             width: 120,
             render: (date) => date ? new Date(date).toLocaleDateString() : '-'
         },
         {
-            title: 'Status',
+            title: t('schedule.status'),
             dataIndex: 'status',
             key: 'status',
             width: 140,
             render: (status) => {
                 let colorClass = 'bg-slate-500';
                 let textClass = 'text-slate-600';
-                let label = status || 'UNKNOWN';
+                let label = status || t('schedule.unknown');
                 let pulse = false;
 
                 if (status === 'COMPLETED') {
                     colorClass = 'bg-emerald-500';
                     textClass = 'text-emerald-700';
-                    label = 'Completed';
+                    label = t('schedule.completed');
                 } else if (status === 'IN_PROGRESS') {
                     colorClass = 'bg-blue-500';
                     textClass = 'text-blue-700';
-                    label = 'In Progress';
+                    label = t('schedule.inProgress');
                     pulse = true;
                 } else if (status === 'PENDING') {
                     colorClass = 'bg-amber-500';
                     textClass = 'text-amber-700';
-                    label = 'To Do';
+                    label = t('schedule.todo');
                 } else if (status === 'OVERDUE') {
                     colorClass = 'bg-red-500';
                     textClass = 'text-red-700';
-                    label = 'Overdue';
+                    label = t('schedule.overdue');
                 }
 
                 return (
@@ -215,13 +218,13 @@ const DesktopTaskTableView = ({ tasks = [], onStatusChange, onViewDetails }) => 
             }
         },
         {
-            title: 'Actions',
+            title: t('schedule.actions'),
             key: 'actions',
             width: 150,
             render: (_, record) => (
                 <Space size="small">
                     {record.status !== 'COMPLETED' && (
-                        <Tooltip title="Mark Complete">
+                        <Tooltip title={t('schedule.markComplete')}>
                             <Button
                                 type="text"
                                 size="small"

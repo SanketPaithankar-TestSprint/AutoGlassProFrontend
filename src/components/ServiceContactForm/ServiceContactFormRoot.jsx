@@ -329,12 +329,10 @@ const ContactFormInquiriesTab = () => {
 //  Tab 2 – AI Chat Inquiries
 // ─────────────────────────────────────────────
 const AiChatInquiriesTab = () => {
+    const { t } = useTranslation();
     const { forms, count, loading, fetchForms, markAsRead } = useAiChatInquiries();
     const [selectedForm, setSelectedForm] = useState(null);
     const [detailModalOpen, setDetailModalOpen] = useState(false);
-    const [creatingQuoteId, setCreatingQuoteId] = useState(null);
-    const navigate = useNavigate();
-    const { t } = useTranslation();
 
     useEffect(() => {
         fetchForms();
@@ -348,38 +346,16 @@ const AiChatInquiriesTab = () => {
         setDetailModalOpen(true);
     };
 
-    const handleCreateQuote = async (record) => {
-        setCreatingQuoteId(record.session_id);
-        try {
-            // AI Chat inquiries in forms state are already full records
-            const prefillData = await createQuoteFromInquiry(record);
-            console.log('[AiChatInquiriesTab] prefillData:', prefillData);
-
-            if (record.read === false) {
-                await markAsRead(record.session_id);
-            }
-
-            localStorage.removeItem('agp_customer_data');
-            localStorage.removeItem('agp_doc_metadata');
-            navigate('/search-by-root', { state: { prefillData } });
-        } catch (err) {
-            console.error('[AiChatInquiriesTab] Create quote failed:', err);
-            message.error(t('serviceContactForm.failedToPrepareQuote'));
-        } finally {
-            setCreatingQuoteId(null);
-        }
-    };
-
     const columns = [
         {
-            title: 'Name',
+            title: t('serviceContactForm.name'),
             key: 'name',
             ellipsis: true,
             width: 160,
             render: (_, record) => `${record.first_name || ''} ${record.last_name || ''}`.trim() || '-',
         },
         {
-            title: 'Vehicle',
+            title: t('serviceContactForm.vehicle'),
             key: 'vehicle',
             ellipsis: true,
             responsive: ['md'],
@@ -387,7 +363,7 @@ const AiChatInquiriesTab = () => {
                 [record.year, record.make_name, record.model_name].filter(Boolean).join(' ') || '-',
         },
         {
-            title: 'Service Type',
+            title: t('serviceContactForm.serviceType'),
             dataIndex: 'service_type',
             key: 'service_type',
             responsive: ['lg'],
@@ -398,7 +374,7 @@ const AiChatInquiriesTab = () => {
             ) : '-',
         },
         {
-            title: 'Status',
+            title: t('serviceContactForm.status'),
             key: 'status',
             width: 80,
             render: (_, record) => (
@@ -408,7 +384,7 @@ const AiChatInquiriesTab = () => {
             ),
         },
         {
-            title: 'Date',
+            title: t('serviceContactForm.date'),
             dataIndex: 'created_at',
             key: 'created_at',
             width: 120,
@@ -416,36 +392,25 @@ const AiChatInquiriesTab = () => {
             render: (date) => date ? new Date(date).toLocaleDateString() : '-',
         },
         {
-            title: 'Actions',
+            title: t('serviceContactForm.actions'),
             key: 'actions',
-            width: 130,
+            width: 90,
             fixed: 'right',
             render: (_, record) => {
                 const isUnread = record.read === false;
                 return (
-                    <div className="flex gap-2">
-                        <Tooltip title="View Details">
-                            <Button
-                                icon={<EyeOutlined />}
-                                size="small"
-                                style={{
-                                    color: isUnread ? '#ff4d4f' : '#52c41a',
-                                    borderColor: isUnread ? '#ffade8' : '#b7eb8f',
-                                    backgroundColor: isUnread ? '#fff1f0' : '#f6ffed'
-                                }}
-                                onClick={() => handleViewDetail(record)}
-                            />
-                        </Tooltip>
-                        <Tooltip title={t('serviceContactForm.createQuote')}>
-                            <Button
-                                icon={<FileAddOutlined />}
-                                size="small"
-                                loading={creatingQuoteId === record.session_id}
-                                onClick={() => handleCreateQuote(record)}
-                                style={{ color: '#16a34a', borderColor: '#16a34a' }}
-                            />
-                        </Tooltip>
-                    </div>
+                    <Tooltip title={t('serviceContactForm.viewDetails')}>
+                        <Button
+                            icon={<EyeOutlined />}
+                            size="small"
+                            style={{
+                                color: isUnread ? '#ff4d4f' : '#52c41a',
+                                borderColor: isUnread ? '#ffade8' : '#b7eb8f',
+                                backgroundColor: isUnread ? '#fff1f0' : '#f6ffed'
+                            }}
+                            onClick={() => handleViewDetail(record)}
+                        />
+                    </Tooltip>
                 );
             },
         },
@@ -456,7 +421,7 @@ const AiChatInquiriesTab = () => {
             <Row gutter={[16, 16]} className="mb-6">
                 <Col xs={24} sm={12} md={8}>
                     <Card>
-                        <Statistic title="Total AI Chat Inquiries" value={count} />
+                        <Statistic title={t('serviceContactForm.totalAiChatInquiries')} value={count} />
                     </Card>
                 </Col>
             </Row>
@@ -513,7 +478,7 @@ const ServiceContactFormRoot = () => {
             label: (
                 <span className="flex items-center gap-1">
                     <FormOutlined />
-                    Contact Form Inquiries
+                    {t('serviceContactForm.contactFormInquiries')}
                 </span>
             ),
             children: <ContactFormInquiriesTab />,
@@ -523,7 +488,7 @@ const ServiceContactFormRoot = () => {
             label: (
                 <span className="flex items-center gap-1">
                     <RobotOutlined />
-                    AI Chat Inquiries
+                    {t('serviceContactForm.aiChatInquiries')}
                 </span>
             ),
             children: <AiChatInquiriesTab />,

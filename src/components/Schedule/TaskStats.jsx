@@ -1,8 +1,10 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Progress } from 'antd';
 import { CheckCircleOutlined, ClockCircleOutlined, SyncOutlined, WarningOutlined } from '@ant-design/icons';
 
 const TaskStats = ({ tasks = [] }) => {
+    const { t } = useTranslation();
     const total = tasks.length;
     const completed = tasks.filter(t => t.status === 'COMPLETED').length;
     const pending = tasks.filter(t => t.status === 'PENDING').length;
@@ -28,7 +30,7 @@ const TaskStats = ({ tasks = [] }) => {
                 />
                 <div>
                     <div className="text-2xl font-bold text-green-600">{completed}</div>
-                    <div className="text-xs text-slate-500 font-medium">Done</div>
+                    <div className="text-xs text-slate-500 font-medium">{t('schedule.done')}</div>
                 </div>
             </div>
 
@@ -38,7 +40,7 @@ const TaskStats = ({ tasks = [] }) => {
                     <ClockCircleOutlined className="text-3xl text-orange-400" />
                     <div className="text-2xl font-bold text-orange-500">{pending}</div>
                 </div>
-                <div className="text-sm text-slate-500 font-medium">Pending</div>
+                <div className="text-sm text-slate-500 font-medium">{t('schedule.pending')}</div>
             </div>
 
             {/* In Progress */}
@@ -50,7 +52,7 @@ const TaskStats = ({ tasks = [] }) => {
                     />
                     <div className="text-2xl font-bold text-blue-500">{inProgress}</div>
                 </div>
-                <div className="text-sm text-slate-500 font-medium">In Progress</div>
+                <div className="text-sm text-slate-500 font-medium">{t('schedule.inProgress')}</div>
             </div>
 
             {/* Overdue */}
@@ -59,7 +61,7 @@ const TaskStats = ({ tasks = [] }) => {
                     <WarningOutlined className="text-3xl text-red-400" />
                     <div className={`text-2xl font-bold ${overdue > 0 ? 'text-red-600' : 'text-slate-400'}`}>{overdue}</div>
                 </div>
-                <div className="text-sm text-slate-500 font-medium">Overdue</div>
+                <div className="text-sm text-slate-500 font-medium">{t('schedule.overdue')}</div>
             </div>
         </div>
     );
