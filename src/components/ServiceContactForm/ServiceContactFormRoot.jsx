@@ -333,6 +333,8 @@ const AiChatInquiriesTab = () => {
     const { forms, count, loading, fetchForms, markAsRead } = useAiChatInquiries();
     const [selectedForm, setSelectedForm] = useState(null);
     const [detailModalOpen, setDetailModalOpen] = useState(false);
+    const [creatingQuoteId, setCreatingQuoteId] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchForms();
@@ -344,6 +346,28 @@ const AiChatInquiriesTab = () => {
         }
         setSelectedForm(form);
         setDetailModalOpen(true);
+    };
+
+    const handleCreateQuote = async (record) => {
+        setCreatingQuoteId(record.session_id);
+        try {
+            // AI Chat inquiries in forms state are already full records
+            const prefillData = await createQuoteFromInquiry(record);
+            console.log('[AiChatInquiriesTab] prefillData:', prefillData);
+
+            if (record.read === false) {
+                await markAsRead(record.session_id);
+            }
+
+            localStorage.removeItem('agp_customer_data');
+            localStorage.removeItem('agp_doc_metadata');
+            navigate('/search-by-root', { state: { prefillData } });
+        } catch (err) {
+            console.error('[AiChatInquiriesTab] Create quote failed:', err);
+            message.error(t('serviceContactForm.failedToPrepareQuote'));
+        } finally {
+            setCreatingQuoteId(null);
+        }
     };
 
     const columns = [
@@ -394,23 +418,34 @@ const AiChatInquiriesTab = () => {
         {
             title: t('serviceContactForm.actions'),
             key: 'actions',
-            width: 90,
+            width: 130,
             fixed: 'right',
             render: (_, record) => {
                 const isUnread = record.read === false;
                 return (
-                    <Tooltip title={t('serviceContactForm.viewDetails')}>
-                        <Button
-                            icon={<EyeOutlined />}
-                            size="small"
-                            style={{
-                                color: isUnread ? '#ff4d4f' : '#52c41a',
-                                borderColor: isUnread ? '#ffade8' : '#b7eb8f',
-                                backgroundColor: isUnread ? '#fff1f0' : '#f6ffed'
-                            }}
-                            onClick={() => handleViewDetail(record)}
-                        />
-                    </Tooltip>
+                    <div className="flex gap-2">
+                        <Tooltip title={t('serviceContactForm.viewDetails')}>
+                            <Button
+                                icon={<EyeOutlined />}
+                                size="small"
+                                style={{
+                                    color: isUnread ? '#ff4d4f' : '#52c41a',
+                                    borderColor: isUnread ? '#ffade8' : '#b7eb8f',
+                                    backgroundColor: isUnread ? '#fff1f0' : '#f6ffed'
+                                }}
+                                onClick={() => handleViewDetail(record)}
+                            />
+                        </Tooltip>
+                        <Tooltip title={t('serviceContactForm.createQuote')}>
+                            <Button
+                                icon={<FileAddOutlined />}
+                                size="small"
+                                loading={creatingQuoteId === record.session_id}
+                                onClick={() => handleCreateQuote(record)}
+                                style={{ color: '#16a34a', borderColor: '#16a34a' }}
+                            />
+                        </Tooltip>
+                    </div>
                 );
             },
         },

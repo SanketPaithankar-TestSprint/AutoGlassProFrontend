@@ -151,6 +151,7 @@ const PublicContactContent = () => {
         year: '',
         make: '',
         model: '',
+        bodyStyle: '',
         serviceType: '',
         servicePreference: '',
         windshieldFeatures: [],
@@ -239,6 +240,35 @@ const PublicContactContent = () => {
     for (let i = 2026; i >= 1949; i--) {
         yearOptions.push(i);
     }
+
+    // Body Style Options
+    const BODY_STYLE_OPTIONS = [
+        'Conventional Cab', '4 Door Limousine', 'Extended Van', 'Tilt Cab',
+        'Bus', 'Cab Over Engine', '2 Door Coupe', '4 Door Sedan',
+        '2 Door Convertible', '4 Door Station Wagon', '4 Door Crew Cab',
+        '2 Door Conventional Cab', '2 Door Club Cab', '2 Door Standard Cab',
+        '3 Door Utility', 'Step Van', '3 Door Station Wagon', '4 Door Hatchback',
+        '2 Door Super Cab', 'Half Cab', '2 Door Hatchback', '2 Door Sedan',
+        '2 Door Utility', '2 Door Pickup', '2 Door Hardtop', '4 Door Utility',
+        '3 Door Van', '2 Door Station Wagon', '4 Door Hardtop', '2 Door Extended Cab',
+        'Van', '2 Door Panel Wagon', '8 Door Limousine', '6 Door Limousine',
+        'Walk-In Mvm Wide', 'Step-In S Wide', 'Walk-In Mvl Wide', 'Walk-In Mva Wide',
+        'Walk-In Mvs Wide', 'Walk-In M Wide', 'Walk-In Mv Wide', 'Walk-In Amv Wide',
+        'Walk-In Mm Standard', 'Walk-In Ml Standard', 'Walk-In Ma Standard',
+        'Walk-In Ms Standard', 'Walk-In M Standard', 'Walk-In Am Standard',
+        'Step-In Svm Wide', 'Step-In Svl Wide', 'Step-In Sva Wide', 'Step-In S Standard',
+        'Step-In Sm Standard', 'Step-In Sl Standard', 'Step-In S Narrow',
+        'Step-In Sn Narrow', 'Step-In Snl Narrow', 'Cabover', 'Cabover/Tilt Cab',
+        'Cabover/Cargo Truck', '1 Door Step Van', '4 Door Convertible', 'Panel Van',
+        'Window Van', '4 Door Hardtop Wagon', '4 Door Sedan Wagon', '1 Door Limousine',
+        'Motor Home', 'Mini Van', 'Full Cab', 'Cab Forward', 'Cab Forward/Tilt',
+        'Postal Van', 'Extended Cargo Van', 'Cargo Van', 'Value Van',
+        '4 Door Quad Cab', '4 Door Cabover', 'Extended Cabover',
+        'Extended Conventional Cab', '4 Door Conventional Cab', 'Cutaway Van',
+        '4 Door Extended Crew Cab', '4 Door Extended Cab', '3 Door Hatchback',
+        '4 Door Coupe', 'Cargo Van Wide', 'Cargo Van 66.7" WB',
+        '4 Door Super Cab', '4D Gran Coupe'
+    ];
 
     // Validate slug on mount
     useEffect(() => {
@@ -398,6 +428,7 @@ const PublicContactContent = () => {
                 vehicleYear: formData.year ? parseInt(formData.year, 10) : 0,
                 vehicleMake: formData.make,
                 vehicleModel: formData.model,
+                bodyType: formData.bodyStyle || '',
                 licensePlateNumber: formData.licensePlateNumber,
                 serviceType: [formData.serviceType], // API expects array
                 servicePreference: formData.servicePreference === 'Mobile service' ? 'MOBILE' : 'IN_SHOP',
@@ -484,6 +515,7 @@ const PublicContactContent = () => {
             year: '',
             make: '',
             model: '',
+            bodyStyle: '',
             serviceType: '',
             servicePreference: '',
             windshieldFeatures: [],
@@ -876,6 +908,7 @@ const PublicContactContent = () => {
                                                             )}
                                                         </div>
                                                     ) : (
+                                                        <>
                                                         <div className="grid grid-cols-3 gap-2">
                                                             <Select
                                                                 showSearch
@@ -927,6 +960,25 @@ const PublicContactContent = () => {
                                                                 ))}
                                                             </Select>
                                                         </div>
+                                                        {/* Body Style */}
+                                                        <Select
+                                                            showSearch
+                                                            allowClear
+                                                            placeholder="Body Style (Optional)"
+                                                            value={formData.bodyStyle || undefined}
+                                                            onChange={(value) => setFormData(prev => ({ ...prev, bodyStyle: value || '' }))}
+                                                            filterOption={(input, option) =>
+                                                                (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+                                                            }
+                                                            className="w-full"
+                                                            style={{ height: '40px' }}
+                                                            dropdownStyle={{ zIndex: 9999 }}
+                                                        >
+                                                            {BODY_STYLE_OPTIONS.map((type) => (
+                                                                <Select.Option key={type} value={type}>{type}</Select.Option>
+                                                            ))}
+                                                        </Select>
+                                                        </>
                                                     )}
                                                 </motion.div>
                                             )}
