@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -58,6 +59,7 @@ const useIsMobile = () => {
 
 // Mobile Calendar View with dots
 const MobileDocumentCalendarView = ({ documents = [], onViewDetails }) => {
+    const { t } = useTranslation();
     const [currentDate, setCurrentDate] = useState(moment());
     const [selectedDateAppointments, setSelectedDateAppointments] = useState([]);
     const [showModal, setShowModal] = useState(false);
@@ -101,7 +103,7 @@ const MobileDocumentCalendarView = ({ documents = [], onViewDetails }) => {
     };
 
     const calendarDays = renderCalendarDays();
-    const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const weekDays = moment.weekdaysShort();
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4">
@@ -166,7 +168,7 @@ const MobileDocumentCalendarView = ({ documents = [], onViewDetails }) => {
 
             {/* Modal for selected date appointments */}
             <Modal
-                title={`Appointments - ${moment(selectedDateAppointments[0]?.scheduledDate).format('MMM DD, YYYY')}`}
+                title={`${t('schedule.appointments')} - ${moment(selectedDateAppointments[0]?.scheduledDate).format('MMM DD, YYYY')}`}
                 open={showModal}
                 onCancel={() => setShowModal(false)}
                 footer={null}
@@ -174,7 +176,7 @@ const MobileDocumentCalendarView = ({ documents = [], onViewDetails }) => {
                 styles={{ body: { maxHeight: '500px', overflowY: 'auto' } }}
             >
                 {selectedDateAppointments.length === 0 ? (
-                    <Empty description="No appointments" />
+                    <Empty description={t('schedule.noAppointments')} />
                 ) : (
                     <div className="space-y-3">
                         {selectedDateAppointments.map(doc => (
@@ -198,7 +200,7 @@ const MobileDocumentCalendarView = ({ documents = [], onViewDetails }) => {
                                 <div className="mb-2">
                                     <div className="flex items-center text-slate-700 mb-1">
                                         <UserOutlined className="mr-2 text-slate-400" />
-                                        <span className="font-medium text-sm">{doc.customerName || doc.customer?.name || 'N/A'}</span>
+                                        <span className="font-medium text-sm">{doc.customerName || doc.customer?.name || t('schedule.na')}</span>
                                     </div>
                                     {(doc.vehicle || doc.vehicleInfo) && (
                                         <div className="flex items-center text-slate-500 text-xs">
@@ -213,7 +215,7 @@ const MobileDocumentCalendarView = ({ documents = [], onViewDetails }) => {
                                 </div>
 
                                 <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-200">
-                                    <span className="text-xs text-slate-400">{doc.serviceLocation || 'Shop'}</span>
+                                    <span className="text-xs text-slate-400">{doc.serviceLocation || t('schedule.inShop')}</span>
                                     {doc.totalAmount && (
                                         <span className="text-sm font-semibold text-green-600">
                                             ${doc.totalAmount.toFixed(2)}
@@ -231,6 +233,7 @@ const MobileDocumentCalendarView = ({ documents = [], onViewDetails }) => {
 
 // Calendar View for Documents
 const DocumentCalendarView = ({ documents = [], onViewDetails }) => {
+    const { t } = useTranslation();
     const [view, setView] = useState(Views.MONTH);
     const [date, setDate] = useState(new Date());
 
@@ -242,7 +245,7 @@ const DocumentCalendarView = ({ documents = [], onViewDetails }) => {
 
             return {
                 id: doc.id,
-                title: `${doc.documentNumber} - ${doc.customerName || doc.customer?.name || 'Customer'}`,
+                title: `${doc.documentNumber} - ${doc.customerName || doc.customer?.name || t('schedule.customer')}`,
                 start: scheduledDate,
                 end: endDate,
                 resource: doc,
@@ -288,6 +291,17 @@ const DocumentCalendarView = ({ documents = [], onViewDetails }) => {
                 date={date}
                 onNavigate={setDate}
                 views={['month', 'week', 'day']}
+                messages={{
+                    month: t('schedule.month'),
+                    week: t('schedule.week'),
+                    day: t('schedule.day'),
+                    agenda: t('schedule.agenda'),
+                    today: t('schedule.today'),
+                    back: t('schedule.back'),
+                    next: t('schedule.next'),
+                    previous: t('schedule.previous'),
+                    showMore: (total) => `+${total} ${t('schedule.more')}`,
+                }}
                 popup
             />
         </div>
@@ -323,14 +337,14 @@ const DraggableDocumentCard = ({ doc, color, onViewDetails, isDragging, isLoadin
                         e.stopPropagation();
                         onViewDetails && onViewDetails(doc);
                     }}
-                    title="View Details"
+                    title={t('schedule.viewDetails')}
                 />
             </div>
 
             <div className="mb-2">
                 <div className="flex items-center text-slate-700 mb-1 text-sm">
                     <UserOutlined className="mr-2 text-slate-400" />
-                    <span className="font-medium truncate">{doc.customerName || doc.customer?.name || 'N/A'}</span>
+                    <span className="font-medium truncate">{doc.customerName || doc.customer?.name || t('schedule.na')}</span>
                 </div>
                 {(doc.vehicle || doc.vehicleInfo) && (
                     <div className="flex items-center text-slate-500 text-xs">
@@ -347,7 +361,7 @@ const DraggableDocumentCard = ({ doc, color, onViewDetails, isDragging, isLoadin
             <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100">
                 <div className="flex items-center text-xs text-slate-500 gap-1">
                     {getServiceTypeIcon(doc.serviceType)}
-                    <span className="truncate">{doc.serviceLocation || 'Shop'}</span>
+                    <span className="truncate">{doc.serviceLocation || t('schedule.inShop')}</span>
                 </div>
                 {doc.totalAmount && (
                     <span className="text-xs font-semibold text-green-600">
@@ -360,7 +374,7 @@ const DraggableDocumentCard = ({ doc, color, onViewDetails, isDragging, isLoadin
                 <ClockCircleOutlined className="mr-1" />
                 {doc.scheduledDate
                     ? moment(doc.scheduledDate).format('MMM DD')
-                    : 'Not Scheduled'}
+                    : t('schedule.notScheduled')}
             </div>
         </div>
     );
@@ -408,7 +422,7 @@ const DocumentStatusColumn = ({ title, docType, documents, color, onViewDetails,
 
             <div className="flex-1 overflow-y-auto space-y-2 md:space-y-3 custom-scrollbar pr-1">
                 {filteredDocs.length === 0 ? (
-                    <Empty description="No documents" image={Empty.PRESENTED_IMAGE_SIMPLE} style={{ marginTop: '2rem' }} />
+                    <Empty description={t('schedule.noDocuments')} image={Empty.PRESENTED_IMAGE_SIMPLE} style={{ marginTop: '2rem' }} />
                 ) : (
                     filteredDocs.map(doc => (
                         <div
@@ -437,6 +451,7 @@ const DocumentStatusColumn = ({ title, docType, documents, color, onViewDetails,
 
 // Kanban View for Documents with Drag & Drop
 const DocumentKanbanView = ({ documents = [], onViewDetails, onConversionSuccess }) => {
+    const { t } = useTranslation();
     const [docs, setDocs] = useState(documents);
     const [loadingDocId, setLoadingDocId] = useState(null);
     const [dragOverColumn, setDragOverColumn] = useState(null);
@@ -454,7 +469,7 @@ const DocumentKanbanView = ({ documents = [], onViewDetails, onConversionSuccess
                 // Document has been successfully converted!
                 setLoadingDocId(null);
                 setTargetTypeForDoc(null);
-                message.success('Conversion successful!');
+                message.success(t('schedule.conversionSuccessful'));
             }
         }
     }, [docs, loadingDocId, targetTypeForDoc]);
@@ -476,8 +491,8 @@ const DocumentKanbanView = ({ documents = [], onViewDetails, onConversionSuccess
         // Block Invoice from being moved to other columns
         if (draggedDoc.documentType === 'INVOICE') {
             Modal.error({
-                title: 'Save Failed',
-                content: 'Invoice cannot be changed to work order or quote',
+                title: t('schedule.saveFailed'),
+                content: t('schedule.invoiceConversionError'),
                 okText: 'OK',
             });
             return;
@@ -497,18 +512,18 @@ const DocumentKanbanView = ({ documents = [], onViewDetails, onConversionSuccess
             // Call appropriate conversion API
             if (draggedDoc.documentType === 'QUOTE' && targetDocType === 'WORK_ORDER') {
                 apiResponse = await convertToWorkOrder(documentNumber);
-                message.info('Converting to Work Order...');
+                message.info(t('schedule.convertingToWorkOrder'));
             } else if (draggedDoc.documentType === 'WORK_ORDER' && targetDocType === 'INVOICE') {
                 apiResponse = await convertToInvoice(documentNumber);
-                message.info('Converting to Invoice...');
+                message.info(t('schedule.convertingToInvoice'));
             } else if (draggedDoc.documentType === 'WORK_ORDER' && targetDocType === 'QUOTE') {
                 apiResponse = await updateServiceDocument(documentNumber, { documentType: 'QUOTE' });
-                message.info('Reverting to Quote...');
+                message.info(t('schedule.revertingToQuote'));
             } else if (draggedDoc.documentType === 'INVOICE' && targetDocType === 'WORK_ORDER') {
                 apiResponse = await updateServiceDocument(documentNumber, { documentType: 'WORK_ORDER' });
-                message.info('Reverting to Work Order...');
+                message.info(t('schedule.revertingToWorkOrder'));
             } else {
-                message.warning('Unsupported conversion');
+                message.warning(t('schedule.unsupportedConversion'));
                 setLoadingDocId(null);
                 setTargetTypeForDoc(null);
                 return;
@@ -547,9 +562,9 @@ const DocumentKanbanView = ({ documents = [], onViewDetails, onConversionSuccess
     };
 
     const columns = [
-        { id: 'QUOTE', title: 'Quotes', color: '#1890ff', docType: 'QUOTE' },
-        { id: 'WORK_ORDER', title: 'Work Orders', color: '#faad14', docType: 'WORK_ORDER' },
-        { id: 'INVOICE', title: 'Invoices', color: '#52c41a', docType: 'INVOICE' }
+        { id: 'QUOTE', title: t('schedule.quotes'), color: '#1890ff', docType: 'QUOTE' },
+        { id: 'WORK_ORDER', title: t('schedule.workOrders'), color: '#faad14', docType: 'WORK_ORDER' },
+        { id: 'INVOICE', title: t('schedule.invoices'), color: '#52c41a', docType: 'INVOICE' }
     ];
 
     return (
@@ -575,6 +590,7 @@ const DocumentKanbanView = ({ documents = [], onViewDetails, onConversionSuccess
 // Table View for Documents
 // Mobile Table View for Documents (Card Layout)
 const MobileDocumentTableView = ({ documents = [], onViewDetails }) => {
+    const { t } = useTranslation();
     const typeColors = {
         'QUOTE': '#1890ff',
         'WORK_ORDER': '#faad14',
@@ -584,7 +600,7 @@ const MobileDocumentTableView = ({ documents = [], onViewDetails }) => {
     return (
         <div className="space-y-3 p-2">
             {documents.length === 0 ? (
-                <Empty description="No documents" />
+                <Empty description={t('schedule.noDocuments')} />
             ) : (
                 documents.map(doc => (
                     <Card
@@ -611,7 +627,7 @@ const MobileDocumentTableView = ({ documents = [], onViewDetails }) => {
                                 <UserOutlined className="text-slate-400 mt-0.5 flex-shrink-0" />
                                 <div>
                                     <div className="font-medium text-slate-800 text-sm">
-                                        {doc.customerName || doc.customer?.name || 'N/A'}
+                                        {doc.customerName || doc.customer?.name || t('schedule.na')}
                                     </div>
                                     {doc.customer?.phone && (
                                         <div className="text-xs text-slate-500">{doc.customer.phone}</div>
@@ -636,19 +652,19 @@ const MobileDocumentTableView = ({ documents = [], onViewDetails }) => {
                         <div className="space-y-2 mb-3 text-xs">
                             {/* Scheduled Date */}
                             <div className="flex items-center justify-between">
-                                <span className="text-slate-500">Scheduled:</span>
+                                <span className="text-slate-500">{t('schedule.scheduledLabel')}:</span>
                                 <span className="font-medium text-slate-700">
                                     {doc.scheduledDate
                                         ? moment(doc.scheduledDate).format('MMM DD, YYYY h:mm A')
-                                        : 'Not Scheduled'}
+                                        : t('schedule.notScheduled')}
                                 </span>
                             </div>
 
                             {/* Location */}
                             <div className="flex items-center justify-between">
-                                <span className="text-slate-500">Location:</span>
+                                <span className="text-slate-500">{t('schedule.location')}:</span>
                                 <span className="font-medium text-slate-700">
-                                    {doc.serviceLocation || 'Shop'}
+                                    {doc.serviceLocation || t('schedule.inShop')}
                                 </span>
                             </div>
                         </div>
@@ -658,7 +674,7 @@ const MobileDocumentTableView = ({ documents = [], onViewDetails }) => {
                             <span className="text-sm font-bold text-green-600">
                                 ${(doc.totalAmount || 0).toFixed(2)}
                             </span>
-                            <Tooltip title="View Details">
+                            <Tooltip title={t('schedule.viewDetails')}>
                                 <Button
                                     type="primary"
                                     size="small"
@@ -679,9 +695,10 @@ const MobileDocumentTableView = ({ documents = [], onViewDetails }) => {
 
 // Desktop Table View for Documents
 const DesktopDocumentTableView = ({ documents = [], onViewDetails }) => {
+    const { t } = useTranslation();
     const columns = [
         {
-            title: 'Document #',
+            title: t('schedule.documentNumber'),
             dataIndex: 'documentNumber',
             key: 'documentNumber',
             width: 140,
@@ -690,19 +707,19 @@ const DesktopDocumentTableView = ({ documents = [], onViewDetails }) => {
             )
         },
         {
-            title: 'Customer',
+            title: t('schedule.customer'),
             key: 'customer',
             render: (_, record) => (
                 <div>
                     <div className="font-medium text-slate-800">
-                        {record.customerName || record.customer?.name || 'N/A'}
+                        {record.customerName || record.customer?.name || t('schedule.na')}
                     </div>
                     <div className="text-xs text-slate-500">{record.customer?.phone || ''}</div>
                 </div>
             )
         },
         {
-            title: 'Vehicle',
+            title: t('schedule.vehicle'),
             key: 'vehicle',
             render: (_, record) => {
                 if (record.vehicle) {
@@ -716,7 +733,7 @@ const DesktopDocumentTableView = ({ documents = [], onViewDetails }) => {
             }
         },
         {
-            title: 'Scheduled Date',
+            title: t('schedule.scheduledDate'),
             dataIndex: 'scheduledDate',
             key: 'scheduledDate',
             width: 180,
@@ -725,7 +742,7 @@ const DesktopDocumentTableView = ({ documents = [], onViewDetails }) => {
                 : '-'
         },
         {
-            title: 'Type',
+            title: t('schedule.type'),
             dataIndex: 'documentType',
             key: 'documentType',
             width: 120,
@@ -735,25 +752,25 @@ const DesktopDocumentTableView = ({ documents = [], onViewDetails }) => {
             }
         },
         {
-            title: 'Location',
+            title: t('schedule.location'),
             dataIndex: 'serviceLocation',
             key: 'serviceLocation',
             width: 120,
-            render: (location) => location || 'Shop'
+            render: (location) => location || t('schedule.inShop')
         },
         {
-            title: 'Total',
+            title: t('schedule.total'),
             dataIndex: 'totalAmount',
             key: 'totalAmount',
             width: 100,
             render: (amount) => amount ? `$${amount.toFixed(2)}` : '-'
         },
         {
-            title: 'Actions',
+            title: t('schedule.actions'),
             key: 'actions',
             width: 100,
             render: (_, record) => (
-                <Tooltip title="View Details">
+                <Tooltip title={t('schedule.viewDetails')}>
                     <Button
                         type="text"
                         size="small"
@@ -790,11 +807,12 @@ const DocumentTableView = ({ documents = [], onViewDetails }) => {
 
 // Mobile List View for Kanban documents (using card strategy from quotes page)
 const MobileDocumentListView = ({ documents = [], onViewDetails }) => {
+    const { t } = useTranslation();
     const [selectedType, setSelectedType] = useState('QUOTE');
 
     const filteredDocs = documents.filter(doc => doc.documentType === selectedType);
     const types = ['QUOTE', 'WORK_ORDER', 'INVOICE'];
-    const typeNames = { QUOTE: 'Quotes', WORK_ORDER: 'Work Orders', INVOICE: 'Invoices' };
+    const typeNames = { QUOTE: t('schedule.quotes'), WORK_ORDER: t('schedule.workOrders'), INVOICE: t('schedule.invoices') };
     const typeColors = { QUOTE: '#1890ff', WORK_ORDER: '#faad14', INVOICE: '#52c41a' };
 
     return (
@@ -819,7 +837,7 @@ const MobileDocumentListView = ({ documents = [], onViewDetails }) => {
             {/* Documents List */}
             <div className="flex-1 overflow-y-auto space-y-3 mt-3 px-2">
                 {filteredDocs.length === 0 ? (
-                    <Empty description="No documents" />
+                    <Empty description={t('schedule.noDocuments')} />
                 ) : (
                     filteredDocs.map(doc => (
                         <Card
@@ -844,7 +862,7 @@ const MobileDocumentListView = ({ documents = [], onViewDetails }) => {
                                     <UserOutlined className="text-slate-400 mt-0.5 flex-shrink-0" />
                                     <div className="flex-1 min-w-0">
                                         <span className="font-medium text-slate-700 truncate">
-                                            {doc.customerName || doc.customer?.name || 'N/A'}
+                                            {doc.customerName || doc.customer?.name || t('schedule.na')}
                                         </span>
                                     </div>
                                 </div>
@@ -878,7 +896,7 @@ const MobileDocumentListView = ({ documents = [], onViewDetails }) => {
                                             <HomeOutlined className="text-slate-400 mt-0.5 flex-shrink-0" />
                                         )}
                                     <span className="text-xs text-slate-600">
-                                        {doc.serviceType || doc.serviceLocation || 'In-Shop'}
+                                        {doc.serviceType || doc.serviceLocation || t('schedule.inShop')}
                                     </span>
                                 </div>
 
@@ -888,7 +906,7 @@ const MobileDocumentListView = ({ documents = [], onViewDetails }) => {
                                         <ClockCircleOutlined className="mr-1" />
                                         {doc.scheduledDate
                                             ? moment(doc.scheduledDate).format('MMM DD, YYYY')
-                                            : 'Not Scheduled'}
+                                            : t('schedule.notScheduled')}
                                     </span>
                                     <span className="text-xs font-bold text-green-600">
                                         ${(doc.totalAmount || 0).toFixed(2)}

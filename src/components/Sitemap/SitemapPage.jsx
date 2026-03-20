@@ -27,6 +27,9 @@ const SitemapPage = () => {
                 { path: `${baseUrl}/blogs/maximize-auto-glass-profit-margins`, title: 'Maximize Auto Glass Profit Margins' },
                 { path: `${baseUrl}/blogs/mobile-field-service-auto-glass`, title: 'Mobile Field Service Auto Glass' },
                 { path: `${baseUrl}/blogs/vin-decoding-for-auto-glass-accuracy`, title: 'VIN Decoding For Auto Glass Accuracy' },
+                { path: `${baseUrl}/blogs/the-anatomy-of-a-vin-what-exactly-does-a-vin-decoder-do`, title: 'The Anatomy Of A VIN: What Exactly Does A VIN Decoder Do?' },
+                { path: `${baseUrl}/blogs/5-manual-auto-glass-tasks-to-delete-2026`, title: 'Stop Bleeding Billable Hours: 5 Manual Tasks To Kill In 2026' },
+                { path: `${baseUrl}/blogs/modernizing-auto-glass-inventory-tracking-ai`, title: 'Modernizing Auto Glass Inventory Tracking With AI' },
             ]
         },
         {

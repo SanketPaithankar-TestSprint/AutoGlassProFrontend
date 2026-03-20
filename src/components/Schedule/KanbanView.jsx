@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, Tag, Button, Avatar, Empty, message, Spin, Modal } from 'antd';
 import { ClockCircleOutlined, UserOutlined, ArrowRightOutlined, EditOutlined, FlagOutlined } from '@ant-design/icons';
 import moment from 'moment';
@@ -18,6 +19,7 @@ const useIsMobile = () => {
 
 // Draggable Task Card
 const DraggableTaskCard = ({ task, color, onEdit, isLoading }) => {
+    const { t } = useTranslation();
     const getPriorityColor = (priority) => {
         switch (priority) {
             case 'HIGH': return '#ff4d4f';
@@ -45,7 +47,7 @@ const DraggableTaskCard = ({ task, color, onEdit, isLoading }) => {
             <div className="flex items-start justify-between gap-2 mb-2">
                 <Tag color={getPriorityColor(task.priority)} className="text-xs">
                     <FlagOutlined className="mr-1" />
-                    {task.priority || 'NORMAL'}
+                    {task.priority || t('schedule.normal')}
                 </Tag>
             </div>
 
@@ -56,7 +58,7 @@ const DraggableTaskCard = ({ task, color, onEdit, isLoading }) => {
                 <span className="text-slate-400">#{task.id}</span>
                 <span className="text-slate-500">
                     <ClockCircleOutlined className="mr-1" />
-                    {task.dueDate ? moment(task.dueDate).format('MMM DD') : 'No Due'}
+                    {task.dueDate ? moment(task.dueDate).format('MMM DD') : t('schedule.noDueShort')}
                 </span>
             </div>
         </div>
@@ -65,6 +67,7 @@ const DraggableTaskCard = ({ task, color, onEdit, isLoading }) => {
 
 // Status Column with Drag-Drop
 const StatusColumn = ({ title, status, tasks, color, onStatusChange, onEdit, loadingTaskId }) => {
+    const { t } = useTranslation();
     const filteredTasks = tasks.filter(t => t.status === status);
     const [dragOver, setDragOver] = useState(false);
 
@@ -112,7 +115,7 @@ const StatusColumn = ({ title, status, tasks, color, onStatusChange, onEdit, loa
 
             <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar pr-1">
                 {filteredTasks.length === 0 ? (
-                    <Empty description="No tasks" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                    <Empty description={t('schedule.noTasks')} image={Empty.PRESENTED_IMAGE_SIMPLE} />
                 ) : (
                     filteredTasks.map(task => (
                         <div
@@ -136,23 +139,24 @@ const StatusColumn = ({ title, status, tasks, color, onStatusChange, onEdit, loa
 
 // Mobile List View for Tasks
 const MobileTaskListView = ({ tasks = [], onStatusChange, onEdit }) => {
+    const { t } = useTranslation();
     const [selectedStatus, setSelectedStatus] = useState('PENDING');
     const [loadingTaskId, setLoadingTaskId] = useState(null);
     
     const filteredTasks = tasks.filter(task => task.status === selectedStatus);
     const statuses = [
-        { key: 'PENDING', label: 'To Do', color: '#faad14' },
-        { key: 'IN_PROGRESS', label: 'In Progress', color: '#1890ff' },
-        { key: 'COMPLETED', label: 'Done', color: '#52c41a' }
+        { key: 'PENDING', label: t('schedule.todo'), color: '#faad14' },
+        { key: 'IN_PROGRESS', label: t('schedule.inProgress'), color: '#1890ff' },
+        { key: 'COMPLETED', label: t('schedule.done'), color: '#52c41a' }
     ];
 
     const handleStatusChange = async (taskId, newStatus) => {
         setLoadingTaskId(taskId);
         try {
             await onStatusChange(taskId, newStatus);
-            message.success('Task status updated');
+            message.success(t('schedule.updatedSuccessfully'));
         } catch (err) {
-            message.error('Failed to update task status');
+            message.error(t('schedule.failedUpdateStatus'));
         } finally {
             setLoadingTaskId(null);
         }
@@ -181,7 +185,7 @@ const MobileTaskListView = ({ tasks = [], onStatusChange, onEdit }) => {
             {/* Tasks List */}
             <div className="flex-1 overflow-y-auto space-y-3 mt-3 px-2">
                 {filteredTasks.length === 0 ? (
-                    <Empty description="No tasks" />
+                    <Empty description={t('schedule.noTasks')} />
                 ) : (
                     filteredTasks.map(task => {
                         const statusConfig = statuses.find(s => s.key === selectedStatus);
@@ -212,7 +216,7 @@ const MobileTaskListView = ({ tasks = [], onStatusChange, onEdit }) => {
                                     <div className="flex items-center justify-between gap-2">
                                         <span className={`text-xs font-bold px-2 py-1 rounded ${getPriorityColor(task.priority)}`}>
                                             <FlagOutlined className="mr-1" />
-                                            {task.priority || 'NORMAL'}
+                                            {task.priority || t('schedule.normal')}
                                         </span>
                                         <span className="text-xs text-slate-400">ID: #{task.id}</span>
                                     </div>
@@ -228,7 +232,7 @@ const MobileTaskListView = ({ tasks = [], onStatusChange, onEdit }) => {
                                 <div className="flex items-center justify-between pt-2 border-t border-slate-100">
                                     <span className="text-xs text-slate-500">
                                         <ClockCircleOutlined className="mr-1" />
-                                        {task.dueDate ? moment(task.dueDate).format('MMM DD, YYYY') : 'No Due Date'}
+                                        {task.dueDate ? moment(task.dueDate).format('MMM DD, YYYY') : t('schedule.noDueDate')}
                                     </span>
                                     {selectedStatus !== 'COMPLETED' && (
                                         <Button
@@ -240,7 +244,7 @@ const MobileTaskListView = ({ tasks = [], onStatusChange, onEdit }) => {
                                                 const nextStatus = selectedStatus === 'PENDING' ? 'IN_PROGRESS' : 'COMPLETED';
                                                 handleStatusChange(task.id, nextStatus);
                                             }}
-                                            title="Advance Status"
+                                            title={t('schedule.advanceStatus')}
                                         />
                                     )}
                                 </div>
@@ -255,6 +259,7 @@ const MobileTaskListView = ({ tasks = [], onStatusChange, onEdit }) => {
 
 // Main Kanban View
 const KanbanView = ({ tasks = [], onStatusChange, onEdit }) => {
+    const { t } = useTranslation();
     const isMobile = useIsMobile();
     const [loadingTaskId, setLoadingTaskId] = useState(null);
 
@@ -282,7 +287,7 @@ const KanbanView = ({ tasks = [], onStatusChange, onEdit }) => {
     return (
         <div className="flex gap-4 overflow-x-auto h-[calc(100vh-280px)] pb-2">
             <StatusColumn
-                title="To Do"
+                title={t('schedule.todo')}
                 status="PENDING"
                 tasks={tasks}
                 color="#faad14"
@@ -291,7 +296,7 @@ const KanbanView = ({ tasks = [], onStatusChange, onEdit }) => {
                 loadingTaskId={loadingTaskId}
             />
             <StatusColumn
-                title="In Progress"
+                title={t('schedule.inProgress')}
                 status="IN_PROGRESS"
                 tasks={tasks}
                 color="#1890ff"
@@ -300,7 +305,7 @@ const KanbanView = ({ tasks = [], onStatusChange, onEdit }) => {
                 loadingTaskId={loadingTaskId}
             />
             <StatusColumn
-                title="Done"
+                title={t('schedule.done')}
                 status="COMPLETED"
                 tasks={tasks}
                 color="#52c41a"

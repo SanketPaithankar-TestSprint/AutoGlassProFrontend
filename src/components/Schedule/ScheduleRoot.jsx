@@ -111,11 +111,11 @@ const ScheduleRoot = () => {
             return updateTaskStatus(taskId, newStatus);
         },
         onSuccess: () => {
-            message.success(t('schedule.status') + ' updated');
+            message.success(t('schedule.updatedSuccessfully'));
             queryClient.invalidateQueries(['tasks']);
         },
         onError: () => {
-            message.error('Failed to update task status');
+            message.error(t('schedule.failedUpdateStatus'));
         }
     });
 
@@ -155,18 +155,18 @@ const ScheduleRoot = () => {
     }, [scheduledDocuments, scheduleSearchText]);
 
     const statusOptions = [
-        { label: 'All Status', value: 'ALL' },
-        { label: 'To Do', value: 'PENDING' },
-        { label: 'In Progress', value: 'IN_PROGRESS' },
-        { label: 'Done', value: 'COMPLETED' },
+        { label: t('schedule.allStatus'), value: 'ALL' },
+        { label: t('schedule.todo'), value: 'PENDING' },
+        { label: t('schedule.inProgress'), value: 'IN_PROGRESS' },
+        { label: t('schedule.completed'), value: 'COMPLETED' },
     ];
 
     const daysOptions = [
-        { label: '7 Days', value: 7 },
-        { label: '14 Days', value: 14 },
-        { label: '30 Days', value: 30 },
-        { label: '60 Days', value: 60 },
-        { label: '90 Days', value: 90 },
+        { label: t('schedule.sevenDays'), value: 7 },
+        { label: t('schedule.fourteenDays'), value: 14 },
+        { label: t('schedule.thirtyDays'), value: 30 },
+        { label: t('schedule.sixtyDays'), value: 60 },
+        { label: t('schedule.ninetyDays'), value: 90 },
     ];
 
     const isLoading = activeTab === 'schedule' ? isLoadingSchedule : isLoadingTasks;
@@ -206,8 +206,8 @@ const ScheduleRoot = () => {
             // Notify for Today (Each task)
             todayDocs.forEach(doc => {
                 notification.info({
-                    message: `Scheduled for Today: ${doc.documentNumber}`,
-                    description: `${doc.customer?.name || 'Customer'} - ${doc.vehicle?.year || ''} ${doc.vehicle?.make || ''} ${doc.vehicle?.model || ''}`,
+                    message: `${t('schedule.scheduledForToday')}: ${doc.documentNumber}`,
+                    description: `${doc.customer?.name || t('schedule.unknownCustomer')} - ${doc.vehicle?.year || ''} ${doc.vehicle?.make || ''} ${doc.vehicle?.model || ''}`,
                     placement: 'topRight',
                     duration: 0, // Persistent so they don't miss it
                 });
@@ -216,8 +216,8 @@ const ScheduleRoot = () => {
             // Notify for Upcoming (Summary)
             if (upcomingDocs.length > 0) {
                 notification.warning({
-                    message: 'Upcoming Schedule',
-                    description: `You have ${upcomingDocs.length} upcoming jobs in the next 72 hours.`,
+                    message: t('schedule.upcomingSchedule'),
+                    description: t('schedule.upcomingJobsDescription', { count: upcomingDocs.length }),
                     placement: 'topRight',
                     duration: 6, // Auto dismiss summary
                 });
@@ -237,14 +237,14 @@ const ScheduleRoot = () => {
     const handleDocumentClick = async (documentNumber) => {
         if (!documentNumber) return;
 
-        message.loading({ content: 'Loading document details...', key: 'navLoading' });
+        message.loading({ content: t('schedule.loadingDetails'), key: 'navLoading' });
         try {
             const compositeData = await getCompositeServiceDocument(documentNumber);
-            message.success({ content: 'Loaded!', key: 'navLoading', duration: 1 });
+            message.success({ content: t('schedule.loaded'), key: 'navLoading', duration: 1 });
             navigate('/search-by-root', { state: { compositeData } });
         } catch (error) {
             console.error("Error fetching composite document:", error);
-            message.error({ content: 'Failed to load document details', key: 'navLoading' });
+            message.error({ content: t('schedule.failedUpdate'), key: 'navLoading' });
         }
     };
 
@@ -263,7 +263,7 @@ const ScheduleRoot = () => {
             label: (
                 <span className="flex items-center gap-2">
                     <TeamOutlined />
-                    Tasks
+                    {t('schedule.tasksTab')}
                 </span>
             ),
         },
@@ -275,7 +275,7 @@ const ScheduleRoot = () => {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                 <div className="flex items-center gap-2">
                     <h1 className="!text-[30px] font-bold text-slate-900 m-0">{t('schedule.title')}</h1>
-                    <Tooltip title="Manage your appointments and daily workflow" placement="right">
+                    <Tooltip title={t('schedule.titleTooltip')} placement="right">
                         <InfoCircleOutlined className="text-slate-400 text-base cursor-pointer hover:text-violet-500 transition-colors" />
                     </Tooltip>
                 </div>
@@ -288,7 +288,7 @@ const ScheduleRoot = () => {
                             onClick={() => setViewMode('calendar')}
                             size="small"
                         >
-                            Calendar
+                            {t('schedule.calendar')}
                         </Button>
                         <Button
                             type={viewMode === 'table' ? 'primary' : 'text'}
@@ -296,7 +296,7 @@ const ScheduleRoot = () => {
                             onClick={() => setViewMode('table')}
                             size="small"
                         >
-                            List
+                            {t('schedule.list')}
                         </Button>
                     </div>
                 </div>
@@ -318,7 +318,7 @@ const ScheduleRoot = () => {
                         <div className="flex flex-col md:flex-row md:flex-nowrap md:items-center gap-2 md:gap-3">
                             {/* Row 1 (mobile) / start (desktop): Search */}
                             <Search
-                                placeholder="Search documents..."
+                                placeholder={t('schedule.searchDocuments')}
                                 allowClear
                                 onSearch={val => setScheduleSearchText(val)}
                                 onChange={e => setScheduleSearchText(e.target.value)}
@@ -333,27 +333,27 @@ const ScheduleRoot = () => {
                                     onChange={setScheduleDays}
                                     options={daysOptions}
                                     style={{ width: 95, flexShrink: 0 }}
-                                    placeholder="Days"
+                                    placeholder={t('schedule.days')}
                                     size="small"
                                 />
                                 <DatePicker
                                     value={scheduleStartDate}
                                     onChange={setScheduleStartDate}
                                     style={{ width: 105, flexShrink: 0 }}
-                                    placeholder="Date"
+                                    placeholder={t('schedule.date')}
                                     allowClear={false}
                                     size="small"
                                 />
                                 <div className="flex items-center gap-1 flex-shrink-0">
-                                    <span className="hidden md:inline text-xs text-slate-500 whitespace-nowrap">Include Past:</span>
+                                    <span className="hidden md:inline text-xs text-slate-500 whitespace-nowrap">{t('schedule.includePast')}</span>
                                     {/* Mobile only: styled switch with PAST label inside */}
                                     <div className="md:hidden">
                                         <Switch
                                             checked={scheduleIncludePast}
                                             onChange={setScheduleIncludePast}
                                             size="small"
-                                            checkedChildren={<span className="text-[10px] font-bold">PAST</span>}
-                                            unCheckedChildren={<span className="text-[10px] font-bold">PAST</span>}
+                                            checkedChildren={<span className="text-[10px] font-bold">{t('schedule.past')}</span>}
+                                            unCheckedChildren={<span className="text-[10px] font-bold">{t('schedule.past')}</span>}
                                         />
                                     </div>
                                     {/* Desktop only: plain normal toggle */}
@@ -371,9 +371,9 @@ const ScheduleRoot = () => {
                                     loading={isLoadingSchedule}
                                     size="small"
                                     style={{ flexShrink: 0 }}
-                                    title="Refresh"
+                                    title={t('schedule.refresh')}
                                 >
-                                    <span className="hidden md:inline">Refresh</span>
+                                    <span className="hidden md:inline">{t('schedule.refresh')}</span>
                                 </Button>
                             </div>
                         </div>
@@ -386,7 +386,7 @@ const ScheduleRoot = () => {
                                 <CalendarOutlined className="text-3xl text-violet-400" />
                                 <div className="text-2xl font-bold text-violet-600">{filteredDocuments.length}</div>
                             </div>
-                            <div className="text-sm text-slate-500 font-medium">Total Scheduled</div>
+                            <div className="text-sm text-slate-500 font-medium">{t('schedule.totalScheduled')}</div>
                         </div>
                         <div className="bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-sm border border-slate-200/60">
                             <div className="flex items-center justify-between mb-2">
@@ -395,7 +395,7 @@ const ScheduleRoot = () => {
                                     {filteredDocuments.filter(d => d.documentType === 'QUOTE').length}
                                 </div>
                             </div>
-                            <div className="text-sm text-slate-500 font-medium">Quotes</div>
+                            <div className="text-sm text-slate-500 font-medium">{t('schedule.quotes')}</div>
                         </div>
                         <div className="bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-sm border border-slate-200/60">
                             <div className="flex items-center justify-between mb-2">
@@ -404,7 +404,7 @@ const ScheduleRoot = () => {
                                     {filteredDocuments.filter(d => d.documentType === 'WORK_ORDER').length}
                                 </div>
                             </div>
-                            <div className="text-sm text-slate-500 font-medium">Work Orders</div>
+                            <div className="text-sm text-slate-500 font-medium">{t('schedule.workOrders')}</div>
                         </div>
                         <div className="bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-sm border border-slate-200/60">
                             <div className="flex items-center justify-between mb-2">
@@ -413,7 +413,7 @@ const ScheduleRoot = () => {
                                     {filteredDocuments.filter(d => d.documentType === 'INVOICE').length}
                                 </div>
                             </div>
-                            <div className="text-sm text-slate-500 font-medium">Invoices</div>
+                            <div className="text-sm text-slate-500 font-medium">{t('schedule.invoices')}</div>
                         </div>
                     </div>
 
@@ -421,7 +421,7 @@ const ScheduleRoot = () => {
                     <div className="flex-1 min-h-0">
                         {isLoadingSchedule ? (
                             <div className="flex justify-center items-center h-64">
-                                <Spin size="large" tip="Loading schedule..." />
+                                <Spin size="large" tip={t('schedule.loadingSchedule')} />
                             </div>
                         ) : (
                             <DocumentScheduleView
@@ -445,7 +445,7 @@ const ScheduleRoot = () => {
                         <div className="flex flex-col md:flex-row md:flex-nowrap md:items-center gap-2 md:gap-3">
                             {/* Row 1 (mobile): Search */}
                             <Search
-                                placeholder="Search tasks..."
+                                placeholder={t('schedule.searchTasks')}
                                 allowClear
                                 onSearch={val => setSearchText(val)}
                                 onChange={e => setSearchText(e.target.value)}
@@ -472,8 +472,8 @@ const ScheduleRoot = () => {
                                     style={{ width: 130, flexShrink: 0 }}
                                     size="small"
                                 />
-                                <Button icon={<ReloadOutlined />} onClick={() => refetchTasks()} loading={isLoadingTasks} size="small" style={{ flexShrink: 0 }} title="Refresh">
-                                    <span className="hidden md:inline">Refresh</span>
+                                <Button icon={<ReloadOutlined />} onClick={() => refetchTasks()} loading={isLoadingTasks} size="small" style={{ flexShrink: 0 }} title={t('schedule.refresh')}>
+                                    <span className="hidden md:inline">{t('schedule.refresh')}</span>
                                 </Button>
                             </div>
                         </div>
@@ -486,7 +486,7 @@ const ScheduleRoot = () => {
                     <div className="flex-1 min-h-0">
                         {isLoadingTasks ? (
                             <div className="flex justify-center items-center h-64">
-                                <Spin size="large" tip="Loading tasks..." />
+                                <Spin size="large" tip={t('schedule.loadingTasks')} />
                             </div>
                         ) : (
                             <>
