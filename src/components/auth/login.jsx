@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { Form, Input, Button, Checkbox, Alert, Space, notification } from "antd";
-import { UserOutlined, LockOutlined } from "@ant-design/icons";
+import { UserOutlined, LockOutlined, GoogleOutlined, AppleOutlined } from "@ant-design/icons";
 import { loginUser, loginEmployee, handleLoginSuccess } from '../../api/login';
 import { getTaxSettings } from '../../api/taxSettings';
 
@@ -152,7 +152,11 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
             >
                 <Form.Item
                     name="email"
-                    label={t('auth.emailOrUsername')}
+                    label={
+                        <span style={{ fontWeight: '600', color: '#1a1c1e', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            {t('auth.emailOrUsername')}
+                        </span>
+                    }
                     rules={[
                         { required: true, message: 'Please input your email or username!' },
                         {
@@ -164,10 +168,10 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
                                     return Promise.resolve();
                                 }
                                 return Promise.reject(new Error('Please enter a valid email or username'));
-                            }
+                             }
                         }
                     ]}
-                    style={formItemStyle}
+                    style={{ ...formItemStyle, marginBottom: '24px' }}
                 >
                     <Input
                         prefix={<UserOutlined style={{ color: '#a0aec0' }} />}
@@ -177,38 +181,47 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
 
                 <Form.Item
                     name="password"
-                    label={t('auth.password')}
+                    label={
+                        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center', minWidth: '320px' }}>
+                            <span style={{ fontWeight: '600', color: '#1a1c1e', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                {t('auth.password')}
+                            </span>
+                            <a
+                                className="login-form-forgot"
+                                href=""
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    if (onForgotPasswordClick) onForgotPasswordClick();
+                                }}
+                                style={{ fontSize: '12px', fontWeight: 'bold', color: '#7E5CFE' }}
+                            >
+                                {t('auth.forgotPassword', 'Forgot?')}
+                            </a>
+                        </div>
+                    }
                     rules={[{ required: true, message: 'Please input your password!' }]}
-                    style={formItemStyle}
+                    style={{ ...formItemStyle, marginBottom: '24px' }}
                 >
                     <Input.Password
                         prefix={<LockOutlined style={{ color: '#a0aec0' }} />}
                         className="custom-api-input"
+                        placeholder="••••••••"
                     />
                 </Form.Item>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '24px' }}>
                     <Form.Item style={{ marginBottom: 0 }}>
                         <Checkbox 
                             checked={isEmployee} 
                             onChange={(e) => setIsEmployee(e.target.checked)}
+                            style={{ fontSize: '14px', color: '#484555', fontWeight: '500' }}
                         >
                             {t('auth.loginAsEmployee', 'Login as Employee')}
                         </Checkbox>
                     </Form.Item>
                     <Form.Item name="remember" valuePropName="checked" noStyle>
-                        <Checkbox>{t('auth.rememberMe')}</Checkbox>
+                        <Checkbox style={{ fontSize: '14px', color: '#484555', fontWeight: '500' }}>{t('auth.rememberMe')}</Checkbox>
                     </Form.Item>
-                    <a
-                        className="login-form-forgot"
-                        href=""
-                        onClick={(e) => {
-                            e.preventDefault();
-                            if (onForgotPasswordClick) onForgotPasswordClick();
-                        }}
-                    >
-                        {t('auth.forgotPassword')}
-                    </a>
                 </div>
 
                 <Form.Item>
@@ -230,6 +243,29 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
                         {loading ? t('auth.signingIn') : t('auth.signIn')}
                     </Button>
                 </Form.Item>
+
+                {/* OR Section */}
+                <div style={{ display: 'flex', alignItems: 'center', margin: '24px 0', gap: '16px' }}>
+                    <div style={{ flex: 1, height: '1px', background: '#eef2f6' }}></div>
+                    <span style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 'bold', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                        {t('auth.orContinueWith', 'or')}
+                    </span>
+                    <div style={{ flex: 1, height: '1px', background: '#eef2f6' }}></div>
+                </div>
+
+                {/* Switch to Signup */}
+                <div style={{ textAlign: 'center', color: '#64748b', fontSize: '14px' }}>
+                    {t('auth.dontHaveAccount', "Don't have an account?")}{' '}
+                    <a 
+                        onClick={(e) => {
+                            e.preventDefault();
+                            if (onSignUpClick) onSignUpClick();
+                        }}
+                        style={{ color: '#7E5CFE', fontWeight: 'bold', cursor: 'pointer' }}
+                    >
+                        {t('auth.signUpNow', 'Sign Up')}
+                    </a>
+                </div>
             </Form>
         </div>
     );
