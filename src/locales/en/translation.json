@@ -168,7 +168,8 @@
         "shopOwner": "Shop Owner",
         "mobileTechnician": "Mobile Technician",
         "enterCityName": "Enter City Name",
-        "typeCityName": "Type your city name"
+        "typeCityName": "Type your city name",
+        "loginAsEmployee": "Login as Employee"
     },
     "footer": {
         "tagline": "Professional auto glass pricing & quoting platform built for modern repair shops.",

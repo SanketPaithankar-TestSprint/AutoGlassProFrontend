@@ -909,28 +909,64 @@ const PublicContactContent = () => {
                                                         </div>
                                                     ) : (
                                                         <>
-                                                        <div className="grid grid-cols-3 gap-2">
+                                                            <div className="grid grid-cols-3 gap-2">
+                                                                <Select
+                                                                    showSearch
+                                                                    placeholder="Year"
+                                                                    value={formData.year || undefined}
+                                                                    onChange={(value) => setFormData(prev => ({ ...prev, year: value }))}
+                                                                    filterOption={(input, option) =>
+                                                                        (option?.children ?? '').toString().toLowerCase().includes(input.toLowerCase())
+                                                                    }
+                                                                    className="w-full"
+                                                                    style={{ height: '40px' }}
+                                                                    dropdownStyle={{ zIndex: 9999 }}
+                                                                >
+                                                                    {yearOptions.map(year => (
+                                                                        <Select.Option key={year} value={year}>{year}</Select.Option>
+                                                                    ))}
+                                                                </Select>
+                                                                <Select
+                                                                    showSearch
+                                                                    placeholder="Make"
+                                                                    value={formData.make || undefined}
+                                                                    onChange={(value) => setFormData(prev => ({ ...prev, make: value, model: '' }))}
+                                                                    filterOption={(input, option) =>
+                                                                        (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+                                                                    }
+                                                                    className="w-full"
+                                                                    style={{ height: '40px' }}
+                                                                    dropdownStyle={{ zIndex: 9999 }}
+                                                                >
+                                                                    {makeOptions.map((make) => (
+                                                                        <Select.Option key={make.Make_ID} value={make.Make_Name}>{make.Make_Name}</Select.Option>
+                                                                    ))}
+                                                                </Select>
+                                                                <Select
+                                                                    showSearch
+                                                                    placeholder="Model"
+                                                                    value={formData.model || undefined}
+                                                                    onChange={(value) => setFormData(prev => ({ ...prev, model: value }))}
+                                                                    disabled={!formData.make}
+                                                                    filterOption={(input, option) =>
+                                                                        (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+                                                                    }
+                                                                    className="w-full"
+                                                                    style={{ height: '40px' }}
+                                                                    dropdownStyle={{ zIndex: 9999 }}
+                                                                >
+                                                                    {modelOptions.map((model) => (
+                                                                        <Select.Option key={model.Model_ID} value={model.Model_Name}>{model.Model_Name}</Select.Option>
+                                                                    ))}
+                                                                </Select>
+                                                            </div>
+                                                            {/* Body Style */}
                                                             <Select
                                                                 showSearch
-                                                                placeholder="Year"
-                                                                value={formData.year || undefined}
-                                                                onChange={(value) => setFormData(prev => ({ ...prev, year: value }))}
-                                                                filterOption={(input, option) =>
-                                                                    (option?.children ?? '').toString().toLowerCase().includes(input.toLowerCase())
-                                                                }
-                                                                className="w-full"
-                                                                style={{ height: '40px' }}
-                                                                dropdownStyle={{ zIndex: 9999 }}
-                                                            >
-                                                                {yearOptions.map(year => (
-                                                                    <Select.Option key={year} value={year}>{year}</Select.Option>
-                                                                ))}
-                                                            </Select>
-                                                            <Select
-                                                                showSearch
-                                                                placeholder="Make"
-                                                                value={formData.make || undefined}
-                                                                onChange={(value) => setFormData(prev => ({ ...prev, make: value, model: '' }))}
+                                                                allowClear
+                                                                placeholder="Body Style (Optional)"
+                                                                value={formData.bodyStyle || undefined}
+                                                                onChange={(value) => setFormData(prev => ({ ...prev, bodyStyle: value || '' }))}
                                                                 filterOption={(input, option) =>
                                                                     (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
                                                                 }
@@ -938,46 +974,10 @@ const PublicContactContent = () => {
                                                                 style={{ height: '40px' }}
                                                                 dropdownStyle={{ zIndex: 9999 }}
                                                             >
-                                                                {makeOptions.map((make) => (
-                                                                    <Select.Option key={make.Make_ID} value={make.Make_Name}>{make.Make_Name}</Select.Option>
+                                                                {BODY_STYLE_OPTIONS.map((type) => (
+                                                                    <Select.Option key={type} value={type}>{type}</Select.Option>
                                                                 ))}
                                                             </Select>
-                                                            <Select
-                                                                showSearch
-                                                                placeholder="Model"
-                                                                value={formData.model || undefined}
-                                                                onChange={(value) => setFormData(prev => ({ ...prev, model: value }))}
-                                                                disabled={!formData.make}
-                                                                filterOption={(input, option) =>
-                                                                    (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
-                                                                }
-                                                                className="w-full"
-                                                                style={{ height: '40px' }}
-                                                                dropdownStyle={{ zIndex: 9999 }}
-                                                            >
-                                                                {modelOptions.map((model) => (
-                                                                    <Select.Option key={model.Model_ID} value={model.Model_Name}>{model.Model_Name}</Select.Option>
-                                                                ))}
-                                                            </Select>
-                                                        </div>
-                                                        {/* Body Style */}
-                                                        <Select
-                                                            showSearch
-                                                            allowClear
-                                                            placeholder="Body Style (Optional)"
-                                                            value={formData.bodyStyle || undefined}
-                                                            onChange={(value) => setFormData(prev => ({ ...prev, bodyStyle: value || '' }))}
-                                                            filterOption={(input, option) =>
-                                                                (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
-                                                            }
-                                                            className="w-full"
-                                                            style={{ height: '40px' }}
-                                                            dropdownStyle={{ zIndex: 9999 }}
-                                                        >
-                                                            {BODY_STYLE_OPTIONS.map((type) => (
-                                                                <Select.Option key={type} value={type}>{type}</Select.Option>
-                                                            ))}
-                                                        </Select>
                                                         </>
                                                     )}
                                                 </motion.div>
@@ -1116,16 +1116,17 @@ const PublicContactContent = () => {
                                             </div>
 
                                             {/* File Upload */}
-                                            <div className="flex items-center gap-4">
-                                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Upload Image (Optional)</label>
-                                                <div className="flex-1">
+                                            <div className="flex items-center gap-2 sm:gap-4 w-full">
+                                                <label className="text-[9px] min-[360px]:text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Upload Image (Optional)</label>
+                                                <div className="flex-1 w-full min-w-0">
                                                     <Upload
                                                         beforeUpload={() => false}
                                                         fileList={fileList}
                                                         onChange={({ fileList }) => setFileList(fileList)}
                                                         accept="image/*"
+                                                        className="w-full"
                                                     >
-                                                        <Button icon={<UploadOutlined />} className="w-full">Click to Upload</Button>
+                                                        <Button icon={<UploadOutlined />} className="w-full text-[11px] sm:text-sm h-8 sm:h-9 px-1 sm:px-4 overflow-hidden text-ellipsis">Click to Upload</Button>
                                                     </Upload>
                                                 </div>
                                             </div>

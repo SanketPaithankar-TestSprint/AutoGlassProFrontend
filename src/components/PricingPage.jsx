@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { useTranslation } from 'react-i18next';
-import { Layout, Button, Tooltip } from "antd";
+import { Layout, Button, Tooltip, Switch } from "antd";
 import { CheckOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import PageHead from "./PageHead";
@@ -10,6 +10,7 @@ const { Content } = Layout;
 const PricingPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [isYearly, setIsYearly] = useState(false);
 
   const commonTierFeatures = t('pricing.features.common', { returnObjects: true }) || [];
   const freeTierFeaturesRaw = t('pricing.features.free', { returnObjects: true }) || [];
@@ -36,17 +37,36 @@ const PricingPage = () => {
       />
 
       {/* Reduced padding to ensure fit */}
-      <Content className="p-4 md:p-6 flex flex-col justify-center h-full relative z-10">
+      <Content className="p-2 md:p-4 flex flex-col justify-center h-full relative z-10">
         <div className="max-w-5xl mx-auto w-full">
           {/* Compact Header */}
-          <div className="text-center mb-6 opacity-0 animate-[fadeInUp_0.6s_ease-out_forwards]">
+          <div className="text-center mb-4 opacity-0 animate-[fadeInUp_0.6s_ease-out_forwards]">
             <h1 className="text-lg md:text-xl font-extrabold text-slate-900 tracking-tight mb-2">
               {t('pricing.title')}
             </h1>
             <p className="text-slate-500 mb-3 text-sm">
               {t('pricing.getStartedFree')}
             </p>
-            <div className="h-1 w-16 mx-auto rounded-full" style={{ background: 'linear-gradient(90deg, #00A8E4 0%, #38BDF8 100%)' }} />
+
+            {/* Toggle for Monthly/Yearly */}
+            <div className="flex justify-center mt-3">
+              <div className="flex items-center bg-white p-1.5 rounded-full shadow-sm border border-slate-100">
+                <button
+                  onClick={() => setIsYearly(true)}
+                  className={`px-5 py-2.5 text-[14px] font-semibold rounded-full transition-all duration-300 flex items-center gap-1.5 ${isYearly ? 'shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
+                  style={isYearly ? { backgroundColor: '#00A8E4', color: 'white' } : {}}
+                >
+                  Yearly <span style={{ backgroundColor: isYearly ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.05)', padding: '2px 6px', borderRadius: '12px', fontSize: '12px', color: isYearly ? 'white' : '#64748b' }}>Save 15%</span>
+                </button>
+                <button
+                  onClick={() => setIsYearly(false)}
+                  className={`px-7 py-2.5 text-[14px] font-semibold rounded-full transition-all duration-300 ${!isYearly ? 'shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
+                  style={!isYearly ? { backgroundColor: '#00A8E4', color: 'white' } : {}}
+                >
+                  Monthly
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* Pricing Grid - Compact Gaps */}
@@ -54,8 +74,8 @@ const PricingPage = () => {
 
             {/* CARD 1: Free Trial - Compact */}
             <div className="group w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col relative shadow-lg hover:shadow-2xl transition-all duration-300 opacity-0 animate-[fadeInUp_0.6s_ease-out_0.2s_forwards] hover:-translate-y-1">
-              <div className="mb-4">
-                <h3 className="text-base font-bold text-slate-700 mb-1">{t('pricing.freeTrial')}</h3>
+              <div className="mb-3 min-h-[90px]">
+                <h3 className="text-base font-bold text-slate-700 mb-1 mt-1">{t('pricing.freeTrial')}</h3>
                 <div className="flex items-baseline gap-2 mb-1">
                   <span className="text-3xl font-extrabold text-slate-900">{t('pricing.free')}</span>
                   <span className="text-xs font-medium text-slate-500">{t('pricing.freeTrialDays')}</span>
@@ -66,7 +86,7 @@ const PricingPage = () => {
               </div>
 
               {/* Tighter list spacing */}
-              <ul className="space-y-3 mb-4 flex-1">
+              <ul className="space-y-1.5 mb-4 flex-1">
                 {freeTierFeatures.map((item, i) => (
                   <li key={i} className="flex items-center gap-2 text-slate-700">
                     <CheckOutlined className="mt-0.5 text-xs shrink-0" style={{ color: '#00A8E4' }} />
@@ -103,18 +123,32 @@ const PricingPage = () => {
                 </span>
               </div>
 
-              <div className="mb-4">
-                <h3 className="text-base font-bold text-white mb-1">{t('pricing.professional')}</h3>
-                <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-3xl font-extrabold text-white">$99</span>
-                  <span className="text-xs font-medium text-blue-50">{t('pricing.perMonthPerUser')}</span>
-                </div>
-                <p className="text-blue-50 text-xs font-medium opacity-90">
+              <div className="mb-3 min-h-[90px]">
+                <h3 className="text-base font-bold text-white mb-1 mt-1">{t('pricing.professional')}</h3>
+                {isYearly ? (
+                  <div className="flex flex-col mb-1 relative mt-2">
+                    <div className="flex items-baseline gap-2">
+                       <span className="text-3xl font-extrabold text-white">$999</span>
+                       <span className="text-xs font-medium text-blue-50">/year per user</span>
+                    </div>
+                    <div className="text-sm font-bold text-blue-100 relative w-fit mt-1">
+                      $1,188/year original
+                      <div className="absolute left-0 top-1/2 w-full h-[2px] bg-red-500 rotate-0"></div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-baseline gap-2 mb-1 mt-2">
+                    <span className="text-3xl font-extrabold text-white">$99</span>
+                    <span className="text-xs font-medium text-blue-50">{t('pricing.perMonthPerUser')}</span>
+                  </div>
+                )}
+                
+                <p className="text-blue-50 text-xs font-medium opacity-90 mt-1">
                   {t('pricing.proDescription')}
                 </p>
               </div>
 
-              <ul className="space-y-3 mb-4 flex-1">
+              <ul className="space-y-1.5 mb-4 flex-1">
                 {professionalTierFeatures.map((item, i) => (
                   <li key={i} className="flex items-center gap-2 text-white">
                     <CheckOutlined className="text-blue-100 mt-0.5 text-xs shrink-0" />
@@ -138,8 +172,8 @@ const PricingPage = () => {
 
             {/* CARD 3: Enterprise - Standard Look */}
             <div className="group w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col relative shadow-lg hover:shadow-2xl transition-all duration-300 opacity-0 animate-[fadeInUp_0.6s_ease-out_0.6s_forwards] hover:-translate-y-1">
-              <div className="mb-4">
-                <h3 className="text-base font-bold text-slate-700 mb-1">{t('pricing.enterprise')}</h3>
+              <div className="mb-3 min-h-[90px]">
+                <h3 className="text-base font-bold text-slate-700 mb-1 mt-1">{t('pricing.enterprise')}</h3>
                 <div className="flex items-baseline gap-2 mb-1">
                   <span className="text-3xl font-extrabold text-slate-900">{t('pricing.enterpriseCustom')}</span>
                 </div>
@@ -153,7 +187,7 @@ const PricingPage = () => {
                 </div>
               </div>
 
-              <ul className="space-y-3 mb-4 flex-1">
+              <ul className="space-y-1.5 mb-4 flex-1">
                 {enterpriseTierFeatures.map((item, i) => (
                   <li key={i} className="flex items-center gap-2 text-slate-700">
                     <CheckOutlined className="mt-0.5 text-xs shrink-0" style={{ color: '#00A8E4' }} />
