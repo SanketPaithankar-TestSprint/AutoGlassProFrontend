@@ -241,7 +241,7 @@ function AppContent() {
       ) : (
         // Public Layout: Header + Content Area
         <Layout className="min-h-screen bg-[#f8fafc] flex flex-col">
-          <Header onLoginSuccess={handleLoginSuccess} />
+          {location.pathname !== '/auth' && <Header onLoginSuccess={handleLoginSuccess} />}
 
           <Content className="flex-1 flex flex-col relative overflow-hidden"> {/* Header is fixed provided we handle spacing in pages */}
             {/* Shared Gradient Background for all public pages */}
@@ -288,7 +288,7 @@ function AppContent() {
                 </Routes>
               </Suspense>
             </div>
-            <Footer />
+            {location.pathname !== '/auth' && <Footer />}
           </Content>
         </Layout>
       )}
