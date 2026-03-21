@@ -117,9 +117,6 @@ const Shops = ({ userProfile }) => {
             const values = await form.validateFields();
             setSaving(true);
 
-            const token = getValidToken();
-            if (!token) throw new Error("No token found");
-
             const openHoursObj = {};
             ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].forEach(day => {
                 const status = values[`${day}_status`];
@@ -152,15 +149,15 @@ const Shops = ({ userProfile }) => {
                 website: values.website,
                 maps: values.maps,
                 isActive: values.isActive,
-                openHoursJson: JSON.stringify(openHoursObj)
+                openHoursJson: openHoursObj
             };
 
             if (editingShop) {
                 // Backend requires shopId in the body for updates
-                await updateShop(editingShop.shopId, payload);
+                await updateShop(editingShop.id || editingShop.shopId, payload);
                 notification.success({ message: "Shop updated successfully" });
             } else {
-                await createShop(token, payload);
+                await createShop(payload);
                 notification.success({ message: "Shop created successfully" });
             }
 
