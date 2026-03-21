@@ -168,7 +168,8 @@
         "shopOwner": "Due\u00f1o de Taller",
         "mobileTechnician": "T\u00e9cnico M\u00f3vil",
         "enterCityName": "Ingresar Nombre de Ciudad",
-        "typeCityName": "Escriba el nombre de su ciudad"
+        "typeCityName": "Escriba el nombre de su ciudad",
+        "loginAsEmployee": "Iniciar sesi\u00f3n como empleado"
     },
     "footer": {
         "tagline": "Plataforma profesional de cotizaci\u00f3n y precios para vidrios automotrices, dise\u00f1ada para talleres modernos.",
