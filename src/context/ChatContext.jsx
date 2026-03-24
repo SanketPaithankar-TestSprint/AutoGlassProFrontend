@@ -634,22 +634,9 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
         if (isPublic) {
             // Customer: send with visitorId; do NOT include conversationId on first message
             const vId = localStorage.getItem("visitorId");
-            const localConversationId = localStorage.getItem("chat_conversationId") || `visitor_${vId}`;
-            const localMessage = {
-                message: messageText,
-                senderType: 'CUSTOMER',
-                senderName: localStorage.getItem('visitorName') || 'Visitor',
-                visitorId: vId,
-                timestamp: Date.now(),
-                clientMessageId: crypto.randomUUID(),
-            };
-            appendLocalMessage(localConversationId, localMessage);
-            if (!activeConversationIdRef.current) {
-                setActiveConversationId(localConversationId);
-            }
             const fallbackName = localStorage.getItem('visitorName') || 'Visitor';
             const fallbackEmail = localStorage.getItem('visitorEmail') || 'no-email@test.com';
-            
+
             const payload = {
                 visitorId: vId,
                 message: messageText,
@@ -673,19 +660,6 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
         if (!currentSocket || connectionStatus !== 'connected' || !isPublic) return;
 
         const vId = localStorage.getItem("visitorId");
-        const localConversationId = localStorage.getItem("chat_conversationId") || `visitor_${vId}`;
-        const localMessage = {
-            message: text,
-            senderType: 'CUSTOMER',
-            senderName: name || 'Visitor',
-            visitorId: vId,
-            timestamp: Date.now(),
-            clientMessageId: crypto.randomUUID(),
-        };
-        appendLocalMessage(localConversationId, localMessage);
-        if (!activeConversationIdRef.current) {
-            setActiveConversationId(localConversationId);
-        }
         const payload = {
             visitorId: vId,
             message: text,
