@@ -397,20 +397,18 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
                 updatedAt: Date.now(),
             };
 
-            // Deduplicate
-            const lastMsg = existing.messages[existing.messages.length - 1];
-            if (lastMsg && lastMsg.message === message && lastMsg.timestamp === timestamp) {
-                return prev;
-            }
+            // Deduplicate - be more precise to avoid filtering legitimate messages
             if (messageId && existing.messages.some(m => m.messageId === messageId)) {
+                console.log("[ChatContext] Duplicate message detected by messageId:", messageId);
                 return prev;
             }
-            if (
-                lastMsg &&
+            
+            const lastMsg = existing.messages[existing.messages.length - 1];
+            if (lastMsg && 
+                lastMsg.message === message && 
                 lastMsg.senderType === senderType &&
-                lastMsg.message === message &&
-                Math.abs((timestamp || 0) - (lastMsg.timestamp || 0)) < 5000
-            ) {
+                lastMsg.timestamp === timestamp) {
+                console.log("[ChatContext] Exact duplicate message detected");
                 return prev;
             }
 
@@ -450,7 +448,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
                         const isDupe = acc.some(x =>
                             x.message === m.message &&
                             x.senderType === m.senderType &&
-                            Math.abs((x.timestamp || 0) - (m.timestamp || 0)) < 5000
+                            Math.abs((x.timestamp || 0) - (m.timestamp || 0)) < 1000 // Reduced from 5000ms to 1000ms
                         );
                         if (!isDupe) acc.push(m);
                         return acc;
