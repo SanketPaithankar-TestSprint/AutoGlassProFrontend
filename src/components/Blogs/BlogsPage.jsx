@@ -3,6 +3,7 @@ import { Layout, Typography, Button, Spin } from 'antd';
 import { ArrowRightOutlined } from '@ant-design/icons';
 import { motion } from 'framer-motion';
 import PageHead from '../PageHead';
+import { SiYoutube, SiX, SiInstagram, SiLinkedin } from "react-icons/si";
 import { getBlogs } from '../../api/getBlogs';
 import defaultCover from '../../assets/defaultcoverimg.png';
 
@@ -155,6 +156,23 @@ const BlogsPage = () => {
                         )}
                     </div>
                 )}
+
+                {/* Social Media Banner */}
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="mt-20 mb-32 bg-slate-100 rounded-3xl p-10 text-center border border-slate-200"
+                >
+                    <h2 className="text-2xl font-bold text-slate-800 mb-2 font-outfit uppercase tracking-wider">Stay Updated</h2>
+                    <p className="text-slate-500 mb-8 max-w-xl mx-auto">Follow APAI on social media for technical tips, industry news, and the latest platform updates.</p>
+                    <div className="flex justify-center gap-6">
+                        <a href="https://x.com/autopaneai" target="_blank" rel="noopener noreferrer" className="p-4 bg-white rounded-full text-slate-900 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all"><SiX size={24} /></a>
+                        <a href="https://instagram.com/autopaneai" target="_blank" rel="noopener noreferrer" className="p-4 bg-white rounded-full text-[#E4405F] shadow-md hover:shadow-xl hover:-translate-y-1 transition-all"><SiInstagram size={24} /></a>
+                        <a href="https://linkedin.com/company/autopaneai" target="_blank" rel="noopener noreferrer" className="p-4 bg-white rounded-full text-[#0A66C2] shadow-md hover:shadow-xl hover:-translate-y-1 transition-all"><SiLinkedin size={24} /></a>
+                        <a href="https://youtube.com/@autopaneai" target="_blank" rel="noopener noreferrer" className="p-4 bg-white rounded-full text-[#FF0000] shadow-md hover:shadow-xl hover:-translate-y-1 transition-all"><SiYoutube size={24} /></a>
+                    </div>
+                </motion.div>
             </div>
         </div>
     );

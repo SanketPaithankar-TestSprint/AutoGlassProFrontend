@@ -91,7 +91,7 @@ const ContactFormInquiriesTab = () => {
             markAsRead(record.id);
             localStorage.removeItem('agp_customer_data');
             localStorage.removeItem('agp_doc_metadata');
-            navigate('/search-by-root', { state: { prefillData } });
+            navigate('/quote', { state: { prefillData } });
         } catch (err) {
             console.error('[handleCreateQuote] Failed:', err);
             message.error(t('serviceContactForm.failedToPrepareQuote'));
@@ -361,7 +361,7 @@ const AiChatInquiriesTab = () => {
 
             localStorage.removeItem('agp_customer_data');
             localStorage.removeItem('agp_doc_metadata');
-            navigate('/search-by-root', { state: { prefillData } });
+            navigate('/quote', { state: { prefillData } });
         } catch (err) {
             console.error('[AiChatInquiriesTab] Create quote failed:', err);
             message.error(t('serviceContactForm.failedToPrepareQuote'));

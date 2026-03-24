@@ -1,24 +1,26 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import PageHead from '../PageHead';
 
 const SitemapPage = () => {
+    const { t } = useTranslation();
     const baseUrl = 'https://www.autopaneai.com';
     const sitemapSections = [
         {
-            title: 'Main Pages',
+            title: t('sitemap.sections.main'),
             links: [
-                { path: `${baseUrl}/`, title: 'Home', description: 'Welcome to AutoPane AI' },
-                { path: `${baseUrl}/features`, title: 'Features', description: 'Explore our powerful features' },
-                { path: `${baseUrl}/pricing`, title: 'Pricing', description: 'View our pricing plans' },
-                { path: `${baseUrl}/about`, title: 'About', description: 'Learn more about us' },
-                { path: `${baseUrl}/contact`, title: 'Contact', description: 'Get in touch with us' },
-                { path: `${baseUrl}/blogs`, title: 'Blogs', description: 'Read our latest articles and updates' },
-                { path: `${baseUrl}/vin-decoder`, title: 'VIN Decoder', description: 'Decode any vehicle VIN instantly using official NHTSA data' },
+                { path: `${baseUrl}/`, title: t('sitemap.pages.home'), description: t('sitemap.pages.homeDesc') },
+                { path: `${baseUrl}/features`, title: t('sitemap.pages.features'), description: t('sitemap.pages.featuresDesc') },
+                { path: `${baseUrl}/pricing`, title: t('sitemap.pages.pricing'), description: t('sitemap.pages.pricingDesc') },
+                { path: `${baseUrl}/about`, title: t('sitemap.pages.about'), description: t('sitemap.pages.aboutDesc') },
+                { path: `${baseUrl}/contact`, title: t('sitemap.pages.contact'), description: t('sitemap.pages.contactDesc') },
+                { path: `${baseUrl}/blogs`, title: t('sitemap.pages.blogs'), description: t('sitemap.pages.blogsDesc') },
+                { path: `${baseUrl}/vin-decoder`, title: t('sitemap.pages.vinDecoder'), description: t('sitemap.pages.vinDecoderDesc') },
             ]
         },
         {
-            title: 'Blogs',
+            title: t('sitemap.sections.blogs'),
             sectionPath: `${baseUrl}/blogs`,
             links: [
                 { path: `${baseUrl}/blogs/6-figure-mobile-auto-glass-business`, title: '6 Figure Mobile Auto Glass Business' },
@@ -33,10 +35,20 @@ const SitemapPage = () => {
             ]
         },
         {
-            title: 'Legal & Information',
+            title: t('sitemap.sections.legal'),
             links: [
-                { path: `${baseUrl}/privacy-policy`, title: 'Privacy Policy', description: 'Our privacy policy and data protection' },
-                { path: `${baseUrl}/terms-of-service`, title: 'Terms of Service', description: 'Terms and conditions for using the APAI platform' },
+                { path: `${baseUrl}/privacy-policy`, title: t('sitemap.pages.privacy'), description: t('sitemap.pages.privacyDesc') },
+                { path: `${baseUrl}/terms-of-service`, title: t('sitemap.pages.terms'), description: t('sitemap.pages.termsDesc') },
+            ]
+        },
+        {
+            title: t('sitemap.sections.social'),
+            links: [
+                { path: 'https://x.com/autopaneai', title: t('social.x'), description: t('social.xDesc') },
+                { path: 'https://instagram.com/autopaneai', title: t('social.instagram'), description: t('social.instagramDesc') },
+                { path: 'https://linkedin.com/company/autopaneai', title: t('social.linkedin'), description: t('social.linkedinDesc') },
+                { path: 'https://youtube.com/@autopaneai', title: t('social.youtube'), description: t('social.youtubeDesc') },
+                { path: 'https://www.tiktok.com/@autopaneai', title: t('social.tiktok'), description: t('social.tiktokDesc') },
             ]
         }
     ];
@@ -80,9 +92,9 @@ const SitemapPage = () => {
 
             <div className="max-w-3xl mx-auto relative z-10">
                 <div className="mb-12">
-                    <h1 className="text-3xl font-bold text-slate-900 mb-4 font-outfit">Sitemap</h1>
+                    <h1 className="text-3xl font-bold text-slate-900 mb-4 font-outfit">{t('sitemap.title')}</h1>
                     <p className="text-lg text-slate-600">
-                        A complete list of pages on AutoPane AI.
+                        {t('sitemap.subtitle')}
                     </p>
                 </div>
 

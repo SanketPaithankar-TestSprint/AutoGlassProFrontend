@@ -25,6 +25,49 @@
         "language": "Idioma",
         "myLanguage": "Mi Idioma"
     },
+    "social": {
+        "x": "X (Twitter)",
+        "xDesc": "Síguenos en X para las últimas actualizaciones e información sobre IA.",
+        "instagram": "Instagram",
+        "instagramDesc": "Vea el detrás de escena y los aspectos más destacados del producto.",
+        "linkedin": "LinkedIn",
+        "linkedinDesc": "Conéctese con nosotros en la red profesional.",
+        "youtube": "YouTube",
+        "youtubeDesc": "Vea nuestras demostraciones de productos y tutoriales.",
+        "tiktok": "TikTok",
+        "tiktokDesc": "Contenido de formato corto sobre la gestión de vidrios automotrices.",
+        "followUsDesc": "Conéctese con nosotros en las redes sociales para conocer las últimas actualizaciones y noticias."
+    },
+    "sitemap": {
+        "title": "Mapa del sitio",
+        "subtitle": "Una lista completa de páginas en AutoPane AI.",
+        "sections": {
+            "main": "Páginas principales",
+            "blogs": "Blogs",
+            "legal": "Legal e Información",
+            "social": "Redes sociales"
+        },
+        "pages": {
+            "home": "Inicio",
+            "homeDesc": "Bienvenido a AutoPane AI",
+            "features": "Características",
+            "featuresDesc": "Explore nuestras potentes funciones",
+            "pricing": "Precios",
+            "pricingDesc": "Vea nuestros planes de precios",
+            "about": "Acerca de",
+            "aboutDesc": "Aprenda más sobre nosotros",
+            "contact": "Contacto",
+            "contactDesc": "Póngase en contacto con nosotros",
+            "blogs": "Blogs",
+            "blogsDesc": "Lea nuestros últimos artículos y actualizaciones",
+            "vinDecoder": "Decodificador VIN",
+            "vinDecoderDesc": "Decodifica cualquier VIN de vehículo instantáneamente usando datos oficiales de NHTSA",
+            "privacy": "Política de privacidad",
+            "privacyDesc": "Nuestra política de privacidad y protección de datos",
+            "terms": "Términos de servicio",
+            "termsDesc": "Términos y condiciones para el uso de la plataforma APAI"
+        }
+    },
     "featuresPage": {
         "title": "Características de APAI | Decodificación VIN, Chat IA, Cotizaciones y Datos NAGS",
         "description": "Descubra las potentes funciones de APAI: Decodificación VIN instantánea, Chat de IA, cotizaciones profesionales en PDF y datos NAGS en tiempo real. Escale su taller por solo $99/mes.",

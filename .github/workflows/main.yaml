@@ -51,6 +51,7 @@ jobs:
         env:
           VITE_JAVA_API_URL: ${{ secrets.VITE_JAVA_API_URL }}
           VITE_PYTHON_API_URL: ${{ secrets.VITE_PYTHON_API_URL }}
+          VITE_CHAT_WS_URL: ${{ secrets.VITE_CHAT_WS_URL }}
 
       - name: ❌ Notify Build Failed
         if: failure()

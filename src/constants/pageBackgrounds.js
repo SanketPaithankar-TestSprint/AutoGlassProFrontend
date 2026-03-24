@@ -1,12 +1,12 @@
 export const PAGE_BACKGROUND_COLORS = {
     '/analytics': '#f1f5f9', // slate-100
     '/customers': '#f1f5f9', // slate-100 (filters toggle white)
-    '/search-by-root': '#f1f5f9', // slate-100
+    '/quote': '#f1f5f9', // slate-100
     '/schedule': '#f8fafc', // slate-50
-    '/open': '#f8fafc', // slate-50
+    '/jobs': '#f8fafc', // slate-50
     '/reports': '#f1f5f9', // slate-100
-    '/service-contact-form': '#f1f5f9', // slate-100
-    '/employee-attendance': '#f8fafc', // slate-50
+    '/inquiries': '#f1f5f9', // slate-100
+    '/attendance': '#f8fafc', // slate-50
     '/chat': '#f1f5f9', // slate-100
     '/profile': '#f9fafb', // gray-50 (sub-menu toggles white)
 };

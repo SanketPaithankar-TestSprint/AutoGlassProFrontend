@@ -6,7 +6,7 @@ const VIN_REGEX = /^[A-HJ-NPR-Z0-9]{17}$/i;
 
 /**
  * Resolves vehicle IDs from a service inquiry and returns a prefillData object
- * ready to be passed as location.state.prefillData to /search-by-root.
+ * ready to be passed as location.state.prefillData to /quote.
  *
  * Strategy:
  *  1. Detect if AI Chat Inquiry (has session_id).

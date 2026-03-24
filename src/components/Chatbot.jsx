@@ -93,7 +93,8 @@ const Chatbot = () => {
             // Using the endpoint from the user request
             // Parameters: query (string)
             const { fetchWithAuth } = await import("../api/fetchWithAuth");
-            const response = await fetchWithAuth(`https://api.autopaneai.com/agp/v1/chatbot-answer?query=${encodeURIComponent(userMessage.text)}`, {
+            const baseUrl = import.meta.env.VITE_PYTHON_API_URL || 'https://api.autopaneai.com/';
+            const response = await fetchWithAuth(`${baseUrl}agp/v1/chatbot-answer?query=${encodeURIComponent(userMessage.text)}`, {
                 method: "GET"
             });
 

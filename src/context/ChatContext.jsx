@@ -95,7 +95,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
     }, [activeConversationId]);
 
     // Configuration
-    const WS_URL = "wss://y3rxp208gj.execute-api.us-east-1.amazonaws.com/prod/";
+    const WS_URL = import.meta.env.VITE_CHAT_WS_URL;
 
     // ─── Initialize Visitor ID for customers ─────────────────────────────────
     useEffect(() => {

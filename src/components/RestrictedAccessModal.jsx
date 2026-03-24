@@ -17,7 +17,7 @@ const RestrictedAccessModal = ({ visible }) => {
     };
 
     const handleGoToSearch = () => {
-        navigate('/search-by-root');
+        navigate('/quote');
     };
 
     return (

@@ -204,10 +204,10 @@ function AppContent() {
                       </div>
                     }>
                       <Routes>
-                        <Route path="/" element={isAuthed ? <Navigate to="/search-by-root" replace /> : <Home />} />
+                        <Route path="/" element={isAuthed ? <Navigate to="/quote" replace /> : <Home />} />
                         <Route path="/analytics" element={<AnalyticsRoot />} />
                         <Route path="/customers" element={<CustomersRoot />} />
-                        <Route path="/search-by-root" element={<SearchByRoot />} />
+                        <Route path="/quote" element={<SearchByRoot />} />
                         <Route path="/schedule" element={<Schedule />} />
                         <Route path="/profile" element={<Profile />} />
 
@@ -215,16 +215,16 @@ function AppContent() {
                         <Route path="/pricing" element={<PricingPage />} />
                         <Route path="/features" element={<FeaturesPage />} />
                         <Route path="/features/:sectionId" element={<FeatureSectionDetail />} />
-                        <Route path="/open" element={<OpenRoot />} />
+                        <Route path="/jobs" element={<OpenRoot />} />
                         <Route path="/reports" element={<ReportsRoot />} />
                         <Route path="/auth" element={<AuthRoot />} />
                         <Route path="/sitemap" element={<SitemapPage />} />
-                        <Route path="/service-contact-form" element={<ServiceContactFormRoot />} />
-                        <Route path="/employee-attendance" element={<EmployeeAttendance />} />
+                        <Route path="/inquiries" element={<ServiceContactFormRoot />} />
+                        <Route path="/attendance" element={<EmployeeAttendance />} />
                         <Route path="/sitemap" element={<SitemapPage />} />
                         <Route path="/sitemap" element={<SitemapPage />} />
                         <Route path="/vin-decoder" element={<VinDecoderRoot />} />
-                        <Route path="/internal-vin-decoder" element={<InternalVinDecoderRoot />} />
+                        <Route path="/decoder" element={<InternalVinDecoderRoot />} />
                         <Route path="/chat" element={<ShopChatPanel />} />
                       </Routes >
                     </Suspense >
@@ -271,7 +271,7 @@ function AppContent() {
                   <Route path="/features/:sectionId" element={<FeatureSectionDetail />} />
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/contact" element={<ContactPage />} />
-                  <Route path="/search-by-root" element={<SearchByRoot />} />
+                  <Route path="/quote" element={<SearchByRoot />} />
                   <Route path="/profile" element={<Profile />} />
 
                   <Route path="/order" element={<OrderPage />} />
