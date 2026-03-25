@@ -154,7 +154,7 @@ const Shops = ({ userProfile }) => {
 
             if (editingShop) {
                 // Backend requires shopId in the body for updates
-                await updateShop(editingShop.id || editingShop.shopId, payload);
+                await updateShop(editingShop.shopId || editingShop.id, payload);
                 notification.success({ message: "Shop updated successfully" });
             } else {
                 await createShop(payload);
@@ -175,11 +175,11 @@ const Shops = ({ userProfile }) => {
         }
     };
 
-    const handleDelete = async (id) => {
+    const handleDelete = async (shopId) => {
         try {
             const token = getValidToken();
             if (!token) throw new Error("No token found");
-            await deleteShop(token, id);
+            await deleteShop(token, shopId);
             notification.success({ message: t('shops.title'), description: "Shop deleted successfully" });
             queryClient.invalidateQueries({ queryKey: ['shops'] });
         } catch (err) {
@@ -233,7 +233,7 @@ const Shops = ({ userProfile }) => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                     {Array.isArray(shops) && shops.map((shop) => (
                         <div
-                            key={shop.id}
+                            key={shop.shopId}
                             className="bg-white rounded-xl border border-gray-200 hover:shadow-md transition-shadow duration-200 flex flex-col"
                         >
                             {/* Card Header */}
@@ -297,7 +297,7 @@ const Shops = ({ userProfile }) => {
                                 <Popconfirm
                                     title={t('shops.deleteShop')}
                                     description={t('shops.deleteConfirm')}
-                                    onConfirm={() => handleDelete(shop.id)}
+                                    onConfirm={() => handleDelete(shop.shopId)}
                                     okText="Yes"
                                     cancelText="No"
                                     okButtonProps={{ danger: true }}
