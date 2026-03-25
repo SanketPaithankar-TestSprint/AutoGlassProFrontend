@@ -26,7 +26,6 @@ import { NotificationSettingsProvider } from './context/NotificationSettingsCont
 const Home = React.lazy(() => import('./components/Home/HomeRoot.jsx'));
 const AnalyticsRoot = React.lazy(() => import('./components/Analytics/AnalyticsRoot.jsx'));
 const CustomersRoot = React.lazy(() => import('./components/Customers/CustomersRoot.jsx'));
-const VendorsRoot = React.lazy(() => import('./components/Vendors/VendorsRoot.jsx'));
 const SearchByRoot = React.lazy(() => import("./components/SearchBy/SearchByRoot"));
 const Schedule = React.lazy(() => import('./components/Schedule/ScheduleRoot.jsx'));
 const FeaturesPage = React.lazy(() => import('./components/FeaturesPage/FeaturesPage.jsx'));
@@ -205,11 +204,10 @@ function AppContent() {
                       </div>
                     }>
                       <Routes>
-                        <Route path="/" element={isAuthed ? <Navigate to="/search-by-root" replace /> : <Home />} />
+                        <Route path="/" element={isAuthed ? <Navigate to="/quote" replace /> : <Home />} />
                         <Route path="/analytics" element={<AnalyticsRoot />} />
-                        <Route path="/customers" element={<Suspense fallback={<div>Loading Customers...</div>}><CustomersRoot /></Suspense>} />
-                  <Route path="/vendors" element={<Suspense fallback={<div>Loading Vendors...</div>}><VendorsRoot /></Suspense>} />
-                  <Route path="/search-by-root" element={<Suspense fallback={<div>Loading Search...</div>}><SearchByRoot /></Suspense>} />
+                        <Route path="/customers" element={<CustomersRoot />} />
+                        <Route path="/quote" element={<SearchByRoot />} />
                         <Route path="/schedule" element={<Schedule />} />
                         <Route path="/profile" element={<Profile />} />
 
@@ -217,16 +215,16 @@ function AppContent() {
                         <Route path="/pricing" element={<PricingPage />} />
                         <Route path="/features" element={<FeaturesPage />} />
                         <Route path="/features/:sectionId" element={<FeatureSectionDetail />} />
-                        <Route path="/open" element={<OpenRoot />} />
+                        <Route path="/jobs" element={<OpenRoot />} />
                         <Route path="/reports" element={<ReportsRoot />} />
                         <Route path="/auth" element={<AuthRoot />} />
                         <Route path="/sitemap" element={<SitemapPage />} />
-                        <Route path="/service-contact-form" element={<ServiceContactFormRoot />} />
-                        <Route path="/employee-attendance" element={<EmployeeAttendance />} />
+                        <Route path="/inquiries" element={<ServiceContactFormRoot />} />
+                        <Route path="/attendance" element={<EmployeeAttendance />} />
                         <Route path="/sitemap" element={<SitemapPage />} />
                         <Route path="/sitemap" element={<SitemapPage />} />
                         <Route path="/vin-decoder" element={<VinDecoderRoot />} />
-                        <Route path="/internal-vin-decoder" element={<InternalVinDecoderRoot />} />
+                        <Route path="/decoder" element={<InternalVinDecoderRoot />} />
                         <Route path="/chat" element={<ShopChatPanel />} />
                       </Routes >
                     </Suspense >
@@ -241,7 +239,7 @@ function AppContent() {
       ) : (
         // Public Layout: Header + Content Area
         <Layout className="min-h-screen bg-[#f8fafc] flex flex-col">
-          {location.pathname !== '/auth' && <Header onLoginSuccess={handleLoginSuccess} />}
+          <Header onLoginSuccess={handleLoginSuccess} />
 
           <Content className="flex-1 flex flex-col relative overflow-hidden"> {/* Header is fixed provided we handle spacing in pages */}
             {/* Shared Gradient Background for all public pages */}
@@ -273,7 +271,7 @@ function AppContent() {
                   <Route path="/features/:sectionId" element={<FeatureSectionDetail />} />
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/contact" element={<ContactPage />} />
-                  <Route path="/search-by-root" element={<SearchByRoot />} />
+                  <Route path="/quote" element={<SearchByRoot />} />
                   <Route path="/profile" element={<Profile />} />
 
                   <Route path="/order" element={<OrderPage />} />
@@ -288,7 +286,7 @@ function AppContent() {
                 </Routes>
               </Suspense>
             </div>
-            {location.pathname !== '/auth' && <Footer />}
+            <Footer />
           </Content>
         </Layout>
       )}

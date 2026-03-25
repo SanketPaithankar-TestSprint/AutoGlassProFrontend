@@ -35,10 +35,9 @@ const InquiryDetails = ({ inquiry }) => {
         try {
             const prefillData = await createQuoteFromInquiry(inquiry);
             console.log('[InquiryDetails] prefillData:', prefillData);
-            // Clear cached quote data so SearchByRoot starts fresh with the prefill
             localStorage.removeItem('agp_customer_data');
             localStorage.removeItem('agp_doc_metadata');
-            navigate('/search-by-root', { state: { prefillData } });
+            navigate('/quote', { state: { prefillData } });
         } catch (err) {
             console.error('[InquiryDetails] Create quote failed:', err);
             message.error('Failed to prepare quote. Please try again.');

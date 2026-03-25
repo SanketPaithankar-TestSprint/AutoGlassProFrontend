@@ -172,30 +172,14 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
             label: <Link to="/customers">{t('nav.customers')}</Link>,
         },
         {
-            key: '/search-by-root',
+            key: '/quote',
             icon: <FormOutlined />,
-            label: <Link to="/search-by-root">{t('nav.quote')}</Link>,
+            label: <Link to="/quote">{t('nav.quote')}</Link>,
         },
         {
-            key: '/vendors',
-            icon: (
-                <span className="anticon">
-                    <svg 
-                        viewBox="0 0 512 512" 
-                        width="1em" 
-                        height="1em" 
-                        fill="currentColor"
-                    >
-                        <path d="m511.013 307.28-22.064-125.117c-5.462-30.972-32.281-53.452-63.769-53.452H86.824c-31.488 0-58.307 22.48-63.769 53.452L.991 307.28c-3.336 18.912 1.837 38.192 14.189 52.897 12.336 14.688 30.43 23.112 49.639 23.112h382.369c19.177 0 37.255-8.429 49.599-23.124 12.37-14.729 17.556-34.004 14.226-52.885M203.009 193.746c0-9.289 7.531-16.819 16.819-16.819h19.351V162.35h33.639v14.577h21.015c9.289 0 16.819 7.531 16.819 16.819s-7.531 16.819-16.819 16.819h-74.005c-9.288 0-16.819-7.53-16.819-16.819m241.065 29.049-55.21 8.682-103.759 56.172h-70.657l74.834-40.513c-3.988.627-4.731.797-6.391.797-8.137 0-15.291-5.917-16.594-14.209-1.443-9.177 4.826-17.785 14.003-19.228l158.55-24.932c9.178-1.442 17.785 4.826 19.228 14.003s-4.827 17.785-14.004 19.228"/>
-                    </svg>
-                </span>
-            ),
-            label: <Link to="/vendors">{t('nav.vendors') || 'Vendors'}</Link>,
-        },
-        {
-            key: '/internal-vin-decoder',
+            key: '/decoder',
             icon: <BarcodeOutlined />,
-            label: <Link to="/internal-vin-decoder">{t('nav.vinDecoder') || 'VIN Decoder'}</Link>,
+            label: <Link to="/decoder">{t('nav.vinDecoder') || 'VIN Decoder'}</Link>,
         },
         {
             key: '/schedule',
@@ -203,9 +187,9 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
             label: <Link to="/schedule">{t('nav.schedule')}</Link>,
         },
         {
-            key: '/open',
+            key: '/jobs',
             icon: <FolderOpenOutlined />,
-            label: <Link to="/open">{t('nav.jobs')}</Link>,
+            label: <Link to="/jobs">{t('nav.jobs')}</Link>,
         },
         {
             key: '/reports',
@@ -213,7 +197,7 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
             label: <Link to="/reports">{t('nav.reports')}</Link>,
         },
         {
-            key: '/service-contact-form',
+            key: '/inquiries',
             icon: (
                 <div className="relative inline-block">
                     <MessageOutlined />
@@ -223,7 +207,7 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
                 </div>
             ),
             label: (
-                <Link to="/service-contact-form">
+                <Link to="/inquiries">
                     <span className="inline-flex items-center gap-2">
                         <span>{t('nav.serviceInquiries')}</span>
                         {!collapsed && inquiryBadgeCount > 0 && (
@@ -246,9 +230,9 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
         },
 
         {
-            key: '/employee-attendance',
+            key: '/attendance',
             icon: <AuditOutlined />,
-            label: <Link to="/employee-attendance">{t('nav.employeeAttendance')}</Link>,
+            label: <Link to="/attendance">{t('nav.employeeAttendance')}</Link>,
             title: t('nav.employeeAttendance')
         },
 
@@ -351,9 +335,9 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
 
                 <div className="p-4 border-t border-white/5 flex flex-col gap-1">
                     <LanguageToggle compact={collapsed} dark={true} sidebarMode={true} />
-                    <Dropdown
-                        menu={{ items: profileMenuItems }}
-                        trigger={['click']}
+                    <Dropdown 
+                        menu={{ items: profileMenuItems }} 
+                        trigger={['click']} 
                         placement={collapsed ? 'right' : 'topRight'}
                         getPopupContainer={() => document.body}
                     >

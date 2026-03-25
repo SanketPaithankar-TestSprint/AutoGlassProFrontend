@@ -47,6 +47,49 @@
         "updateFailed": "Failed to update vendor",
         "deleteFailed": "Failed to delete vendor"
     },
+    "social": {
+        "x": "X (Twitter)",
+        "xDesc": "Follow us on X for the latest updates and AI insights.",
+        "instagram": "Instagram",
+        "instagramDesc": "See behind the scenes and product highlights.",
+        "linkedin": "LinkedIn",
+        "linkedinDesc": "Connect with us on professional network.",
+        "youtube": "YouTube",
+        "youtubeDesc": "Watch our product demos and tutorials.",
+        "tiktok": "TikTok",
+        "tiktokDesc": "Short-form content about auto glass management.",
+        "followUsDesc": "Connect with us on social media for the latest updates and news."
+    },
+    "sitemap": {
+        "title": "Sitemap",
+        "subtitle": "A complete list of pages on AutoPane AI.",
+        "sections": {
+            "main": "Main Pages",
+            "blogs": "Blogs",
+            "legal": "Legal & Information",
+            "social": "Social Media"
+        },
+        "pages": {
+            "home": "Home",
+            "homeDesc": "Welcome to AutoPane AI",
+            "features": "Features",
+            "featuresDesc": "Explore our powerful features",
+            "pricing": "Pricing",
+            "pricingDesc": "View our pricing plans",
+            "about": "About",
+            "aboutDesc": "Learn more about us",
+            "contact": "Contact",
+            "contactDesc": "Get in touch with us",
+            "blogs": "Blogs",
+            "blogsDesc": "Read our latest articles and updates",
+            "vinDecoder": "VIN Decoder",
+            "vinDecoderDesc": "Decode any vehicle VIN instantly using official NHTSA data",
+            "privacy": "Privacy Policy",
+            "privacyDesc": "Our privacy policy and data protection",
+            "terms": "Terms of Service",
+            "termsDesc": "Terms and conditions for using the APAI platform"
+        }
+    },
     "featuresPage": {
         "title": "APAI Features | VIN Decode, AI Chat, Quotes & NAGS Data",
         "description": "Discover APAI's powerful features: Instant VIN decoding, AI Chat, professional PDF quotes, and real-time NAGS data. Scale your glass shop for just $99/mo.",
@@ -192,7 +235,8 @@
         "shopOwner": "Shop Owner",
         "mobileTechnician": "Mobile Technician",
         "enterCityName": "Enter City Name",
-        "typeCityName": "Type your city name"
+        "typeCityName": "Type your city name",
+        "loginAsEmployee": "Login as Employee"
     },
     "footer": {
         "tagline": "Professional auto glass pricing & quoting platform built for modern repair shops.",
