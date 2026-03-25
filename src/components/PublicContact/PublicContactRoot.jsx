@@ -147,7 +147,6 @@ const PublicContactContent = () => {
         phone: '',
         location: '',
         vin: '',
-        licensePlateNumber: '',
         year: '',
         make: '',
         model: '',
@@ -429,7 +428,6 @@ const PublicContactContent = () => {
                 vehicleMake: formData.make,
                 vehicleModel: formData.model,
                 bodyType: formData.bodyStyle || '',
-                licensePlateNumber: formData.licensePlateNumber,
                 serviceType: [formData.serviceType], // API expects array
                 servicePreference: formData.servicePreference === 'Mobile service' ? 'MOBILE' : 'IN_SHOP',
                 windshieldFeatures: formData.windshieldFeatures,
@@ -511,7 +509,6 @@ const PublicContactContent = () => {
             phone: '',
             location: '',
             vin: '',
-            licensePlateNumber: '',
             year: '',
             make: '',
             model: '',
@@ -827,25 +824,6 @@ const PublicContactContent = () => {
                                                 </motion.div>
                                             )}
 
-                                            {/* License Plate */}
-                                            {formData.serviceType && (
-                                                <motion.div
-                                                    initial={{ opacity: 0, y: -10 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    className="space-y-2"
-                                                >
-                                                    <label className="text-xs font-medium text-gray-600">License Plate (Optional)</label>
-                                                    <input
-                                                        type="text"
-                                                        name="licensePlateNumber"
-                                                        value={formData.licensePlateNumber}
-                                                        onChange={handleInputChange}
-                                                        placeholder="License Plate"
-                                                        className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all text-sm"
-                                                    />
-                                                </motion.div>
-                                            )}
-
                                             {/* VIN Decoding Section */}
                                             {formData.serviceType && (
                                                 <motion.div
@@ -1116,19 +1094,17 @@ const PublicContactContent = () => {
                                             </div>
 
                                             {/* File Upload */}
-                                            <div className="flex items-center gap-2 sm:gap-4 w-full">
-                                                <label className="text-[9px] min-[360px]:text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Upload Image (Optional)</label>
-                                                <div className="flex-1 w-full min-w-0">
-                                                    <Upload
-                                                        beforeUpload={() => false}
-                                                        fileList={fileList}
-                                                        onChange={({ fileList }) => setFileList(fileList)}
-                                                        accept="image/*"
-                                                        className="w-full"
-                                                    >
-                                                        <Button icon={<UploadOutlined />} className="w-full text-[11px] sm:text-sm h-8 sm:h-9 px-1 sm:px-4 overflow-hidden text-ellipsis">Click to Upload</Button>
-                                                    </Upload>
-                                                </div>
+                                            <div className="flex justify-start w-full mb-2">
+                                                <Upload
+                                                    beforeUpload={() => false}
+                                                    fileList={fileList}
+                                                    onChange={({ fileList }) => setFileList(fileList)}
+                                                    accept="image/*"
+                                                >
+                                                    <Button icon={<UploadOutlined />} className="text-[11px] sm:text-sm h-8 sm:h-9 px-4">
+                                                        Upload Image
+                                                    </Button>
+                                                </Upload>
                                             </div>
 
                                             {/* Submit Button */}
