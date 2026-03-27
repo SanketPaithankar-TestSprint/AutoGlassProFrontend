@@ -48,6 +48,13 @@ const SetPassword = React.lazy(() => import('./components/auth/SetPassword.jsx')
 const VinDecoderRoot = React.lazy(() => import('./components/VinDecoder/VinDecoderRoot.jsx'));
 const InternalVinDecoderRoot = React.lazy(() => import('./components/InternalVinDecoder/InternalVinDecoderRoot.jsx'));
 const PublicChatRoot = React.lazy(() => import('./components/PublicChat/PublicChatRoot.jsx'));
+const HelpArticlesPage = React.lazy(() => import('./components/Help/HelpArticlesPage.jsx'));
+const HelpArticlePage = React.lazy(() => import('./components/Help/HelpArticlePage.jsx'));
+const HelpSupportPage = React.lazy(() => import('./components/Help/HelpSupportPage.jsx'));
+const HelpCategoriesPage = React.lazy(() => import('./components/Help/HelpCategoriesPage.jsx'));
+const SupportTicketsPage = React.lazy(() => import('./components/Help/SupportTicketsPage.jsx'));
+const CallSupportPage = React.lazy(() => import('./components/Help/CallSupportPage.jsx'));
+const ShopSupportChat = React.lazy(() => import('./components/Help/ShopSupportChat.jsx'));
 import RestrictedAccessModal from './components/RestrictedAccessModal';
 import { useSubscriptionRestriction } from './hooks/useSubscriptionRestriction';
 
@@ -226,6 +233,15 @@ function AppContent() {
                         <Route path="/vin-decoder" element={<VinDecoderRoot />} />
                         <Route path="/decoder" element={<InternalVinDecoderRoot />} />
                         <Route path="/chat" element={<ShopChatPanel />} />
+                        <Route path="/sos" element={<HelpSupportPage />} />
+                        <Route path="/help" element={<HelpSupportPage />}>
+                          <Route path="categories" element={<HelpCategoriesPage />} />
+                          <Route path="articles" element={<HelpArticlesPage />} />
+                          <Route path="articles/:id" element={<HelpArticlePage />} />
+                          <Route path="tickets" element={<SupportTicketsPage />} />
+                          <Route path="contact" element={<CallSupportPage />} />
+                          <Route path="chat" element={<ShopSupportChat />} />
+                        </Route>
                       </Routes >
                     </Suspense >
                   </ErrorBoundary >
