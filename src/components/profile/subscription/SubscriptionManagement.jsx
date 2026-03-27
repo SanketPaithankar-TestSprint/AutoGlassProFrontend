@@ -7,11 +7,13 @@ import {
   updateSubscription,
   activateSubscription,
   deactivateSubscription,
-  deleteSubscription,
-} from "../../api/subscription";
-import { getValidToken } from "../../api/getValidToken";
+  getSubscriptionInvoices,
+} from "../../../api/subscription";
+import { getValidToken } from "../../../api/getValidToken";
 import SubscriptionOverviewCard from "./SubscriptionOverviewCard";
 import SubscriptionForm from "./SubscriptionForm";
+import { Table, Tag, Button as AntButton } from "antd";
+import { DownloadOutlined } from "@ant-design/icons";
 
 const SubscriptionManagement = () => {
   const queryClient = useQueryClient();
@@ -31,6 +33,14 @@ const SubscriptionManagement = () => {
     enabled: !!token,
   });
 
+  // Fetch invoices
+  const { data: invoices, isLoading: isLoadingInvoices } = useQuery({
+    queryKey: ["subscriptionInvoices"],
+    queryFn: () => getSubscriptionInvoices(token),
+    enabled: !!token,
+  });
+
+  // ... (keeping mutations and handlers same)
   // Mutations
   const addMutation = useMutation({
     mutationFn: (payload) => addSubscription(token, payload),
@@ -38,6 +48,7 @@ const SubscriptionManagement = () => {
       notification.success({ message: res.msg || "Subscription added" });
       setFormVisible(false);
       refetch();
+      queryClient.invalidateQueries(["subscriptionInvoices"]);
     },
     onError: (err) => notification.error({ message: "Failed to add subscription", description: err.message }),
   });
@@ -48,6 +59,7 @@ const SubscriptionManagement = () => {
       notification.success({ message: res.msg || "Subscription updated" });
       setFormVisible(false);
       refetch();
+      queryClient.invalidateQueries(["subscriptionInvoices"]);
     },
     onError: (err) => notification.error({ message: "Failed to update subscription", description: err.message }),
   });
@@ -95,14 +107,22 @@ const SubscriptionManagement = () => {
   const handleDelete = () => setConfirmModal({ open: true, action: "delete" });
 
   const handleFormSubmit = (values) => {
-    // Transform form values to API shape
+    // Build the exact API payload
     const payload = {
-      ...values,
-      isValidateCard: values.isValidateCard ? "1" : "0",
-      subscriptionStartsFrom: values.subscriptionStartsFrom?.format("YYYY-MM-DD"),
-      chargeOn: new Date().getDate().toString(), // Current day
-      chargeUntil: values.recurringType === "2" ? "1" : "12", // 1 for Monthly, 12 for Yearly
+      recurringType: values.recurringType,
+      chargeUntil: values.duration?.toString() || "1",
+      employeeCount: values.employeeCount || 0,
+      cardHolderName: values.cardHolderName,
+      paymentInfo: {
+        ...values.paymentInfo,
+        cardNumber: values.paymentInfo?.cardNumber?.replace(/\s/g, ""),
+        expiryDate: values.paymentInfo?.expiryDate?.replace(/[^0-9]/g, ""),
+      },
+      billingAddress: values.billingAddress,
     };
+    if (values.email) payload.email = values.email;
+    if (values.phone) payload.phone = values.phone;
+
     if (formMode === "add") addMutation.mutate(payload);
     else updateMutation.mutate(payload);
   };
@@ -111,6 +131,51 @@ const SubscriptionManagement = () => {
     if (confirmModal.action === "deactivate") deactivateMutation.mutate();
     if (confirmModal.action === "delete") deleteMutation.mutate();
   };
+
+  const invoiceColumns = [
+    {
+      title: "Invoice #",
+      dataIndex: "invoiceNo",
+      key: "invoiceNo",
+      render: (text) => <span className="font-semibold text-gray-700">{text || "N/A"}</span>,
+    },
+    {
+      title: "Date",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (date) => (date ? new Date(date).toLocaleDateString() : "-"),
+    },
+    {
+      title: "Amount",
+      dataIndex: "amount",
+      key: "amount",
+      render: (amt) => <span className="text-blue-600 font-bold">${amt}</span>,
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (status) => (
+        <Tag color={status === "PAID" ? "green" : "orange"} className="rounded-full px-3">
+          {status || "PENDING"}
+        </Tag>
+      ),
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (_, record) => (
+        <AntButton
+          type="text"
+          icon={<DownloadOutlined className="text-blue-500" />}
+          onClick={() => window.open(record.invoiceUrl, "_blank")}
+          disabled={!record.invoiceUrl}
+        >
+          Download
+        </AntButton>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-6 animate-fadeIn">
@@ -126,6 +191,21 @@ const SubscriptionManagement = () => {
         onDeactivate={handleDeactivate}
         onDelete={handleDelete}
       />
+
+      <div className="mt-8 bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+        <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+          Invoice History
+        </h3>
+        <Table
+          columns={invoiceColumns}
+          dataSource={invoices || []}
+          loading={isLoadingInvoices}
+          rowKey="id"
+          pagination={{ pageSize: 5 }}
+          className="subscription-invoices-table"
+        />
+      </div>
+
       <Modal
         open={formVisible}
         title={formMode === "add" ? "Add Subscription" : "Update Subscription"}

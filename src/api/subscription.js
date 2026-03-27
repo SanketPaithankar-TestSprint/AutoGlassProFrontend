@@ -39,9 +39,17 @@ export const deactivateSubscription = async (token) => {
   return res.data;
 };
 
-export const deleteSubscription = async (token) => {
-  const res = await axios.delete(`${BASE_URL}`, {
+export const getSubscriptionInvoices = async (token) => {
+  const res = await axios.get(`${BASE_URL}/invoices`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   return res.data;
 };
+
+export const deleteSubscription = async (token) => {
+  const res = await axios.post(`${BASE_URL}/delete`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
+};
+

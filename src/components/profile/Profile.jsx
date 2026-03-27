@@ -28,7 +28,7 @@ import { getStatesOrProvinces, getCities, COUNTRIES } from "../../const/location
 import { useSidebarStore } from '../../store/useSidebarStore';
 import { getPageBackground } from '../../const/pageBackgrounds';
 import { useTranslation } from 'react-i18next';
-import SubscriptionManagement from "./SubscriptionManagement";
+import SubscriptionManagement from "./subscription/SubscriptionManagement";
 
 const Profile = () => {
     const [activeTab, setActiveTab] = useState('profile');

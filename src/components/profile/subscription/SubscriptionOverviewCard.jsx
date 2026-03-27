@@ -2,7 +2,7 @@
 import React, { useMemo } from "react";
 import { Badge, Card, Button, Space, Typography } from "antd";
 import { CheckCircleTwoTone, ExclamationCircleTwoTone, CloseCircleTwoTone, ClockCircleTwoTone, DollarOutlined } from "@ant-design/icons";
-import { subscriptionStyles, getBadgeClass } from "../../constants/subscriptionStyles";
+import { subscriptionStyles, getBadgeClass } from "../../../constants/subscriptionStyles";
 
 
 const statusMap = {
@@ -60,20 +60,10 @@ const SubscriptionOverviewCard = ({ details, loading, onAdd, onUpdate, onActivat
           )}
           {!!details?.plan && (
             <>
-              <Button type="primary" onClick={onUpdate} size="large" style={{ background: '#2563eb', borderColor: '#2563eb', color: '#ffffff' }}>Update</Button>
-              {details.status === "INACTIVE" && (
-                <Button type="primary" onClick={onActivate} className={subscriptionStyles.primaryBtn} size="large">
-                  Activate
-                </Button>
-              )}
-              {details.status === "ACTIVE" && (
-                <Button danger onClick={onDeactivate} className={subscriptionStyles.destructiveBtn} size="large">
-                  Deactivate
-                </Button>
-              )}
-              <Button danger type="text" onClick={onDelete} className={subscriptionStyles.destructiveBtn} size="large">
-                Delete
+              <Button type="primary" onClick={onAdd} className={subscriptionStyles.primaryBtn + " min-w-[160px]"} size="large">
+                Add Subscription
               </Button>
+              <Button type="primary" onClick={onUpdate} size="large" style={{ background: '#2563eb', borderColor: '#2563eb', color: '#ffffff' }}>Update</Button>
             </>
           )}
         </Space>
