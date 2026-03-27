@@ -102,7 +102,7 @@ export default function ForgotPasswordForm({ onBackToLogin, onSuccess }) {
                     type="text"
                     icon={<ArrowLeftOutlined />}
                     onClick={onBackToLogin}
-                    className="text-slate-500 hover:text-violet-600 pl-0"
+                    className="text-blue-500 font-bold auth-link-gradient-hover cursor-pointer"
                 >
                     {t('auth.login')}
                 </Button>
@@ -155,7 +155,7 @@ export default function ForgotPasswordForm({ onBackToLogin, onSuccess }) {
                             htmlType="submit"
                             block
                             loading={loading}
-                            className="w-full py-4 !bg-gradient-to-r !from-[#6039de] !to-[#c128d4] text-white font-['Plus_Jakarta_Sans'] font-semibold rounded-xl !shadow-[0px_10px_40px_rgba(98,60,225,0.15)] hover:opacity-90 active:scale-[0.98] transition-all duration-200 !border-none h-[54px] text-lg"
+                            className="w-full py-4 auth-button-gradient font-['Plus_Jakarta_Sans'] font-semibold rounded-xl !shadow-[0px_10px_40px_rgba(98,60,225,0.15)] active:scale-[0.98] transition-all duration-200 h-[54px] text-lg"
                         >
                             Send OTP
                         </Button>
@@ -230,7 +230,7 @@ export default function ForgotPasswordForm({ onBackToLogin, onSuccess }) {
                             htmlType="submit"
                             block
                             loading={loading}
-                            className="w-full py-4 !bg-gradient-to-r !from-[#6039de] !to-[#c128d4] text-white font-['Plus_Jakarta_Sans'] font-semibold rounded-xl !shadow-[0px_10px_40px_rgba(98,60,225,0.15)] hover:opacity-90 active:scale-[0.98] transition-all duration-200 !border-none h-[54px] text-lg"
+                            className="w-full py-4 auth-button-gradient font-['Plus_Jakarta_Sans'] font-semibold rounded-xl !shadow-[0px_10px_40px_rgba(98,60,225,0.15)] active:scale-[0.98] transition-all duration-200 h-[54px] text-lg"
                         >
                             {t('auth.resetPassword')}
                         </Button>

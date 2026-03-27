@@ -24,73 +24,9 @@ import { COUNTRIES, getStatesOrProvinces, getCities } from '../../const/location
 
 // Reusable style for form items
 const formItemStyle = {
-    marginBottom: '16px'
+    marginBottom: '24px'
 };
 
-// Custom Input Styles injected via style tag
-const customInputStyle = `
-  .custom-api-input .ant-input, 
-  .custom-api-input .ant-input-password .ant-input,
-  .custom-api-input.ant-select .ant-select-selector {
-      border-color: #e2e8f0 !important;
-      border-width: 1.5px !important;
-      border-radius: 8px !important;
-      padding: 6px 11px !important;
-      height: 40px !important;
-      line-height: 28px !important;
-      display: flex !important;
-      align-items: center !important;
-  }
-  .custom-api-input .ant-input::placeholder,
-  .custom-api-input .ant-input-password .ant-input::placeholder {
-      line-height: 28px !important;
-      vertical-align: middle !important;
-  }
-  .custom-api-input .ant-input-prefix {
-      margin-right: 8px !important;
-      display: flex !important;
-      align-items: center !important;
-  }
-  .custom-api-input.ant-select .ant-select-selector {
-      height: 40px !important;
-      display: flex !important;
-      align-items: center !important;
-  }
-  .custom-api-input .ant-input:hover, 
-  .custom-api-input .ant-input-password:hover .ant-input,
-  .custom-api-input.ant-select:hover .ant-select-selector {
-      border-color: #7E5CFE !important;
-  }
-  .custom-api-input .ant-input:focus, 
-  .custom-api-input.ant-input-affix-wrapper-focused,
-  .custom-api-input.ant-select-focused .ant-select-selector {
-      border-color: #7E5CFE !important;
-      box-shadow: 0 0 0 3px rgba(126, 92, 254, 0.2) !important;
-  }
-  .custom-api-input.ant-input-affix-wrapper {
-      padding: 6px 11px !important;
-      border-radius: 8px;
-      border-color: #e2e8f0;
-      border-width: 1.5px;
-      height: 40px !important;
-      display: flex !important;
-      align-items: center !important;
-  }
-  .custom-api-input.ant-input-affix-wrapper:hover {
-      border-color: #7E5CFE;
-  }
-  .custom-api-input.ant-input-affix-wrapper-focused {
-       border-color: #7E5CFE;
-       box-shadow: 0 0 0 3px rgba(126, 92, 254, 0.2);
-  }
-  .custom-api-input.ant-input-password {
-      height: 40px !important;
-  }
-  .custom-api-input .ant-input-password-icon {
-      display: flex !important;
-      align-items: center !important;
-  }
-`;
 
 const formatPhoneNumber = (value) => {
     if (!value) return '';
@@ -252,7 +188,6 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
 
     return (
         <div ref={formContainerRef} className="md:mx-4 lg:mx-6" style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: '10px' }}>
-            <style>{customInputStyle}</style>
 
             {error && (
                 <Alert
@@ -283,7 +218,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             rules={[{ required: true, message: 'Please input business name!' }]}
                             style={formItemStyle}
                         >
-                            <Input className="custom-api-input" />
+                            <Input className="h-11 rounded-xl border-gray-200 hover:border-[#7C3AED] focus:border-[#7C3AED] transition-all text-lg px-4" />
                         </Form.Item>
                     </Col>
                     <Col xs={24} sm={12}>
@@ -293,26 +228,22 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             rules={[{ required: true, message: 'Please input contact name!' }]}
                             style={formItemStyle}
                         >
-                            <Input prefix={<UserOutlined style={{ color: '#a0aec0' }} />} className="custom-api-input" />
+                            <Input prefix={<UserOutlined className="text-gray-400 mr-2" />} className="h-11 rounded-xl border-gray-200 hover:border-[#7C3AED] focus:border-[#7C3AED] transition-all text-lg px-4" />
                         </Form.Item>
                     </Col>
                 </Row>
 
-                <Row gutter={16}>
-                    <Col xs={24} sm={12}>
-                        <Form.Item
-                            name="email"
-                            label={t('auth.email')}
-                            rules={[
-                                { required: true, message: 'Please input email!' },
-                                { type: 'email', message: 'Invalid email!' }
-                            ]}
-                            style={formItemStyle}
-                        >
-                            <Input prefix={<MailOutlined style={{ color: '#a0aec0' }} />} className="custom-api-input" />
-                        </Form.Item>
-                    </Col>
-                </Row>
+                <Form.Item
+                    name="email"
+                    label={t('auth.email')}
+                    rules={[
+                        { required: true, message: 'Please input email!' },
+                        { type: 'email', message: 'Invalid email!' }
+                    ]}
+                    style={formItemStyle}
+                >
+                    <Input prefix={<MailOutlined className="text-gray-400 mr-2" />} className="h-11 rounded-xl border-gray-200 hover:border-[#7C3AED] focus:border-[#7C3AED] transition-all text-lg px-4" />
+                </Form.Item>
 
 
                 <Row gutter={16}>
@@ -327,8 +258,8 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             style={formItemStyle}
                         >
                             <Input
-                                prefix={<PhoneOutlined style={{ color: '#a0aec0' }} />}
-                                className="custom-api-input"
+                                prefix={<PhoneOutlined className="text-gray-400 mr-2" />}
+                                className="h-11 rounded-xl border-gray-200 hover:border-[#7C3AED] focus:border-[#7C3AED] transition-all text-lg px-4"
                                 maxLength={14}
                                 onChange={(e) => {
                                     const formatted = formatPhoneNumber(e.target.value);
@@ -337,6 +268,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             />
                         </Form.Item>
                     </Col>
+
                     <Col xs={24} sm={12}>
                         <Form.Item
                             name="alternatePhone"
@@ -352,8 +284,8 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             style={formItemStyle}
                         >
                             <Input
-                                prefix={<PhoneOutlined style={{ color: '#a0aec0' }} />}
-                                className="custom-api-input"
+                                prefix={<PhoneOutlined className="text-gray-400 mr-2" />}
+                                className="h-11 rounded-xl border-gray-200 hover:border-[#7C3AED] focus:border-[#7C3AED] transition-all text-lg px-4"
                                 maxLength={14}
                                 onChange={(e) => {
                                     const formatted = formatPhoneNumber(e.target.value);
@@ -364,22 +296,28 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                     </Col>
                 </Row>
 
+                <Row gutter={16}>
+                <Col xs={24} sm={12}>
                 <Form.Item
                     name="addressLine1"
                     label={t('customers.addressLine1')}
                     rules={[{ required: true, message: 'Please input address!' }]}
                     style={formItemStyle}
                 >
-                    <Input className="custom-api-input" />
+                    <Input className="h-11 rounded-xl border-gray-200 hover:border-[#7C3AED] focus:border-[#7C3AED] transition-all text-lg px-4" />
                 </Form.Item>
+                </Col>      
 
+                <Col xs={24} sm={12}>
                 <Form.Item
                     name="addressLine2"
                     label={t('auth.addressLine2')}
                     style={formItemStyle}
                 >
-                    <Input className="custom-api-input" />
+                    <Input className="h-11 rounded-xl border-gray-200 hover:border-[#7C3AED] focus:border-[#7C3AED] transition-all text-lg px-4" />
                 </Form.Item>
+                </Col>
+                </Row>
 
                 {/* City, State, Zip, Country */}
                 <Row gutter={16}>
@@ -393,7 +331,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             <Select
                                 showSearch
                                 optionFilterProp="label"
-                                className="custom-api-input"
+                                className="h-11 rounded-xl border-gray-200 hover:border-[#7C3AED] focus:border-[#7C3AED] transition-all text-lg [&_.ant-select-selector]:!h-full [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!border-gray-200 [&_.ant-select-selection-item]:!leading-[44px] [&_.ant-select-selection-placeholder]:!leading-[44px]"
                                 placeholder={t('auth.selectCity')}
                             >
                                 {availableCities.map(city => (
@@ -415,7 +353,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                                 onChange={handleStateChange}
                                 showSearch
                                 optionFilterProp="label"
-                                className="custom-api-input"
+                                className="h-11 rounded-xl border-gray-200 hover:border-[#7C3AED] focus:border-[#7C3AED] transition-all text-lg [&_.ant-select-selector]:!h-full [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!border-gray-200 [&_.ant-select-selection-item]:!leading-[44px] [&_.ant-select-selection-placeholder]:!leading-[44px]"
                             >
                                 {availableStates.map(state => (
                                     <Select.Option key={state.value} value={state.value}>
@@ -435,7 +373,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                             rules={[{ required: true, message: 'Please input zip code!' }]}
                             style={formItemStyle}
                         >
-                            <Input className="custom-api-input" />
+                            <Input className="h-11 rounded-xl border-gray-200 hover:border-[#7C3AED] focus:border-[#7C3AED] transition-all text-lg px-4" />
                         </Form.Item>
                     </Col>
                     <Col xs={24} sm={12}>
@@ -450,7 +388,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                                 onChange={handleCountryChange}
                                 showSearch
                                 optionFilterProp="label"
-                                className="custom-api-input"
+                                className="h-11 rounded-xl border-gray-200 hover:border-[#7C3AED] focus:border-[#7C3AED] transition-all text-lg [&_.ant-select-selector]:!h-full [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!border-gray-200 [&_.ant-select-selection-item]:!leading-[44px] [&_.ant-select-selection-placeholder]:!leading-[44px]"
                             >
                                 {COUNTRIES.map(country => (
                                     <Select.Option key={country.value} value={country.value}>
@@ -469,7 +407,7 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                         rules={[{ required: true, message: 'Please enter your city!' }]}
                         style={formItemStyle}
                     >
-                        <Input className="custom-api-input" placeholder={t('auth.typeCityName')} />
+                        <Input className="h-11 rounded-xl border-gray-200 hover:border-[#7C3AED] focus:border-[#7C3AED] transition-all text-lg px-4" placeholder={t('auth.typeCityName')} />
                     </Form.Item>
                 )}
 
@@ -479,25 +417,28 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                     rules={[{ required: true, message: 'Please select user type!' }]}
                     style={formItemStyle}
                 >
-                    <Select className="custom-api-input">
+                    <Select className="h-11 rounded-xl border-gray-200 hover:border-[#7C3AED] focus:border-[#7C3AED] transition-all text-lg [&_.ant-select-selector]:!h-full [&_.ant-select-selector]:!rounded-xl [&_.ant-select-selector]:!border-gray-200 [&_.ant-select-selection-item]:!leading-[44px] [&_.ant-select-selection-placeholder]:!leading-[44px]">
                         <Select.Option value="SHOP_OWNER">{t('auth.shopOwner')}</Select.Option>
                         <Select.Option value="MOBILE_TECHNICIAN">{t('auth.mobileTechnician')}</Select.Option>
                     </Select>
                 </Form.Item>
-                <Form.Item style={{ marginBottom: 0, marginTop: '24px' }}>
-                    <Space style={{ width: '100%', justifyContent: 'center' }}>
-                        <Button onClick={onCancel}>
+                <Form.Item style={{ marginBottom: 0, marginTop: '32px' }}>
+                    <div className="flex flex-col sm:flex-row gap-4">
+                        <Button
+                            onClick={onCancel}
+                            className="h-11 rounded-xl auth-button-gradient-outline font-semibold text-lg flex-1 flex items-center justify-center transition-all bg-white border border-gray-200 hover:border-[#7C3AED] hover:text-[#7C3AED]"
+                        >
                             {t('common.cancel')}
                         </Button>
                         <Button
                             type="primary"
                             htmlType="submit"
-                            className="!bg-gradient-to-r !from-[#6039de] !to-[#c128d4] text-white font-['Plus_Jakarta_Sans'] font-semibold rounded-xl !shadow-[0px_10px_40px_rgba(98,60,225,0.15)] hover:opacity-90 active:scale-[0.98] transition-all duration-200 !border-none h-[54px] px-10 text-lg flex items-center justify-center"
+                            className="h-11 rounded-xl auth-button-gradient text-white font-['Plus_Jakarta_Sans'] font-bold !shadow-[0px_10px_40px_rgba(98,60,225,0.15)] active:scale-[0.98] transition-all duration-200 text-xl flex-1 flex items-center justify-center overflow-hidden"
                             loading={loading}
                         >
                             {t('auth.continue')}
                         </Button>
-                    </Space>
+                    </div>
                 </Form.Item>
             </Form>
         </div>

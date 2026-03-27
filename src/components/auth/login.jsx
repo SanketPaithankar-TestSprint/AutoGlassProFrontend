@@ -127,7 +127,7 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
     };
 
     return (
-        <div style={{ padding: '0px 0' }}>
+        <div className="w-full">
             <style>{customInputStyle}</style>
             {error && (
                 <Alert
@@ -137,26 +137,21 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
                     showIcon
                     closable
                     onClose={() => setError(null)}
-                    style={{ marginBottom: '20px', borderRadius: '8px' }}
+                    className="mb-6 rounded-xl"
                 />
             )}
 
             <Form
-
                 name="login"
                 initialValues={{ remember: true }}
                 onFinish={onFinish}
                 layout="vertical"
                 size="large"
                 requiredMark={false}
+                className="w-full"
             >
                 <Form.Item
                     name="email"
-                    label={
-                        <span style={{ fontWeight: '600', color: '#1a1c1e', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                            {t('auth.emailOrUsername')}
-                        </span>
-                    }
                     rules={[
                         { required: true, message: 'Please input your email or username!' },
                         {
@@ -171,100 +166,87 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
                              }
                         }
                     ]}
-                    style={{ ...formItemStyle, marginBottom: '24px' }}
+                    className="mb-6"
                 >
                     <Input
-                        prefix={<UserOutlined style={{ color: '#a0aec0' }} />}
-                        className="custom-api-input"
+                        prefix={<UserOutlined className="text-gray-400 mr-2" />}
+                        placeholder="Company username"
+                        className="h-14 rounded-xl border-gray-200 hover:border-[#7C3AED] focus:border-[#7C3AED] transition-all text-lg px-4"
                     />
                 </Form.Item>
 
                 <Form.Item
                     name="password"
-                    label={
-                        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center', minWidth: '320px' }}>
-                            <span style={{ fontWeight: '600', color: '#1a1c1e', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                {t('auth.password')}
-                            </span>
-                            <a
-                                className="login-form-forgot"
-                                href=""
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    if (onForgotPasswordClick) onForgotPasswordClick();
-                                }}
-                                style={{ fontSize: '12px', fontWeight: 'bold', color: '#7E5CFE' }}
-                            >
-                                {t('auth.forgotPassword', 'Forgot?')}
-                            </a>
-                        </div>
-                    }
                     rules={[{ required: true, message: 'Please input your password!' }]}
-                    style={{ ...formItemStyle, marginBottom: '24px' }}
+                    className="mb-6"
                 >
                     <Input.Password
-                        prefix={<LockOutlined style={{ color: '#a0aec0' }} />}
-                        className="custom-api-input"
-                        placeholder="••••••••"
+                        prefix={<LockOutlined className="text-gray-400 mr-2" />}
+                        placeholder="Password"
+                        className="h-14 rounded-xl border-gray-200 hover:border-[#7C3AED] focus:border-[#7C3AED] transition-all text-lg px-4"
                     />
                 </Form.Item>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '24px' }}>
-                    <Form.Item style={{ marginBottom: 0 }}>
+                <div className="flex items-center justify-between mb-8">
+                    <Form.Item name="remember" valuePropName="checked" noStyle>
+                        <Checkbox className="text-gray-700 font-semibold flex items-center">
+                            Keep me logged in
+                        </Checkbox>
+                    </Form.Item>
+                    <a
+                        href=""
+                        onClick={(e) => {
+                            e.preventDefault();
+                            if (onForgotPasswordClick) onForgotPasswordClick();
+                        }}
+                        className="text-blue-500 font-semibold hover:text-blue-600 transition-colors"
+                    >
+                        Forgot your password?
+                    </a>
+                </div>
+
+                <div className="mb-8">
+                    <Form.Item noStyle>
                         <Checkbox 
                             checked={isEmployee} 
                             onChange={(e) => setIsEmployee(e.target.checked)}
-                            style={{ fontSize: '14px', color: '#484555', fontWeight: '500' }}
+                            className="text-gray-700 font-semibold"
                         >
                             {t('auth.loginAsEmployee', 'Login as Employee')}
                         </Checkbox>
                     </Form.Item>
-                    <Form.Item name="remember" valuePropName="checked" noStyle>
-                        <Checkbox style={{ fontSize: '14px', color: '#484555', fontWeight: '500' }}>{t('auth.rememberMe')}</Checkbox>
-                    </Form.Item>
                 </div>
 
-                <Form.Item>
+                <Form.Item className="mb-8">
                     <Button
                         type="primary"
                         htmlType="submit"
                         loading={loading}
                         block
-                        style={{
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            border: 'none',
-                            height: '50px',
-                            fontSize: '16px',
-                            fontWeight: 'bold',
-                            borderRadius: '12px',
-                            boxShadow: '0 4px 14px 0 rgba(118, 75, 162, 0.39)'
-                        }}
+                        className="h-14 rounded-xl auth-button-gradient text-xl font-bold shadow-lg transition-all flex items-center justify-center p-0"
                     >
                         {loading ? t('auth.signingIn') : t('auth.signIn')}
                     </Button>
                 </Form.Item>
 
-                {/* OR Section */}
-                <div style={{ display: 'flex', alignItems: 'center', margin: '24px 0', gap: '16px' }}>
-                    <div style={{ flex: 1, height: '1px', background: '#eef2f6' }}></div>
-                    <span style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 'bold', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                        {t('auth.orContinueWith', 'or')}
-                    </span>
-                    <div style={{ flex: 1, height: '1px', background: '#eef2f6' }}></div>
+                <div className="relative flex items-center justify-center mb-8">
+                    <div className="flex-grow border-t border-gray-100"></div>
+                    <span className="flex-shrink mx-4 text-gray-400 text-sm font-bold uppercase tracking-widest">OR</span>
+                    <div className="flex-grow border-t border-gray-100"></div>
                 </div>
 
-                {/* Switch to Signup */}
-                <div style={{ textAlign: 'center', color: '#64748b', fontSize: '14px' }}>
-                    {t('auth.dontHaveAccount', "Don't have an account?")}{' '}
-                    <a 
+                <div className="text-center">
+                    <span className="text-gray-400 font-semibold tracking-tight">Don't have an account? </span>
+                    <button 
+                        type="button"
                         onClick={(e) => {
                             e.preventDefault();
                             if (onSignUpClick) onSignUpClick();
                         }}
-                        style={{ color: '#7E5CFE', fontWeight: 'bold', cursor: 'pointer' }}
+                        className="text-blue-500 font-bold auth-link-gradient-hover cursor-pointer"
                     >
-                        {t('auth.signUpNow', 'Sign Up')}
-                    </a>
+                        Sign up
+                    </button>
                 </div>
             </Form>
         </div>

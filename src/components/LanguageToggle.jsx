@@ -40,7 +40,7 @@ const LanguageToggle = ({ compact = false, dark = false, sidebarMode = false, mo
                         <button
                             key={opt.key}
                             onClick={() => i18n.changeLanguage(opt.key)}
-                            className={`flex-1 py-1.5 text-sm font-semibold rounded-full transition-all duration-200 border-0 cursor-pointer
+                            className={`flex-1 py-1.5 text-sm font-medium rounded-full transition-all duration-200 border-0 cursor-pointer
                                 ${currentLang === opt.key
                                     ? 'bg-violet-600 text-white shadow-sm'
                                     : 'bg-transparent text-slate-500 hover:text-violet-600'
@@ -84,7 +84,7 @@ const LanguageToggle = ({ compact = false, dark = false, sidebarMode = false, mo
                 <Dropdown overlayClassName="language-action-menu" menu={dropdownMenu} placement="bottomRight" trigger={['click']}>
                     <Button
                         shape="circle"
-                        className={`shrink-0 flex items-center justify-center font-bold shadow-sm transition-colors ${btnClasses} ${compact ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'}`}
+                        className={`shrink-0 flex items-center justify-center font-medium shadow-sm transition-colors ${btnClasses} ${compact ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'}`}
                     >
                         {activeOption?.short}
                     </Button>

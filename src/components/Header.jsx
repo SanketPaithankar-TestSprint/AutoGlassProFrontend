@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { MdSupportAgent } from "react-icons/md";
 import { Layout, Button, Space, Drawer, Modal, Dropdown, Badge } from "antd";
-import { MenuOutlined, UserOutlined, DownOutlined, PieChartOutlined, TeamOutlined, FormOutlined, CalendarOutlined, FolderOpenOutlined, BarChartOutlined, MessageOutlined, AuditOutlined, BarcodeOutlined } from "@ant-design/icons";
+import { MenuOutlined, UserOutlined, DownOutlined, PieChartOutlined, TeamOutlined, FormOutlined, CalendarOutlined, FolderOpenOutlined, BarChartOutlined, MessageOutlined, AuditOutlined, BarcodeOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import Logo from "./logo";
 import { getValidToken } from "../api/getValidToken";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import LanguageToggle from "./LanguageToggle";
 import { useChat } from "../context/ChatContext";
@@ -12,6 +12,9 @@ import { useChat } from "../context/ChatContext";
 const { Header: AntHeader } = Layout;
 
 
+
+// Shared typography style for all header actions
+const headerTextClass = "text-[16px] xl:text-[17px] font-medium leading-none text-slate-800";
 
 // ProfileDropdown component
 const ProfileDropdown = ({ onLogout }) => {
@@ -55,10 +58,10 @@ const ProfileDropdown = ({ onLogout }) => {
       <Button
         type="text"
         icon={<UserOutlined />}
-        className="!h-9 !px-4 !text-slate-700 hover:!text-slate-900 !bg-transparent hover:!bg-transparent !border-0 focus:!outline-none focus:!ring-0"
+        className="!h-9 !px-4 hover-gradient-text !bg-transparent hover:!bg-transparent !border-0 focus:!outline-none focus:!ring-0"
       >
         <span className="inline-flex items-center gap-1">
-          <span>{t('auth.profile')}</span>
+          <span className={headerTextClass}>{t('auth.profile')}</span>
           <DownOutlined className={`text-[10px] transition-transform duration-500 ${isOpen ? 'rotate-180' : ''}`} />
         </span>
       </Button>
@@ -86,8 +89,26 @@ const useIsMobile = () => {
   return isMobile;
 };
 
+const AUTH_PATHS = [
+  "/auth",
+  "/auth/login",
+  "/auth/signup",
+  "/auth/forgot-password",
+  "/auth/reset-password",
+];
+
+function isAuthRoute(pathname) {
+  // Match /auth and any subroutes (e.g., /auth, /auth/login, /auth/forgot-password, etc.)
+  return pathname.startsWith("/auth") ||
+    pathname === "/login" ||
+    pathname === "/signup" ||
+    pathname === "/forgot-password" ||
+    pathname === "/reset-password";
+}
+
 const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
   const isMobile = useIsMobile();
+  const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isAuthed, setIsAuthed] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -167,18 +188,35 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
   const NavLink = ({ label, href }) => (
     <Link
       to={href}
-      className="nav-link tracking-wide flex items-center"
+      className={`nav-link hover-gradient-text tracking-normal flex items-center ${headerTextClass}`}
       style={{ WebkitTapHighlightColor: "transparent" }}
     >
       <span className="leading-none">{label}</span>
     </Link>
   );
 
+
   if (loading) {
     return (
       <div className="fixed top-0 left-0 right-0 z-40 h-20 bg-transparent flex items-center justify-center">
         <div className="h-6 w-6 rounded-full border-2 border-violet-500 border-t-transparent animate-spin" />
       </div>
+    );
+  }
+
+  // AUTH HEADER: Only logo, no nav/actions
+  if (isAuthRoute(location.pathname)) {
+    return (
+      <AntHeader
+        className="fixed top-0 left-0 right-0 z-40 flex items-center px-4 sm:px-6 md:px-8 transition-all duration-500 h-16 glass-navbar"
+        style={{ paddingInline: 0, minWidth: 0 }}
+      >
+        <div className="flex items-center gap-4 min-w-0 ml-4 h-full">
+          <Link to="/" className="flex items-center gap-2 min-w-0">
+            <Logo className="w-24 sm:w-28 h-9 min-w-0 object-contain" />
+          </Link>
+        </div>
+      </AntHeader>
     );
   }
 
@@ -214,11 +252,11 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
           <div className="hidden lg:flex ml-auto min-w-0 items-center gap-2 sm:gap-4 pr-6">
             <LanguageToggle />
             <Button
-              type="primary"
+              type="text"
               onClick={() => navigate('/auth', { state: { mode: 'signin' } })}
-              className="btn-rainbow !h-9 !px-8 !rounded-full font-semibold text-[1.1rem] !flex items-center justify-center"
+              className="hover-gradient-text !h-9 !px-8 !rounded-full !border-0 !bg-transparent !flex items-center justify-center"
             >
-              <span className="leading-none">{t('auth.login')}</span>
+              <span className={headerTextClass}>{t('auth.login')}</span>
             </Button>
           </div>
         ) : (
@@ -329,13 +367,13 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
             {!isAuthed && (
               <div className="px-4 pt-4 border-t border-slate-200 mt-4">
                 <Button
-                  className="btn-rainbow w-full !h-12 !rounded-lg text-base font-semibold"
+                  className="hover-gradient-text w-full !h-12 !rounded-lg !bg-transparent !border-0"
                   onClick={() => {
                     setDrawerOpen(false);
                     navigate('/auth', { state: { mode: 'signin' } });
                   }}
                 >
-                  {t('auth.login')}
+                  <span className={headerTextClass}>{t('auth.login')}</span>
                 </Button>
               </div>
             )}
@@ -379,13 +417,13 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
 
             <div className="px-4 pt-4 border-t border-slate-200 mt-4">
               <Button
-                className="btn-rainbow w-full !h-12 !rounded-lg text-base font-semibold"
+                className="hover-gradient-text w-full !h-12 !rounded-lg !bg-transparent !border-0"
                 onClick={() => {
                   setDrawerOpen(false);
                   navigate('/auth', { state: { mode: 'signin' } });
                 }}
               >
-                {t('auth.login')}
+                <span className={headerTextClass}>{t('auth.login')}</span>
               </Button>
             </div>
           </nav>

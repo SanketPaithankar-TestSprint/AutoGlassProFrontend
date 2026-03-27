@@ -1,21 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
-
 /* Glassmorphism Navbar */
 .ant-layout-header.glass-navbar {
   background: transparent !important;
-  backdrop-filter: blur(0);
-  -webkit-backdrop-filter: blur(0);
-  transition: all 0.5s ease-in-out;
-  border-bottom: 1px solid transparent;
-  z-index: 9999 !important;
-}
-
-.ant-layout-header.glass-navbar.scrolled {
-  background: rgba(255, 255, 255, 0.7) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #0f172a !important;
+  border-bottom: none;
 }
 
 /* Clean light background for main page */
@@ -38,71 +27,41 @@ body,
   color: #fff !important;
 }
 
-.nav-link,
-.nav-link-style {
-  color: #212B36 !important;
+.nav-link {
+  color: #1e293b !important; /* slate-800 */
   text-decoration: none;
-  font-weight: 600;
+  font-weight: 500;
   font-size: 1.1rem;
-  padding: 0;
+  padding: 0.5rem 0.2rem;
   margin: 0 0.5rem;
   position: relative;
-  transition: all 0.5s ease-in-out;
+  transition: color 0.3s ease;
   border-radius: 4px;
-  display: flex;
-  align-items: center;
-  line-height: 1;
-  height: 2.25rem; /* Standardizing height to 36px (h-9) */
+  transition: color 0.2s, background 0.2s;
+  display: block;
 }
 
-/* Language Dropdown Menu Refinement */
-.language-action-menu .ant-dropdown-menu {
-  padding: 8px !important;
-  border-radius: 12px !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
-  border: 1px solid rgba(0, 0, 0, 0.05) !important;
-  min-width: 160px !important;
-}
-
-.language-action-menu .ant-dropdown-menu-item {
-  padding: 12px 16px !important;
-  border-radius: 8px !important;
-  transition: all 0.2s ease !important;
-  margin: 4px 0 !important;
-  position: relative !important;
-}
-
-/* Bold Charcoal Text */
-.language-action-menu .ant-dropdown-menu-item div {
-  color: #212B36 !important;
-  font-weight: 600 !important;
-  font-size: 1rem !important;
-}
-
-/* Remove default blue background */
-.language-action-menu .ant-dropdown-menu-item-active,
-.language-action-menu .ant-dropdown-menu-item:hover,
-.language-action-menu .ant-dropdown-menu-item-selected {
-  background-color: #f4f6f8 !important;
-}
-
-/* Separator line between items */
-.language-action-menu .ant-dropdown-menu-item:not(:last-child)::after {
-  content: "";
-  position: absolute;
-  bottom: -4px;
-  left: 8px;
-  right: 8px;
-  height: 1px;
-  background-color: rgba(0, 0, 0, 0.06);
-  pointer-events: none;
-}
 
 .nav-link:hover,
 .nav-link:focus,
 .nav-link.active {
-  color: #7E5CFE !important;
-  background: none;
+  background: linear-gradient(90deg, #8E6BFF 0%, #1FA6C9 50%, #0C8FB8 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+}
+
+.hover-gradient-text {
+  transition: all 0.3s ease;
+}
+
+.hover-gradient-text:hover {
+  background: linear-gradient(90deg, #8E6BFF 0%, #1FA6C9 50%, #0C8FB8 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
 }
 
 .nav-link::after {
@@ -112,8 +71,8 @@ body,
   left: 0;
   width: 0;
   height: 3px;
-  background: #7E5CFE;
-  transition: width 0.5s ease-in-out;
+  background: #8E6BFF;
+  transition: width 0.3s ease;
   border-radius: 2px;
 }
 
@@ -141,6 +100,51 @@ body,
 @theme {
   --font-pacifico: "Pacifico", cursive;
   --font-poppins: "Poppins", sans-serif;
+  --color-brand-primary: #7E5CFE;
+  --color-brand-cyan: #00A8E4;
+  --color-brand-text: #0f172a;
+  --color-brand-muted: #475569;
+}
+
+/* Shared Design System Utility Classes */
+.section-heading {
+  @apply text-3xl md:text-4xl font-extrabold tracking-tight;
+}
+
+.section-subheading {
+  @apply text-lg md:text-xl font-semibold;
+}
+
+.body-text {
+  @apply text-sm md:text-base leading-7 text-slate-600;
+}
+
+.secondary-text {
+  @apply text-xs md:text-sm text-slate-500;
+}
+
+.card-title {
+  @apply text-xl font-bold text-slate-900;
+}
+
+.premium-card {
+  @apply bg-white rounded-2xl p-8 shadow-sm border border-slate-100 transition-all duration-300;
+}
+
+.premium-card-highlight {
+  @apply bg-white/80 backdrop-blur-sm rounded-3xl p-10 shadow-lg border border-white/20 transition-all duration-300;
+}
+
+.brand-gradient {
+  background: linear-gradient(90deg, #7B5BE6 0%, #3FAFD0 50%, #0F9AC7 100%);
+}
+
+.brand-gradient-text {
+  background: linear-gradient(90deg, #7B5BE6 0%, #3FAFD0 50%, #0F9AC7 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
 
 /* Custom animation for contact form */
@@ -160,76 +164,15 @@ body,
   animation: fadeIn 0.2s ease-out;
 }
 
-/* Rainbow Button Animation */
-@keyframes rainbow {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-.btn-rainbow {
-  background: linear-gradient(90deg, #A855F7, #3AB6FF, #82D955, #A855F7) !important;
-  background-size: 300% 300% !important;
-  animation: rainbow 3s ease infinite !important;
-  border: none !important;
-  color: white !important;
-  transition: transform 0.3s ease !important;
-}
-
-.btn-rainbow:hover {
-  transform: scale(1.05) !important;
-  box-shadow: 0 10px 20px rgba(168, 85, 247, 0.3) !important;
-}
-
-/* Global Section Spacing for Premium Depth */
-.section-padding {
-  padding-top: 4rem;
-  padding-bottom: 4rem;
-}
-
-@media (min-width: 1024px) {
-  .section-padding {
-    padding-top: 8rem;
-    padding-bottom: 8rem;
-  }
-}
-
-/* Premium SaaS Card Style */
-.premium-card {
-  border: 1px solid rgba(0, 0, 0, 0.05) !important;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.04) !important;
-  transition: all 0.3s ease;
-}
-
-.premium-card:hover {
-  box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.06) !important;
-  transform: translateY(-4px);
-}
-
-
 /* Base font configuration - Applied globally */
 html,
 body,
 #root {
-  font-family: 'Poppins', sans-serif !important;
-}
-
-/* Force Poppins on every element and specifically Ant Design components */
-html,
-body,
-#root,
-.ant-app,
-.ant-layout,
-.ant-typography,
-button,
-input,
-select,
-textarea {
-  font-family: 'Poppins', sans-serif !important;
+  font-family: 'Poppins', sans-serif;
 }
 
 :root {
-  font-family: 'Poppins', sans-serif !important;
+  font-family: 'Poppins', sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -480,17 +423,8 @@ input[type=number] {
   height: 31px;
   background: transparent;
   background-image: radial-gradient(circle at top left, transparent 31px, var(--active-bg, #F1F5F9) 31.5px);
+  pointer-events: none;
   z-index: 10;
-}
-
-.bg-ethereal-gradient {
-  background: radial-gradient(circle at 20% 30%, #7E5CFE 0%, #6039de 40%, #1d0061 100%);
-}
-
-.custom-glass {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
 }
 
 .sidebar-curve-bottom {
@@ -503,4 +437,35 @@ input[type=number] {
   background-image: radial-gradient(circle at bottom left, transparent 31px, var(--active-bg, #F1F5F9) 31.5px);
   pointer-events: none;
   z-index: 10;
+}
+
+/* Auth Page Button Gradients */
+.auth-button-gradient {
+  background: linear-gradient(90deg, #8E6BFF 0%, #1FA6C9 50%, #0C8FB8 100%) !important;
+  border: none !important;
+  color: white !important;
+}
+
+.auth-button-gradient:hover {
+  opacity: 0.9 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(142, 107, 255, 0.3);
+}
+
+.auth-button-gradient:active {
+  transform: translateY(0);
+}
+
+.auth-link-gradient-hover {
+  background: none !important;
+  border: none !important;
+  transition: all 0.3s ease !important;
+}
+
+.auth-link-gradient-hover:hover {
+  background: linear-gradient(90deg, #8E6BFF 0%, #1FA6C9 50%, #0C8FB8 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
 }

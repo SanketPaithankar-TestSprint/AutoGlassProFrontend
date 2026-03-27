@@ -66,24 +66,24 @@ const WorkflowSection = () => {
         <section ref={sectionRef} className="section-padding px-4 max-w-7xl mx-auto">
             <div className="text-center mb-16">
                 <h2
-                    className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text mb-4 opacity-0"
+                    className="section-heading text-transparent bg-clip-text mb-4 opacity-0"
                     style={isVisible ? {
                         animation: `fadeInUp 0.6s ease-out 0.2s forwards`,
-                        backgroundImage: 'linear-gradient(90deg, #00A8E4 0%, #33c3f0 100%)'
+                        backgroundImage: 'linear-gradient(90deg, #7B5BE6 0%, #3FAFD0 50%, #0F9AC7 100%)'
                     } : {}}
                 >
                     {t('workflowSection.title')}
                 </h2>
-                <p className="text-slate-500 text-lg">
+                 <p className="body-text">
                     {t('workflowSection.subtitle')}
                 </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 {steps.map((step, index) => (
-                    <div
+                     <div
                         key={index}
-                        className="premium-card bg-white rounded-xl p-8 text-center group opacity-0"
+                        className="premium-card group opacity-0"
                         style={isVisible ? {
                             animation: `fadeInUp 0.6s ease-out ${0.4 + (index * 0.1)}s forwards`
                         } : {}}
@@ -97,10 +97,10 @@ const WorkflowSection = () => {
                                 {step.icon}
                             </div>
                         </div>
-                        <h3 className="text-lg font-bold text-slate-900 mb-4">
+                         <h3 className="card-title mb-4">
                             {step.title}
                         </h3>
-                        <p className="text-slate-600 text-sm leading-relaxed">
+                         <p className="body-text">
                             {step.description}
                         </p>
                     </div>

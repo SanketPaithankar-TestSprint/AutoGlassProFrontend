@@ -121,13 +121,13 @@ const ValuePropSection = () => {
             {/* 1. Value Proposition Header */}
             <AnimatedSection>
                 <div className="max-w-4xl mx-auto text-center mb-12 lg:mb-16">
-                    <h2 className="text-3xl md:text-5xl font-bold mb-6 font-outfit text-slate-900">
+                    <h2 className="section-heading mb-6 text-slate-900">
                         {t('valuePropSection.title')}
                     </h2>
-                    <p className="text-xl md:text-2xl text-violet-600 font-semibold mb-6">
+                    <p className="section-subheading text-violet-600 mb-6">
                         {t('valuePropSection.subtitle')}
                     </p>
-                    <p className="text-lg text-slate-600 leading-relaxed max-w-3xl mx-auto">
+                    <p className="body-text max-w-3xl mx-auto">
                         {t('valuePropSection.desc')}
                     </p>
                 </div>
@@ -141,8 +141,8 @@ const ValuePropSection = () => {
 
                             {/* Text Column */}
                             <div className="flex-1 space-y-6">
-                                <div>
-                                    <h3 className="text-3xl md:text-4xl font-bold font-outfit text-slate-900 leading-tight">
+                                 <div>
+                                    <h3 className="section-heading text-slate-900 leading-tight">
                                         {pillar.title}
                                     </h3>
                                 </div>
@@ -150,9 +150,9 @@ const ValuePropSection = () => {
                                 <div className="space-y-6">
                                     <div className="flex gap-4 items-start">
                                         <CheckCircleFilled className="text-2xl mt-1 text-violet-600 shrink-0" />
-                                        <div>
-                                            <h4 className="text-xl font-bold text-slate-800 mb-2">{t('valuePropSection.coreFocus')}</h4>
-                                            <p className="text-lg text-slate-600 leading-relaxed">
+                                         <div className="flex-1">
+                                            <h4 className="card-title mb-2">{t('valuePropSection.coreFocus')}</h4>
+                                            <p className="body-text">
                                                 {pillar.focus}
                                             </p>
                                         </div>
@@ -168,19 +168,19 @@ const ValuePropSection = () => {
 
                                     <div className="flex gap-4 items-start">
                                         <CheckCircleFilled className="text-2xl mt-1 text-violet-600 shrink-0" />
-                                        <div>
-                                            <h4 className="text-xl font-bold text-slate-800 mb-2">{t('valuePropSection.keyBenefitsTitle')}</h4>
+                                         <div className="flex-1">
+                                            <h4 className="card-title mb-2">{t('valuePropSection.keyBenefitsTitle')}</h4>
                                             {pillar.keyBenefits ? (
                                                 <ul className="space-y-2 mt-2">
                                                     {pillar.keyBenefits.map((benefit, i) => (
-                                                        <li key={i} className="text-lg text-slate-600 leading-relaxed flex gap-2">
-                                                            <span className="w-1.5 h-1.5 bg-slate-400 rounded-full mt-2.5 shrink-0" />
+                                                         <li key={i} className="body-text flex gap-2">
+                                                            <span className="w-1.5 h-1.5 bg-slate-500 rounded-full mt-2.5 shrink-0" />
                                                             {benefit}
                                                         </li>
                                                     ))}
                                                 </ul>
                                             ) : (
-                                                <p className="text-lg text-slate-600 leading-relaxed">
+                                                <p className="body-text">
                                                     {pillar.benefit}
                                                 </p>
                                             )}
@@ -207,11 +207,11 @@ const ValuePropSection = () => {
             {/* 3. Unmatched Accuracy - 2x3 Grid Layout */}
             <div className="max-w-7xl mx-auto mb-16 pt-8 border-t border-slate-100 relative">
                 <AnimatedSection>
-                    <div className="text-center mb-12 pt-12">
-                        <h2 className="text-3xl md:text-4xl font-bold mb-4 font-outfit text-slate-900">
+                     <div className="text-center mb-12 pt-12">
+                        <h2 className="section-heading mb-4 text-slate-900">
                             {t('valuePropSection.accuracy.title')}
                         </h2>
-                        <p className="text-slate-500 text-lg">{t('valuePropSection.accuracy.subtitle')}</p>
+                        <p className="body-text">{t('valuePropSection.accuracy.subtitle')}</p>
                     </div>
                 </AnimatedSection>
 
@@ -312,13 +312,13 @@ const ValuePropSection = () => {
                 {/* Additional Feature Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-16">
                     {/* Custom Contact Form Card */}
-                    <AnimatedSection delay="0.1s">
-                        <div className="premium-card bg-white/70 backdrop-blur-sm p-10 rounded-3xl relative overflow-hidden group h-full">
+                     <AnimatedSection delay="0.1s">
+                        <div className="premium-card p-10 relative overflow-hidden group h-full">
                             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                                 <FormOutlined style={{ fontSize: '120px', color: '#7c3aed' }} />
                             </div>
-                            <h3 className="text-2xl font-bold mb-6 font-outfit text-slate-900">{t('valuePropSection.contactForm.title')}</h3>
-                            <ul className="space-y-4 text-slate-600 text-lg">
+                            <h3 className="card-title mb-6 text-slate-900">{t('valuePropSection.contactForm.title')}</h3>
+                            <ul className="space-y-4 body-text">
                                 <li className="flex gap-3 items-center"><div className="w-2 h-2 rounded-full bg-violet-500" /> {t('valuePropSection.contactForm.bullets.0', 'Personalized Page for each user')}</li>
                                 <li className="flex gap-3 items-center"><div className="w-2 h-2 rounded-full bg-violet-500" /> {t('valuePropSection.contactForm.bullets.1', 'Auto-Fill YMM Fields')}</li>
                                 <li className="flex gap-3 items-center"><div className="w-2 h-2 rounded-full bg-violet-500" /> {t('valuePropSection.contactForm.bullets.2', 'Secure database storage')}</li>
@@ -328,15 +328,15 @@ const ValuePropSection = () => {
                     </AnimatedSection>
 
                     {/* AI Chatbot Card */}
-                    <AnimatedSection delay="0.2s">
-                        <div className="premium-card bg-white/70 backdrop-blur-sm p-10 rounded-3xl relative overflow-hidden group h-full">
+                     <AnimatedSection delay="0.2s">
+                        <div className="premium-card p-10 relative overflow-hidden group h-full">
                             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                                 <MessageOutlined style={{ fontSize: '120px', color: '#7c3aed' }} />
                             </div>
-                            <h3 className="text-2xl font-bold mb-6 font-outfit text-slate-900 flex items-center gap-3">
+                            <h3 className="card-title mb-6 text-slate-900 flex items-center gap-3">
                                 {t('valuePropSection.aiChatbot.title')} <span className="bg-violet-100 text-violet-700 text-sm px-3 py-1 rounded-full">{t('valuePropSection.aiChatbot.badge')}</span>
                             </h3>
-                            <p className="text-slate-600 text-lg leading-relaxed">
+                            <p className="body-text">
                                 {t('valuePropSection.aiChatbot.desc')}
                             </p>
                         </div>
@@ -344,15 +344,15 @@ const ValuePropSection = () => {
                 </div>
 
                 {/* Security & Reliability Section */}
-                <AnimatedSection delay="0.3s">
-                    <div className="mt-12 text-center max-w-4xl mx-auto premium-card bg-white/70 backdrop-blur-sm rounded-3xl p-8 md:p-12 relative overflow-hidden group">
+                 <AnimatedSection delay="0.3s">
+                    <div className="mt-12 text-center max-w-4xl mx-auto premium-card-highlight relative overflow-hidden group">
                         <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
                             <LockOutlined style={{ fontSize: '150px', color: '#7c3aed' }} />
                         </div>
-                        <h3 className="text-2xl md:text-3xl font-bold mb-4 font-outfit text-slate-900 relative z-10">
+                        <h3 className="section-heading mb-4 text-slate-900 relative z-10">
                             {t('valuePropSection.security.title')}
                         </h3>
-                        <p className="text-lg text-slate-600 leading-relaxed relative z-10">
+                        <p className="body-text relative z-10">
                             {t('valuePropSection.security.desc')}
                         </p>
                     </div>

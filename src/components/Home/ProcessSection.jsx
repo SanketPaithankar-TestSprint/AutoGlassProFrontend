@@ -58,10 +58,10 @@ const ProcessSection = () => {
         <section ref={sectionRef} className="py-16 px-4 max-w-7xl mx-auto">
             <div className="text-center mb-16">
                 <h2
-                    className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text mb-4 opacity-0"
+                    className="section-heading text-transparent bg-clip-text mb-4 opacity-0"
                     style={isVisible ? {
                         animation: `fadeInUp 0.6s ease-out 0.3s forwards`,
-                        backgroundImage: 'linear-gradient(90deg, #7E5CFE 0%, #d946ef 100%)'
+                        backgroundImage: 'linear-gradient(90deg, #7B5BE6 0%, #3FAFD0 50%, #0F9AC7 100%)'
                     } : {}}
                 >
                     {t('processSection.title')}
@@ -72,7 +72,7 @@ const ProcessSection = () => {
                 {steps.map((step, index) => (
                     <div
                         key={index}
-                        className="bg-white rounded-xl p-8 shadow-sm border border-slate-200 transition-all duration-200 text-center opacity-0 group"
+                        className="premium-card transition-all duration-200 text-center opacity-0 group"
                         style={isVisible ? {
                             animation: `fadeInUp 0.6s ease-out ${0.5 + (index * 0.2)}s forwards`
                         } : {}}
@@ -82,7 +82,6 @@ const ProcessSection = () => {
                         }}
                         onMouseLeave={(e) => {
                             e.currentTarget.style.borderColor = '#e2e8f0'; // slate-200
-                            e.currentTarget.style.boxShadow = '0 1px 2px 0 rgba(0, 0, 0, 0.05)';
                         }}
                     >
                         <div className="mb-6 transform group-hover:scale-110 transition-transform duration-200">
@@ -93,10 +92,10 @@ const ProcessSection = () => {
                                 {step.number}
                             </div>
                         </div>
-                        <h3 className="text-lg font-bold text-slate-900 mb-4 h-12 flex items-center justify-center">
+                         <h3 className="card-title mb-4 h-12 flex items-center justify-center">
                             {step.title}
                         </h3>
-                        <p className="text-slate-600 text-sm leading-relaxed">
+                         <p className="body-text">
                             {step.description}
                         </p>
                     </div>

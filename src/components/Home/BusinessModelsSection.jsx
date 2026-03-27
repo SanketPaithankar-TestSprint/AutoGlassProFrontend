@@ -72,10 +72,10 @@ const BusinessModelsSection = () => {
         <section ref={sectionRef} className="section-padding px-4 max-w-7xl mx-auto">
             <div className="text-center mb-16">
                 <h2
-                    className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text mb-4 opacity-0"
+                    className="section-heading text-transparent bg-clip-text mb-4 opacity-0"
                     style={isVisible ? {
                         animation: `fadeInUp 0.6s ease-out 0.3s forwards`,
-                        backgroundImage: 'linear-gradient(90deg, #00A8E4 0%, #33c3f0 100%)'
+                        backgroundImage: 'linear-gradient(90deg, #7B5BE6 0%, #3FAFD0 50%, #0F9AC7 100%)'
                     } : {}}
                 >
                     {t('businessModels.title')}
@@ -84,9 +84,9 @@ const BusinessModelsSection = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {models.map((model, index) => (
-                    <div
+                     <div
                         key={index}
-                        className="premium-card bg-white rounded-xl p-8 text-center flex flex-col h-full group opacity-0"
+                        className="premium-card text-center flex flex-col h-full group opacity-0"
                         style={isVisible ? {
                             animation: `fadeInUp 0.6s ease-out ${0.5 + (index * 0.2)}s forwards`
                         } : {}}
@@ -97,11 +97,11 @@ const BusinessModelsSection = () => {
                             </div>
                         </div>
 
-                        <h3 className="text-xl font-bold text-slate-900 mb-4">
+                         <h3 className="card-title mb-4">
                             {model.title}
                         </h3>
 
-                        <p className="text-slate-600 text-sm leading-relaxed mb-8 min-h-[60px]">
+                         <p className="body-text mb-8 min-h-[60px]">
                             {model.description}
                         </p>
 

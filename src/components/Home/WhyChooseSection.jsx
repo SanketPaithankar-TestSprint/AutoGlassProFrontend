@@ -41,16 +41,16 @@ const WhyChooseSection = () => {
                     {/* Left Column: Text */}
                     <div>
                         <h2
-                            className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text mb-6 opacity-0"
+                            className="section-heading text-transparent bg-clip-text mb-6 opacity-0"
                             style={isVisible ? {
                                 animation: `fadeInUp 0.6s ease-out 0.3s forwards`,
-                                backgroundImage: 'linear-gradient(90deg, #7E5CFE 0%, #00A8E4 100%)'
+                                backgroundImage: 'linear-gradient(90deg, #7B5BE6 0%, #3FAFD0 50%, #0F9AC7 100%)'
                             } : {}}
                         >
                             {t('whyChooseSection.title')}
                         </h2>
-                        <p
-                            className="text-lg text-slate-600 leading-relaxed opacity-0"
+                         <p
+                            className="body-text opacity-0"
                             style={isVisible ? {
                                 animation: `fadeInUp 0.6s ease-out 0.4s forwards`
                             } : {}}
@@ -72,9 +72,9 @@ const WhyChooseSection = () => {
                                 <div className="mt-1">
                                     <CheckOutlined className="text-lg" style={{ color: '#7E5CFE' }} />
                                 </div>
-                                <div>
-                                    <span className="font-bold text-slate-800">{benefit.title}: </span>
-                                    <span className="text-slate-600">{benefit.desc}</span>
+                                 <div>
+                                    <span className="font-bold text-slate-900">{benefit.title}: </span>
+                                    <span className="body-text">{benefit.desc}</span>
                                 </div>
                             </div>
                         ))}

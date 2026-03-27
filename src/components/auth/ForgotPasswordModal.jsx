@@ -115,7 +115,14 @@ const ForgotPasswordModal = ({ visible, onCancel }) => {
                         <Input prefix={<MailOutlined />} placeholder="john@example.com" size="large" />
                     </Form.Item>
                     <Form.Item>
-                        <Button type="primary" htmlType="submit" block size="large" loading={loading}>
+                        <Button 
+                            type="primary" 
+                            htmlType="submit" 
+                            block 
+                            size="large" 
+                            loading={loading}
+                            className="auth-button-gradient font-semibold rounded-lg"
+                        >
                             Send OTP
                         </Button>
                     </Form.Item>
@@ -167,10 +174,15 @@ const ForgotPasswordModal = ({ visible, onCancel }) => {
                     </Form.Item>
 
                     <div className="flex gap-2">
-                        <Button onClick={() => setCurrentStep(0)} block size="large">
-                            Back
-                        </Button>
-                        <Button type="primary" htmlType="submit" block size="large" loading={loading} style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', border: 'none' }}>
+                        
+                        <Button 
+                            type="primary" 
+                            htmlType="submit" 
+                            block 
+                            size="large" 
+                            loading={loading} 
+                            className="auth-button-gradient font-semibold rounded-lg"
+                        >
                             Reset Password
                         </Button>
                     </div>

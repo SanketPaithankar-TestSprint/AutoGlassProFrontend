@@ -65,7 +65,7 @@ const SetPassword = () => {
                                 type="primary"
                                 key="login"
                                 onClick={() => navigate('/auth')}
-                                className="bg-violet-600 hover:bg-violet-700 w-full"
+                                className="auth-button-gradient w-full font-semibold rounded-lg"
                             >
                                 Go to Login Now
                             </Button>,
@@ -94,7 +94,7 @@ const SetPassword = () => {
                                 type="primary"
                                 key="login"
                                 onClick={() => navigate('/auth')}
-                                className="bg-violet-600 hover:bg-violet-700 w-full"
+                                className="auth-button-gradient w-full font-semibold rounded-lg"
                             >
                                 Back to Login
                             </Button>,
@@ -112,7 +112,7 @@ const SetPassword = () => {
                 <Card className="w-full max-w-md shadow-lg rounded-xl border border-slate-200 text-center p-8">
                     <Title level={4} className="mb-4">Invalid Link</Title>
                     <Text type="secondary" className="block mb-6">This link appears to be invalid or expired.</Text>
-                    <Button type="primary" onClick={() => navigate('/auth')}>Go to Login</Button>
+                    <Button type="primary" onClick={() => navigate('/auth')} className="auth-button-gradient font-semibold rounded-lg">Go to Login</Button>
                 </Card>
             </div>
         )
@@ -181,14 +181,19 @@ const SetPassword = () => {
                     </Form.Item>
 
                     <Form.Item className="mb-2">
-                        <Button type="primary" htmlType="submit" className="w-full bg-violet-600 hover:bg-violet-700" loading={loading}>
+                        <Button type="primary" htmlType="submit" className="w-full auth-button-gradient font-semibold rounded-lg" loading={loading}>
                             {t('auth.setPassword')}
                         </Button>
                     </Form.Item>
                 </Form>
 
                 <div className="mt-4 text-center">
-                    <Button type="link" onClick={() => navigate('/auth')} icon={<ArrowLeftOutlined />} className="text-gray-500 hover:text-gray-800">
+                    <Button 
+                        type="link" 
+                        onClick={() => navigate('/auth')} 
+                        icon={<ArrowLeftOutlined />} 
+                        className="text-gray-500 auth-link-gradient-hover font-semibold rounded-lg px-4"
+                    >
                         Back to Login
                     </Button>
                 </div>

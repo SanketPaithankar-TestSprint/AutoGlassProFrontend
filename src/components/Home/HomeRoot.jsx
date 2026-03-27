@@ -48,7 +48,7 @@ const Home = () => {
             });
             gsap.from(split.chars, {
                 y: 35,
-                color: "#00FF66",
+                color: "#7E5CFE",
                 opacity: 0,
                 stagger: { each: 0.02, from: "start" },
                 duration: 0.35,
@@ -93,8 +93,7 @@ const Home = () => {
                             <h1
                                 key={`title-${i18n.language}`}
                                 ref={heroTitleRef}
-                                className="font-extrabold mb-3 sm:mb-4 md:mb-6 leading-tight px-2 sm:px-0 text-2xl sm:text-3xl md:text-4xl lg:text-3xl xl:text-4xl 2xl:text-5xl"
-                                style={{ color: '#7E5CFE' }}
+                                className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight text-violet-600 mb-3 sm:mb-4 md:mb-6 px-2 sm:px-0"
                             >
                                 <span className="block">{t('home.heroTitleLine1')}</span>
                                 <span className="block">{t('home.heroTitleLine2')}</span>
@@ -102,17 +101,17 @@ const Home = () => {
                             </h1>
 
                             {/* Description */}
-                            <p
+                             <p
                                 key={`desc-${i18n.language}`}
                                 ref={heroDescRef}
-                                className="text-sm sm:text-base md:text-lg text-slate-600 mb-5 sm:mb-6 md:mb-8 max-w-2xl mx-auto lg:mx-0 px-2 sm:px-0 leading-relaxed"
+                                className="mt-6 text-lg md:text-xl leading-8 text-slate-600 mb-5 sm:mb-6 md:mb-8 max-w-2xl mx-auto lg:mx-0 px-2 sm:px-0"
                                 style={{ opacity: 1 }} // GSAP controls opacity on chars
                             >
                                 {t('home.heroDescription')}
                             </p>
 
                             <motion.div
-                                className="flex flex-row justify-center lg:justify-start lg:ml-12 gap-3 w-full"
+                                className="flex flex-row justify-center lg:justify-start gap-3 w-full"
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: 0.9 }}
@@ -124,13 +123,11 @@ const Home = () => {
                                 >
                                     <Button
                                         type="primary"
-                                        className="!text-white !rounded-full !px-8 !h-11 !text-sm shadow-lg transition-all duration-200"
-                                        style={{
-                                            backgroundColor: '#7E5CFE',
-                                            borderColor: '#7E5CFE',
-                                            boxShadow: '0 4px 14px 0 rgba(126, 92, 254, 0.39)',
-                                            border: 'none'
-                                        }}
+                                         className="brand-gradient !text-white !h-12 !px-8 !rounded-full !text-sm !font-semibold shadow-lg transition-all duration-200"
+                                         style={{
+                                             boxShadow: '0 4px 14px 0 rgba(126, 92, 254, 0.39)',
+                                             border: 'none'
+                                         }}
                                         onMouseEnter={(e) => {
                                             e.currentTarget.style.backgroundColor = '#6b47e8';
                                             e.currentTarget.style.transform = 'translateY(-2px)';
@@ -150,8 +147,8 @@ const Home = () => {
                                     whileTap={{ scale: 0.97 }}
                                     transition={{ type: "spring", stiffness: 400, damping: 10 }}
                                 >
-                                    <Button
-                                        className="!bg-transparent !border-violet-600 !text-violet-600 hover:!bg-violet-100 !rounded-full !px-8 !h-11 !text-sm shadow-sm hover:shadow-md transition-all duration-200"
+                                     <Button
+                                        className="!bg-transparent !border-violet-600 !text-violet-600 hover:!bg-violet-100 !h-12 !px-8 !rounded-full !text-sm !font-semibold shadow-sm hover:shadow-md transition-all duration-200"
                                         onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
                                         onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
                                         onClick={() => setIsVideoOpen(true)}
@@ -203,12 +200,12 @@ const Home = () => {
                             transition={{ duration: 0.6, delay: 0.3 }}
                             className="bg-gradient-to-r from-[#7E5CFE] to-[#7E5CFE] rounded-3xl p-8 md:p-20 shadow-2xl"
                         >
-                            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-                                {t('home.ctaTitle')}
-                            </h2>
-                            <p className="text-violet-100 mb-8 text-lg">
-                                {t('home.ctaDescription')}
-                            </p>
+                             <h2 className="section-heading text-white mb-4">
+                                 {t('home.ctaTitle')}
+                             </h2>
+                             <p className="text-violet-100 mb-8 text-lg md:text-xl">
+                                 {t('home.ctaDescription')}
+                             </p>
                             <motion.div
                                 className="flex justify-center"
                                 whileTap={{ scale: 0.95 }}
