@@ -673,7 +673,7 @@
         "directPayment": "Direct Payment",
         "noArAgingData": "No AR aging data available",
         "days0_30": "0-30 Days",
-        "days31_60": "31-60 Days", 
+        "days31_60": "31-60 Days",
         "days61Plus": "61+ Days",
         "unpaidInvoicesByAge": "Unpaid Invoices by Age",
         "totalOutstanding": "Total Outstanding",
@@ -1291,7 +1291,9 @@
         "existingBusiness": "Existing",
         "emailUs": "E-mail Us",
         "supportEmail": "support@autopaneai.com",
-        "emailUsDesc": "For any inquiries, support, or feedback, feel free to email us. Our team will get back to you within 24\u201348 hours."
+        "emailUsDesc": "For any inquiries, support, or feedback, feel free to email us. Our team will get back to you within 24\u201348 hours.",
+        "invalidPhone": "Please enter a valid US phone number (e.g., (555) 000-0000)",
+        "replyTime": "Typically replies within 24 hours."
     },
     "blogs": {
         "title": "Blogs",

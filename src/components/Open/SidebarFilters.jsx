@@ -117,24 +117,14 @@ const SidebarFilters = ({
                 <Panel
                     header={
                         <div className="flex items-center gap-2">
-                            <CheckCircleOutlined className="text-slate-400" />
-                            <span className="font-semibold text-slate-700">{t('openRoute.filters.status')} & {t('openRoute.filters.overdue')}</span>
+                            <WarningOutlined className="text-slate-400" />
+                            <span className="font-semibold text-slate-700">{t('openRoute.filters.overdue')} & {t('openRoute.filters.hasInsurance', 'Insurance')}</span>
                         </div>
                     }
                     key="status"
                     className="mb-2"
                 >
-                    <div className="space-y-8">
-                        <Select
-                            mode="multiple"
-                            style={{ width: '100%' }}
-                            placeholder={t('openRoute.filters.selectStatuses')}
-                            value={statusFilter}
-                            onChange={setStatusFilter}
-                            options={statusOptions.filter(opt => opt.value !== 'all')}
-                            allowClear
-                            maxTagCount={2}
-                        />
+                    <div className="space-y-6">
                         <Checkbox
                             checked={overdueFilter}
                             onChange={(e) => {

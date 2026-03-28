@@ -1289,7 +1289,8 @@
         "existingBusiness": "Existente",
         "emailUs": "Env\u00edanos un Correo",
         "supportEmail": "support@autopaneai.com",
-        "emailUsDesc": "Para cualquier consulta, soporte o comentario, no dude en enviarnos un correo electr\u00f3nico. Nuestro equipo le responder\u00e1 en 24\u201348 horas."
+        "emailUsDesc": "Para cualquier consulta, soporte o comentario, no dude en enviarnos un correo electrónico. Nuestro equipo le responderá en 24–48 horas.",
+        "replyTime": "Normalmente responde dentro de las 24 horas."
     },
     "blogs": {
         "title": "Blogs",
