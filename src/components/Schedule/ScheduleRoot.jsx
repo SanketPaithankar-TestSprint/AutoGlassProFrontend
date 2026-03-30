@@ -241,7 +241,7 @@ const ScheduleRoot = () => {
         try {
             const compositeData = await getCompositeServiceDocument(documentNumber);
             message.success({ content: t('schedule.loaded'), key: 'navLoading', duration: 1 });
-            navigate('/search-by-root', { state: { compositeData } });
+            navigate('/quote', { state: { compositeData } });
         } catch (error) {
             console.error("Error fetching composite document:", error);
             message.error({ content: t('schedule.failedUpdate'), key: 'navLoading' });

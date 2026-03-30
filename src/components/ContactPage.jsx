@@ -9,6 +9,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import PageHead from './PageHead';
+import { SiYoutube, SiX, SiInstagram, SiLinkedin } from "react-icons/si";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -142,6 +143,27 @@ ${userMessage || 'No message provided'}
                                 <a href={`mailto:${t('contact.supportEmail')}`} className="inline-flex items-center gap-2 text-base font-bold text-[#00A8E4] hover:text-[#0082b3] transition-colors">
                                     <MailOutlined className="text-lg" />
                                     {t('contact.supportEmail')}
+                                </a>
+                            </div>
+                        </div>
+
+                        <div className="mt-8 md:mt-10 lg:mt-12 w-full max-w-md mx-auto xl:ml-0 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm text-center lg:text-left transition-all hover:border-[#7E5CFE]/30">
+                            <h3 className="text-xl md:text-2xl font-black text-slate-900 mb-3">{t('footer.followUs')}</h3>
+                            <p className="text-slate-500 text-sm md:text-base leading-relaxed mb-4">
+                                {t('social.followUsDesc')}
+                            </p>
+                            <div className="flex items-center justify-center lg:justify-start gap-4">
+                                <a href="https://x.com/autopaneai" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 hover:text-black hover:bg-slate-100 transition-all border border-slate-100 shadow-sm hover:scale-110">
+                                    <SiX size={18} />
+                                </a>
+                                <a href="https://instagram.com/autopaneai" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 hover:text-[#E4405F] hover:bg-slate-100 transition-all border border-slate-100 shadow-sm hover:scale-110">
+                                    <SiInstagram size={18} />
+                                </a>
+                                <a href="https://linkedin.com/company/autopaneai" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 hover:text-[#0A66C2] hover:bg-slate-100 transition-all border border-slate-100 shadow-sm hover:scale-110">
+                                    <SiLinkedin size={18} />
+                                </a>
+                                <a href="https://youtube.com/@autopaneai" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 hover:text-[#FF0000] hover:bg-slate-100 transition-all border border-slate-100 shadow-sm hover:scale-110">
+                                    <SiYoutube size={18} />
                                 </a>
                             </div>
                         </div>

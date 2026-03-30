@@ -290,7 +290,7 @@ const OpenRoot = () => {
         try {
             const compositeData = await getCompositeServiceDocument(doc.documentNumber);
             hide();
-            navigate('/search-by-root', { state: { compositeData } });
+            navigate('/quote', { state: { compositeData } });
         } catch (error) {
             hide();
             console.error("Failed to load composite document", error);

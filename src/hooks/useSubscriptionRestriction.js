@@ -21,7 +21,7 @@ export const useSubscriptionRestriction = () => {
                     // QuoteDetails is a child of SearchByRoot, so allowing search-by-root covers it.
                     // Also allow basic auth/home paths.
                     const allowedPaths = [
-                        '/search-by-root',
+                        '/quote',
                         '/auth',
                         '/',
                         '/login',

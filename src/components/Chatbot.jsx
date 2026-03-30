@@ -56,12 +56,12 @@ const Chatbot = () => {
         const handleMouseMove = (e) => {
             const newX = e.clientX - dragOffset.x;
             const newY = e.clientY - dragOffset.y;
-            
+
             // Check if position actually changed (more than 5px threshold)
             if (Math.abs(newX - iconPosition.x) > 5 || Math.abs(newY - iconPosition.y) > 5) {
                 setWasDragged(true);
             }
-            
+
             setIconPosition({
                 x: newX,
                 y: newY
@@ -93,7 +93,8 @@ const Chatbot = () => {
             // Using the endpoint from the user request
             // Parameters: query (string)
             const { fetchWithAuth } = await import("../api/fetchWithAuth");
-            const response = await fetchWithAuth(`https://api.autopaneai.com/agp/v1/chatbot-answer?query=${encodeURIComponent(userMessage.text)}`, {
+            const baseUrl = import.meta.env.VITE_PYTHON_API_URL || 'https://api.autopaneai.com/';
+            const response = await fetchWithAuth(`${baseUrl}agp/v1/chatbot-answer?query=${encodeURIComponent(userMessage.text)}`, {
                 method: "GET"
             });
 
@@ -134,12 +135,12 @@ const Chatbot = () => {
                 ref={floatButtonRef}
                 icon={<MessageOutlined />}
                 type="primary"
-                style={{ 
-                    right: 'auto', 
+                style={{
+                    right: 'auto',
                     bottom: 'auto',
                     left: `${iconPosition.x}px`,
                     top: `${iconPosition.y}px`,
-                    width: 40, 
+                    width: 40,
                     height: 40,
                     cursor: isDragging ? 'grabbing' : 'grab'
                 }}
@@ -151,10 +152,10 @@ const Chatbot = () => {
             {isOpen && (
                 <Card
                     title={
-                        <div 
-                            style={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
                                 gap: '8px',
                                 userSelect: 'none'
                             }}

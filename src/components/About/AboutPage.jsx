@@ -10,6 +10,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PageHead from '../PageHead';
+import { SiYoutube, SiX, SiInstagram, SiLinkedin } from "react-icons/si";
 
 // Reusing the AnimatedSection logic for consistent animations
 const useIntersectionObserver = (options = {}) => {
@@ -230,7 +231,33 @@ const AboutPage = () => {
                     </div>
                 </div>
 
-                {/* 5. Final CTA */}
+                {/* 5. Follow Our Journey */}
+                <div className="px-6 md:px-12 lg:px-20 py-10 max-w-7xl mx-auto">
+                    <AnimatedSection>
+                        <div className="bg-white rounded-[2.5rem] p-10 md:p-12 border border-violet-100 flex flex-col md:flex-row items-center justify-between gap-8">
+                            <div>
+                                <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3 font-outfit">{t('footer.followUs')}</h2>
+                                <p className="text-slate-600 max-w-md">{t('footer.tagline')}</p>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <a href="https://x.com/autopaneai" target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-600 hover:text-black hover:bg-slate-100 transition-all border border-slate-100 shadow-sm hover:scale-110">
+                                    <SiX size={22} />
+                                </a>
+                                <a href="https://instagram.com/autopaneai" target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-600 hover:text-[#E4405F] hover:bg-slate-100 transition-all border border-slate-100 shadow-sm hover:scale-110">
+                                    <SiInstagram size={22} />
+                                </a>
+                                <a href="https://linkedin.com/company/autopaneai" target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-600 hover:text-[#0A66C2] hover:bg-slate-100 transition-all border border-slate-100 shadow-sm hover:scale-110">
+                                    <SiLinkedin size={22} />
+                                </a>
+                                <a href="https://youtube.com/@autopaneai" target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-600 hover:text-[#FF0000] hover:bg-slate-100 transition-all border border-slate-100 shadow-sm hover:scale-110">
+                                    <SiYoutube size={22} />
+                                </a>
+                            </div>
+                        </div>
+                    </AnimatedSection>
+                </div>
+
+                {/* 6. Final CTA */}
                 <div className="max-w-5xl mx-auto px-6 mt-24 mb-10">
                     <AnimatedSection>
                         <div className="bg-violet-50 rounded-3xl p-10 md:p-14 text-center border border-violet-100 relative overflow-hidden">

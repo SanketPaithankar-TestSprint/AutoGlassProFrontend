@@ -19,7 +19,7 @@ const AuthPage = () => {
     }, [location.state]);
 
     const handleLoginSuccess = () => {
-        navigate("/search-by-root");
+        navigate("/quote");
     };
 
     const handleSignUpSuccess = (response) => {

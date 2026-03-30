@@ -126,13 +126,13 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
     ...(isAuthed ? [
       { key: "analytics", label: t('nav.analytics'), href: "/analytics", icon: <PieChartOutlined /> },
       { key: "customers", label: t('nav.customers'), href: "/customers", icon: <TeamOutlined /> },
-      { key: "Quote", label: t('nav.quote'), href: "/search-by-root", icon: <FormOutlined /> },
-      { key: "internal-vin-decoder", label: t('nav.vinDecoder') || 'VIN Decoder', href: "/internal-vin-decoder", icon: <BarcodeOutlined /> },
+      { key: "Quote", label: t('nav.quote'), href: "/quote", icon: <FormOutlined /> },
+      { key: "decoder", label: t('nav.vinDecoder') || 'VIN Decoder', href: "/decoder", icon: <BarcodeOutlined /> },
       { key: "schedule", label: t('nav.schedule'), href: "/schedule", icon: <CalendarOutlined /> },
-      { key: "dashboard", label: t('nav.dashboard'), href: "/open", icon: <FolderOpenOutlined /> },
+      { key: "dashboard", label: t('nav.dashboard'), href: "/jobs", icon: <FolderOpenOutlined /> },
       { key: "reports", label: t('nav.reports'), href: "/reports", icon: <BarChartOutlined /> },
-      { key: "service-inquiries", label: t('nav.serviceInquiries'), href: "/service-contact-form", icon: <MessageOutlined /> },
-      { key: "employee-attendance", label: t('nav.employeeAttendance'), href: "/employee-attendance", icon: <AuditOutlined /> },
+      { key: "service-inquiries", label: t('nav.serviceInquiries'), href: "/inquiries", icon: <MessageOutlined /> },
+      { key: "employee-attendance", label: t('nav.employeeAttendance'), href: "/attendance", icon: <AuditOutlined /> },
       {
         key: "live-chat",
         label: t('nav.liveChat'),

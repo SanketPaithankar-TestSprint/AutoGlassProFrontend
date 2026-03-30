@@ -24,7 +24,7 @@ const AiOptionsRenderer = ({ optionsData, themeColor, onSelect }) => {
         const handleSubmit = () => {
             if (selectedMulti.length > 0) {
                 onSelect(selectedMulti.join(' '));
-                setSelectedMulti([]); 
+                setSelectedMulti([]);
             }
         };
 

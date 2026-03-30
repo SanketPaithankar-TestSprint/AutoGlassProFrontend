@@ -172,14 +172,14 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
             label: <Link to="/customers">{t('nav.customers')}</Link>,
         },
         {
-            key: '/search-by-root',
+            key: '/quote',
             icon: <FormOutlined />,
-            label: <Link to="/search-by-root">{t('nav.quote')}</Link>,
+            label: <Link to="/quote">{t('nav.quote')}</Link>,
         },
         {
-            key: '/internal-vin-decoder',
+            key: '/decoder',
             icon: <BarcodeOutlined />,
-            label: <Link to="/internal-vin-decoder">{t('nav.vinDecoder') || 'VIN Decoder'}</Link>,
+            label: <Link to="/decoder">{t('nav.vinDecoder') || 'VIN Decoder'}</Link>,
         },
         {
             key: '/schedule',
@@ -187,9 +187,9 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
             label: <Link to="/schedule">{t('nav.schedule')}</Link>,
         },
         {
-            key: '/open',
+            key: '/jobs',
             icon: <FolderOpenOutlined />,
-            label: <Link to="/open">{t('nav.jobs')}</Link>,
+            label: <Link to="/jobs">{t('nav.jobs')}</Link>,
         },
         {
             key: '/reports',
@@ -197,7 +197,7 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
             label: <Link to="/reports">{t('nav.reports')}</Link>,
         },
         {
-            key: '/service-contact-form',
+            key: '/inquiries',
             icon: (
                 <div className="relative inline-block">
                     <MessageOutlined />
@@ -207,7 +207,7 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
                 </div>
             ),
             label: (
-                <Link to="/service-contact-form">
+                <Link to="/inquiries">
                     <span className="inline-flex items-center gap-2">
                         <span>{t('nav.serviceInquiries')}</span>
                         {!collapsed && inquiryBadgeCount > 0 && (
@@ -230,9 +230,9 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
         },
 
         {
-            key: '/employee-attendance',
+            key: '/attendance',
             icon: <AuditOutlined />,
-            label: <Link to="/employee-attendance">{t('nav.employeeAttendance')}</Link>,
+            label: <Link to="/attendance">{t('nav.employeeAttendance')}</Link>,
             title: t('nav.employeeAttendance')
         },
 
