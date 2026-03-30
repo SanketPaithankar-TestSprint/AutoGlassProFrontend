@@ -27,19 +27,19 @@ import ShopSupportChat from './ShopSupportChat';
 /* ─── Constants ────────────────────────────────────────────────────────────── */
 
 const CATEGORIES = ['BILLING', 'TECHNICAL', 'GENERAL', 'ACCOUNT', 'OTHER'];
-const PRIORITIES  = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
+const PRIORITIES = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
 
 const STATUS_CONFIG = {
-    OPEN:        { label: 'Open',        color: '#2563eb', bg: '#eff6ff', icon: Clock },
+    OPEN: { label: 'Open', color: '#2563eb', bg: '#eff6ff', icon: Clock },
     IN_PROGRESS: { label: 'In Progress', color: '#d97706', bg: '#fffbeb', icon: RefreshCw },
-    RESOLVED:    { label: 'Resolved',    color: '#16a34a', bg: '#f0fdf4', icon: CheckCircle2 },
-    CLOSED:      { label: 'Closed',      color: '#6b7280', bg: '#f9fafb', icon: XCircle },
+    RESOLVED: { label: 'Resolved', color: '#16a34a', bg: '#f0fdf4', icon: CheckCircle2 },
+    CLOSED: { label: 'Closed', color: '#6b7280', bg: '#f9fafb', icon: XCircle },
 };
 
 const PRIORITY_CONFIG = {
-    LOW:    { color: '#16a34a', bg: '#f0fdf4' },
+    LOW: { color: '#16a34a', bg: '#f0fdf4' },
     MEDIUM: { color: '#d97706', bg: '#fffbeb' },
-    HIGH:   { color: '#dc2626', bg: '#fef2f2' },
+    HIGH: { color: '#dc2626', bg: '#fef2f2' },
     URGENT: { color: '#dc2626', bg: '#fef2f2' },
 };
 
@@ -259,7 +259,7 @@ function CreateTicketModal({ onClose, onCreated }) {
                         form=""
                         onClick={handleSubmit}
                         disabled={submitting}
-                        className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all duration-200 shadow-md shadow-blue-200/50 disabled:opacity-60 disabled:cursor-not-allowed"
+                        className="flex items-center gap-2 px-5 py-2 text-sm font-semibold !text-white !bg-blue-500 !hover:bg-blue-600 rounded-lg transition-all duration-200 shadow-md shadow-blue-200/50 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                         {submitting ? (
                             <><Loader2 className="w-4 h-4 animate-spin" /> Submitting…</>
@@ -273,14 +273,18 @@ function CreateTicketModal({ onClose, onCreated }) {
     );
 }
 
-/* ─── Ticket card ──────────────────────────────────────────────────────────── */
-function TicketCard({ ticket, index, onClick }) {
+/* ─── Ticket card ──────────────────────────────────────────────────── */
+function TicketCard({ ticket, index, onClick, isOpen }) {
     const status = STATUS_CONFIG[ticket.status] || STATUS_CONFIG.OPEN;
     const priority = PRIORITY_CONFIG[ticket.priority] || PRIORITY_CONFIG.LOW;
-    const StatusIcon = status.icon;
 
-    const formatDate = (iso) =>
-        new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    const formatDate = (iso) => {
+        return new Date(iso).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    };
 
     return (
         <motion.div
@@ -297,12 +301,15 @@ function TicketCard({ ticket, index, onClick }) {
                     </h3>
                     <p className="text-xs text-slate-400 mt-0.5 font-mono">#{ticket.id?.slice(0, 8)}</p>
                 </div>
-                <div
-                    style={{ color: status.color, background: status.bg, border: `1px solid ${status.color}30` }}
-                    className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0"
-                >
-                    <StatusIcon className="w-3.5 h-3.5" />
-                    {status.label}
+                <div className="flex items-center gap-2 shrink-0">
+                    {isOpen ? (
+                        <X className="w-5 h-5 text-red-500 hover:text-red-600 transition-colors" />
+                    ) : (
+                        <Ticket className="w-5 h-5 text-blue-500 hover:text-blue-600 transition-colors" />
+                    )}
+                    <span className="text-sm font-medium" style={{ color: status.color }}>
+                        {status.label}
+                    </span>
                 </div>
             </div>
 
@@ -319,14 +326,12 @@ function TicketCard({ ticket, index, onClick }) {
                     color={priority.color}
                     bg={priority.bg}
                 />
-
                 {ticket.attachments?.length > 0 && (
                     <span className="flex items-center gap-1 text-xs text-slate-400">
                         <Paperclip className="w-3.5 h-3.5" />
                         {ticket.attachments.length} attachment{ticket.attachments.length !== 1 ? 's' : ''}
                     </span>
                 )}
-
                 <span className="ml-auto flex items-center gap-1 text-xs text-slate-400">
                     <Calendar className="w-3.5 h-3.5" />
                     {formatDate(ticket.createdAt)}
@@ -339,11 +344,11 @@ function TicketCard({ ticket, index, onClick }) {
 /* ─── Main page ────────────────────────────────────────────────────────────── */
 export default function SupportTicketsPage() {
     const navigate = useNavigate();
-    const [tickets, setTickets]   = useState([]);
-    const [loading, setLoading]   = useState(true);
-    const [error, setError]       = useState('');
+    const [tickets, setTickets] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [showModal, setShowModal] = useState(false);
-    const [filter, setFilter]     = useState('ALL');
+    const [filter, setFilter] = useState('ALL');
     const [selectedTicketId, setSelectedTicketId] = useState(null);
 
     const load = async () => {
@@ -375,10 +380,10 @@ export default function SupportTicketsPage() {
     if (selectedTicketId) {
         const selectedTicket = tickets.find(t => t.id === selectedTicketId);
         return (
-            <div className="p-4 sm:p-6 pb-24 h-screen">
-                <ShopSupportChat 
-                    ticket={selectedTicket} 
-                    onClose={() => setSelectedTicketId(null)} 
+            <div className="h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)] flex flex-col overflow-hidden">
+                <ShopSupportChat
+                    ticket={selectedTicket}
+                    onClose={() => setSelectedTicketId(null)}
                 />
             </div>
         );
@@ -415,7 +420,7 @@ export default function SupportTicketsPage() {
                     </button>
                     <button
                         onClick={() => setShowModal(true)}
-                        className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm shadow-blue-200"
+                        className="flex items-center gap-2 px-4 py-2 text-sm font-semibold !text-white !bg-blue-500 !hover:bg-blue-600 rounded-lg transition-colors shadow-sm shadow-blue-200"
                     >
                         <Plus className="w-4 h-4" />
                         New Ticket
@@ -438,16 +443,14 @@ export default function SupportTicketsPage() {
                             key={s}
                             onClick={() => setFilter(s)}
                             style={filter === s && cfg ? { color: cfg.color, background: cfg.bg, borderColor: `${cfg.color}40` } : {}}
-                            className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border whitespace-nowrap transition-all ${
-                                filter === s
+                            className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border whitespace-nowrap transition-all ${filter === s
                                     ? s === 'ALL' ? 'bg-blue-600 text-white border-blue-600' : ''
                                     : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-700'
-                            }`}
+                                }`}
                         >
                             {s === 'ALL' ? 'All' : (STATUS_CONFIG[s]?.label || s)}
-                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                                filter === s ? 'bg-white/20' : 'bg-slate-100 text-slate-500'
-                            }`}>
+                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${filter === s ? 'bg-white/20' : 'bg-slate-100 text-slate-500'
+                                }`}>
                                 {count}
                             </span>
                         </button>
@@ -490,7 +493,7 @@ export default function SupportTicketsPage() {
                     {filter === 'ALL' && (
                         <button
                             onClick={() => setShowModal(true)}
-                            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+                            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold !text-white !bg-blue-500 !hover:bg-blue-600 rounded-lg transition-colors"
                         >
                             <Plus className="w-4 h-4" />
                             Create your first ticket
@@ -500,11 +503,19 @@ export default function SupportTicketsPage() {
             ) : (
                 <div className="space-y-3">
                     {filtered.map((ticket, i) => (
-                        <TicketCard 
-                            key={ticket.id} 
-                            ticket={ticket} 
-                            index={i} 
-                            onClick={() => setSelectedTicketId(ticket.id)} 
+                        <TicketCard
+                            key={ticket.id}
+                            ticket={ticket}
+                            index={i}
+                            onClick={() => {
+                                if (selectedTicketId === ticket.id) {
+                                    // If clicking the same ticket that's already open, close it
+                                    setSelectedTicketId(null);
+                                } else {
+                                    // If clicking different ticket, open it
+                                    setSelectedTicketId(ticket.id);
+                                }
+                            }}
                         />
                     ))}
                 </div>

@@ -3,7 +3,19 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 // Use the existing VITE_CHAT_WS_URL from ChatContext.jsx or fallback to placeholder
 const SOCKET_URL = import.meta.env.VITE_CHAT_WS_URL || 'wss://your-api-id.execute-api.us-east-1.amazonaws.com/prod';
 
-export const useShopSupportChat = ({ userId, token, shopName = 'Unknown', conversationId }) => {
+export const useShopSupportChat = ({ userId, token, shopName = 'Unknown', conversationId: initialConversationId }) => {
+    // Use the hook argument (ticketId) as the primary conversation identifier
+    const [activeConversationId, setActiveConversationId] = useState(initialConversationId || null);
+    const convIdRef = useRef(initialConversationId || null);
+    
+    // In sync with state/props
+    useEffect(() => {
+        if (initialConversationId) {
+            setActiveConversationId(initialConversationId);
+            convIdRef.current = initialConversationId;
+        }
+    }, [initialConversationId]);
+
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -31,9 +43,9 @@ export const useShopSupportChat = ({ userId, token, shopName = 'Unknown', conver
         }
 
         try {
-            // Connect - Use provided conversationId
+            // STEP 1: Connect
             const url = `${SOCKET_URL}?userId=${userId}`;
-            console.log(`[SupportChat] Connecting for userId: ${userId}, conversationId: ${conversationId || 'none'}`);
+            console.log(`[SupportChat] Connecting for userId: ${userId}, ticketId: ${initialConversationId || 'none'}`);
             
             const socket = new WebSocket(url, [token]);
             socketRef.current = socket;
@@ -45,15 +57,11 @@ export const useShopSupportChat = ({ userId, token, shopName = 'Unknown', conver
                 setLoading(false);
                 reconnectAttemptsRef.current = 0;
 
-                // Load History with conversationId
-                if (!conversationId) {
-                    console.warn('⚠️ No conversationId provided');
-                }
-                
+                // STEP 2: On Open -> Load History
                 const payload = {
                     action: "getHistory",
                     isAdminChat: true,
-                    conversationId: conversationId  // Always include conversationId
+                    conversationId: initialConversationId || convIdRef.current
                 };
                 
                 console.log('📤 Sending getHistory:', payload);
@@ -67,10 +75,14 @@ export const useShopSupportChat = ({ userId, token, shopName = 'Unknown', conver
 
                     // STEP 3: Receive History or New Message
                     if (data.type === "HISTORY") {
+                        if (data.conversationId && !initialConversationId) {
+                            setActiveConversationId(data.conversationId);
+                            convIdRef.current = data.conversationId;
+                        }
                         setMessages(Array.isArray(data.messages) ? data.messages : []);
                         setLoading(false);
                     } else if (data.type === "NEW_MESSAGE") {
-                        // Backend data structure for NEW_MESSAGE is often top-level
+                        // append to messages list
                         setMessages(prev => [...prev, data]);
                     } else if (data.type === "ERROR") {
                         console.error('❌ Server Error:', data.message);
@@ -102,7 +114,7 @@ export const useShopSupportChat = ({ userId, token, shopName = 'Unknown', conver
             setError(`Init failed: ${err.message}`);
             setLoading(false);
         }
-    }, [userId, token, conversationId]);
+    }, [userId, token, initialConversationId]);
 
     // STEP 4: Send Message to Admin
     const sendMessage = useCallback((text) => {
@@ -111,15 +123,16 @@ export const useShopSupportChat = ({ userId, token, shopName = 'Unknown', conver
         }
 
         const payload = {
-            action: "sendMessage",
-            message: text.trim(),
+            action:      "sendMessage",
+            message:     text.trim(),
             isAdminChat: true,
-            shopName: shopName
+            shopName:    shopName,
+            conversationId: activeConversationId || initialConversationId
         };
 
         console.log('📤 Sending message:', payload);
         socketRef.current.send(JSON.stringify(payload));
-    }, [shopName]);
+    }, [shopName, activeConversationId, initialConversationId]);
 
     const refreshChat = useCallback(() => {
         reconnectAttemptsRef.current = 0;
@@ -147,6 +160,9 @@ export const useShopSupportChat = ({ userId, token, shopName = 'Unknown', conver
         error, 
         isConnected, 
         sendMessage, 
-        refreshChat
+        refreshChat,
+        conversationId: activeConversationId
     };
 };
+
+

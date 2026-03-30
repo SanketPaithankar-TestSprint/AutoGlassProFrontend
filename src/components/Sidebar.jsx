@@ -8,7 +8,6 @@ import {
     LogoutOutlined,
     MenuUnfoldOutlined,
     MenuFoldOutlined,
-    DownOutlined,
     FolderOpenOutlined,
     BarChartOutlined,
     CalendarOutlined,
@@ -356,7 +355,6 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
                                 </div>
                             )}
                         </div>
-                            {!collapsed && <DownOutlined className="text-xs !text-white group-hover:text-white transition-colors" />}
                         </div>
                     </Dropdown>
                 </div>

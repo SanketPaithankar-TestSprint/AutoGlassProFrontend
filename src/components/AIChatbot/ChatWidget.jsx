@@ -1,21 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X, Minimize2, Maximize2 } from 'lucide-react';
+import { MessageSquare, X } from 'lucide-react';
 import { useAIChatbot } from '../../context/AIChatbotContext';
 import ChatConversation from './ChatConversation';
 
-const ChatWidget = () => {
+const ChatWidget = ({ collapsed = true }) => {
   const { 
     isOpen, 
-    isMinimized, 
     toggleChat, 
     closeChat, 
-    minimizeChat, 
-    maximizeChat,
     messages 
   } = useAIChatbot();
   
   const [isHovered, setIsHovered] = useState(false);
+  const chatRef = useRef(null);
+
+  // Close chat when clicking outside (but not when clicking X icon)
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (chatRef.current && !chatRef.current.contains(event.target)) {
+        closeChat();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [closeChat]);
 
   // Calculate widget opacity based on state
   const getWidgetOpacity = () => {
@@ -60,7 +72,9 @@ const ChatWidget = () => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+    <div className={`fixed bottom-20 z-50 flex flex-col items-start transition-all duration-300 ${
+    collapsed ? 'left-24' : 'left-54'
+  }`}>
       {/* Chat Window */}
       <AnimatePresence>
         {isOpen && (
@@ -70,41 +84,19 @@ const ChatWidget = () => {
             animate="animate"
             exit="exit"
             className="mb-4"
+            ref={chatRef}
           >
-            <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-96 h-[500px] flex flex-col overflow-hidden">
+            <div ref={chatRef} className="bg-white rounded-xl shadow-xl border border-gray-200 w-96 h-[500px] flex flex-col overflow-hidden">
               {/* Header */}
-              <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 flex items-center justify-between">
+              <div className="!bg-[#203a78ff] text-white p-4 flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                    <MessageCircle size={20} />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">AI Assistant</h3>
-                    <p className="text-xs opacity-90">Always here to help</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={isMinimized ? maximizeChat : minimizeChat}
-                    className="p-1 hover:bg-white/20 rounded-lg transition-colors"
-                    title={isMinimized ? "Maximize" : "Minimize"}
-                  >
-                    {isMinimized ? <Maximize2 size={16} /> : <Minimize2 size={16} />}
-                  </button>
-                  <button
-                    onClick={closeChat}
-                    className="p-1 hover:bg-white/20 rounded-lg transition-colors"
-                    title="Close"
-                  >
-                    <X size={16} />
-                  </button>
+                  <h3 className="font-semibold text-white">Support Assistant</h3>
+                  <p className="text-xs text-gray-300">Ask me anything</p>
                 </div>
               </div>
 
               {/* Chat Content */}
-              {!isMinimized && (
-                <ChatConversation />
-              )}
+              <ChatConversation />
             </div>
           </motion.div>
         )}
@@ -119,11 +111,15 @@ const ChatWidget = () => {
         whileTap={{ scale: 0.95 }}
         onHoverStart={() => setIsHovered(true)}
         onHoverEnd={() => setIsHovered(false)}
-        onClick={toggleChat}
+        onClick={isOpen ? closeChat : toggleChat}
         className="relative cursor-pointer"
       >
-        <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full p-4 shadow-lg">
-          <MessageCircle size={24} />
+        <div className="bg-gray-900 text-white rounded-lg p-3 shadow-lg relative">
+          {isOpen ? (
+            <X size={24} className="absolute inset-0 flex items-center justify-center" />
+          ) : (
+            <MessageSquare size={20} />
+          )}
           
           {/* Notification dot for new messages */}
           {!isOpen && messages.length > 0 && (
@@ -133,14 +129,14 @@ const ChatWidget = () => {
 
         {/* Tooltip */}
         {!isOpen && isHovered && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="absolute bottom-full right-0 mb-2 bg-gray-800 text-white text-sm px-3 py-2 rounded-lg whitespace-nowrap"
-          >
-            Chat with AI Assistant
-            <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800" />
-          </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="absolute bottom-full left-0 mb-2 bg-gray-800 text-white text-sm px-3 py-2 rounded-lg whitespace-nowrap border border-gray-700"
+            >
+              Chat with Support Assistant
+              <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800" />
+            </motion.div>
         )}
       </motion.div>
     </div>

@@ -62,14 +62,11 @@ const ChatConversation = () => {
               variants={welcomeVariants}
               initial="initial"
               animate="animate"
-              className="text-center text-gray-500 py-8"
+              className="text-center text-gray-600 py-8"
             >
               <div className="mb-4">
-                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-white text-2xl">🤖</span>
-                </div>
-                <h3 className="font-semibold text-gray-700 mb-2">Hello! I'm your AI Assistant</h3>
-                <p className="text-sm">How can I help you today?</p>
+                <h3 className="font-semibold text-gray-800 mb-2">Welcome to Support</h3>
+                <p className="text-sm text-gray-600">How can we assist you today?</p>
               </div>
             </motion.div>
           )}
@@ -91,9 +88,9 @@ const ChatConversation = () => {
               exit={{ opacity: 0, y: -10 }}
               className="flex justify-start mb-4"
             >
-              <div className="flex items-center space-x-2 bg-gray-100 rounded-2xl px-4 py-2">
-                <Loader2 className="animate-spin text-gray-500" size={16} />
-                <span className="text-sm text-gray-500">AI is thinking...</span>
+              <div className="flex items-center space-x-2 bg-gray-100 rounded-xl px-4 py-2">
+                <Loader2 className="animate-spin text-gray-600" size={16} />
+                <span className="text-sm text-gray-600">Support is typing...</span>
               </div>
             </motion.div>
           )}
@@ -144,7 +141,7 @@ const ChatConversation = () => {
               onKeyDown={handleKeyDown}
               placeholder="Type your message..."
               disabled={isLoading}
-              className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="w-full px-4 py-3 pr-20 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
             {/* Character count indicator */}
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -157,7 +154,7 @@ const ChatConversation = () => {
           <button
             type="submit"
             disabled={!inputValue.trim() || isLoading}
-            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-2 rounded-full hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
+            className="bg-gray-900 text-white px-4 py-3 rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <Loader2 className="animate-spin" size={20} />

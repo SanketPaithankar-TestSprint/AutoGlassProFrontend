@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useReducer, useState } from 'react';
+import { getValidToken } from '../api/getValidToken';
 
 // Initial state
 const initialState = {
@@ -7,6 +8,7 @@ const initialState = {
   messages: [],
   isLoading: false,
   error: null,
+  sessionId: null,
 };
 
 // Action types
@@ -20,6 +22,7 @@ const actionTypes = {
   SET_LOADING: 'SET_LOADING',
   SET_ERROR: 'SET_ERROR',
   CLEAR_MESSAGES: 'CLEAR_MESSAGES',
+  SET_SESSION_ID: 'SET_SESSION_ID',
 };
 
 // Reducer function
@@ -73,6 +76,12 @@ const chatReducer = (state, action) => {
         ...state,
         messages: [],
         error: null,
+        sessionId: null, // Reset session when clearing conversation
+      };
+    case actionTypes.SET_SESSION_ID:
+      return {
+        ...state,
+        sessionId: action.payload,
       };
     default:
       return state;
@@ -131,6 +140,10 @@ export const AIChatbotProvider = ({ children }) => {
     dispatch({ type: actionTypes.CLEAR_MESSAGES });
   };
 
+  const setSessionId = (sessionId) => {
+    dispatch({ type: actionTypes.SET_SESSION_ID, payload: sessionId });
+  };
+
   const sendMessage = async (content) => {
     if (!content.trim()) return;
 
@@ -145,17 +158,59 @@ export const AIChatbotProvider = ({ children }) => {
     setError(null);
 
     try {
-      // TODO: Integrate with actual AI API
-      // For now, simulate a response
-      setTimeout(() => {
-        addMessage({
-          role: 'assistant',
-          content: 'This is a placeholder response. The AI integration will be implemented next.',
-        });
-        setLoading(false);
-      }, 1000);
+      const token = getValidToken();
+      if (!token) {
+        throw new Error('Authentication required. Please log in.');
+      }
+
+      // Build URL with query parameters
+      const baseUrl = 'https://api.autopaneai.com/agp/v1/chatbot-answer';
+      const params = new URLSearchParams({
+        query: content.trim(),
+      });
+
+      // Add session_id if it exists
+      if (state.sessionId) {
+        params.append('session_id', state.sessionId);
+      }
+
+      const url = `${baseUrl}?${params.toString()}`;
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Session expired. Please log in again.');
+        } else if (response.status === 422) {
+          throw new Error('Invalid input. Please check your message.');
+        } else {
+          throw new Error('Failed to get response. Please try again.');
+        }
+      }
+
+      const data = await response.json();
+
+      // Update session ID if returned
+      if (data.session_id) {
+        setSessionId(data.session_id);
+      }
+
+      // Add assistant response
+      addMessage({
+        role: 'assistant',
+        content: data.answer || 'Sorry, I could not process your request.',
+      });
+
     } catch (error) {
-      setError('Failed to send message. Please try again.');
+      console.error('Chatbot API Error:', error);
+      setError(error.message || 'Failed to send message. Please try again.');
+    } finally {
       setLoading(false);
     }
   };
@@ -177,6 +232,7 @@ export const AIChatbotProvider = ({ children }) => {
     clearMessages,
     sendMessage,
     setInputValue,
+    setSessionId,
   };
 
   return (

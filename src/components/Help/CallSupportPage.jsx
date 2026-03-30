@@ -133,7 +133,7 @@ const CallSupportPage = () => {
                         size="small"
                         className="bg-white hover:bg-blue-50 border-slate-200 hover:border-blue-300 text-slate-600 hover:text-blue-700 flex-shrink-0"
                     >
-                        Back to Help and Support
+                        Back
                     </Button>
                     <div />
                 </div>

@@ -15,10 +15,10 @@ import {
 
 export default function HelpSupportPage() {
   console.log('🚀 HelpSupportPage component mounted');
-  
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
-  
+
   console.log('📍 Current location:', location.pathname);
 
   const navItems = [
@@ -67,7 +67,7 @@ export default function HelpSupportPage() {
             <p className="text-slate-600 mb-6">
               Choose an option below to get the help you need with AutoPane AI.
             </p>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Link
                 to="/help/categories"
@@ -77,7 +77,7 @@ export default function HelpSupportPage() {
                 <h3 className="font-semibold text-blue-800 mb-2">Help Articles</h3>
                 <p className="text-blue-600 text-sm">Browse our knowledge base for guides and tutorials</p>
               </Link>
-              
+
               <Link
                 to="/help/tickets"
                 className="p-6 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
@@ -95,14 +95,14 @@ export default function HelpSupportPage() {
                 <h3 className="font-semibold text-blue-800 mb-2">Contact Support</h3>
                 <p className="text-blue-600 text-sm">Schedule a callback or reach out to our team</p>
               </Link>
-              
+
             </div>
           </div>
 
           {/* Footer with Contact Info */}
           <footer className="text-center text-sm text-slate-500 mt-8">
             <p className="font-medium">Contact Us</p>
-            <p>Mon - Fri: 9:00 AM - 6:00 PM</p>
+            <p>Mon - Fri: 10:00 AM - 6:00 PM</p>
             <p>support@autopaneai.com</p>
           </footer>
         </div>
@@ -133,11 +133,10 @@ export default function HelpSupportPage() {
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
           {/* Sidebar Navigation */}
           <aside
-            className={`${
-              mobileMenuOpen ? "block" : "hidden"
-            } lg:block w-full lg:w-60 flex-shrink-0`}
+            className={`${mobileMenuOpen ? "block" : "hidden"
+              } lg:block w-full lg:w-60 flex-shrink-0`}
           >
-            <nav className="bg-white rounded-xl shadow-md border border-slate-200/60 border border-slate-200 p-4 sticky top-4">
+            <nav className="bg-white rounded-xl shadow-md border border-slate-200/60 border border-slate-200 p-4 sticky top-16 mt-4">
               {/* Sidebar Title */}
               <div className="mb-6 text-center lg:text-left">
                 <h2 className="text-lg font-bold text-slate-800 m-0">Quick Actions</h2>
@@ -154,11 +153,10 @@ export default function HelpSupportPage() {
                       <Link
                         to={item.path}
                         onClick={() => setMobileMenuOpen(false)}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-sm font-medium ${
-                          active
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-sm font-medium ${active
                             ? "bg-blue-600 text-white font-bold"
                             : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                        }`}
+                          }`}
                       >
                         <Icon className="w-5 h-5 flex-shrink-0" />
                         <span>{item.label}</span>

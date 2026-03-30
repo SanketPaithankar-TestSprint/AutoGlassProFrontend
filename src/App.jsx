@@ -248,7 +248,7 @@ function AppContent() {
                 </div >
                 {!isAuthenticated && <Footer />
                 }
-                <ChatWidget />
+                <ChatWidget collapsed={collapsed} />
               </Content >
             </Layout >
           </Layout >
@@ -302,7 +302,7 @@ function AppContent() {
               </Suspense>
             </div>
             <Footer />
-            <ChatWidget />
+            <ChatWidget collapsed={true} />
           </Content>
         </Layout>
       )}
