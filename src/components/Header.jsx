@@ -142,7 +142,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
 
   const menuItems = [
     ...(!isAuthed ? [
-      { key: "about", label: t('nav.about'), href: "/about", icon: null },
+      { key: "home", label: t('nav.home'), href: "/", icon: null },
       { key: "features", label: t('nav.features'), href: "/features", icon: null },
       { key: "pricing", label: t('nav.pricing'), href: "/pricing", icon: null },
       { key: "contact", label: t('nav.contact'), href: "/contact", icon: null },
@@ -319,7 +319,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
           <nav className="p-4 text-slate-700">
 
             <ul className="space-y-2 pl-0 m-0 list-none">
-              {menuItems.filter(item => item.key !== 'home').map((item) => (
+              {menuItems.map((item) => (
                 <li key={item.key}>
                   <Link
                     to={item.href}
@@ -400,7 +400,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
           <nav className="p-4 text-slate-700">
 
             <ul className="space-y-2 pl-0 m-0 list-none">
-              {menuItems.filter(item => item.key !== 'home').map((item) => (
+              {menuItems.map((item) => (
                 <li key={item.key}>
                   <Link
                     to={item.href}

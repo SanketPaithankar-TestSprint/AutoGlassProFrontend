@@ -98,7 +98,7 @@ ${userMessage || 'No message provided'}
     };
 
     return (
-        <div className="min-h-screen py-4 md:py-8 px-4 sm:px-6 lg:px-8 flex flex-col items-center animate-fade-in relative overflow-hidden">
+        <div className="min-h-screen py-2 md:py-4 px-4 sm:px-6 lg:px-8 flex flex-col items-center animate-fade-in relative overflow-hidden">
             <PageHead
                 title="Contact APAI | Sign Up for Your Auto Glass Business"
                 description="Have questions about APAI? Contact our team today for support, demos, or sign up for 30 days trial."
@@ -106,7 +106,7 @@ ${userMessage || 'No message provided'}
 
             <div className="w-full max-w-6xl flex flex-col items-center relative z-10">
                 {/* Header Section */}
-                <div className="text-center mb-10 md:mb-16 mt-8">
+                <div className="text-center mb-6 md:mb-10 mt-4">
                     <h1 className="text-3xl md:text-5xl font-black tracking-tight text-slate-900 mb-4">
                         {t('contact.getInTouch')}
                     </h1>
@@ -171,7 +171,7 @@ ${userMessage || 'No message provided'}
 
                     {/* Right Column: Standard Form */}
                     <div className="lg:col-span-6">
-                        <div className="bg-white rounded-3xl p-6 md:p-10 border border-slate-200 shadow-sm h-full flex flex-col justify-center">
+                        <div className="bg-white rounded-3xl p-6 md:p-10 border border-slate-200 shadow-sm flex flex-col justify-start self-start w-full">
                             {submitted ? (
                                 <div className="text-center py-8 animate-fade-in">
                                     <div className="w-14 h-14 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-green-100">
@@ -196,7 +196,7 @@ ${userMessage || 'No message provided'}
                                         </div>
                                         <div>
                                             <h3 className="text-base font-bold text-slate-900 m-0">{t('contact.tellUsAboutYourself')}</h3>
-                                            <p className="text-slate-400 text-[10px] m-0">Typically replies within 24 hours.</p>
+                                            <p className="text-slate-400 text-[10px] m-0">{t('contact.replyTime')}</p>
                                         </div>
                                     </div>
 
@@ -264,8 +264,25 @@ ${userMessage || 'No message provided'}
                                                         ))}
                                                     </Select>
                                                 </Form.Item>
-                                                <Form.Item name="phone" noStyle rules={[{ required: true, message: '!' }]}>
-                                                    <Input className="flex-1 !rounded-lg bg-slate-50 border-slate-200 hover:border-[#0082b3] focus:border-[#00A8E4] transition-all h-10 text-xs" placeholder="(555) 000-0000" />
+                                                <Form.Item 
+                                                    name="phone" 
+                                                    noStyle 
+                                                    normalize={(value) => {
+                                                        if (!value) return value;
+                                                        const onlyNums = value.replace(/[^\d]/g, '');
+                                                        if (onlyNums.length <= 3) return onlyNums;
+                                                        if (onlyNums.length <= 6) return `(${onlyNums.slice(0, 3)}) ${onlyNums.slice(3)}`;
+                                                        return `(${onlyNums.slice(0, 3)}) ${onlyNums.slice(3, 6)}-${onlyNums.slice(6, 10)}`;
+                                                    }}
+                                                    rules={[
+                                                        { required: true, message: '!' },
+                                                        { 
+                                                          pattern: /^\(\d{3}\)\s\d{3}-\d{4}$/, 
+                                                          message: t('contact.invalidPhone') 
+                                                        }
+                                                    ]}
+                                                >
+                                                    <Input className="flex-1 !rounded-lg bg-slate-50 border-slate-200 hover:border-[#0082b3] focus:border-[#00A8E4] transition-all h-10 text-xs" placeholder="(555) 000-0000" maxLength={14} />
                                                 </Form.Item>
                                             </div>
                                         </Form.Item>
