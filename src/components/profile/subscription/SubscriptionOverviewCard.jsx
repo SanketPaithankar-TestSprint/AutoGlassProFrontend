@@ -107,17 +107,21 @@ const SubscriptionOverviewCard = ({ details, loading, onAdd, onUpdate, onActivat
                 <div className="text-left md:text-right">
                   <div className="flex flex-col md:items-end">
                     <div className="flex items-baseline gap-1 md:justify-end">
-                      <span className="text-3xl font-extrabold text-slate-900">$99</span>
-                      <span className="text-sm font-medium text-slate-500">/mo</span>
+                      <span className="text-3xl font-extrabold text-slate-900">$999</span>
+                      <span className="text-sm font-medium text-slate-500">/year</span>
+                      <span className="ml-2 text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded border border-green-100 uppercase">Save 15%</span>
                     </div>
-                    <div className="flex items-baseline gap-1 md:justify-end -mt-1 opacity-80">
-                      <span className="text-lg font-bold text-slate-600">$999</span>
-                      <span className="text-[10px] font-medium text-slate-400">/year</span>
+                    <div className="flex items-baseline gap-1 md:justify-end -mt-0.5 opacity-70">
+                      <span className="text-sm font-medium text-slate-400">or</span>
+                      <span className="text-lg font-bold text-slate-600">$99</span>
+                      <span className="text-[10px] font-medium text-slate-400">/mo</span>
                     </div>
                   </div>
-                  <Text className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full uppercase tracking-wider inline-block mt-1">
-                    {t('pricing.mostPopular')}
-                  </Text>
+                  <div className="mt-2">
+                    <Text className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full uppercase tracking-wider inline-block">
+                      {t('pricing.mostPopular')}
+                    </Text>
+                  </div>
                 </div>
               </div>
 
