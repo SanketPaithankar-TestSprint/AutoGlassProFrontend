@@ -179,9 +179,11 @@ export default function SearchByYMM({
       // Find body type description if we have bodyStyleId
       let bodyTypeDescription = value?.body || '';
       if (bodyType && bodyTypes.length > 0) {
-        const selectedBodyType = bodyTypes.find(bt => bt.body_style_id === bodyType);
+        const selectedBodyType = bodyTypes.find(bt => String(bt.body_style_id) === String(bodyType));
         if (selectedBodyType) {
           bodyTypeDescription = selectedBodyType.desc;
+        } else if (value?.body || value?.bodyType) {
+          bodyTypeDescription = value.body || value.bodyType;
         }
       }
 
@@ -556,13 +558,15 @@ export default function SearchByYMM({
   }, [year, makeId, makeModelId]); // Added makeModelId to deps
 
   useEffect(() => {
-    if (year && makeId && makeModelId && bodyTypes.length === 0 && !bodyType) {
-      // Model selected, no body yet (manual flow) -> Fetch
+    // Load body types if we have the prerequisites, even if bodyType is already set (ID)
+    // so we can resolve the description and show other options.
+    if (year && makeId && makeModelId && bodyTypes.length <= 1) {
+      // Manual flow or VIN pre-fill without full list -> Fetch
       loadBodyTypes(year, makeId, makeModelId, vehModifierId);
     } else if (!makeModelId) {
       setBodyTypes([]);
     }
-  }, [year, makeId, makeModelId, vehModifierId, bodyType]); // Added bodyType to deps
+  }, [year, makeId, makeModelId, vehModifierId]); // Removed bodyType dependency to prevent loop, added length check
 
   // Auto-trigger Find Parts whenever all required fields are selected
   useEffect(() => {
@@ -605,8 +609,10 @@ export default function SearchByYMM({
       onModelIdFetched?.(modelId || makeModelId);
 
       // Find the selected body type description
-      const selectedBodyType = bodyTypes.find(bt => bt.body_style_id === bodyType);
-      const bodyTypeDescription = selectedBodyType ? selectedBodyType.desc : String(bodyType);
+      const selectedBodyType = bodyTypes.find(bt => String(bt.body_style_id) === String(bodyType));
+      const bodyTypeDescription = selectedBodyType 
+        ? selectedBodyType.desc 
+        : (value?.body || value?.bodyType || String(bodyType));
 
       onVehicleInfoUpdate?.({
         year,
@@ -644,8 +650,10 @@ export default function SearchByYMM({
       onModelIdFetched?.(mId);
 
       // Find the selected body type description
-      const selectedBodyType = bodyTypes.find(bt => bt.body_style_id === bodyType);
-      const bodyTypeDescription = selectedBodyType ? selectedBodyType.desc : String(bodyType);
+      const selectedBodyType = bodyTypes.find(bt => String(bt.body_style_id) === String(bodyType));
+      const bodyTypeDescription = selectedBodyType 
+        ? selectedBodyType.desc 
+        : (value?.body || value?.bodyType || String(bodyType));
 
       onVehicleInfoUpdate?.({
         year,

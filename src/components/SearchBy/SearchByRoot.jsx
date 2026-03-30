@@ -620,13 +620,19 @@ const SearchByRoot = () => {
     if (info.veh_id) {
       setVehId(info.veh_id);
     }
+    // Prevent data loss: if info.bodyType is just a numeric ID-string, 
+    // and we already have a human-readable description in prev.bodyType, keep the description.
+    const isNumericId = (val) => typeof val === 'string' && /^\d+(\.\d+)?$/.test(val);
+    
     setCustomerData(prev => ({
       ...prev,
       vehicleYear: info.year || prev.vehicleYear,
       vehicleMake: info.make || prev.vehicleMake,
       vehicleModel: info.model || prev.vehicleModel,
       vehicleStyle: info.description || prev.vehicleStyle, // Use description for style if available
-      bodyType: info.bodyType || prev.bodyType, // Use bodyType description for display and storage
+      bodyType: (isNumericId(info.bodyType) && prev.bodyType && !isNumericId(prev.bodyType)) 
+        ? prev.bodyType 
+        : (info.bodyType || prev.bodyType), 
       // Include backend IDs for composite service document
       makeId: info.makeId || prev.makeId,
       modelId: info.makeModelId || prev.modelId,
