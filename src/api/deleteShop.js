@@ -12,7 +12,14 @@ export const deleteShop = async (token, id) => {
     });
 
     if (!response.ok) {
-        throw new Error("Failed to delete shop");
+        let errorMsg = "Failed to delete shop";
+        try {
+            const errorData = await response.json();
+            if (errorData?.message) errorMsg = errorData.message;
+        } catch (e) {
+            // If body is not JSON, fallback to generic
+        }
+        throw new Error(errorMsg);
     }
 
     return true; // Success

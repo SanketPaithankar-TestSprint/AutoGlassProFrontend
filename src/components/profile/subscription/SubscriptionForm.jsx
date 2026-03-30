@@ -11,7 +11,6 @@ const SubscriptionForm = ({ initialValues = {}, onSubmit, loading, submitLabel =
 
   // Watches for dynamic UI
   const recurringType = Form.useWatch("recurringType", form) || "2";
-  const duration = Form.useWatch("duration", form) || 1;
   const employeeCount = Form.useWatch("employeeCount", form) || 0;
 
   // Watches for Location logic
@@ -77,13 +76,8 @@ const SubscriptionForm = ({ initialValues = {}, onSubmit, loading, submitLabel =
   const employeeCostPerUnit = isYearly ? 79 * 11 : 79;
 
   const totalEmployeeCost = employeeCostPerUnit * employeeCount;
-  const finalTotal = (singleUserCost + totalEmployeeCost) * duration;
+  const finalTotal = (singleUserCost + totalEmployeeCost);
 
-  React.useEffect(() => {
-    if (!isYearly && duration > 5) {
-      form.setFieldsValue({ duration: 5 });
-    }
-  }, [isYearly, duration, form]);
 
   const formatCardNumber = (value = "") => {
     const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
@@ -108,7 +102,6 @@ const SubscriptionForm = ({ initialValues = {}, onSubmit, loading, submitLabel =
       layout="vertical"
       initialValues={{
         recurringType: "2",
-        duration: 1,
         employeeCount: 0,
         billingAddress: { country: "USA" },
         paymentInfo: {},
@@ -124,32 +117,12 @@ const SubscriptionForm = ({ initialValues = {}, onSubmit, loading, submitLabel =
 
       {/* Recurring Type & Duration */}
       <Row gutter={16}>
-        <Col xs={24} md={8}>
+        <Col xs={24} md={12}>
           <Form.Item name="recurringType" label="Recurring Type" rules={[{ required: true, message: 'Please select recurring type' }]}>
             <Select options={RECURRING_TYPE_OPTIONS} placeholder="Select..." />
           </Form.Item>
         </Col>
-        <Col xs={24} md={8}>
-          <Form.Item
-            name="duration"
-            label={`Duration (${isYearly ? 'Years' : 'Months'})`}
-            rules={[
-              { required: true, message: 'Please enter duration' },
-              () => ({
-                validator(_, value) {
-                  if (!isYearly && value > 5) {
-                    return Promise.reject(new Error('For > 5 months, choose Yearly for better pricing.'));
-                  }
-                  return Promise.resolve();
-                },
-              }),
-            ]}
-            extra={!isYearly && duration >= 5 ? <Text type="warning" className="text-xs">Need more? A Yearly subscription is more cost-effective!</Text> : null}
-          >
-            <InputNumber min={1} max={!isYearly ? 5 : undefined} className="w-full" />
-          </Form.Item>
-        </Col>
-        <Col xs={24} md={8}>
+        <Col xs={24} md={12}>
           <Form.Item name="employeeCount" label="Employee Count" rules={[{ required: true, message: 'Please enter employee count' }]}>
             <InputNumber min={0} className="w-full" />
           </Form.Item>
@@ -309,11 +282,7 @@ const SubscriptionForm = ({ initialValues = {}, onSubmit, loading, submitLabel =
             <span className="font-semibold text-blue-800 bg-blue-100 px-3 py-1 rounded-full">{isYearly ? 'Yearly' : 'Monthly'}</span>
           </div>
           <div className="flex justify-between items-center bg-white p-3 rounded-md shadow-sm">
-            <span className="text-gray-600 font-medium">Duration:</span>
-            <span className="font-semibold text-gray-800">{duration} {isYearly ? (duration === 1 ? 'Year' : 'Years') : (duration === 1 ? 'Month' : 'Months')}</span>
-          </div>
-          <div className="flex justify-between items-center bg-white p-3 rounded-md shadow-sm">
-            <span className="text-gray-600 font-medium">Single User Cost ({isYearly ? 'per year' : 'per month'}):</span>
+            <span className="text-gray-600 font-medium">Plan Price ({isYearly ? 'per year' : 'per month'}):</span>
             <span className="font-semibold text-gray-800">${singleUserCost}</span>
           </div>
           {employeeCount > 0 && (
@@ -334,9 +303,20 @@ const SubscriptionForm = ({ initialValues = {}, onSubmit, loading, submitLabel =
             </div>
           )}
           <Divider className="my-4 border-blue-200" />
-          <div className="flex justify-between items-center bg-blue-600 text-white p-4 rounded-lg shadow-md mb-2">
+          <div className="flex flex-col sm:flex-row justify-between items-center bg-blue-600 text-white p-4 rounded-xl shadow-md mb-2 gap-2">
             <span className="text-lg font-bold">Final Total:</span>
-            <span className="text-2xl font-extrabold tracking-wide">${finalTotal}</span>
+            <span className="text-2xl font-extrabold tracking-wider">${finalTotal}</span>
+          </div>
+          <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg flex gap-3 items-start shadow-sm">
+            <InfoCircleOutlined className="text-amber-600 mt-1" />
+            <div className="flex flex-col">
+              <Text className="text-amber-800 font-bold text-sm">Need to make changes?</Text>
+              <Text className="text-amber-700 text-xs">
+                For any changes to your subscription or for canceling the service, please contact us at 
+                <span className="font-bold text-amber-900"> support@autoglasspro.com </span> 
+                at least <span className="font-semibold text-amber-900 underline decoration-amber-300">15 days in advance</span>.
+              </Text>
+            </div>
           </div>
         </div>
       </Card>
@@ -351,9 +331,8 @@ const SubscriptionForm = ({ initialValues = {}, onSubmit, loading, submitLabel =
               background: 'linear-gradient(90deg, #2563eb 0%, #3b82f6 100%)',
               borderColor: 'transparent',
               color: '#ffffff',
-              minWidth: '240px'
             }} 
-            className="h-12 px-16 rounded-full font-bold text-lg shadow-xl hover:scale-105 transition-all transform active:scale-95"
+            className="h-12 w-full sm:w-auto sm:min-w-[240px] px-16 rounded-full font-bold text-lg shadow-xl hover:scale-105 transition-all transform active:scale-95"
           >
             {submitLabel}
           </Button>

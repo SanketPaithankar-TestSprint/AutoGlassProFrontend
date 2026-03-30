@@ -6,7 +6,7 @@ import { updateProfile } from "../../api/updateProfile";
 import { saveUserLogo } from "../../api/saveUserLogo";
 import { getValidToken } from "../../api/getValidToken";
 import { UserOutlined, TeamOutlined, IdcardOutlined, ShopOutlined, PhoneOutlined, EnvironmentOutlined, EditOutlined, PlusOutlined, DollarOutlined, ThunderboltOutlined, PercentageOutlined, KeyOutlined, ScanOutlined, FileTextOutlined, UploadOutlined, CalculatorOutlined, MailOutlined, GiftOutlined, CameraOutlined, LinkOutlined, BellOutlined, RobotOutlined } from "@ant-design/icons";
-import { Modal, Form, Input, Select, Button, notification, Upload, Avatar } from "antd";
+import { Modal, Form, Input, Select, Button, Upload, Avatar, App } from "antd";
 import ImgCrop from 'antd-img-crop';
 import imageCompression from 'browser-image-compression';
 import { getUserLogo } from "../../api/getUserLogo";
@@ -31,6 +31,7 @@ import { useTranslation } from 'react-i18next';
 import SubscriptionManagement from "./subscription/SubscriptionManagement";
 
 const Profile = () => {
+    const { notification: antNotification } = App.useApp();
     const [activeTab, setActiveTab] = useState('profile');
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);

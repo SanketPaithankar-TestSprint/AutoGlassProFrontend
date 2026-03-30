@@ -7,7 +7,7 @@ import { updateShop } from "../../api/updateShop";
 import { deleteShop } from "../../api/deleteShop";
 import { getValidToken } from "../../api/getValidToken";
 import { ShopOutlined, PlusOutlined, EditOutlined, DeleteOutlined, EnvironmentOutlined, PhoneOutlined, MailOutlined, GlobalOutlined, ReloadOutlined, ClockCircleOutlined, InfoCircleOutlined, PushpinOutlined } from "@ant-design/icons";
-import { Modal, Form, Input, Button, notification, Popconfirm, Switch, TimePicker, Tooltip, Divider } from "antd";
+import { Modal, Form, Input, Button, Popconfirm, Switch, TimePicker, Tooltip, Divider, Result, Alert, App } from "antd";
 import dayjs from "dayjs";
 import { useTranslation } from 'react-i18next';
 
@@ -20,6 +20,7 @@ const formatPhoneNumber = (value) => {
 };
 
 const Shops = ({ userProfile }) => {
+    const { notification: antNotification } = App.useApp();
     const queryClient = useQueryClient();
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [editingShop, setEditingShop] = useState(null);
@@ -36,7 +37,8 @@ const Shops = ({ userProfile }) => {
 
     const userId = userProfile?.userId || userProfile?.id;
 
-    const { data: shopsData, isLoading: loading, refetch } = useQuery({
+
+    const { data: shopsData, isLoading: loading, isError, error, refetch } = useQuery({
         queryKey: ['shops', userId],
         queryFn: async () => {
             const token = getValidToken();
@@ -52,13 +54,7 @@ const Shops = ({ userProfile }) => {
             return [];
         },
         enabled: !!userId,
-        onError: (err) => {
-            console.error(err);
-            notification.error({
-                message: "Failed to fetch shops",
-                description: err.message
-            });
-        }
+        // Error handling is now done in the UI
     });
 
     const shops = Array.isArray(shopsData) ? shopsData : (shopsData?.data || []);
@@ -155,10 +151,10 @@ const Shops = ({ userProfile }) => {
             if (editingShop) {
                 // Backend requires shopId in the body for updates
                 await updateShop(editingShop.shopId || editingShop.id, payload);
-                notification.success({ message: "Shop updated successfully" });
+                antNotification.success({ message: "Shop updated successfully" });
             } else {
                 await createShop(payload);
-                notification.success({ message: "Shop created successfully" });
+                antNotification.success({ message: "Shop created successfully" });
             }
 
             setIsModalVisible(false);
@@ -166,7 +162,7 @@ const Shops = ({ userProfile }) => {
             queryClient.invalidateQueries({ queryKey: ['shops'] });
         } catch (err) {
             console.error(err);
-            notification.error({
+            antNotification.error({
                 message: "Failed to save shop",
                 description: err.message
             });
@@ -180,11 +176,11 @@ const Shops = ({ userProfile }) => {
             const token = getValidToken();
             if (!token) throw new Error("No token found");
             await deleteShop(token, shopId);
-            notification.success({ message: t('shops.title'), description: "Shop deleted successfully" });
+            antNotification.success({ message: t('shops.title'), description: "Shop deleted successfully" });
             queryClient.invalidateQueries({ queryKey: ['shops'] });
         } catch (err) {
             console.error(err);
-            notification.error({
+            antNotification.error({
                 message: "Failed to delete shop",
                 description: err.message
             });
@@ -195,6 +191,61 @@ const Shops = ({ userProfile }) => {
         return (
             <div className="text-center py-12 text-lg text-gray-500 animate-pulse">
                 Loading shops...
+            </div>
+        );
+    }
+
+    if (isError) {
+        const errorStatus = error?.response?.status;
+        const isForbidden = errorStatus === 403;
+        const errorMsg = error?.response?.data?.message || error?.message || "Failed to load shops. Please check your permissions.";
+        
+        return (
+            <div className="space-y-6 animate-fadeIn">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold text-gray-800">{t('shops.title')}</h2>
+                    <Button
+                        icon={<ReloadOutlined />}
+                        onClick={() => refetch()}
+                        loading={loading}
+                        title="Refresh list"
+                    >
+                        {t('shops.refresh')}
+                    </Button>
+                </div>
+
+                <Alert
+                    message={<span className="font-bold text-red-900">{isForbidden ? "Access Restriction" : "Connection Error"}</span>}
+                    description={
+                        <div className="mt-1 space-y-2">
+                            <p className="text-red-800 text-sm leading-relaxed">
+                                {errorMsg}
+                            </p>
+                            {isForbidden && error?.response?.data?.path && (
+                                <div className="flex items-center gap-2 text-[10px] text-red-500 font-mono bg-red-100/50 w-fit px-2 py-0.5 rounded">
+                                    <span className="opacity-70">PATH:</span>
+                                    <span>{error.response.data.path}</span>
+                                </div>
+                            )}
+                        </div>
+                    }
+                    type="error"
+                    showIcon
+                    className="border-red-200 bg-red-50/50 rounded-xl shadow-sm py-4"
+                    action={
+                        <Button 
+                            size="small" 
+                            type="primary" 
+                            danger 
+                            ghost
+                            onClick={() => refetch()} 
+                            icon={<ReloadOutlined />}
+                            className="font-semibold"
+                        >
+                            Retry Request
+                        </Button>
+                    }
+                />
             </div>
         );
     }
