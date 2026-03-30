@@ -180,7 +180,7 @@ export default function HelpSupportPage() {
           </aside>
 
           {/* Main Content */}
-          <main className="flex-1 min-w-0">
+          <main className="flex-1 min-w-0 relative min-h-[calc(100vh-12rem)]">
             <Outlet />
           </main>
         </div>

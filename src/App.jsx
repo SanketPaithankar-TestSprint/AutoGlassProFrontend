@@ -302,7 +302,6 @@ function AppContent() {
               </Suspense>
             </div>
             <Footer />
-            <ChatWidget collapsed={true} />
           </Content>
         </Layout>
       )}
