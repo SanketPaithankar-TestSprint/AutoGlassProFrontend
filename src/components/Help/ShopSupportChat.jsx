@@ -24,7 +24,8 @@ dayjs.extend(relativeTime);
 const { Header, Content, Footer } = Layout;
 const { Text, Title, Paragraph } = Typography;
 
-const ShopSupportChat = () => {
+const ShopSupportChat = ({ ticket, onClose }) => {
+    const ticketId = ticket?.id;
     const navigate = useNavigate();
     const token = getValidToken();
     
@@ -54,9 +55,8 @@ const ShopSupportChat = () => {
         error,
         isConnected,
         sendMessage,
-        refreshChat,
-        clearConversationId
-    } = useShopSupportChat({ userId, token, shopName });
+        refreshChat
+    } = useShopSupportChat({ userId, token, shopName, conversationId: ticketId });
 
     const [inputValue, setInputValue] = useState('');
     const [tick, setTick] = useState(0); // For dynamic timestamps
@@ -102,7 +102,7 @@ const ShopSupportChat = () => {
                     title="Communication Error"
                     subTitle={error}
                     extra={[
-                        <Button key="back" onClick={() => navigate('/help')}>Back to Help Center</Button>,
+                        <Button key="back" onClick={onClose}>Close Chat</Button>,
                         <Button key="retry" type="primary" onClick={refreshChat}>Refresh Chat</Button>,
                     ]}
                 >
@@ -126,7 +126,7 @@ const ShopSupportChat = () => {
                 <div className="flex items-center gap-4">
                     <Button 
                         icon={<ArrowLeftOutlined />} 
-                        onClick={() => navigate('/help')}
+                        onClick={onClose}
                         className="hover:bg-blue-50 border-slate-200"
                     />
                     <div className="flex items-center gap-3">
@@ -144,8 +144,31 @@ const ShopSupportChat = () => {
                 </div>
             </header>
 
+            {/* Ticket Details Info Bar */}
+            {ticket && (
+                <div className="bg-slate-50 px-5 py-4 border-b border-slate-200 shrink-0 shadow-sm z-10 flex flex-col gap-3">
+                    <div className="flex items-start justify-between gap-4">
+                        <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                            <Text className="font-bold text-slate-800 text-[15px] truncate">{ticket.subject}</Text>
+                            <Text className="text-[10px] text-slate-400 font-mono tracking-wider">TICKET #{ticket.id?.slice(0, 8)}</Text>
+                        </div>
+                        <div className="flex gap-2 shrink-0 flex-wrap justify-end">
+                            <Tag color="blue" className="m-0 border-blue-200 font-semibold">{ticket.category}</Tag>
+                            <Tag color={ticket.status === 'OPEN' ? 'green' : ticket.status === 'IN_PROGRESS' ? 'orange' : 'default'} className="m-0 font-semibold">
+                                {ticket.status}
+                            </Tag>
+                        </div>
+                    </div>
+                    {ticket.description && (
+                        <div className="bg-white p-3 rounded-xl border border-slate-100 max-h-[100px] overflow-y-auto custom-chat-scrollbar shadow-inner text-xs text-slate-600 leading-relaxed whitespace-pre-wrap">
+                            {ticket.description}
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* Chat Body */}
-            <Content className="flex-1 bg-slate-50 relative overflow-y-auto p-4 custom-chat-scrollbar">
+            <Content className="flex-1 bg-white relative overflow-y-auto p-4 custom-chat-scrollbar">
                 {loading ? (
                     <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-3">
                         <Spin indicator={<LoadingOutlined style={{ fontSize: 32 }} spin />} />
@@ -246,20 +269,6 @@ const ShopSupportChat = () => {
                     </Tooltip>
                 </div>
                 
-                <div className="mt-4 flex items-center justify-center gap-6 text-[11px] text-slate-400 font-medium select-none">
-                    <span className="flex items-center gap-1.5 opacity-60"><MessageOutlined className="text-xs" /> PRESS ENTER TO SEND</span>
-                    <Divider type="vertical" className="border-slate-200 h-3" />
-                    <span 
-                        className="flex items-center gap-1.5 cursor-pointer hover:text-red-500 transition-colors"
-                        onClick={() => {
-                            if (window.confirm("Are you sure you want to end this session and clear chat history?")) {
-                                clearConversationId();
-                            }
-                        }}
-                    >
-                        <DisconnectOutlined className="text-xs" /> END SESSION
-                    </span>
-                </div>
             </Footer>
 
             <style>{`

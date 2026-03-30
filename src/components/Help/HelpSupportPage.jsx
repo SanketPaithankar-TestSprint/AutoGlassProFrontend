@@ -25,7 +25,6 @@ export default function HelpSupportPage() {
     { path: "/help/categories", label: "Help Articles", icon: BookOpen },
     { path: "/help/tickets", label: "Raise a ticket", icon: Ticket },
     { path: "/help/contact", label: "Contact Support", icon: Phone },
-    { path: "/help/chat", label: "Live Chat", icon: MessageCircle },
   ];
 
   const isActive = (path) => {
@@ -97,14 +96,6 @@ export default function HelpSupportPage() {
                 <p className="text-blue-600 text-sm">Schedule a callback or reach out to our team</p>
               </Link>
               
-              <Link
-                to="/help/chat"
-                className="p-6 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
-              >
-                <MessageCircle className="w-8 h-8 text-blue-600 mb-3" />
-                <h3 className="font-semibold text-blue-800 mb-2">Live Chat</h3>
-                <p className="text-blue-600 text-sm">Get instant help from our support team</p>
-              </Link>
             </div>
           </div>
 

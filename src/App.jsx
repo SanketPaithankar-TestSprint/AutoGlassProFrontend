@@ -21,6 +21,8 @@ import { useAuth } from './context/auth/useAuth';
 import { AuthProvider } from './context/auth/authProvide';
 import { InquiryProvider, useInquiry } from './context/InquiryContext';
 import { NotificationSettingsProvider } from './context/NotificationSettingsContext';
+import { AIChatbotProvider } from './context/AIChatbotContext';
+import { ChatWidget } from './components/AIChatbot';
 
 // Lazy Load Main Components
 const Home = React.lazy(() => import('./components/Home/HomeRoot.jsx'));
@@ -54,7 +56,6 @@ const HelpSupportPage = React.lazy(() => import('./components/Help/HelpSupportPa
 const HelpCategoriesPage = React.lazy(() => import('./components/Help/HelpCategoriesPage.jsx'));
 const SupportTicketsPage = React.lazy(() => import('./components/Help/SupportTicketsPage.jsx'));
 const CallSupportPage = React.lazy(() => import('./components/Help/CallSupportPage.jsx'));
-const ShopSupportChat = React.lazy(() => import('./components/Help/ShopSupportChat.jsx'));
 import RestrictedAccessModal from './components/RestrictedAccessModal';
 import { useSubscriptionRestriction } from './hooks/useSubscriptionRestriction';
 
@@ -240,7 +241,6 @@ function AppContent() {
                           <Route path="articles/:id" element={<HelpArticlePage />} />
                           <Route path="tickets" element={<SupportTicketsPage />} />
                           <Route path="contact" element={<CallSupportPage />} />
-                          <Route path="chat" element={<ShopSupportChat />} />
                         </Route>
                       </Routes >
                     </Suspense >
@@ -248,6 +248,7 @@ function AppContent() {
                 </div >
                 {!isAuthenticated && <Footer />
                 }
+                <ChatWidget />
               </Content >
             </Layout >
           </Layout >
@@ -301,6 +302,7 @@ function AppContent() {
               </Suspense>
             </div>
             <Footer />
+            <ChatWidget />
           </Content>
         </Layout>
       )}
@@ -326,14 +328,16 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AntApp>
         <AuthProvider>
-          <Router>
-            <NotificationSettingsProvider>
-              <InquiryProvider>
-                <ScrollToTop />
-                <AppContent />
-              </InquiryProvider>
-            </NotificationSettingsProvider>
-          </Router>
+          <AIChatbotProvider>
+            <Router>
+              <NotificationSettingsProvider>
+                <InquiryProvider>
+                  <ScrollToTop />
+                  <AppContent />
+                </InquiryProvider>
+              </NotificationSettingsProvider>
+            </Router>
+          </AIChatbotProvider>
         </AuthProvider>
       </AntApp>
     </QueryClientProvider>

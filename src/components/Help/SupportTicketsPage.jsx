@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { LeftOutlined } from '@ant-design/icons';
 import { getSupportTickets, createSupportTicket } from '../../api/supportTickets';
+import ShopSupportChat from './ShopSupportChat';
 
 /* ─── Constants ────────────────────────────────────────────────────────────── */
 
@@ -273,7 +274,7 @@ function CreateTicketModal({ onClose, onCreated }) {
 }
 
 /* ─── Ticket card ──────────────────────────────────────────────────────────── */
-function TicketCard({ ticket, index }) {
+function TicketCard({ ticket, index, onClick }) {
     const status = STATUS_CONFIG[ticket.status] || STATUS_CONFIG.OPEN;
     const priority = PRIORITY_CONFIG[ticket.priority] || PRIORITY_CONFIG.LOW;
     const StatusIcon = status.icon;
@@ -283,10 +284,11 @@ function TicketCard({ ticket, index }) {
 
     return (
         <motion.div
+            onClick={onClick}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: index * 0.04 }}
-            className="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md hover:border-blue-200 transition-all duration-200 group"
+            className="cursor-pointer bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md hover:border-blue-200 transition-all duration-200 group"
         >
             <div className="flex items-start justify-between gap-3 mb-3">
                 <div className="flex-1 min-w-0">
@@ -342,6 +344,7 @@ export default function SupportTicketsPage() {
     const [error, setError]       = useState('');
     const [showModal, setShowModal] = useState(false);
     const [filter, setFilter]     = useState('ALL');
+    const [selectedTicketId, setSelectedTicketId] = useState(null);
 
     const load = async () => {
         setLoading(true);
@@ -368,6 +371,18 @@ export default function SupportTicketsPage() {
     const filtered = filter === 'ALL'
         ? tickets
         : tickets.filter(t => t.status === filter);
+
+    if (selectedTicketId) {
+        const selectedTicket = tickets.find(t => t.id === selectedTicketId);
+        return (
+            <div className="p-4 sm:p-6 pb-24 h-screen">
+                <ShopSupportChat 
+                    ticket={selectedTicket} 
+                    onClose={() => setSelectedTicketId(null)} 
+                />
+            </div>
+        );
+    }
 
     return (
         <div className="p-4 sm:p-6">
@@ -485,7 +500,12 @@ export default function SupportTicketsPage() {
             ) : (
                 <div className="space-y-3">
                     {filtered.map((ticket, i) => (
-                        <TicketCard key={ticket.id} ticket={ticket} index={i} />
+                        <TicketCard 
+                            key={ticket.id} 
+                            ticket={ticket} 
+                            index={i} 
+                            onClick={() => setSelectedTicketId(ticket.id)} 
+                        />
                     ))}
                 </div>
             )}
