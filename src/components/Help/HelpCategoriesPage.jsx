@@ -12,7 +12,14 @@ const HelpCategoriesPage = () => {
     
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -49,18 +56,18 @@ const HelpCategoriesPage = () => {
                 whileHover={{ y: -4 }}
             >
                 <Card
-                    className="h-full cursor-pointer transition-all duration-300 hover:shadow-lg bg-blue-50 border-blue-200 hover:bg-blue-100"
+                    className="h-full cursor-pointer transition-all duration-300 hover:shadow-lg bg-blue-50 border-blue-200 hover:bg-blue-100 rounded-2xl border-2"
                     onClick={() => handleCategoryClick(category)}
-                    bodyStyle={{ padding: '32px' }}
+                    styles={{ body: { padding: isMobile ? '16px' : '24px' } }}
                 >
-                    <div className="flex flex-col items-center text-center h-full">
-                        <div className="mb-6">
-                            <FolderOutlined className="text-5xl text-blue-600" />
+                    <div className="flex flex-col items-center text-center h-full gap-2">
+                        <div className="mb-4 bg-white p-4 rounded-2xl shadow-sm border border-blue-100">
+                            <FolderOutlined className="text-4xl text-blue-600" />
                         </div>
-                        <Title level={3} className="mb-3 !text-blue-800">
+                        <Title level={4} className="mb-1 !text-blue-900 !text-xl font-bold">
                             {category.name}
                         </Title>
-                        <Paragraph className="text-blue-600 text-lg mb-4">
+                        <Paragraph className="text-blue-500 text-sm font-medium m-0">
                             {category.articleCount} {category.articleCount === 1 ? 'article' : 'articles'}
                         </Paragraph>
                     </div>
@@ -70,7 +77,7 @@ const HelpCategoriesPage = () => {
     };
 
     return (
-        <div className="p-6 max-w-7xl mx-auto">
+        <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto min-h-screen">
             {/* Header Section */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -90,10 +97,10 @@ const HelpCategoriesPage = () => {
                     <div />
                 </div>
                 
-                <Title level={1} className="text-4xl font-bold text-gray-800 mb-4">
+                <Title level={1} className="!text-xl md:!text-2xl font-black text-gray-800 mb-1 leading-tight">
                     Help Categories
                 </Title>
-                <Paragraph className="text-lg text-gray-600">
+                <Paragraph className="text-xs md:text-sm font-medium text-gray-500 max-w-2xl m-0">
                     Browse help articles by category to find exactly what you're looking for
                 </Paragraph>
             </motion.div>
@@ -101,9 +108,9 @@ const HelpCategoriesPage = () => {
             {/* Categories Grid */}
             <Spin spinning={loading}>
                 {categories.length > 0 ? (
-                    <Row gutter={[24, 24]}>
+                    <Row gutter={[20, 20]}>
                         {categories.map((category) => (
-                            <Col xs={24} sm={12} md={8} lg={6} key={category.id}>
+                            <Col xs={24} sm={12} md={12} lg={12} xl={8} key={category.id}>
                                 <div className="h-full">
                                     {renderCategoryCard(category)}
                                 </div>

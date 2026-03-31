@@ -81,23 +81,26 @@ const CallSupportPage = () => {
             title: 'Ref ID',
             dataIndex: 'id',
             key: 'id',
+            responsive: ['md'],
             render: (text) => <Text code className="text-xs">{text.substring(0, 8)}</Text>
         },
         {
             title: 'Date',
             dataIndex: 'preferredDate',
             key: 'preferredDate',
-            render: (text) => dayjs(text).format('MMM DD, YYYY')
+            render: (text) => dayjs(text).format('MMM DD')
         },
         {
             title: 'Time',
             dataIndex: 'preferredTime',
             key: 'preferredTime',
+            responsive: ['sm'],
         },
         {
             title: 'Contact',
             dataIndex: 'contactNumber',
             key: 'contactNumber',
+            responsive: ['md'],
         },
         {
             title: 'Status',
@@ -105,20 +108,58 @@ const CallSupportPage = () => {
             key: 'status',
             render: (status) => {
                 const config = STATUS_CONFIG[status] || { color: 'default', label: status };
-                return <Tag color={config.color}>{config.label}</Tag>;
+                return <Tag color={config.color} className="text-[10px] sm:text-xs px-2">{config.label}</Tag>;
             }
         },
         {
             title: 'Created At',
             dataIndex: 'createdAt',
             key: 'createdAt',
-            responsive: ['md'],
+            responsive: ['lg'],
             render: (text) => dayjs(text).format('MMM DD, HH:mm')
         }
     ];
 
+    const renderMobileHistory = () => (
+        <div className="space-y-4 sm:hidden">
+            {history.map((call) => (
+                <div key={call.id} className="bg-white border border-slate-100 rounded-xl p-4 shadow-sm">
+                    <div className="flex justify-between items-start mb-3">
+                        <div className="flex flex-col">
+                            <Text className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ref ID</Text>
+                            <Text code className="text-xs">{call.id?.substring(0, 8)}</Text>
+                        </div>
+                        <Tag color={STATUS_CONFIG[call.status]?.color || 'default'} className="m-0 font-bold px-2 py-0.5 text-[11px]">
+                            {STATUS_CONFIG[call.status]?.label || call.status}
+                        </Tag>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 mb-3">
+                        <div>
+                            <Text className="text-[10px] font-bold text-slate-400 uppercase block mb-0.5">Date & Time</Text>
+                            <Text className="text-sm font-semibold text-slate-700 block">
+                                {dayjs(call.preferredDate).format('MMM DD')} • {call.preferredTime}
+                            </Text>
+                        </div>
+                        <div>
+                            <Text className="text-[10px] font-bold text-slate-400 uppercase block mb-0.5">Contact</Text>
+                            <Text className="text-sm font-semibold text-slate-700 block truncate">{call.contactNumber}</Text>
+                        </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-slate-50 flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 opacity-60">
+                            <ClockCircleOutlined className="text-xs text-slate-400" />
+                            <Text className="text-[11px] text-slate-500">Requested {dayjs(call.createdAt).format('MMM DD, HH:mm')}</Text>
+                        </div>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+
     return (
-        <div className="p-6 max-w-7xl mx-auto">
+        <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto min-h-screen">
             {/* Header */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -140,10 +181,10 @@ const CallSupportPage = () => {
                 
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <Title level={1} className="text-4xl font-bold text-gray-800 m-0">
+                        <Title level={1} className="!text-xl md:!text-2xl font-black text-gray-800 mb-1 leading-tight">
                             Contact Support
                         </Title>
-                        <Paragraph className="text-lg text-gray-600 mt-2 mb-0">
+                        <Paragraph className="text-xs md:text-sm font-medium text-gray-500 m-0">
                             Schedule a callback or send a message to our support team
                         </Paragraph>
                     </div>
@@ -152,7 +193,7 @@ const CallSupportPage = () => {
                         size="large" 
                         icon={<PhoneOutlined />} 
                         onClick={() => setModalVisible(true)}
-                        className="bg-blue-600 hover:bg-blue-700 h-12 px-8 text-lg font-bold shadow-lg shadow-blue-200/50"
+                        className="bg-blue-600 hover:bg-blue-700 h-10 sm:h-12 px-6 sm:px-8 text-sm sm:text-lg font-bold shadow-lg shadow-blue-200/50"
                     >
                         Request a Call
                     </Button>
@@ -164,24 +205,35 @@ const CallSupportPage = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
+                className="overflow-hidden"
             >
                 <Card 
-                    className="shadow-md border-slate-200"
+                    className="shadow-md border-slate-200 rounded-2xl overflow-hidden"
+                    styles={{ body: { padding: '16px' } }}
                     title={
                         <Space>
                             <HistoryOutlined className="text-blue-600" />
-                            <span className="font-bold">Call History</span>
+                            <span className="font-bold text-base">Call History</span>
                         </Space>
                     }
                 >
-                    <Table 
-                        dataSource={history} 
-                        columns={columns} 
-                        loading={loading}
-                        rowKey="id"
-                        pagination={{ pageSize: 5 }}
-                        scroll={{ x: true }}
-                    />
+                    {/* Desktop Table View */}
+                    <div className="hidden sm:block">
+                        <Table 
+                            dataSource={history} 
+                            columns={columns} 
+                            loading={loading}
+                            rowKey="id"
+                            pagination={{ pageSize: 5, size: 'small' }}
+                            scroll={{ x: true }}
+                            className="responsive-table-standards"
+                        />
+                    </div>
+
+                    {/* Mobile List View */}
+                    <Spin spinning={loading}>
+                        {renderMobileHistory()}
+                    </Spin>
                 </Card>
             </motion.div>
 

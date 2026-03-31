@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, X, RotateCcw } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { useAIChatbot } from '../../context/AIChatbotContext';
 import ChatConversation from './ChatConversation';
 
@@ -14,6 +15,13 @@ const ChatWidget = ({ collapsed = true }) => {
     unreadCount 
   } = useAIChatbot();
   
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  // Paths where the chatbot should be hidden to avoid UI collision
+  const hiddenPaths = ['/chat', '/help/tickets', '/messages'];
+  const isExcludedPath = hiddenPaths.some(path => currentPath.startsWith(path));
+
   const [isHovered, setIsHovered] = useState(false);
   const chatRef = useRef(null);
   const widgetRef = useRef(null);
@@ -77,10 +85,14 @@ const ChatWidget = ({ collapsed = true }) => {
     }
   };
 
+  if (isExcludedPath) {
+    return null;
+  }
+
   return (
-    <div className={`fixed bottom-20 z-50 flex flex-col items-start transition-all duration-300 ${
-    collapsed ? 'left-24' : 'left-54'
-  }`}>
+    <div className={`fixed bottom-20 lg:bottom-6 z-[1000] flex flex-col items-start transition-all duration-300 left-6 ${
+        collapsed ? 'lg:left-24' : 'lg:left-54'
+      }`}>
       {/* Chat Window */}
       <AnimatePresence>
         {isOpen && (
@@ -89,10 +101,10 @@ const ChatWidget = ({ collapsed = true }) => {
             initial="initial"
             animate="animate"
             exit="exit"
-            className="mb-4"
+            className="mb-4 z-[1001]"
             ref={chatRef}
           >
-            <div ref={chatRef} className="bg-white rounded-xl shadow-xl border border-gray-200 w-96 h-[500px] flex flex-col overflow-hidden">
+            <div className="bg-white rounded-xl shadow-xl border border-gray-200 w-[calc(100vw-3rem)] sm:w-96 h-[500px] max-h-[70vh] flex flex-col overflow-hidden">
               {/* Header */}
               <div className="!bg-[#203a78ff] text-white p-4 flex items-center justify-between">
                 <div className="flex items-center space-x-3">

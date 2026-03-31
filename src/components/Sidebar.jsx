@@ -308,7 +308,7 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
             collapsed={collapsed}
             onCollapse={onCollapse}
             theme="dark"
-            className="h-full z-50 rounded-tr-2xl rounded-br-2xl overflow-hidden"
+            className="h-full z-[1050] rounded-tr-2xl rounded-br-2xl overflow-hidden"
             style={{ background: '#203a78ff', '--active-bg': activeTabBg }}
             width={200}
             collapsedWidth={80}

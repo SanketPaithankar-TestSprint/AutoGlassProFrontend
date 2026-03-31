@@ -314,6 +314,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
           styles={{ body: { padding: 0, background: "#f7f7fa", borderRadius: '24px 0 0 24px' } }}
           maskClosable
           destroyOnClose
+          zIndex={2000}
           className="ap-header-drawer"
         >
           <nav className="p-4 text-slate-700">
@@ -395,6 +396,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
           styles={{ body: { padding: 0, background: "#f7f7fa", borderRadius: '24px 0 0 24px' } }}
           maskClosable
           destroyOnClose
+          zIndex={2000}
           className="ap-header-drawer"
         >
           <nav className="p-4 text-slate-700">

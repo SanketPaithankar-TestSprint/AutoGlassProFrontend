@@ -45,21 +45,15 @@ export default function HelpSupportPage() {
     return (
       <div className="min-h-screen p-3 sm:p-4 md:p-6 lg:p-8 bg-slate-100">
         <div className="max-w-[1600px] mx-auto space-y-4 sm:space-y-6 lg:space-y-8">
-          {/* Header */}
-          <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
-            <div className="flex items-center gap-2">
-              <h1 className="!text-[30px] font-extrabold text-slate-800 m-0">Help &amp; Support</h1>
-              <HelpCircle className="w-5 h-5 text-slate-400 hover:text-violet-500 transition-colors" />
-            </div>
-
-            {/* Mobile menu button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-lg bg-white shadow-md border border-slate-200/60 border border-slate-200 hover:bg-slate-50 text-slate-700"
-            >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-          </header>
+          {/* Header - Only show on main help landing page to avoid redundancy */}
+          {!location.pathname.includes('/categories') && !location.pathname.includes('/articles') && !location.pathname.includes('/contact') && !location.pathname.includes('/tickets') && (
+            <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
+              <div className="flex items-center gap-2">
+                <h1 className="!text-[30px] font-extrabold text-slate-800 m-0">Help &amp; Support</h1>
+                <HelpCircle className="w-5 h-5 text-slate-400 hover:text-violet-500 transition-colors" />
+              </div>
+            </header>
+          )}
 
           {/* Main Content - Welcome Dashboard (full width) */}
           <div className="bg-white rounded-xl shadow-md border border-slate-200/60 p-6">
@@ -120,30 +114,19 @@ export default function HelpSupportPage() {
             <h1 className="!text-[30px] font-extrabold text-slate-800 m-0">Help &amp; Support</h1>
             <HelpCircle className="w-5 h-5 text-slate-400 hover:text-violet-500 transition-colors" />
           </div>
-
-          {/* Mobile menu button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 rounded-lg bg-white shadow-md border border-slate-200/60 border border-slate-200 hover:bg-slate-50 text-slate-700"
-          >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
         </header>
 
-        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
-          {/* Sidebar Navigation */}
-          <aside
-            className={`${mobileMenuOpen ? "block" : "hidden"
-              } lg:block w-full lg:w-60 flex-shrink-0`}
-          >
-            <nav className="bg-white rounded-xl shadow-md border border-slate-200/60 border border-slate-200 p-4 sticky top-16 mt-4">
-              {/* Sidebar Title */}
-              <div className="mb-6 text-center lg:text-left">
+        <div className="flex flex-col xl:flex-row gap-4 sm:gap-6">
+          {/* Sidebar/Top Navigation */}
+          <aside className="w-full xl:w-64 flex-shrink-0">
+            <nav className="bg-white rounded-xl shadow-md border border-slate-200/60 p-4 sticky top-16">
+              {/* Header */}
+              <div className="mb-4 text-left">
                 <h2 className="text-lg font-bold text-slate-800 m-0">Quick Actions</h2>
               </div>
 
-              {/* Navigation */}
-              <ul className="space-y-1">
+              {/* Navigation Grid */}
+              <ul className="grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-1 gap-2">
                 {navItems.map((item) => {
                   const Icon = item.icon;
                   const active = isActive(item.path);
@@ -152,9 +135,8 @@ export default function HelpSupportPage() {
                     <li key={item.path}>
                       <Link
                         to={item.path}
-                        onClick={() => setMobileMenuOpen(false)}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-sm font-medium ${active
-                            ? "bg-blue-600 text-white font-bold"
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-sm font-medium h-full ${active
+                            ? "bg-blue-600 text-white font-bold shadow-md shadow-blue-100"
                             : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                           }`}
                       >
@@ -166,8 +148,8 @@ export default function HelpSupportPage() {
                 })}
               </ul>
 
-              {/* Contact Info */}
-              <div className="mt-6 pt-6 border-t border-slate-100">
+              {/* Contact Info - Hidden on mobile/tablet grid to save space */}
+              <div className="hidden xl:block mt-6 pt-6 border-t border-slate-100">
                 <h3 className="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">
                   Contact Us
                 </h3>
@@ -179,8 +161,8 @@ export default function HelpSupportPage() {
             </nav>
           </aside>
 
-          {/* Main Content */}
-          <main className="flex-1 min-w-0 relative min-h-[calc(100vh-12rem)]">
+          {/* Main Content Area */}
+          <main className="flex-1 min-w-0 relative w-full h-full min-h-[calc(100vh-12rem)]">
             <Outlet />
           </main>
         </div>

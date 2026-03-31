@@ -17,8 +17,15 @@ const HelpArticlesPage = () => {
     const [selectedCategoryId, setSelectedCategoryId] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [pagination, setPagination] = useState({ current: 1, pageSize: 10, total: 0 });
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const fetchArticles = async (params = {}) => {
         setLoading(true);
@@ -97,9 +104,9 @@ const HelpArticlesPage = () => {
                 whileHover={{ y: -4 }}
             >
                 <Card
-                    className="h-full cursor-pointer transition-all duration-300 hover:shadow-lg"
+                    className="h-full cursor-pointer transition-all duration-300 hover:shadow-lg rounded-2xl border-2 hover:border-blue-200"
                     onClick={() => navigate(`/help/articles/${article.id}`)}
-                    bodyStyle={{ padding: '24px' }}
+                    styles={{ body: { padding: isMobile ? '16px' : '24px' } }}
                 >
                     <div className="flex flex-col h-full">
                         {/* Article Header */}
@@ -133,7 +140,7 @@ const HelpArticlesPage = () => {
     };
 
     return (
-        <div className="p-6 max-w-7xl mx-auto">
+        <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto min-h-screen">
             {/* Header Section */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -160,13 +167,13 @@ const HelpArticlesPage = () => {
                     {!selectedCategory && <div />}
                 </div>
                 
-                <Title level={1} className="text-4xl font-bold text-gray-800 mb-4">
+                <Title level={1} className="!text-xl md:!text-2xl font-black text-gray-800 mb-1 leading-tight">
                     {selectedCategory ? `${selectedCategory} Articles` : 'Help Articles'}
                 </Title>
-                <Paragraph className="text-lg text-gray-600">
+                <Paragraph className="text-xs md:text-sm font-medium text-gray-500 max-w-2xl m-0">
                     {selectedCategory 
                         ? `Browse all articles in ${selectedCategory} category` 
-                        : 'Find comprehensive guides and tutorials to help you get the most out of our platform'
+                        : 'Guides and tutorials to help you get the most out of our platform'
                     }
                 </Paragraph>
             </motion.div>
@@ -198,9 +205,9 @@ const HelpArticlesPage = () => {
             {/* Articles Grid */}
             <Spin spinning={loading}>
                 {articles.length > 0 ? (
-                    <Row gutter={[24, 24]}>
+                    <Row gutter={[20, 20]}>
                         {articles.map((article) => (
-                            <Col xs={24} md={12} lg={8} key={article.id}>
+                            <Col xs={24} md={12} lg={12} xl={8} key={article.id}>
                                 <div className="h-full">
                                     {renderArticleCard(article)}
                                 </div>

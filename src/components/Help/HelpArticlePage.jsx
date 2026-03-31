@@ -72,13 +72,13 @@ const HelpArticlePage = () => {
     }
 
     return (
-        <div className="p-6 max-w-4xl mx-auto">
-            {/* Top nav row: Back button + Breadcrumb */}
+        <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto min-h-screen">
+            {/* Top nav row: Back button only */}
             <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
-                className="flex items-center gap-3 mb-8 flex-wrap"
+                className="flex items-center gap-3 mb-6 flex-wrap"
             >
                 <Button
                     icon={<ArrowLeftOutlined />}
@@ -88,22 +88,6 @@ const HelpArticlePage = () => {
                 >
                     Back
                 </Button>
-
-                <Breadcrumb className="text-gray-500 text-sm">
-                    <Breadcrumb.Item>
-                        <Link to="/help" className="flex items-center hover:text-violet-600">
-                            Help & Support
-                        </Link>
-                    </Breadcrumb.Item>
-                    <Breadcrumb.Item>
-                        <Link to="/help/categories" className="flex items-center hover:text-violet-600">
-                            Help Articles
-                        </Link>
-                    </Breadcrumb.Item>
-                    <Breadcrumb.Item className="text-gray-800 font-medium">
-                        {article.title}
-                    </Breadcrumb.Item>
-                </Breadcrumb>
             </motion.div>
 
                 {/* Article Header */}
@@ -117,10 +101,10 @@ const HelpArticlePage = () => {
                         <div className="p-6">
                             <div className="flex items-start justify-between mb-4">
                                 <div className="flex-1">
-                                    <Title level={1} className="text-3xl font-bold text-gray-800 mb-4">
+                                    <Title level={1} className="!text-xl md:!text-2xl font-black text-gray-800 mb-2">
                                         {article.title}
                                     </Title>
-                                    <Paragraph className="text-lg text-gray-600 mb-6">
+                                    <Paragraph className="text-sm md:text-base text-gray-600 mb-4 font-medium leading-relaxed">
                                         {article.description}
                                     </Paragraph>
                                 </div>
@@ -151,11 +135,11 @@ const HelpArticlePage = () => {
                     transition={{ duration: 0.6, delay: 0.3 }}
                 >
                     <Card className="bg-white/80 backdrop-blur-sm border-violet-100 shadow-sm">
-                        <div className="p-8">
-                            <div className="prose prose-lg max-w-none">
+                        <div className="p-5 md:p-8">
+                            <div className="prose prose-slate prose-base max-w-none">
                                 <div 
                                     dangerouslySetInnerHTML={{ __html: article.content }}
-                                    className="text-gray-700 leading-relaxed"
+                                    className="text-gray-700 leading-relaxed font-normal"
                                 />
                             </div>
                         </div>
@@ -171,24 +155,16 @@ const HelpArticlePage = () => {
                 >
                     <Card className="bg-violet-50/50 border-violet-100">
                         <div className="p-6 text-center">
-                            <div className="flex items-center justify-center mb-4">
-                                <QuestionCircleOutlined className="text-2xl text-violet-600 mr-2" />
-                                <Title level={4} className="text-violet-800 mb-0">
-                                    Still need help?
-                                </Title>
-                            </div>
-                            <Paragraph className="text-gray-600 mb-6">
+                            <Paragraph className="text-gray-600 text-sm mb-6">
                                 Can't find the answer you're looking for? Our support team is here to help.
                             </Paragraph>
-                            <div className="flex justify-center space-x-4">
-                                <Button type="primary" className="bg-violet-600 border-violet-600 hover:bg-violet-700">
-                                    Contact Support
-                                </Button>
+                            <div className="flex justify-center">
                                 <Button 
-                                    onClick={() => navigate('/help')}
-                                    className="bg-white hover:bg-violet-50 border-violet-200"
+                                    type="primary" 
+                                    className="bg-violet-600 border-violet-600 hover:bg-violet-700 h-10 px-8 rounded-lg font-bold"
+                                    onClick={() => navigate('/help/contact')}
                                 >
-                                    Browse More Articles
+                                    Contact Support
                                 </Button>
                             </div>
                         </div>

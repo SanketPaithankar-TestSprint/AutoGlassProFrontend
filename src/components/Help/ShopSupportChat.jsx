@@ -63,8 +63,15 @@ const ShopSupportChat = ({ ticket, onClose }) => {
     const [inputValue, setInputValue] = useState('');
     const [tick, setTick] = useState(0); // For dynamic timestamps
     const [showTicketModal, setShowTicketModal] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // Dynamic timestamps update every 30 seconds
     useEffect(() => {
@@ -125,23 +132,23 @@ const ShopSupportChat = ({ ticket, onClose }) => {
     return (
         <Layout className="bg-transparent h-full max-h-full rounded-2xl overflow-hidden border border-slate-200 shadow-xl flex flex-col">
             {/* Header */}
-            <header className="bg-white px-6 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-4">
+            <header className="bg-white px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-3">
                     <Button
-                        icon={<ArrowLeftOutlined />}
+                        icon={<ArrowLeftOutlined className="text-xs sm:text-base" />}
                         onClick={onClose}
-                        className="hover:bg-blue-50 border-slate-200"
+                        className="hover:bg-blue-50 border-slate-200 flex items-center justify-center p-0 h-8 w-8 sm:h-10 sm:w-10"
                     />
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 md:gap-3">
                         <Avatar
                             icon={<CustomerServiceOutlined />}
-                            className="bg-blue-100 text-blue-600 border-none h-10 w-10 flex items-center justify-center text-lg"
+                            className="bg-blue-100 text-blue-600 border-none flex items-center justify-center h-8 w-8 text-base sm:h-10 sm:w-10 sm:text-lg"
                         />
                         <div>
-                            <div className="flex items-center gap-2">
-                                <Title level={5} className="!m-0 text-slate-800">Support Representative</Title>
+                            <div className="flex items-center gap-2 leading-none">
+                                <Title level={5} className="!m-0 text-slate-800 text-sm sm:text-base">Support Representative</Title>
                             </div>
-                            <Text type="secondary" className="text-xs">Typically replies in 15 minutes</Text>
+                            <Text type="secondary" className="text-[10px] sm:text-xs">Typically replies in 15 minutes</Text>
                         </div>
                     </div>
                 </div>
@@ -149,13 +156,13 @@ const ShopSupportChat = ({ ticket, onClose }) => {
                     <Button
                         icon={<InfoCircleOutlined />}
                         onClick={() => setShowTicketModal(true)}
-                        className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-600"
+                        className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-600 flex items-center justify-center p-0 h-8 w-8 sm:h-10 sm:w-10"
                     />
                 )}
             </header>
 
             {/* Chat Body */}
-            <Content className="flex-1 min-h-0 bg-white relative overflow-y-auto p-4 custom-chat-scrollbar">
+            <Content className="flex-1 min-h-0 bg-white relative overflow-y-auto p-3 sm:p-4 custom-chat-scrollbar">
                 {loading ? (
                     <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-3">
                         <Spin indicator={<LoadingOutlined style={{ fontSize: 32 }} spin />} />
@@ -174,8 +181,11 @@ const ShopSupportChat = ({ ticket, onClose }) => {
                         />
                     </div>
                 ) : (
-                    <div className="space-y-6 py-4">
-                        <Divider plain className="text-[10px] uppercase tracking-widest text-slate-300">Beginning of conversation</Divider>
+                    <div className="space-y-4 sm:space-y-6 py-2 sm:py-4">
+                        <Divider plain className="text-[8px] sm:text-[10px] uppercase tracking-widest text-slate-300">
+                            <span className="inline sm:hidden">Start of chat</span>
+                            <span className="hidden sm:inline">Beginning of conversation</span>
+                        </Divider>
 
                         {[...messages]
                             .sort((a, b) => {
@@ -195,7 +205,7 @@ const ShopSupportChat = ({ ticket, onClose }) => {
                                         transition={{ duration: 0.2 }}
                                         className={`flex ${isAdmin ? 'justify-start' : 'justify-end'} group`}
                                     >
-                                        <div className={`flex items-end gap-2 max-w-[80%] ${isAdmin ? 'flex-row' : 'flex-row-reverse'}`}>
+                                        <div className={`flex items-end gap-2 max-w-[85%] sm:max-w-[80%] ${isAdmin ? 'flex-row' : 'flex-row-reverse'}`}>
                                             <Avatar
                                                 size="small"
                                                 icon={isAdmin ? <CustomerServiceOutlined /> : <ShopOutlined />}
@@ -213,13 +223,13 @@ const ShopSupportChat = ({ ticket, onClose }) => {
                                                 </div>
 
                                                 <div className={`
-                                                relative px-4 py-3 rounded-2xl shadow-sm leading-relaxed
+                                                relative px-3 sm:px-4 py-2 sm:py-3 rounded-2xl shadow-sm leading-relaxed
                                                 ${isAdmin
                                                         ? 'bg-white text-slate-700 rounded-tl-none border border-slate-100'
                                                         : 'bg-blue-600 text-white rounded-tr-none'
                                                     }
                                             `}>
-                                                    <Paragraph className="!m-0 text-sm whitespace-pre-wrap">
+                                                    <Paragraph className="!m-0 text-xs sm:text-sm whitespace-pre-wrap">
                                                         {msg.message}
                                                     </Paragraph>
                                                 </div>
@@ -234,19 +244,19 @@ const ShopSupportChat = ({ ticket, onClose }) => {
             </Content>
 
             {/* Footer / Input */}
-            <Footer className="bg-white p-6 border-t border-slate-100 shrink-0">
-                <div className="flex items-end gap-3 max-w-5xl mx-auto">
+            <Footer className="bg-white p-4 sm:p-6 border-t border-slate-100 shrink-0">
+                <div className="flex items-end gap-2 sm:gap-3 max-w-5xl mx-auto">
                     <div className="flex-1 bg-slate-50 rounded-2xl border border-slate-200 focus-within:border-blue-400 focus-within:ring-1 focus-within:ring-blue-100 transition-all p-1">
                         <Input.TextArea
                             ref={inputRef}
                             value={inputValue}
                             onChange={(e) => setInputValue(e.target.value)}
                             onKeyPress={handleKeyPress}
-                            placeholder={isConnected ? "How can we help you today?" : "Connecting to support..."}
+                            placeholder={isConnected ? "How can we help?" : "Connecting..."}
                             autoSize={{ minRows: 1, maxRows: 6 }}
                             disabled={!isConnected || loading}
                             variant="borderless"
-                            className="w-full py-3 px-4 transition-all resize-none custom-chat-scrollbar text-[15px] shadow-none focus:shadow-none bg-transparent"
+                            className="w-full py-2.5 sm:py-3 px-3 sm:px-4 transition-all resize-none custom-chat-scrollbar text-sm sm:text-[15px] shadow-none focus:shadow-none bg-transparent"
                         />
                     </div>
 
@@ -254,14 +264,13 @@ const ShopSupportChat = ({ ticket, onClose }) => {
                         <Button
                             type="primary"
                             size="large"
-                            icon={<SendOutlined className={inputValue.trim() ? "translate-x-0.5 -translate-y-0.5" : ""} />}
+                            icon={<SendOutlined className="text-sm sm:text-base" />}
                             onClick={handleSend}
                             disabled={!inputValue.trim() || !isConnected}
-                            className={`flex items-center justify-center h-12 w-12 rounded-2xl shadow-md transition-all ${inputValue.trim() && isConnected ? 'bg-blue-600 hover:scale-105 active:scale-95 shadow-blue-200' : 'bg-slate-200'}`}
+                            className={`flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl shadow-md transition-all ${inputValue.trim() && isConnected ? 'bg-blue-600 hover:scale-105 active:scale-95 shadow-blue-200' : 'bg-slate-200 border-none'}`}
                         />
                     </Tooltip>
                 </div>
-
             </Footer>
 
             {/* Ticket Details Modal */}
