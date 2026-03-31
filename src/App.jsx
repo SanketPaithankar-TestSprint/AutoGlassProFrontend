@@ -21,6 +21,8 @@ import { useAuth } from './context/auth/useAuth';
 import { AuthProvider } from './context/auth/authProvide';
 import { InquiryProvider, useInquiry } from './context/InquiryContext';
 import { NotificationSettingsProvider } from './context/NotificationSettingsContext';
+import { AIChatbotProvider } from './context/AIChatbotContext';
+import { ChatWidget } from './components/AIChatbot';
 
 // Lazy Load Main Components
 const Home = React.lazy(() => import('./components/Home/HomeRoot.jsx'));
@@ -48,6 +50,12 @@ const SetPassword = React.lazy(() => import('./components/auth/SetPassword.jsx')
 const VinDecoderRoot = React.lazy(() => import('./components/VinDecoder/VinDecoderRoot.jsx'));
 const InternalVinDecoderRoot = React.lazy(() => import('./components/InternalVinDecoder/InternalVinDecoderRoot.jsx'));
 const PublicChatRoot = React.lazy(() => import('./components/PublicChat/PublicChatRoot.jsx'));
+const HelpArticlesPage = React.lazy(() => import('./components/Help/HelpArticlesPage.jsx'));
+const HelpArticlePage = React.lazy(() => import('./components/Help/HelpArticlePage.jsx'));
+const HelpSupportPage = React.lazy(() => import('./components/Help/HelpSupportPage.jsx'));
+const HelpCategoriesPage = React.lazy(() => import('./components/Help/HelpCategoriesPage.jsx'));
+const SupportTicketsPage = React.lazy(() => import('./components/Help/SupportTicketsPage.jsx'));
+const CallSupportPage = React.lazy(() => import('./components/Help/CallSupportPage.jsx'));
 import RestrictedAccessModal from './components/RestrictedAccessModal';
 import { useSubscriptionRestriction } from './hooks/useSubscriptionRestriction';
 
@@ -226,12 +234,21 @@ function AppContent() {
                         <Route path="/vin-decoder" element={<VinDecoderRoot />} />
                         <Route path="/decoder" element={<InternalVinDecoderRoot />} />
                         <Route path="/chat" element={<ShopChatPanel />} />
+                        <Route path="/sos" element={<HelpSupportPage />} />
+                        <Route path="/help" element={<HelpSupportPage />}>
+                          <Route path="categories" element={<HelpCategoriesPage />} />
+                          <Route path="articles" element={<HelpArticlesPage />} />
+                          <Route path="articles/:id" element={<HelpArticlePage />} />
+                          <Route path="tickets" element={<SupportTicketsPage />} />
+                          <Route path="contact" element={<CallSupportPage />} />
+                        </Route>
                       </Routes >
                     </Suspense >
                   </ErrorBoundary >
                 </div >
                 {!isAuthenticated && <Footer />
                 }
+                <ChatWidget collapsed={collapsed} />
               </Content >
             </Layout >
           </Layout >
@@ -310,14 +327,16 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AntApp>
         <AuthProvider>
-          <Router>
-            <NotificationSettingsProvider>
-              <InquiryProvider>
-                <ScrollToTop />
-                <AppContent />
-              </InquiryProvider>
-            </NotificationSettingsProvider>
-          </Router>
+          <AIChatbotProvider>
+            <Router>
+              <NotificationSettingsProvider>
+                <InquiryProvider>
+                  <ScrollToTop />
+                  <AppContent />
+                </InquiryProvider>
+              </NotificationSettingsProvider>
+            </Router>
+          </AIChatbotProvider>
         </AuthProvider>
       </AntApp>
     </QueryClientProvider>

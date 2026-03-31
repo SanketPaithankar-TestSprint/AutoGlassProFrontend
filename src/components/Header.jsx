@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { MdSupportAgent } from "react-icons/md";
 import { Layout, Button, Space, Drawer, Modal, Dropdown, Badge } from "antd";
-import { MenuOutlined, UserOutlined, DownOutlined, PieChartOutlined, TeamOutlined, FormOutlined, CalendarOutlined, FolderOpenOutlined, BarChartOutlined, MessageOutlined, AuditOutlined, BarcodeOutlined, ArrowLeftOutlined } from "@ant-design/icons";
+import { MenuOutlined, UserOutlined, DownOutlined, PieChartOutlined, TeamOutlined, FormOutlined, CalendarOutlined, FolderOpenOutlined, BarChartOutlined, MessageOutlined, AuditOutlined, BarcodeOutlined, ArrowLeftOutlined, InfoCircleOutlined, BookOutlined, FileTextOutlined } from "@ant-design/icons";
 import Logo from "./logo";
 import { getValidToken } from "../api/getValidToken";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -28,8 +28,8 @@ const ProfileDropdown = ({ onLogout }) => {
       title: "",
     },
     {
-      key: "help",
-      label: <Link to="/contact" title="">Help & Support</Link>,
+      key: "help-support",
+      label: <Link to="/help" title="">Help & Support</Link>,
       title: "",
     },
 
@@ -314,6 +314,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
           styles={{ body: { padding: 0, background: "#f7f7fa", borderRadius: '24px 0 0 24px' } }}
           maskClosable
           destroyOnClose
+          zIndex={2000}
           className="ap-header-drawer"
         >
           <nav className="p-4 text-slate-700">
@@ -395,6 +396,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
           styles={{ body: { padding: 0, background: "#f7f7fa", borderRadius: '24px 0 0 24px' } }}
           maskClosable
           destroyOnClose
+          zIndex={2000}
           className="ap-header-drawer"
         >
           <nav className="p-4 text-slate-700">

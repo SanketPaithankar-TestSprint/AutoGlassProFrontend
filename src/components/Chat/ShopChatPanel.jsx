@@ -3,7 +3,7 @@ import { useChat } from '../../context/ChatContext';
 import { Input, Button, List, Avatar, Badge, Dropdown, Skeleton } from 'antd';
 import {
     SendOutlined, UserOutlined, DeleteOutlined, MessageOutlined,
-    CloseOutlined, ArrowLeftOutlined, MoreOutlined, CheckOutlined, SearchOutlined, RobotOutlined
+    CloseOutlined, ArrowLeftOutlined, MoreOutlined, CheckOutlined, SearchOutlined, RobotOutlined, PhoneOutlined
 } from '@ant-design/icons';
 import moment from 'moment';
 import { useTranslation } from 'react-i18next';
@@ -438,9 +438,21 @@ const ShopChatPanel = () => {
                                         ? activeConversation.customerName || `${t('chat.customer')} ${activeConversationId}`
                                         : t('chat.selectChat')}
                                 </h3>
-                                <p className="text-xs text-slate-500">
-                                    {connectionStatus === 'connected' ? t('chat.online') : t('chat.offline')}
-                                </p>
+                                <div className="flex items-center gap-2">
+                                    {activeConversation?.customerPhone && (
+                                        <div className="text-xs text-slate-500 font-medium">
+                                            {activeConversation.customerPhone}
+                                        </div>
+                                    )}
+                                    {activeConversation?.customerPhone && activeConversation?.customerEmail && (
+                                        <span className="text-slate-300">•</span>
+                                    )}
+                                    {activeConversation?.customerEmail && (
+                                        <div className="text-xs text-slate-500 font-medium whitespace-nowrap">
+                                            {activeConversation.customerEmail}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                         <Dropdown

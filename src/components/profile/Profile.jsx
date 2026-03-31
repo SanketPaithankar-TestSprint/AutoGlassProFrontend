@@ -36,12 +36,12 @@ const Profile = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const queryClient = useQueryClient();
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
     const setActiveTabBg = useSidebarStore(state => state.setActiveTabBg);
     const { t } = useTranslation();
 
     useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        const handleResize = () => setIsMobile(window.innerWidth < 1024);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
@@ -450,7 +450,7 @@ const Profile = () => {
             {/* Mobile Menu Grid */}
             {isMobile && (
                 <div className="w-full bg-white border-b border-gray-200 p-4">
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                         {[
                             { id: 'profile', label: t('auth.profile'), icon: <UserOutlined /> },
                             { id: 'shops', label: t('profile.shops'), icon: <ShopOutlined /> },
@@ -511,7 +511,7 @@ const Profile = () => {
             )}
 
             {/* Main Content */}
-            <div className={`${isMobile ? 'w-full h-auto' : 'flex-1'} overflow-y-auto overflow-x-hidden p-3 md:p-8`}>
+            <div className={`${isMobile ? 'w-full h-auto' : 'flex-1'} overflow-y-auto overflow-x-hidden p-4 md:p-10`}>
                 <div className="w-full mx-auto">
                     {activeTab === 'profile' && renderProfileContent()}
                     {activeTab === 'shops' && <div className="bg-white rounded-lg md:rounded-2xl p-3 md:p-8 overflow-x-hidden"><Shops userProfile={profile} /></div>}

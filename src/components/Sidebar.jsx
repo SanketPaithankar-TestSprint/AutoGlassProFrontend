@@ -8,7 +8,6 @@ import {
     LogoutOutlined,
     MenuUnfoldOutlined,
     MenuFoldOutlined,
-    DownOutlined,
     FolderOpenOutlined,
     BarChartOutlined,
     CalendarOutlined,
@@ -19,7 +18,8 @@ import {
     MessageOutlined,
     AuditOutlined,
     InfoCircleOutlined,
-    BarcodeOutlined
+    BarcodeOutlined,
+    BookOutlined
 } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 import Logo from '../assets/APAI.png';
@@ -279,8 +279,8 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
             title: ""
         },
         {
-            key: 'help',
-            label: <Link to="/contact" title="">Help & Support</Link>,
+            key: 'help-support',
+            label: <Link to="/help">Help & Support</Link>,
             icon: <InfoCircleOutlined />,
             title: ""
         },
@@ -308,7 +308,7 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
             collapsed={collapsed}
             onCollapse={onCollapse}
             theme="dark"
-            className="h-full z-50 rounded-tr-2xl rounded-br-2xl overflow-hidden"
+            className="h-full z-[1050] rounded-tr-2xl rounded-br-2xl overflow-hidden"
             style={{ background: '#203a78ff', '--active-bg': activeTabBg }}
             width={200}
             collapsedWidth={80}
@@ -355,7 +355,6 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
                                 </div>
                             )}
                         </div>
-                            {!collapsed && <DownOutlined className="text-xs !text-white group-hover:text-white transition-colors" />}
                         </div>
                     </Dropdown>
                 </div>

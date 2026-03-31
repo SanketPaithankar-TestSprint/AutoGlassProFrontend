@@ -40,6 +40,13 @@ const ShopProxyKnowledgeBase = () => {
     
     // UI state for adding new responses
     const [newResponseInputs, setNewResponseInputs] = useState({});
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // Fetch initial data
     useEffect(() => {
@@ -163,18 +170,21 @@ const ShopProxyKnowledgeBase = () => {
     }
 
     return (
-        <div className="w-full text-slate-800 space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-6 bg-white rounded-lg border border-slate-200">
-                <div>
-                    <h2 className="text-xl font-bold mb-1 flex items-center gap-2">
-                        <RobotOutlined className="text-violet-600" />
-                        AI Agent Proxy Configuration
+        <div className="w-full text-slate-800 space-y-8 animate-fadeIn">
+            {/* Main Header Card - Separated and Structured */}
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center p-6 bg-white rounded-2xl border border-slate-200 shadow-sm gap-6">
+                <div className="flex-1 w-full space-y-2">
+                    <h2 className="text-xl md:text-2xl font-black mb-1 flex items-center gap-3">
+                        <div className="bg-violet-100 p-2 rounded-xl">
+                            <RobotOutlined className="text-violet-600 shrink-0" />
+                        </div>
+                        <span>AI Agent Proxy Configuration</span>
                     </h2>
-                    <Text className="text-slate-500">
+                    <Text className="text-slate-500 text-sm md:text-base block font-medium">
                         Define exactly how your AI assistant understands your business and talks to customers.
                     </Text>
                 </div>
-                <div className="mt-4 sm:mt-0 flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
                     <Popconfirm
                         title="Delete AI Configuration?"
                         description="This will instantly remove your proxy setup. The AI will revert to standard behavior."
@@ -189,8 +199,9 @@ const ShopProxyKnowledgeBase = () => {
                             type="default"
                             icon={<DeleteOutlined />}
                             disabled={saving || !configExists}
+                            className={`h-11 px-6 rounded-xl font-bold border-2 transition-all ${isMobile ? 'w-full' : ''}`}
                         >
-                            Wipe Configuration
+                            {isMobile ? 'Wipe Training Data' : 'Wipe Configuration'}
                         </Button>
                     </Popconfirm>
 
@@ -199,9 +210,9 @@ const ShopProxyKnowledgeBase = () => {
                         icon={<SaveOutlined />}
                         onClick={handleSave}
                         loading={saving}
-                        className="bg-violet-600 hover:bg-violet-500"
+                        className={`bg-violet-600 hover:bg-violet-500 h-11 px-8 rounded-xl font-bold shadow-lg shadow-violet-200 border-none transition-all ${isMobile ? 'w-full' : ''}`}
                     >
-                        Save Changes
+                        {isMobile ? 'Apply AI Settings' : 'Save Changes'}
                     </Button>
                 </div>
             </div>
@@ -272,15 +283,16 @@ const ShopProxyKnowledgeBase = () => {
                             <Panel 
                                 key={intent.key} 
                                 header={
-                                    <div className="flex items-center justify-between w-full pr-4">
-                                        <div className="flex items-center gap-3">
-                                            <span className="font-semibold text-slate-800 min-w-32">{intent.label}</span>
-                                            <span className="text-slate-400 text-xs hidden md:inline">{intent.desc}</span>
+                                    <div className="flex items-center justify-between w-full pr-1 md:pr-4">
+                                        <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+                                            <span className={`font-semibold text-slate-800 truncate ${isMobile ? 'text-sm' : 'min-w-32'}`}>{intent.label}</span>
+                                            <span className="text-slate-400 text-[10px] md:text-xs truncate hidden sm:inline">{intent.desc}</span>
                                         </div>
                                         <Badge count={count}
                                             style={{ 
                                                 backgroundColor: count > 0 ? '#10b981' : '#f1f5f9',
-                                                color: count > 0 ? '#fff' : '#64748b'
+                                                color: count > 0 ? '#fff' : '#64748b',
+                                                fontSize: '10px'
                                             }}
                                             showZero
                                         />
@@ -292,10 +304,10 @@ const ShopProxyKnowledgeBase = () => {
                                     <List
                                         size="small"
                                         dataSource={responses}
-                                        locale={{ emptyText: <span className="text-slate-400 text-xs italic">No responses defined. The AI will use standard defaults.</span> }}
+                                        locale={{ emptyText: <span className="text-slate-400 text-[10px] md:text-xs italic">No responses defined. The AI will use standard defaults.</span> }}
                                         renderItem={(resp, i) => (
                                             <List.Item
-                                                className="bg-white border border-slate-200 rounded-md mb-2 py-2 px-3 shadow-sm hover:border-violet-300 transition-colors group"
+                                                className="bg-white border border-slate-200 rounded-md mb-2 py-2 px-3 shadow-sm hover:border-violet-300 transition-colors group relative"
                                                 actions={[
                                                     <Button 
                                                         type="text" 
@@ -303,19 +315,19 @@ const ShopProxyKnowledgeBase = () => {
                                                         danger 
                                                         icon={<DeleteTwoTone twoToneColor="#f43f5e" />} 
                                                         onClick={() => handleRemoveResponse(intent.key, i)}
-                                                        className="opacity-40 group-hover:opacity-100"
+                                                        className={isMobile ? "opacity-100" : "opacity-40 group-hover:opacity-100"}
                                                     />
                                                 ]}
                                             >
-                                                <Typography.Text className="text-sm text-slate-700">{resp}</Typography.Text>
+                                                <Typography.Text className="text-xs md:text-sm text-slate-700 block pr-2">{resp}</Typography.Text>
                                             </List.Item>
                                         )}
                                     />
                                     
-                                    <div className="mt-4 flex gap-2 w-full max-w-3xl">
+                                    <div className="mt-4 flex flex-col sm:flex-row gap-2 w-full max-w-3xl">
                                         <TextArea
                                             autoSize={{ minRows: 1, maxRows: 3 }}
-                                            placeholder={`Add a new response for ${intent.label}...`}
+                                            placeholder={isMobile ? "Add response..." : `Add a new response for ${intent.label}...`}
                                             value={newResponseInputs[intent.key] || ''}
                                             onChange={(e) => setNewResponseInputs(prev => ({...prev, [intent.key]: e.target.value}))}
                                             onPressEnter={(e) => {
@@ -324,14 +336,15 @@ const ShopProxyKnowledgeBase = () => {
                                                     handleAddResponse(intent.key);
                                                 }
                                             }}
-                                            className="rounded-md flex-1 text-sm border-slate-300 shadow-inner bg-white"
+                                            className="rounded-md flex-1 text-xs md:text-sm border-slate-300 shadow-inner bg-white"
                                         />
                                         <Button
                                             type="primary"
                                             icon={<PlusOutlined />}
                                             onClick={() => handleAddResponse(intent.key)}
                                             disabled={!newResponseInputs[intent.key]?.trim()}
-                                            className="bg-violet-600 hover:bg-violet-500 rounded-md shadow-sm h-auto"
+                                            className="bg-violet-600 hover:bg-violet-500 rounded-md shadow-sm h-[32px] sm:h-auto"
+                                            block={isMobile}
                                         >
                                             Add
                                         </Button>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dropdown, Button } from 'antd';
-import { DownOutlined, GlobalOutlined } from '@ant-design/icons';
+import { GlobalOutlined } from '@ant-design/icons';
 
 export const LANGUAGE_OPTIONS = [
     { key: 'en', short: 'EN', long: 'English (EN)' },
@@ -77,7 +77,6 @@ const LanguageToggle = ({ compact = false, dark = false, sidebarMode = false, mo
                                 </div>
                             )}
                         </div>
-                        {!compact && <DownOutlined className="text-xs !text-white group-hover:text-white transition-colors ml-2" />}
                     </div>
                 </Dropdown>
             ) : (

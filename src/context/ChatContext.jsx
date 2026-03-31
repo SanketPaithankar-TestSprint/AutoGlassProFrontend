@@ -242,8 +242,6 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
 
     // ─── Message Router ──────────────────────────────────────────────────────
     const handleIncomingMessage = (data) => {
-        console.log(`[ChatContext] Incoming notification type: "${data.type}"`);
-
         switch (data.type) {
             case "CONVERSATIONS_LIST":
                 handleConversationsList(data.data);
@@ -297,6 +295,8 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
                 newMap[c.conversationId] = {
                     id: c.conversationId,
                     customerName: c.visitorName || `Visitor ${c.visitorId?.slice(0, 4)}`,
+                    customerPhone: c.visitorPhone || '',
+                    customerEmail: c.visitorEmail || '',
                     visitorId: c.visitorId,
                     lastMessage: c.lastMessage,
                     updatedAt: c.updatedAt,
@@ -321,8 +321,6 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
         // Backend might send { type: "HISTORY", data: { conversationId, messages } }
         const payload = data.data && data.data.messages ? data.data : data;
         let { conversationId, messages } = payload;
-
-        console.log('[ChatContext] handleHistory received:', { conversationId, messageCount: messages?.length });
 
         if (!Array.isArray(messages)) {
             console.warn('[ChatContext] handleHistory: messages is not an array, ignoring');
@@ -364,7 +362,6 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
 
     const handleNewMessage = (msg) => {
         const payload = msg.data || msg;
-        console.log("[ChatContext] NEW_MESSAGE payload:", JSON.stringify(payload, null, 2));
         const { conversationId, message, senderType, timestamp, messageId } = payload;
         if (!conversationId) return;
 
@@ -380,7 +377,6 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
         // Execute side effects outside of the setState callback
         if (isFromCustomer && !isPublic && (!isCurrentlyOpen || !isTabActive)) {
             const senderName = payload.senderName || payload.name || payload.visitorName || payload.customerName || 'Customer';
-            console.log("[ChatContext] Triggering persistent toast for new message from:", senderName);
         }
 
         // Play in-chat ding for every incoming message while chat is open
@@ -399,7 +395,6 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
 
             // Deduplicate - be more precise to avoid filtering legitimate messages
             if (messageId && existing.messages.some(m => m.messageId === messageId)) {
-                console.log("[ChatContext] Duplicate message detected by messageId:", messageId);
                 return prev;
             }
             
@@ -408,7 +403,6 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
                 lastMsg.message === message && 
                 lastMsg.senderType === senderType &&
                 lastMsg.timestamp === timestamp) {
-                console.log("[ChatContext] Exact duplicate message detected");
                 return prev;
             }
 
@@ -431,6 +425,8 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
                 updatedAt: timestamp || Date.now(),
                 unreadCount: newUnread,
                 customerName: updatedCustomerName,
+                customerPhone: existing.customerPhone || payload.mobile || payload.visitorPhone || '',
+                customerEmail: existing.customerEmail || payload.visitorEmail || payload.email || '',
                 visitorId: existing.visitorId || payload.visitorId,
             };
 
@@ -634,12 +630,17 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
             const vId = localStorage.getItem("visitorId");
             const fallbackName = localStorage.getItem('visitorName') || 'Visitor';
             const fallbackEmail = localStorage.getItem('visitorEmail') || 'no-email@test.com';
+            const fallbackPhone = localStorage.getItem('visitorPhone') || '';
 
             const payload = {
                 visitorId: vId,
                 message: messageText,
                 name: fallbackName,
-                email: fallbackEmail
+                visitorName: fallbackName,
+                email: fallbackEmail,
+                visitorEmail: fallbackEmail,
+                mobile: fallbackPhone,
+                visitorPhone: fallbackPhone
             };
             currentSocket.send('sendMessage', payload);
         } else {
@@ -653,7 +654,7 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
     };
 
     // For Customer: specialized first message with name/email
-    const sendCustomerMessage = (text, name, email) => {
+    const sendCustomerMessage = (text, name, email, phone) => {
         const currentSocket = socketRef.current;
         if (!currentSocket || connectionStatus !== 'connected' || !isPublic) return;
 
@@ -662,7 +663,11 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
             visitorId: vId,
             message: text,
             name: name || "Visitor",
+            visitorName: name || "Visitor",
             email: email || "no-email@test.com",
+            visitorEmail: email || "no-email@test.com",
+            mobile: phone || "",
+            visitorPhone: phone || "",
         };
         currentSocket.send('sendMessage', payload);
     };
@@ -677,7 +682,6 @@ export const ChatProvider = ({ children, isPublic = false, publicUserId = null }
             visitorId: vId,
             ...quoteData,
         };
-        // We use newQuoteRequest as the Lambda action to notify shop about new inquiry
         currentSocket.send('newQuoteRequest', payload);
     };
 

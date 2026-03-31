@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useChat } from '../../context/ChatContext';
 import { Input, Button, Badge, Avatar } from 'antd';
-import { MessageOutlined, CloseOutlined, SendOutlined, UserOutlined, ShopOutlined, RobotOutlined } from '@ant-design/icons';
+import { MessageOutlined, CloseOutlined, SendOutlined, UserOutlined, ShopOutlined, RobotOutlined, PhoneOutlined } from '@ant-design/icons';
 import moment from 'moment';
 
 const AiOptionsRenderer = ({ optionsData, themeColor, onSelect }) => {
@@ -129,7 +129,8 @@ const CustomerChatWidget = ({ themeColor, businessName, customerName, customerEm
     // Local state for visitor info, prioritized from props, then localStorage
     const [visitorInfo, setVisitorInfo] = useState({
         name: localStorage.getItem('visitorName') || '',
-        email: localStorage.getItem('visitorEmail') || ''
+        email: localStorage.getItem('visitorEmail') || '',
+        phone: localStorage.getItem('visitorPhone') || ''
     });
 
     const [isFormSubmitted, setIsFormSubmitted] = useState(false);
@@ -146,15 +147,29 @@ const CustomerChatWidget = ({ themeColor, businessName, customerName, customerEm
             // Check localStorage
             const storedName = localStorage.getItem('visitorName');
             const storedEmail = localStorage.getItem('visitorEmail');
+            const storedPhone = localStorage.getItem('visitorPhone');
             if (storedName && storedEmail) {
                 setVisitorInfo({
                     name: storedName,
-                    email: storedEmail
+                    email: storedEmail,
+                    phone: storedPhone || ''
                 });
                 setIsFormSubmitted(true);
             }
         }
     }, [customerName, customerEmail]);
+    
+    // US Format: (111) 111-1111
+    const formatPhoneNumber = (value) => {
+        if (!value) return value;
+        const phoneNumber = value.replace(/[^\d]/g, '');
+        const phoneNumberLength = phoneNumber.length;
+        if (phoneNumberLength < 4) return phoneNumber;
+        if (phoneNumberLength < 7) {
+            return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
+        }
+        return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+    };
 
     // Get current conversation
     // For customer, there's usually only one relevant conversation in the map, 
@@ -195,10 +210,11 @@ const CustomerChatWidget = ({ themeColor, businessName, customerName, customerEm
     }, [conversation, activeConversationId, setActiveConversationId]);
 
     const handleFormSubmit = (e) => {
-        e.preventDefault(); // In case it's a form
-        if (visitorInfo.name && visitorInfo.email) {
+        if (e) e.preventDefault();
+        if (visitorInfo.name && visitorInfo.email && visitorInfo.phone && visitorInfo.phone.length >= 14) {
             localStorage.setItem('visitorName', visitorInfo.name);
             localStorage.setItem('visitorEmail', visitorInfo.email);
+            localStorage.setItem('visitorPhone', visitorInfo.phone);
             setIsFormSubmitted(true);
         }
     };
@@ -210,12 +226,14 @@ const CustomerChatWidget = ({ themeColor, businessName, customerName, customerEm
         if (messages.length === 0) {
             const nameToSend = visitorInfo.name || "Visitor";
             const emailToSend = visitorInfo.email || "no-email@test.com"; // Fallback if absolutely nothing provided
+            const phoneToSend = visitorInfo.phone || "";
 
             // Save to localStorage for future sessions - redundant but safe
             if (visitorInfo.name) localStorage.setItem('visitorName', visitorInfo.name);
             if (visitorInfo.email) localStorage.setItem('visitorEmail', visitorInfo.email);
+            if (visitorInfo.phone) localStorage.setItem('visitorPhone', visitorInfo.phone);
 
-            sendCustomerMessage(inputText, nameToSend, emailToSend);
+            sendCustomerMessage(inputText, nameToSend, emailToSend, phoneToSend);
         } else {
             // Subsequent messages
             // We need conversationId. If we have 'conversation' object, use its ID.
@@ -262,7 +280,7 @@ const CustomerChatWidget = ({ themeColor, businessName, customerName, customerEm
     const glowRgb = hexToRgb(themeColor);
 
     return (
-        <div className="fixed bottom-6 left-6 z-50 flex flex-col items-start">
+        <div className="fixed bottom-6 left-6 z-[1000] flex flex-col items-start">
             <style>{`
                 @keyframes flowingGlow {
                     0% { box-shadow: 0 0 10px 0px rgba(var(--glow-r), var(--glow-g), var(--glow-b), 0.3); }
@@ -334,13 +352,23 @@ const CustomerChatWidget = ({ themeColor, businessName, customerName, customerEm
                                         className="rounded-lg py-2"
                                     />
                                 </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-slate-500 mb-1">Phone Number</label>
+                                    <Input
+                                        placeholder="(555) 555-5555"
+                                        value={visitorInfo.phone}
+                                        onChange={(e) => setVisitorInfo(prev => ({ ...prev, phone: formatPhoneNumber(e.target.value) }))}
+                                        prefix={<PhoneOutlined className="text-slate-400" />}
+                                        className="rounded-lg py-2"
+                                    />
+                                </div>
                                 <Button
                                     type="primary"
                                     block
                                     onClick={handleFormSubmit}
                                     style={{ backgroundColor: themeColor || '#7E5CFE' }}
                                     className="h-10 rounded-lg font-semibold mt-2"
-                                    disabled={!visitorInfo.name || !visitorInfo.email}
+                                    disabled={!visitorInfo.name || !visitorInfo.email || !visitorInfo.phone || visitorInfo.phone.length < 14}
                                 >
                                     Start Chat
                                 </Button>
