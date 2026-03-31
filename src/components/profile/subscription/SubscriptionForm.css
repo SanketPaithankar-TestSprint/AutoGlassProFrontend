@@ -1,0 +1,218 @@
+/* Subscription Upgrade Form - Light Theme Styles */
+
+.subscription-upgrade-form .ant-form-item-label > label {
+  font-weight: 600;
+  color: #475569; /* slate-600 */
+}
+
+.subscription-upgrade-form .ant-input,
+.subscription-upgrade-form .ant-input-number,
+.subscription-upgrade-form .ant-select-selector,
+.subscription-upgrade-form .ant-input-affix-wrapper {
+  border-radius: 8px !important;
+  border: 1px solid #e2e8f0 !important; /* slate-200 */
+  padding: 8px 12px !important;
+  background: white !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Remove internal border for inputs with suffixes (CVV, Card Number) */
+.subscription-upgrade-form .ant-input-affix-wrapper .ant-input {
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+.subscription-upgrade-form .ant-input:focus,
+.subscription-upgrade-form .ant-input-number:focus,
+.subscription-upgrade-form .ant-select-selector:focus,
+.subscription-upgrade-form .ant-input-affix-wrapper-focused {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1) !important;
+}
+
+/* Billing Selection Cards */
+.billing-options-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.billing-choice-card {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+  position: relative;
+}
+
+.billing-choice-card:hover {
+  border-color: #cbd5e1; /* slate-300 */
+}
+
+.billing-choice-card.active {
+  border-color: #2563eb;
+  background: rgba(37, 99, 235, 0.05);
+}
+
+.billing-choice-radio {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #e2e8f0;
+  margin-right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.active .billing-choice-radio {
+  border-color: #2563eb;
+}
+
+.active .billing-choice-radio::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  background: #2563eb;
+  border-radius: 50%;
+}
+
+.billing-choice-info {
+  flex-grow: 1;
+}
+
+.billing-choice-title {
+  font-weight: 700;
+  color: #1e293b;
+  display: block;
+}
+
+.billing-choice-price {
+  font-size: 0.85rem;
+  color: #64748b; /* slate-500 */
+}
+
+.save-badge {
+  background: #dcfce7; /* green-100 */
+  color: #166534; /* green-800 */
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-left: auto;
+}
+
+/* Confirm Upgrade Box */
+.confirm-upgrade-box {
+  margin-top: 24px;
+  padding: 24px;
+  border-radius: 16px;
+  background: #f8fafc; /* slate-50 */
+  border: 1px solid #f1f5f9;
+}
+
+.upgrade-price-display {
+  font-size: 1.875rem; /* 30px */
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 20px;
+}
+
+.upgrade-price-sub {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.terms-checkbox-container {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.terms-text {
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.terms-link {
+  color: #2563eb;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.upgrade-button {
+  width: 100%;
+  height: 48px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+}
+
+.upgrade-button:hover {
+  background: #1d4ed8; /* blue-700 */
+}
+
+.upgrade-button:active {
+  transform: translateY(1px);
+}
+
+.contact-sales-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+  color: #475569;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.contact-sales-link:hover {
+  color: #1e293b;
+}
+
+/* Layout Helper */
+.form-header-premium {
+  margin-bottom: 32px;
+}
+
+.upgrade-icon-bg {
+  width: 40px;
+  height: 40px;
+  background: #eff6ff; /* blue-50 */
+  color: #2563eb;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  font-size: 1.25rem;
+}
+
+.premium-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.premium-subtitle {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin-top: 4px;
+}

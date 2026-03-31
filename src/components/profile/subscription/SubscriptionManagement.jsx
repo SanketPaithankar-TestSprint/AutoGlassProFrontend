@@ -13,7 +13,7 @@ import { getValidToken } from "../../../api/getValidToken";
 import SubscriptionOverviewCard from "./SubscriptionOverviewCard";
 import SubscriptionForm from "./SubscriptionForm";
 import { Table, Tag, Button as AntButton, Result, Button } from "antd";
-import { DownloadOutlined, ReloadOutlined } from "@ant-design/icons";
+import { DownloadOutlined, ReloadOutlined, CloseOutlined } from "@ant-design/icons";
 
 const SubscriptionManagement = () => {
   const { notification, modal } = App.useApp();
@@ -184,7 +184,7 @@ const SubscriptionManagement = () => {
     // Build the exact API payload
     const payload = {
       recurringType: values.recurringType,
-      chargeUntil: values.duration?.toString() || "1",
+      chargeUntil: values.autoRenewal ? "never_expired" : "1",
       employeeCount: values.employeeCount || 0,
       cardHolderName: values.cardHolderName,
       paymentInfo: {
@@ -251,7 +251,7 @@ const SubscriptionManagement = () => {
   ];
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 animate-fadeIn px-4 md:px-0 pb-32">
+    <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn px-4 md:px-0 pb-32">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
         <h2 className="text-2xl font-bold text-gray-800">Subscription Dashboard</h2>
       </div>
@@ -301,11 +301,13 @@ const SubscriptionManagement = () => {
           ref={formRef} 
           className="mt-8 bg-white p-6 rounded-2xl border border-blue-100 animate-fadeIn scroll-mt-20"
         >
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-bold text-gray-800">Add New Subscription</h3>
-            <AntButton type="text" onClick={() => setFormVisible(false)} className="text-gray-400 hover:text-gray-600">
-              Close
-            </AntButton>
+          <div className="flex justify-end p-2 mb-2">
+            <AntButton 
+              type="text" 
+              icon={<CloseOutlined className="text-gray-400 text-lg" />} 
+              onClick={() => setFormVisible(false)} 
+              className="hover:bg-gray-50 flex items-center justify-center rounded-full w-10 h-10"
+            />
           </div>
           <SubscriptionForm
             initialValues={{}} // Always empty or default

@@ -36,9 +36,12 @@ const SubscriptionOverviewCard = ({ details, loading, onAdd, onUpdate, onActivat
   }, [t]);
   const { displayPlan, displayExpiry } = useMemo(() => {
     let plan = details?.plan || "-";
-    let expiry = details?.expiryDate || "-";
+    let rawExpiry = details?.expiryDate || "-";
+    let expiry = rawExpiry;
 
-    if (details?.desc) {
+    if (rawExpiry === "9999-12-31T23:59:59Z") {
+      expiry = "Never Expired";
+    } else if (details?.desc) {
       // Example: "Plan: PRO, Expiry: 2027-03-30..."
       const planMatch = details.desc.match(/Plan:\s*([^,]+)/);
       const expiryMatch = details.desc.match(/Expiry:\s*([^,]+)/);
@@ -60,9 +63,9 @@ const SubscriptionOverviewCard = ({ details, loading, onAdd, onUpdate, onActivat
           expiry = dateStr;
         }
       }
-    } else if (expiry && expiry !== "-") {
+    } else if (rawExpiry && rawExpiry !== "-") {
       try {
-        const d = new Date(expiry);
+        const d = new Date(rawExpiry);
         if (!isNaN(d.getTime())) {
           expiry = d.toLocaleDateString(undefined, { 
             year: 'numeric', month: 'long', day: 'numeric' 
@@ -74,7 +77,7 @@ const SubscriptionOverviewCard = ({ details, loading, onAdd, onUpdate, onActivat
     // Final sanitization to remove literal "null" strings
     const sanitize = (val) => (val === "null" || !val) ? "-" : val;
 
-    return { displayPlan: sanitize(plan), displayExpiry: sanitize(expiry) };
+    return { displayPlan: sanitize(plan), displayExpiry: expiry === "Never Expired" ? expiry : sanitize(expiry) };
   }, [details]);
 
   return (
@@ -157,18 +160,20 @@ const SubscriptionOverviewCard = ({ details, loading, onAdd, onUpdate, onActivat
       </div>
       {/* Actions and Status-specific info */}
       <div className="px-6 py-4">
-        {details?.status === "ACTIVE" ? (
+        {details?.status === "ACTIVE" || details?.expiryDate === "9999-12-31T23:59:59Z" ? (
           <div className="bg-blue-50 border border-blue-100 p-3 md:p-5 rounded-xl w-full">
             <Space align="start" gap={12} className="w-full">
               <InfoCircleOutlined className="text-blue-500 mt-1 flex-shrink-0 text-lg" />
               <div className="flex-1">
-                <Title level={5} className="text-blue-900 font-bold block mb-1 !text-base md:!text-lg leading-tight">Subscription Managed by Support</Title>
+                <Title level={5} className="text-blue-900 font-bold block mb-1 !text-base md:!text-lg leading-tight">
+                  {details?.expiryDate === "9999-12-31T23:59:59Z" ? "Subscription on Auto-Renewal" : "Subscription Managed by Support"}
+                </Title>
                 <Text className="text-blue-800 text-sm md:text-md leading-relaxed block">
                   <span className="md:hidden">
-                    Contact <span className="font-bold text-blue-900 underline underline-offset-4 decoration-blue-200">support@autoglasspro.com</span> with <span className="font-semibold text-blue-900 italic">15 days notice</span> for changes or cancellation.
+                    Contact <span className="font-bold text-blue-900 underline underline-offset-4 decoration-blue-200">support@autoglasspro.com</span> for changes or cancellation.
                   </span>
                   <span className="hidden md:inline">
-                    To make any changes or to cancel your active subscription, please contact us at 
+                    This subscription is set to auto-renew. To make any changes or to cancel, please contact us at 
                     <span className="font-bold text-blue-900"> support@autoglasspro.com </span> 
                     at least <span className="underline underline-offset-4 decoration-blue-300 font-semibold italic">15 days in advance</span>.
                   </span>

@@ -1,8 +1,9 @@
 import React from "react";
-import { Form, Input, InputNumber, Select, Button, Row, Col, Typography, Card, Divider } from "antd";
-import { DollarOutlined, InfoCircleOutlined } from "@ant-design/icons";
+import { Form, Input, InputNumber, Select, Button, Row, Col, Typography, Card, Divider, Checkbox } from "antd";
+import { DollarOutlined, InfoCircleOutlined, ArrowUpOutlined, CheckCircleFilled, MessageOutlined } from "@ant-design/icons";
 import { RECURRING_TYPE_OPTIONS } from "../../../constants/subscription";
 import { COUNTRIES, getStatesOrProvinces, getCities, US_CITIES } from "../../../const/locations";
+import "./SubscriptionForm.css";
 
 const { Title, Text } = Typography;
 
@@ -12,6 +13,7 @@ const SubscriptionForm = ({ initialValues = {}, onSubmit, loading, submitLabel =
   // Watches for dynamic UI
   const recurringType = Form.useWatch("recurringType", form) || "2";
   const employeeCount = Form.useWatch("employeeCount", form) || 0;
+  const autoRenewal = Form.useWatch("autoRenewal", form);
 
   // Watches for Location logic
   const selectedCountry = Form.useWatch(["billingAddress", "country"], form) || "USA";
@@ -103,241 +105,227 @@ const SubscriptionForm = ({ initialValues = {}, onSubmit, loading, submitLabel =
       initialValues={{
         recurringType: "2",
         employeeCount: 0,
+        autoRenewal: true,
         billingAddress: { country: "USA" },
         paymentInfo: {},
         ...initialValues,
       }}
       onFinish={onSubmit}
       scrollToFirstError
-      className="subscription-form"
+      className="subscription-upgrade-form"
     >
-      <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-        <DollarOutlined className="text-violet-500" /> Subscription Details
-      </h2>
-
-      {/* Recurring Type & Duration */}
-      <Row gutter={16}>
-        <Col xs={24} md={12}>
-          <Form.Item name="recurringType" label="Recurring Type" rules={[{ required: true, message: 'Please select recurring type' }]}>
-            <Select options={RECURRING_TYPE_OPTIONS} placeholder="Select..." />
-          </Form.Item>
-        </Col>
-        <Col xs={24} md={12}>
-          <Form.Item name="employeeCount" label="Employee Count" rules={[{ required: true, message: 'Please enter employee count' }]}>
-            <InputNumber min={0} className="w-full" />
-          </Form.Item>
-        </Col>
-      </Row>
-
-      {/* Card Holder Name */}
-      <Row gutter={16}>
-        <Col xs={24} md={12}>
-          <Form.Item name="cardHolderName" label="Card Holder Name" rules={[{ required: true, message: 'Please enter card holder name' }]}>
-            <Input placeholder="John Doe" />
-          </Form.Item>
-        </Col>
-      </Row>
-
-      {/* Payment Info */}
-      <h2 className="text-lg font-bold text-gray-800 mb-4 mt-8">Payment Info</h2>
-      <Row gutter={16}>
-        <Col xs={24} md={8}>
-          <Form.Item 
-            name={["paymentInfo", "cardNumber"]} 
-            label="Card Number" 
-            rules={[{ required: true, message: 'Please enter Card Number' }]}
-            normalize={(value) => formatCardNumber(value)}
-          > 
-            <Input placeholder="0000 0000 0000 0000" maxLength={19} /> 
-          </Form.Item>
-        </Col>
-        <Col xs={24} md={8}>
-          <Form.Item 
-            name={["paymentInfo", "expiryDate"]} 
-            label="Expiry (MM / YY)" 
-            rules={[
-              { required: true, message: 'Please enter Expiry (MM / YY)' },
-              { pattern: /^\d{2} \/ \d{2}$/, message: 'Invalid format (MM / YY)' }
-            ]}
-            normalize={(value) => formatExpiry(value)}
-          > 
-            <Input placeholder="12 / 27" maxLength={7} /> 
-          </Form.Item>
-        </Col>
-        <Col xs={24} md={8}>
-          <Form.Item 
-            name={["paymentInfo", "cvv"]} 
-            label="CVV" 
-            rules={[{ required: true, message: 'Please enter CVV' }, { pattern: /^\d{3,4}$/, message: 'Invalid CVV' }]}
-          > 
-            <Input.Password placeholder="123" maxLength={4} /> 
-          </Form.Item>
-        </Col>
-      </Row>
-
-      {/* Billing Address */}
-      <h2 className="text-lg font-bold text-gray-800 mb-4 mt-8">Billing Address</h2>
-      <Row gutter={16}>
-        <Col xs={24} md={12}>
-          <Form.Item name={["billingAddress", "customerName"]} label="Name" rules={[{ required: true, message: 'Please enter Name' }]}>
-            <Input placeholder="John Doe" />
-          </Form.Item>
-        </Col>
-        <Col xs={24} md={12}>
-          <Form.Item name={["billingAddress", "streetNo"]} label="Street No" rules={[{ required: true, message: 'Please enter Street No' }]}>
-            <Input placeholder="123" />
-          </Form.Item>
-        </Col>
-      </Row>
-      <Row gutter={16}>
-        <Col xs={24}>
-          <Form.Item name={["billingAddress", "streetName"]} label="Street Name" rules={[{ required: true, message: 'Please enter Street Name' }]}>
-            <Input placeholder="Main St" />
-          </Form.Item>
-        </Col>
-      </Row>
-      <Row gutter={16}>
-        <Col xs={24} md={6}>
-          <Form.Item name={["billingAddress", "country"]} label="Country" rules={[{ required: true }]}>
-            <Select 
-              options={COUNTRIES} 
-              onChange={(val) => {
-                form.setFieldsValue({ 
-                  billingAddress: { 
-                    ...form.getFieldValue("billingAddress"), 
-                    country: val,
-                    state: undefined, 
-                    city: undefined 
-                  } 
-                });
-              }} 
-            />
-          </Form.Item>
-        </Col>
-        <Col xs={24} md={6}>
-          <Form.Item name={["billingAddress", "state"]} label="State" rules={[{ required: true, message: 'Please select State' }]}>
-            <Select 
-              showSearch 
-              optionFilterProp="label" 
-              options={availableStates} 
-              onChange={(val) => {
-                form.setFieldsValue({ 
-                  billingAddress: { 
-                    ...form.getFieldValue("billingAddress"), 
-                    state: val,
-                    city: undefined 
-                  } 
-                });
-              }}
-              placeholder="Select State"
-            />
-          </Form.Item>
-        </Col>
-        <Col xs={24} md={6}>
-          <Form.Item name={["billingAddress", "city"]} label="City" rules={[{ required: true, message: 'Please select or enter City' }]}>
-            <Select 
-              showSearch 
-              optionFilterProp="label" 
-              options={selectedState ? availableCities : allUSCities}
-              onChange={handleCityChange}
-              placeholder={selectedState ? "Select City" : "Search City (e.g. Austin)"}
-              dropdownRender={(menu) => (
-                <>
-                  {menu}
-                  <Divider style={{ margin: '8px 0' }} />
-                  <div style={{ padding: '0 8px 4px' }}>
-                    <Text type="secondary" style={{ fontSize: '11px' }}>
-                      {selectedState ? "Showing cities for selected state." : "Pro-tip: Start typing city name to auto-select state!"}
-                    </Text>
-                  </div>
-                </>
-              )}
-            />
-          </Form.Item>
-        </Col>
-        <Col xs={24} md={6}>
-          <Form.Item name={["billingAddress", "zip"]} label="Postal Code" rules={[{ required: true, message: 'Please enter Postal Code' }]}>
-            <Input placeholder="10001" />
-          </Form.Item>
-        </Col>
-      </Row>
-
-      {/* Contact Info (optional) */}
-      <h2 className="text-lg font-bold text-gray-800 mb-4 mt-8">Contact Info <span className="text-sm font-normal text-gray-400">(optional)</span></h2>
-      <Row gutter={16}>
-        <Col xs={24} md={12}>
-          <Form.Item name="email" label="Email" rules={[{ type: "email", message: 'Invalid email' }]}> <Input placeholder="user@example.com" /> </Form.Item>
-        </Col>
-        <Col xs={24} md={12}>
-          <Form.Item name="phone" label="Phone"> <Input placeholder="1234567890" /> </Form.Item>
-        </Col>
-      </Row>
-
-      {/* Pricing Summary */}
-      <Card className="mt-8 bg-blue-50 border-blue-100 summary-card shadow-sm rounded-lg">
-        <Title level={4} className="!mt-0 !mb-4 text-blue-900 border-b border-blue-200 pb-2">Pricing Summary</Title>
-        <div className="space-y-3 text-sm text-gray-700">
-          <div className="flex justify-between items-center bg-white p-3 rounded-md shadow-sm">
-            <span className="text-gray-600 font-medium">Selected Plan:</span>
-            <span className="font-semibold text-blue-800 bg-blue-100 px-3 py-1 rounded-full">{isYearly ? 'Yearly' : 'Monthly'}</span>
-          </div>
-          <div className="flex justify-between items-center bg-white p-3 rounded-md shadow-sm">
-            <span className="text-gray-600 font-medium">Plan Price ({isYearly ? 'per year' : 'per month'}):</span>
-            <span className="font-semibold text-gray-800">${singleUserCost}</span>
-          </div>
-          {employeeCount > 0 && (
-            <div className="flex justify-between items-center bg-white p-3 rounded-md shadow-sm">
-              <span className="text-gray-600 font-medium whitespace-nowrap">Employee Cost ({employeeCount} seat{employeeCount > 1 && 's'}):</span>
-              <span className="font-semibold text-gray-800 inline-flex flex-col items-end leading-tight">
-                <span>${totalEmployeeCost}</span>
-                <span className="text-[10px] text-gray-400 font-normal">(${employeeCostPerUnit} / seat{isYearly && ' — 11 mos pricing'})</span>
-              </span>
+      <Row gutter={[40, 24]}>
+        {/* Left Column: Form Details */}
+        <Col xs={24} lg={16}>
+          <div className="form-header-premium">
+            <div className="upgrade-icon-bg">
+              <ArrowUpOutlined />
             </div>
-          )}
-          {isYearly && (
-            <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg flex gap-2 items-start shadow-sm">
-              <InfoCircleOutlined className="text-green-600 mt-0.5" />
-              <Typography.Text className="text-green-700 text-xs font-semibold">
-                Great choice! Yearly plan includes 1 free month for the single user, and employees are billed for 11 months only!
-              </Typography.Text>
-            </div>
-          )}
-          <Divider className="my-4 border-blue-200" />
-          <div className="flex flex-col sm:flex-row justify-between items-center bg-blue-600 text-white p-4 rounded-xl shadow-md mb-2 gap-2">
-            <span className="text-lg font-bold">Final Total:</span>
-            <span className="text-2xl font-extrabold tracking-wider">${finalTotal}</span>
+            <h2 className="premium-title">Upgrade to Subscription</h2>
+            <p className="premium-subtitle">Complete your details to unlock full access and team features.</p>
           </div>
-          <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg flex gap-3 items-start shadow-sm">
-            <InfoCircleOutlined className="text-amber-600 mt-1" />
-            <div className="flex flex-col">
-              <Text className="text-amber-800 font-bold text-sm">Need to make changes?</Text>
-              <Text className="text-amber-700 text-xs">
-                For any changes to your subscription or for canceling the service, please contact us at 
-                <span className="font-bold text-amber-900"> support@autoglasspro.com </span> 
-                at least <span className="font-semibold text-amber-900 underline decoration-amber-300">15 days in advance</span>.
-              </Text>
-            </div>
-          </div>
-        </div>
-      </Card>
 
-      <div className="flex justify-center mt-10 pb-4">
-        <Form.Item>
-          <Button 
-            type="primary" 
-            htmlType="submit" 
-            loading={loading} 
-            style={{ 
-              background: 'linear-gradient(90deg, #2563eb 0%, #3b82f6 100%)',
-              borderColor: 'transparent',
-              color: '#ffffff',
-            }} 
-            className="h-12 w-full sm:w-auto sm:min-w-[240px] px-16 rounded-full font-bold text-lg shadow-xl hover:scale-105 transition-all transform active:scale-95"
-          >
-            {submitLabel}
-          </Button>
-        </Form.Item>
-      </div>
+          <div className="space-y-6">
+            <Row gutter={16}>
+              <Col xs={24} md={12}>
+                <Form.Item name="cardHolderName" label="Name" rules={[{ required: true, message: 'Please enter name' }]}>
+                  <Input placeholder="Sanket Paithankar" />
+                </Form.Item>
+              </Col>
+              <Col xs={24} md={12}>
+                <Form.Item 
+                  name="employeeCount" 
+                  label="User Count" 
+                  tooltip="The number of additional staff members who will have access to the dashboard."
+                  rules={[{ required: true, message: 'Please enter user count' }]}
+                >
+                  <InputNumber min={0} className="w-full" placeholder="0" />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row gutter={16}>
+              <Col xs={24}>
+                <Form.Item 
+                  name={["paymentInfo", "cardNumber"]} 
+                  label="Card number" 
+                  rules={[{ required: true, message: 'Please enter Card Number' }]}
+                  normalize={(value) => formatCardNumber(value)}
+                > 
+                  <Input 
+                    placeholder="1234 1234 1234 1234" 
+                    maxLength={19} 
+                  /> 
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row gutter={16}>
+              <Col xs={12}>
+                <Form.Item 
+                  name={["paymentInfo", "expiryDate"]} 
+                  label="Expiration date" 
+                  rules={[
+                    { required: true, message: 'Required' },
+                    { pattern: /^\d{2} \/ \d{2}$/, message: 'MM / YY' }
+                  ]}
+                  normalize={(value) => formatExpiry(value)}
+                > 
+                  <Input placeholder="MM / YY" maxLength={7} /> 
+                </Form.Item>
+              </Col>
+              <Col xs={12}>
+                <Form.Item 
+                  name={["paymentInfo", "cvv"]} 
+                  label="Security code" 
+                  rules={[{ required: true, message: 'Required' }, { pattern: /^\d{3,4}$/, message: 'Invalid' }]}
+                > 
+                  <Input.Password placeholder="CVC" maxLength={4} /> 
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row gutter={16}>
+              <Col xs={24}>
+                <Form.Item name={["billingAddress", "country"]} label="Country" rules={[{ required: true }]}>
+                  <Select 
+                    options={COUNTRIES} 
+                    onChange={(val) => {
+                      form.setFieldsValue({ 
+                        billingAddress: { ...form.getFieldValue("billingAddress"), country: val, state: undefined, city: undefined } 
+                      });
+                    }} 
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Divider className="my-8" />
+
+            <h3 className="text-lg font-bold text-gray-800 mb-4">Billing Address</h3>
+            <Row gutter={16}>
+              <Col xs={24} md={12}>
+                <Form.Item name={["billingAddress", "customerName"]} label="Full Name" rules={[{ required: true, message: 'Please enter Name' }]}>
+                  <Input placeholder="John Doe" />
+                </Form.Item>
+              </Col>
+              <Col xs={24} md={12}>
+                <Form.Item name={["billingAddress", "streetNo"]} label="Street No">
+                  <Input placeholder="123" />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={16}>
+              <Col xs={24}>
+                <Form.Item name={["billingAddress", "streetName"]} label="Street Name">
+                  <Input placeholder="Main St" />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={16}>
+              <Col xs={24} md={8}>
+                <Form.Item name={["billingAddress", "state"]} label="State">
+                  <Select 
+                    showSearch 
+                    optionFilterProp="label" 
+                    options={availableStates} 
+                    placeholder="Select State"
+                  />
+                </Form.Item>
+              </Col>
+              <Col xs={24} md={8}>
+                <Form.Item name={["billingAddress", "city"]} label="City">
+                  <Select 
+                    showSearch 
+                    optionFilterProp="label" 
+                    options={selectedState ? availableCities : allUSCities}
+                    onChange={handleCityChange}
+                    placeholder="City"
+                  />
+                </Form.Item>
+              </Col>
+              <Col xs={24} md={8}>
+                <Form.Item name={["billingAddress", "zip"]} label="Zip">
+                  <Input placeholder="10001" />
+                </Form.Item>
+              </Col>
+            </Row>
+          </div>
+        </Col>
+
+        {/* Right Column: Billing & Summary */}
+        <Col xs={24} lg={8}>
+          <div className="sticky top-24">
+            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4">Billing options</h3>
+            <Form.Item name="recurringType" noStyle>
+              <Input type="hidden" />
+            </Form.Item>
+            <div className="billing-options-container">
+              <div 
+                className={`billing-choice-card ${recurringType === '2' ? 'active' : ''}`}
+                onClick={() => form.setFieldsValue({ recurringType: '2' })}
+              >
+                <div className="billing-choice-radio"></div>
+                <div className="billing-choice-info">
+                  <span className="billing-choice-title">Pay monthly</span>
+                  <span className="billing-choice-price">$99 / month / member</span>
+                </div>
+              </div>
+
+              <div 
+                className={`billing-choice-card ${recurringType === '4' ? 'active' : ''}`}
+                onClick={() => form.setFieldsValue({ recurringType: '4' })}
+              >
+                <div className="billing-choice-radio"></div>
+                <div className="billing-choice-info">
+                  <span className="billing-choice-title">Pay annually</span>
+                  <span className="billing-choice-price">$999 / year / member</span>
+                </div>
+                <div className="save-badge">Save 17%</div>
+              </div>
+            </div>
+
+            <div className="confirm-upgrade-box">
+              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Confirm upgrade</h3>
+              <div className="upgrade-price-display">
+                ${finalTotal} <span className="upgrade-price-sub">/ {isYearly ? 'year' : 'month'}</span>
+              </div>
+
+              <div className="terms-checkbox-container">
+                <Form.Item name="autoRenewal" valuePropName="checked" noStyle>
+                  <Checkbox className="mt-1" />
+                </Form.Item>
+                <div className="terms-text">
+                  Your AutoPane subscription will auto-renew each {isYearly ? 'year' : 'month'} at the above price per seat + taxes unless canceled. Cancel via the Billing tab prior to renewal to avoid future charges (<span className="terms-link">terms</span>).
+                </div>
+              </div>
+
+              <Button 
+                type="primary" 
+                htmlType="submit" 
+                loading={loading}
+                className="upgrade-button"
+              >
+                {submitLabel}
+              </Button>
+
+              <div className="contact-sales-link">
+                <MessageOutlined />
+                <span>Contact support</span>
+              </div>
+            </div>
+
+            {isYearly && (
+              <div className="mt-4 p-4 bg-green-50 border border-green-100 rounded-xl flex gap-3 items-start animate-fadeIn">
+                <CheckCircleFilled className="text-green-500 mt-1" />
+                <p className="text-green-700 text-xs font-medium leading-relaxed">
+                  Great choice! The yearly plan includes 1 free month for the primary user, and additional seats are billed for 11 months only.
+                </p>
+              </div>
+            )}
+          </div>
+        </Col>
+      </Row>
     </Form>
   );
 };
