@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X } from 'lucide-react';
+import { MessageSquare, X, RotateCcw } from 'lucide-react';
 import { useAIChatbot } from '../../context/AIChatbotContext';
 import ChatConversation from './ChatConversation';
 
@@ -9,16 +9,22 @@ const ChatWidget = ({ collapsed = true }) => {
     isOpen, 
     toggleChat, 
     closeChat, 
-    messages 
+    messages,
+    clearMessages,
+    unreadCount 
   } = useAIChatbot();
   
   const [isHovered, setIsHovered] = useState(false);
   const chatRef = useRef(null);
+  const widgetRef = useRef(null);
 
   // Close chat when clicking outside (but not when clicking X icon)
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (chatRef.current && !chatRef.current.contains(event.target)) {
+      const isWidgetClick = widgetRef.current && widgetRef.current.contains(event.target);
+      const isChatClick = chatRef.current && chatRef.current.contains(event.target);
+      
+      if (!isChatClick && !isWidgetClick) {
         closeChat();
       }
     };
@@ -90,13 +96,30 @@ const ChatWidget = ({ collapsed = true }) => {
               {/* Header */}
               <div className="!bg-[#203a78ff] text-white p-4 flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <h3 className="font-semibold text-white">Support Assistant</h3>
-                  <p className="text-xs text-gray-300">Ask me anything</p>
+                  <div>
+                    <h3 className="font-semibold text-white text-sm">Support Assistant</h3>
+                    <p className="text-[10px] text-gray-300">Ask me anything</p>
+                  </div>
                 </div>
+                {messages.length > 0 && (
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      clearMessages();
+                    }}
+                    className="!bg-white/15 !p-1 !px-2.5 rounded-full transition-all hover:!bg-white/25 flex items-center gap-1 border border-white/20 text-white shadow-sm flex-shrink-0"
+                    title="Clear Conversation"
+                  >
+                    <RotateCcw size={10} strokeWidth={2.5} />
+                    <span className="text-[9px] font-bold uppercase tracking-wider">Clear</span>
+                  </button>
+                )}
               </div>
 
-              {/* Chat Content */}
-              <ChatConversation />
+              {/* Chat Content (Scrollable Container) */}
+              <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+                <ChatConversation />
+              </div>
             </div>
           </motion.div>
         )}
@@ -113,17 +136,18 @@ const ChatWidget = ({ collapsed = true }) => {
         onHoverEnd={() => setIsHovered(false)}
         onClick={isOpen ? closeChat : toggleChat}
         className="relative cursor-pointer"
+        ref={widgetRef}
       >
-        <div className="bg-gray-900 text-white rounded-lg p-3 shadow-lg relative">
+        <div className="bg-[#203a78ff] text-white rounded-xl shadow-xl border border-white/10 ring-1 ring-white/5 flex items-center justify-center w-12 h-12 transition-all duration-300">
           {isOpen ? (
-            <X size={24} className="absolute inset-0 flex items-center justify-center" />
+            <X size={22} strokeWidth={2.5} />
           ) : (
-            <MessageSquare size={20} />
+            <MessageSquare size={22} strokeWidth={2.5} />
           )}
           
-          {/* Notification dot for new messages */}
-          {!isOpen && messages.length > 0 && (
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+          {/* Notification dot for unread messages */}
+          {!isOpen && unreadCount > 0 && (
+            <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-[#203a78ff] animate-pulse z-10" />
           )}
         </div>
 

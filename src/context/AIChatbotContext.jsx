@@ -23,6 +23,7 @@ const actionTypes = {
   SET_ERROR: 'SET_ERROR',
   CLEAR_MESSAGES: 'CLEAR_MESSAGES',
   SET_SESSION_ID: 'SET_SESSION_ID',
+  MARK_MESSAGES_READ: 'MARK_MESSAGES_READ',
 };
 
 // Reducer function
@@ -83,6 +84,11 @@ const chatReducer = (state, action) => {
         ...state,
         sessionId: action.payload,
       };
+    case actionTypes.MARK_MESSAGES_READ:
+      return {
+        ...state,
+        messages: state.messages.map(msg => ({ ...msg, isRead: true })),
+      };
     default:
       return state;
   }
@@ -98,13 +104,17 @@ export const AIChatbotProvider = ({ children }) => {
 
   // Action creators
   const toggleChat = () => {
+    if (!state.isOpen) {
+      markMessagesAsRead();
+    }
     dispatch({ type: actionTypes.TOGGLE_CHAT });
   };
-
+  
   const openChat = () => {
+    markMessagesAsRead();
     dispatch({ type: actionTypes.OPEN_CHAT });
   };
-
+  
   const closeChat = () => {
     dispatch({ type: actionTypes.CLOSE_CHAT });
   };
@@ -124,6 +134,7 @@ export const AIChatbotProvider = ({ children }) => {
         ...message,
         id: Date.now().toString(),
         timestamp: new Date().toISOString(),
+        isRead: state.isOpen,
       }
     });
   };
@@ -138,6 +149,10 @@ export const AIChatbotProvider = ({ children }) => {
 
   const clearMessages = () => {
     dispatch({ type: actionTypes.CLEAR_MESSAGES });
+  };
+  
+  const markMessagesAsRead = () => {
+    dispatch({ type: actionTypes.MARK_MESSAGES_READ });
   };
 
   const setSessionId = (sessionId) => {
@@ -230,9 +245,11 @@ export const AIChatbotProvider = ({ children }) => {
     setLoading,
     setError,
     clearMessages,
+    markMessagesAsRead,
     sendMessage,
     setInputValue,
     setSessionId,
+    unreadCount: state.messages.filter(m => !m.isRead).length,
   };
 
   return (

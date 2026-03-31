@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Loader2, AlertCircle, RotateCcw } from 'lucide-react';
+import { Send, Loader2, AlertCircle } from 'lucide-react';
 import { useAIChatbot } from '../../context/AIChatbotContext';
 import ChatMessage from './ChatMessage';
 
@@ -53,9 +53,9 @@ const ChatConversation = () => {
   };
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+    <div className="flex flex-col h-full min-h-0 bg-gray-50/10">
+      {/* 2nd Section: Main Chat Container (Scrollable) */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4 scroll-smooth">
         <AnimatePresence>
           {messages.length === 0 && (
             <motion.div
@@ -116,20 +116,9 @@ const ChatConversation = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
-      <div className="border-t border-gray-200 p-4">
-        {/* Clear messages button */}
-        {messages.length > 0 && (
-          <div className="mb-2 flex justify-end">
-            <button
-              onClick={clearMessages}
-              className="text-xs text-gray-500 hover:text-gray-700 flex items-center space-x-1 transition-colors"
-            >
-              <RotateCcw size={12} />
-              <span>Clear conversation</span>
-            </button>
-          </div>
-        )}
+      {/* 3rd Section: Input Section (Fixed at bottom) */}
+      <div className="border-t border-gray-100 bg-white p-4 shadow-[0_-4px_15px_-5px_rgba(0,0,0,0.05)]">
+
 
         <form onSubmit={handleSubmit} className="flex items-center space-x-2">
           <div className="flex-1 relative">
