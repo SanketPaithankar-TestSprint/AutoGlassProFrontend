@@ -19,7 +19,8 @@ import {
     AuditOutlined,
     InfoCircleOutlined,
     BarcodeOutlined,
-    BookOutlined
+    BookOutlined,
+    ContactsOutlined
 } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 import Logo from '../assets/APAI.png';
@@ -170,6 +171,11 @@ const Sidebar = ({ onLogout, collapsed, onCollapse }) => {
             key: '/customers',
             icon: <TeamOutlined />,
             label: <Link to="/customers">{t('nav.customers')}</Link>,
+        },
+        {
+            key: '/vendor-contacts',
+            icon: <ContactsOutlined />,
+            label: <Link to="/vendor-contacts">{t('nav.vendorContacts') || 'Vendor Contacts'}</Link>,
         },
         {
             key: '/quote',

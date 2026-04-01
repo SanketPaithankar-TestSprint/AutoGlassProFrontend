@@ -40,6 +40,7 @@ const ContactPage = React.lazy(() => import('./components/ContactPage.jsx'));
 const PrivacyPolicy = React.lazy(() => import('./components/PrivacyPolicy.jsx'));
 const TermsOfService = React.lazy(() => import('./components/TermsOfService.jsx'));
 const EmployeeAttendance = React.lazy(() => import('./components/EmployeeAttendance/EmployeeAttendance.jsx'));
+const VendorsRoot = React.lazy(() => import('./components/Vendors/VendorsRoot.jsx'));
 import ErrorBoundary from './components/PublicContact/ErrorBoundary';
 const SitemapPage = React.lazy(() => import('./components/Sitemap/SitemapPage.jsx'));
 const BlogsPage = React.lazy(() => import('./components/Blogs/BlogsPage.jsx'));
@@ -217,6 +218,7 @@ function AppContent() {
                         <Route path="/customers" element={<CustomersRoot />} />
                         <Route path="/quote" element={<SearchByRoot />} />
                         <Route path="/schedule" element={<Schedule />} />
+                        <Route path="/vendor-contacts" element={<VendorsRoot />} />
                         <Route path="/profile" element={<Profile />} />
 
                         <Route path="/order" element={<OrderPage />} />

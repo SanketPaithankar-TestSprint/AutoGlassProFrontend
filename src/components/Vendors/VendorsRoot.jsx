@@ -9,7 +9,8 @@ import {
     ShopOutlined,
     PhoneOutlined,
     ContainerOutlined,
-    CalendarOutlined
+    CalendarOutlined,
+    InfoCircleOutlined
 } from "@ant-design/icons";
 import { 
     Modal, 
@@ -44,7 +45,7 @@ const VendorsRoot = () => {
     } = useVendors();
 
     useEffect(() => {
-        document.title = `APAI | ${t('nav.vendors') || 'Vendors'}`;
+        document.title = `APAI | ${t('nav.vendorContacts') || 'Vendor Contacts'}`;
     }, [t]);
 
     // ------------------- STATES ------------------- //
@@ -202,6 +203,15 @@ const VendorsRoot = () => {
                                             </Tag>
                                         </div>
                                     )}
+                                    {v.notes && (
+                                        <div className="text-slate-500 text-xs mt-3 bg-slate-50 p-2 rounded border border-slate-100 whitespace-pre-wrap max-h-20 overflow-y-auto">
+                                            {v.notes}
+                                        </div>
+                                    )}
+                                    <div className="text-slate-400 text-[10px] mt-4 flex items-center justify-between gap-2 border-t border-slate-50 pt-3">
+                                        <span>{t('common.created')}: {v.createdAt ? dayjs(v.createdAt).format('MMM DD, YYYY') : "—"}</span>
+                                        <span>{t('common.updated')}: {v.updatedAt ? dayjs(v.updatedAt).format('MMM DD, YYYY') : "—"}</span>
+                                    </div>
                                 </div>
                             </div>
                         </Card>
@@ -219,7 +229,9 @@ const VendorsRoot = () => {
                                 <th className="p-4 pl-8 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('vendors.companyName') || 'Company Name'}</th>
                                 <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('vendors.phone') || 'Phone'}</th>
                                 <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('vendors.accountNumber') || 'Account #'}</th>
+                                <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('vendors.notes') || 'Notes'}</th>
                                 <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('common.created') || 'Created'}</th>
+                                <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('common.updatedAt') || 'Updated At'}</th>
                                 <th className="p-4 pr-8 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">{t('common.actions') || 'Actions'}</th>
                             </tr>
                         </thead>
@@ -236,16 +248,24 @@ const VendorsRoot = () => {
                                             </span>
                                         </div>
                                     </td>
-                                    <td className="p-4 text-sm text-slate-600">{v.phoneNumber || "-"}</td>
+                                    <td className="p-4 text-sm text-slate-600 font-medium">{v.phoneNumber || "—"}</td>
                                     <td className="p-4">
                                         {v.accountNumber ? (
                                             <Tag color="blue" className="rounded-md border-0 bg-blue-50 text-blue-600 font-medium">
                                                 {v.accountNumber}
                                             </Tag>
-                                        ) : "-"}
+                                        ) : "—"}
+                                    </td>
+                                    <td className="p-4 text-sm text-slate-500 max-w-[200px]">
+                                        <div className="truncate whitespace-pre-wrap max-h-[40px] leading-relaxed" title={v.notes}>
+                                            {v.notes || "—"}
+                                        </div>
                                     </td>
                                     <td className="p-4 text-sm text-slate-500">
-                                        {v.createdAt ? dayjs(v.createdAt).format('MMM D, YYYY') : "-"}
+                                        {v.createdAt ? dayjs(v.createdAt).format('MMM DD, YYYY') : "—"}
+                                    </td>
+                                    <td className="p-4 text-sm text-slate-500 font-medium">
+                                        {v.updatedAt ? dayjs(v.updatedAt).format('MMM DD, YYYY') : "—"}
                                     </td>
                                     <td className="p-4 pr-8 text-right">
                                         <div className="flex items-center justify-end gap-1">
@@ -304,9 +324,14 @@ const VendorsRoot = () => {
                 <div className="p-6 lg:p-10 max-w-[1600px] mx-auto">
                     <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
-                            <h2 className="text-2xl font-bold text-slate-800 m-0">
-                                {t('nav.vendors') || 'Vendors'}
-                            </h2>
+                            <div className="flex items-center gap-2">
+                                <h2 className="text-2xl font-bold text-slate-800 m-0">
+                                    {t('nav.vendorContacts') || 'Vendor Contacts'}
+                                </h2>
+                                <Tooltip title={t('vendors.infoTooltip')} placement="right">
+                                    <InfoCircleOutlined className="text-slate-400 text-sm cursor-pointer hover:text-violet-500 transition-colors" />
+                                </Tooltip>
+                            </div>
                             <p className="text-slate-500 mt-1">
                                 {t('vendors.manageSubtitle') || 'Manage your parts suppliers and distributor contacts'}
                             </p>

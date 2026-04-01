@@ -24,12 +24,14 @@
         "termsOfService": "Terms of Service",
         "language": "Language",
         "myLanguage": "My Language",
-        "vendors": "Vendors"
+        "vendors": "Vendors",
+        "vendorContacts": "Vendor Contacts"
     },
     "vendors": {
-        "title": "Vendor Management",
+        "title": "Vendor Contacts",
         "manageSubtitle": "Manage your parts suppliers and distributor contacts",
-        "addVendor": "Add Vendor",
+        "infoTooltip": "Vendor Contacts stores your business contact directory \u2014 suppliers, glass vendors, service partners, and more. Use this section to view, add, edit, or remove contacts. All changes are saved in real time.",
+        "addVendor": "Add Vendor Contact",
         "editVendor": "Edit Vendor",
         "deleteTitle": "Delete Vendor",
         "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
