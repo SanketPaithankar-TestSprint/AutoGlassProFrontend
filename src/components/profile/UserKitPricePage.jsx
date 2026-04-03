@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Input, Card, notification, Table, Tag } from "antd";
 import { DollarOutlined } from "@ant-design/icons";
 import { createUserKitPrice, getUserKitPrices } from "../../api/userKitPrices";
+import { useKitPrices } from "../../hooks/usePricing";
 import { useTranslation } from 'react-i18next';
 
 const STANDARD_KITS = [
@@ -26,17 +27,7 @@ const UserKitPricePage = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    const { data: kitPrices, isLoading: loading } = useQuery({
-        queryKey: ['userKitPrices'],
-        queryFn: getUserKitPrices,
-        onError: (error) => {
-            console.error("Error fetching kit prices:", error);
-            notification.error({
-                message: t('pricing.fetchKitPricesFailed', { defaultValue: 'Failed to fetch kit prices' }),
-                description: error.message
-            });
-        }
-    });
+    const { data: kitPrices, isLoading: loading } = useKitPrices();
 
     useEffect(() => {
         if (kitPrices) {

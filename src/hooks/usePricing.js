@@ -24,7 +24,7 @@ export const usePilkingtonPrice = (userId, partNumber) => {
  */
 export const useKitPrices = () => {
     return useQuery({
-        queryKey: ['kitPrices'],
+        queryKey: ['userKitPrices'],
         queryFn: getUserKitPrices,
         staleTime: 1000 * 60 * 5, // 5 minutes
     });

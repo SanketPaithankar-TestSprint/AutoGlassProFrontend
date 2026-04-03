@@ -121,10 +121,12 @@ function AppContent() {
   useEffect(() => {
     const token = getValidToken();
     const authed = !!token;
-    setIsAuthed(authed);
-    setIsAuthenticated(authed);
+    if (authed !== isAuthed) {
+      setIsAuthed(authed);
+      setIsAuthenticated(authed);
+    }
     setLoading(false);
-  }, [location.pathname, setIsAuthenticated]); // Re-check on nav change (optional, but good for safety)
+  }, [location.pathname, isAuthed, setIsAuthenticated]); // Re-check on nav change, but only update if state changed
 
   const handleLoginSuccess = () => {
     setIsAuthed(true);

@@ -90,14 +90,6 @@ export default function AuthRoot() {
 
     if (login) login(token);
 
-    try {
-      if (prefetchProfileData) {
-        await prefetchProfileData();
-      }
-    } catch (error) {
-      console.error("Error prefetching data:", error);
-    }
-
     navigate("/quote");
   };
 

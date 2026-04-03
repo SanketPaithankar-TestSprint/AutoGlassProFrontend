@@ -29,7 +29,8 @@ export const useProfileDataPrefetch = (isAuthed) => {
                         const res = await getProfile(token);
                         localStorage.setItem("agp_profile_data", JSON.stringify(res));
                         return res;
-                    }
+                    },
+                    staleTime: 1000 * 60 * 5
                 });
 
                 // Customers - PREFETCH REMOVED PER USER REQUEST
@@ -49,7 +50,8 @@ export const useProfileDataPrefetch = (isAuthed) => {
                         const data = Array.isArray(res) ? res : [];
                         localStorage.setItem("agp_employees", JSON.stringify(data));
                         return data;
-                    }
+                    },
+                    staleTime: 1000 * 60 * 5
                 });
 
                 // Distributor Credentials
@@ -59,7 +61,8 @@ export const useProfileDataPrefetch = (isAuthed) => {
                         const res = await getDistributorCredentials(token);
                         localStorage.setItem("agp_distributor_creds", JSON.stringify(res));
                         return res;
-                    }
+                    },
+                    staleTime: 1000 * 60 * 5
                 });
 
                 // User Kit Prices
@@ -69,7 +72,8 @@ export const useProfileDataPrefetch = (isAuthed) => {
                         const res = await getUserKitPrices();
                         localStorage.setItem("user_kit_prices", JSON.stringify(res));
                         return res;
-                    }
+                    },
+                    staleTime: 1000 * 60 * 5
                 });
 
                 // Tax Rates
@@ -80,7 +84,8 @@ export const useProfileDataPrefetch = (isAuthed) => {
                         const rates = Array.isArray(data) ? data : [];
                         localStorage.setItem("agp_tax_rates", JSON.stringify(rates));
                         return rates;
-                    }
+                    },
+                    staleTime: 1000 * 60 * 5
                 });
 
                 // SMTP Configs
@@ -91,7 +96,8 @@ export const useProfileDataPrefetch = (isAuthed) => {
                         const configs = Array.isArray(data) ? data : [];
                         localStorage.setItem("agp_smtp_configs", JSON.stringify(configs));
                         return configs;
-                    }
+                    },
+                    staleTime: 1000 * 60 * 5
                 });
 
                 // User ADAS Prices
@@ -101,7 +107,8 @@ export const useProfileDataPrefetch = (isAuthed) => {
                         const res = await getUserAdasPrices();
                         localStorage.setItem("user_adas_prices", JSON.stringify(res));
                         return res;
-                    }
+                    },
+                    staleTime: 1000 * 60 * 5
                 });
 
                 // Special Instructions
@@ -116,7 +123,8 @@ export const useProfileDataPrefetch = (isAuthed) => {
                             console.error("Failed to prefetch special instructions", e);
                             return "";
                         }
-                    }
+                    },
+                    staleTime: 1000 * 60 * 5
                 });
 
                 // console.log("Profile data prefetching initiated.");
