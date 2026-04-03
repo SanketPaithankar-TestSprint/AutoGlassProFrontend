@@ -189,7 +189,7 @@
             "title": "Ready to Transform Your Business?",
             "description": "Join the auto glass professionals who are saving time and increasing profits with APAI.",
             "startTrial": "Start Your Free Trial",
-            "watchDemo": "Watch a Demo"
+            "watchDemo": "Watch a Intro"
         }
     },
     "auth": {
@@ -511,10 +511,12 @@
         "heroTitleLine2": "to Run Your",
         "heroTitleLine3": "Auto Glass Business.",
         "heroDescription": "Generate Instant, 100% Accurate Quotes through NAGS data, Streamline Field Service, and Manage Every Invoice\u2014All in One Platform.",
-        "watchDemo": "Watch a Demo",
+        "heroAltTitle": "The Intelligent OS for Modern Auto Glass Shops.",
+        "heroAltDescription": "From precision NAGS-integrated quoting and VIN decoding to automated payment reminders, APAI eliminates the manual guesswork so you can focus on the glass and the growth.",
+        "watchDemo": "Watch a Intro",
         "ctaTitle": "Ready to Transform Your Auto Glass Business?",
         "ctaDescription": "Contact us today to get started and see how APAI can help you grow your shop.",
-        "ctaContactButton": "Contact Us to Start Today",
+        "ctaContactButton": "Contact Us Today",
         "ctaButton": "Get Started",
         "learnMore": "Learn More",
         "whyChoose": "Why Choose Us",

@@ -92,7 +92,7 @@ const SitemapPage = () => {
 
             <div className="max-w-3xl mx-auto relative z-10">
                 <div className="mb-12">
-                    <h1 className="text-3xl font-bold text-slate-900 mb-4 font-outfit">{t('sitemap.title')}</h1>
+                    <h1 className="text-3xl font-bold text-slate-900 mb-4 font-black tracking-[-0.03em]">{t('sitemap.title')}</h1>
                     <p className="text-lg text-slate-600">
                         {t('sitemap.subtitle')}
                     </p>

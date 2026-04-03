@@ -22,7 +22,7 @@ const AuthShell = ({
   onBack,
 }) => {
   return (
-    <div className="mx-auto flex min-h-screen w-full bg-[#F5F7FB] lg:bg-white">
+    <div className="mx-auto flex min-h-screen w-full bg-white">
       <PageHead
         title="Login / Sign Up | APAI"
         description="Sign in to your APAI dashboard or create a new account to continue."
@@ -35,8 +35,8 @@ const AuthShell = ({
               <h1 className="text-[38px] font-bold leading-tight tracking-tight text-[#0D2B5C] sm:text-[44px]">
                 {title}
               </h1>
-              <p className="mt-3 max-w-[420px] text-[15px] leading-7 text-slate-500 sm:text-base group">
-                <span className="transition-colors duration-200 text-slate-500 group-hover:bg-gradient-to-r group-hover:from-violet-500 group-hover:to-fuchsia-500 group-hover:bg-clip-text group-hover:text-transparent">
+              <p className="mt-3 max-w-[420px] text-[15px] leading-7 text-slate-500 sm:text-base">
+                <span className="text-slate-500">
                   {description}
                 </span>
               </p>

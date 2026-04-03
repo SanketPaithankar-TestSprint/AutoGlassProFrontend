@@ -185,15 +185,18 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
     ] : []),
   ];
 
-  const NavLink = ({ label, href }) => (
-    <Link
-      to={href}
-      className={`nav-link hover-gradient-text tracking-normal flex items-center ${headerTextClass}`}
-      style={{ WebkitTapHighlightColor: "transparent" }}
-    >
-      <span className="leading-none">{label}</span>
-    </Link>
-  );
+  const NavLink = ({ label, href }) => {
+    const isActive = location.pathname === href;
+    return (
+      <Link
+        to={href}
+        className={`nav-link tracking-normal flex items-center ${headerTextClass} ${isActive ? 'active' : ''}`}
+        style={{ WebkitTapHighlightColor: "transparent" }}
+      >
+        <span className="leading-none">{label}</span>
+      </Link>
+    );
+  };
 
 
   if (loading) {
@@ -213,7 +216,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
       >
         <div className="flex items-center gap-4 min-w-0 ml-4 h-full">
           <Link to="/" className="flex items-center gap-2 min-w-0">
-            <Logo className="w-24 sm:w-28 h-9 min-w-0 object-contain" />
+            <Logo className="w-48 sm:w-56 h-16 min-w-0 object-contain" />
           </Link>
         </div>
       </AntHeader>
@@ -232,7 +235,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
             to="/"
             className="flex items-center gap-2 hover:scale-[1.02] transition-transform duration-150 min-w-0"
           >
-            <Logo className="w-24 sm:w-28 h-9 min-w-0 object-contain" />
+            <Logo className="!w-35 sm:w-40 h-10 min-w-0 object-contain" />
           </Link>
         </div>
 
@@ -256,7 +259,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
               onClick={() => navigate('/auth', { state: { mode: 'signin' } })}
               className="hover-gradient-text !h-9 !px-8 !rounded-full !border-0 !bg-transparent !flex items-center justify-center"
             >
-              <span className={headerTextClass}>{t('auth.login')}</span>
+              <span className={headerTextClass}>Sign In</span>
             </Button>
           </div>
         ) : (
@@ -293,7 +296,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
           title={
             <div className="flex items-center justify-between w-full pr-8">
               <div className="flex items-center gap-2">
-                <Logo className="w-24 h-auto" />
+                <Logo className="w-28 h-auto" />
               </div>
 
               {/* User Avatar Circle */}
@@ -374,7 +377,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
                     navigate('/auth', { state: { mode: 'signin' } });
                   }}
                 >
-                  <span className={headerTextClass}>{t('auth.login')}</span>
+                  <span className={headerTextClass}>Sign In</span>
                 </Button>
               </div>
             )}
@@ -387,7 +390,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
         <Drawer
           title={
             <div className="flex items-center gap-2">
-              <Logo className="w-24 h-auto" />
+              <Logo className="w-28 h-auto" />
             </div>
           }
           placement="right"
@@ -425,7 +428,7 @@ const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
                   navigate('/auth', { state: { mode: 'signin' } });
                 }}
               >
-                <span className={headerTextClass}>{t('auth.login')}</span>
+                <span className={headerTextClass}>Sign In</span>
               </Button>
             </div>
           </nav>

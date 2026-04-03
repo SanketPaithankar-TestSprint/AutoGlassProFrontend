@@ -144,7 +144,7 @@ const FeatureBlock = ({ icon, title, description }) => {
                 {icon}
             </div>
             <div>
-                <h4 className="text-xl font-bold text-slate-900 mb-2 font-outfit">{title}</h4>
+                <h4 className="text-xl font-bold text-slate-900 mb-2 font-black tracking-[-0.03em]">{title}</h4>
                 <p className="text-sm text-slate-600 leading-relaxed font-medium">{description}</p>
             </div>
         </div>
@@ -248,7 +248,7 @@ const FeatureCarousel = ({ features, color, sectionId, readMoreText }) => {
                                 <div className="flex-shrink-0 text-3xl p-4 rounded-xl text-white shadow-md w-fit mb-5" style={{ backgroundColor: '#7E5CFE' }}>
                                     {f.icon}
                                 </div>
-                                <h4 className="text-xl font-bold text-slate-900 mb-3 font-outfit leading-snug">
+                                <h4 className="text-xl font-bold text-slate-900 mb-3 font-black tracking-[-0.03em] leading-snug">
                                     {f.title}
                                 </h4>
                                 <p className="text-sm text-slate-600 leading-relaxed flex-1">
@@ -423,7 +423,7 @@ const FeaturesPage = () => {
             {/* Page Header */}
             <div className="relative pt-10 pb-16 px-6 md:px-12 lg:px-20 border-b border-transparent z-10">
                 <div className="max-w-4xl mx-auto text-center" style={{ visibility: 'visible' }}>
-                    <h1 className="text-3xl md:text-5xl font-bold mb-4 font-outfit text-slate-900 leading-tight">
+                    <h1 className="text-3xl md:text-5xl font-bold mb-4 font-black tracking-[-0.03em] text-slate-900 leading-tight">
                         {t('featuresPage.headerTitlePrefix')} <span style={{ color: '#7E5CFE' }}>{t('featuresPage.headerTitleHighlight')}</span>
                     </h1>
                     <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
@@ -441,7 +441,7 @@ const FeaturesPage = () => {
                                     <div className="h-1.5 w-12 rounded-full" style={{ backgroundColor: '#7E5CFE' }}></div>
                                     <span className="text-sm font-bold uppercase tracking-widest text-slate-500">{section.category}</span>
                                 </div>
-                                <h2 className="text-3xl md:text-5xl font-extrabold mb-4 font-outfit text-slate-900">
+                                <h2 className="text-3xl md:text-5xl font-extrabold mb-4 font-black tracking-[-0.03em] text-slate-900">
                                     {section.title}
                                 </h2>
                             </div>
@@ -575,7 +575,7 @@ const FeaturesPage = () => {
                     <div className="max-w-4xl mx-5 mt-24 bg-violet-50 rounded-3xl py-12 px-6 md:px-12 text-center relative overflow-hidden border border-violet-100 shadow-xl shadow-violet-100/50">
                         <div className="absolute top-0 left-0 w-full h-full opacity-5 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
                         <div className="relative z-10">
-                            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4 font-outfit">
+                            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4 font-black tracking-[-0.03em]">
                                 {t('featuresPage.cta.title')}
                             </h2>
                             <p className="text-base text-slate-600 mb-8 max-w-xl mx-auto">

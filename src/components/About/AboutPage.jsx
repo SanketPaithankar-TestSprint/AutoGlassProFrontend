@@ -65,7 +65,7 @@ const FounderCard = ({ name, role, description, delay }) => (
                     {name.charAt(0)}
                 </div>
                 <div>
-                    <h3 className="text-xl font-bold text-slate-900 font-outfit">{name}</h3>
+                    <h3 className="text-xl font-bold text-slate-900 font-black tracking-[-0.03em]">{name}</h3>
                     <p className="text-sm font-medium text-violet-600 uppercase tracking-wide">{role}</p>
                 </div>
             </div>
@@ -127,7 +127,7 @@ const AboutPage = () => {
 
 
     return (
-        <div className="min-h-screen pt-10 pb-20 relative overflow-hidden">
+        <div className="min-h-screen pt-24 pb-20 relative overflow-hidden bg-white">
             <PageHead
                 title="About APAI | Empowering Independent Auto Glass Shops"
                 description="Learn the story behind APAI. We're empowering independent auto glass shops with AI-driven tools to automate workflows, increase profits, and simplify scaling."
@@ -138,7 +138,7 @@ const AboutPage = () => {
                 {/* 1. Header & Mission */}
                 <div className="px-6 md:px-12 lg:px-20 py-12 md:py-16 max-w-7xl mx-auto text-center border-b border-slate-50">
                     <AnimatedSection>
-                        <h1 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6 font-outfit">
+                        <h1 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6 font-black tracking-[-0.03em]">
                             {t('aboutPage.heroTitle1')} <br /> {t('aboutPage.heroTitle2')}<span style={{ color: '#7E5CFE' }}>{t('aboutPage.heroTitle3')}</span>.
                         </h1>
                     </AnimatedSection>
@@ -158,7 +158,7 @@ const AboutPage = () => {
                     <div className="max-w-7xl mx-auto">
                         <AnimatedSection>
                             <div className="text-center mb-12">
-                                <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3 font-outfit">{t('aboutPage.foundersTitle')}</h2>
+                                <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3 font-black tracking-[-0.03em]">{t('aboutPage.foundersTitle')}</h2>
                                 <p className="text-slate-600 max-w-2xl mx-auto">{t('aboutPage.foundersSubtitle')}</p>
                             </div>
                         </AnimatedSection>
@@ -181,7 +181,7 @@ const AboutPage = () => {
                         <div className="px-6 md:px-12 lg:px-20 py-20 bg-white rounded-[2.5rem] relative overflow-hidden border border-violet-100">
                             <div className="relative z-10 max-w-7xl mx-auto">
                                 <div className="text-center mb-16">
-                                    <h2 className="text-3xl md:text-4xl font-bold mb-4 font-outfit text-slate-900">{t('aboutPage.whoWeServeTitle')}</h2>
+                                    <h2 className="text-3xl md:text-4xl font-bold mb-4 font-black tracking-[-0.03em] text-slate-900">{t('aboutPage.whoWeServeTitle')}</h2>
                                     <p className="text-slate-600 max-w-2xl mx-auto text-lg">{t('aboutPage.whoWeServeSubtitle')}</p>
                                 </div>
 
@@ -192,7 +192,7 @@ const AboutPage = () => {
                                                 <div className="h-16 w-16 mx-auto bg-violet-100 rounded-full flex items-center justify-center text-2xl text-violet-600 mb-5 group-hover:scale-110 transition-transform duration-300">
                                                     {user.icon}
                                                 </div>
-                                                <h3 className="text-lg font-bold mb-2 font-outfit text-slate-900">{user.title}</h3>
+                                                <h3 className="text-lg font-bold mb-2 font-black tracking-[-0.03em] text-slate-900">{user.title}</h3>
                                                 <p className="text-slate-600 leading-relaxed text-sm">{user.desc}</p>
                                             </div>
                                         </AnimatedSection>
@@ -207,7 +207,7 @@ const AboutPage = () => {
                 <div className="px-6 md:px-12 lg:px-20 py-10 max-w-7xl mx-auto">
                     <AnimatedSection>
                         <div className="text-center mb-10">
-                            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4 font-outfit">{t('aboutPage.whyChooseTitle')}</h2>
+                            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4 font-black tracking-[-0.03em]">{t('aboutPage.whyChooseTitle')}</h2>
                             <p className="text-lg text-slate-600 max-w-3xl mx-auto">
                                 {t('aboutPage.whyChooseSubtitle1')} <span className="font-bold text-violet-600">{t('aboutPage.whyChooseSubtitle2')}</span>{t('aboutPage.whyChooseSubtitle3')}
                             </p>
@@ -222,7 +222,7 @@ const AboutPage = () => {
                                         <CheckCircleFilled />
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-bold text-slate-900 mb-1 font-outfit">{item.title}</h3>
+                                        <h3 className="text-lg font-bold text-slate-900 mb-1 font-black tracking-[-0.03em]">{item.title}</h3>
                                         <p className="text-slate-600 text-base">{item.desc}</p>
                                     </div>
                                 </div>
@@ -236,7 +236,7 @@ const AboutPage = () => {
                     <AnimatedSection>
                         <div className="bg-white rounded-[2.5rem] p-10 md:p-12 border border-violet-100 flex flex-col md:flex-row items-center justify-between gap-8">
                             <div>
-                                <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3 font-outfit">{t('footer.followUs')}</h2>
+                                <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3 font-black tracking-[-0.03em]">{t('footer.followUs')}</h2>
                                 <p className="text-slate-600 max-w-md">{t('footer.tagline')}</p>
                             </div>
                             <div className="flex items-center gap-4">
@@ -265,7 +265,7 @@ const AboutPage = () => {
                                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full text-violet-700 font-bold text-sm mb-6 shadow-sm">
                                     <SafetyCertificateOutlined /> {t('aboutPage.securityTag')}
                                 </div>
-                                <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4 font-outfit">
+                                <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-4 font-black tracking-[-0.03em]">
                                     {t('aboutPage.dataPriorityTitle')}
                                 </h2>
                                 <p className="text-slate-600 mb-8 max-w-2xl mx-auto">

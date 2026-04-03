@@ -120,7 +120,7 @@ const BlogsPage = () => {
                         <span className="text-violet-600 font-medium tracking-wide text-sm uppercase mb-1 block">
                             Discover our resources
                         </span>
-                        <h1 className="text-4xl md:text-6xl font-bold text-slate-900 mb-2 font-outfit relative inline-block">
+                        <h1 className="text-4xl md:text-6xl font-bold text-slate-900 mb-2 font-black tracking-[-0.03em] relative inline-block">
                             Resources to <span className="text-violet-600 relative">Grow</span> Your Business
                         </h1>
                         <p className="text-xl text-slate-500 max-w-2xl mx-auto leading-relaxed">
@@ -164,7 +164,7 @@ const BlogsPage = () => {
                     viewport={{ once: true }}
                     className="mt-20 mb-32 bg-slate-100 rounded-3xl p-10 text-center border border-slate-200"
                 >
-                    <h2 className="text-2xl font-bold text-slate-800 mb-2 font-outfit uppercase tracking-wider">Stay Updated</h2>
+                    <h2 className="text-2xl font-bold text-slate-800 mb-2 font-black tracking-[-0.03em] uppercase tracking-wider">Stay Updated</h2>
                     <p className="text-slate-500 mb-8 max-w-xl mx-auto">Follow APAI on social media for technical tips, industry news, and the latest platform updates.</p>
                     <div className="flex justify-center gap-6">
                         <a href="https://x.com/autopaneai" target="_blank" rel="noopener noreferrer" className="p-4 bg-white rounded-full text-slate-900 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all"><SiX size={24} /></a>

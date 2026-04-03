@@ -281,7 +281,7 @@ export default function NamedVinDecoder() {
                             <div className="px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                 <div>
                                     <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: '#7E5CFE' }}>Decoded Vehicle</p>
-                                    <h2 className="text-2xl sm:text-4xl font-black text-slate-900 font-outfit">
+                                    <h2 className="text-2xl sm:text-4xl font-black text-slate-900 font-black tracking-[-0.03em]">
                                         {[result.ModelYear, result.Make, result.Model].filter(Boolean).join(' ')}
                                     </h2>
                                     <div className="flex flex-wrap gap-2 mt-2">

@@ -17,7 +17,7 @@ const FeatureSectionDetail = () => {
     if (!data) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center text-slate-900">
-                <h1 className="text-3xl font-bold mb-4 font-outfit">Section Not Found</h1>
+                <h1 className="text-3xl font-bold mb-4 font-black tracking-[-0.03em]">Section Not Found</h1>
                 <p className="text-slate-500 mb-8">We couldn't find the feature details you're looking for.</p>
                 <Button type="primary" size="large" onClick={() => navigate('/features')} className="bg-violet-600">
                     Back to Features
@@ -37,7 +37,7 @@ const FeatureSectionDetail = () => {
                 </Link>
 
                 <div className="max-w-4xl mb-16">
-                    <h1 className="text-4xl md:text-6xl font-extrabold mb-6 font-outfit text-slate-900 leading-tight">
+                    <h1 className="text-4xl md:text-6xl font-extrabold mb-6 font-black tracking-[-0.03em] text-slate-900 leading-tight">
                         {data.title}
                     </h1>
                     <p className="text-xl text-slate-600 leading-relaxed">
@@ -64,7 +64,7 @@ const FeatureSectionDetail = () => {
 
                                 {/* Content Side */}
                                 <div className="w-full lg:w-1/2 space-y-8">
-                                    <h2 className="text-3xl md:text-4xl font-bold font-outfit text-slate-900">
+                                    <h2 className="text-3xl md:text-4xl font-bold font-black tracking-[-0.03em] text-slate-900">
                                         {feature.title}
                                     </h2>
                                     <div className="text-lg text-slate-600 leading-relaxed space-y-4">
@@ -74,7 +74,7 @@ const FeatureSectionDetail = () => {
                                     </div>
 
                                     <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                                        <h3 className="font-bold text-slate-900 mb-4 font-outfit text-xl">Key Benefits:</h3>
+                                        <h3 className="font-bold text-slate-900 mb-4 font-black tracking-[-0.03em] text-xl">Key Benefits:</h3>
                                         <ul className="space-y-3">
                                             {feature.benefits.map((benefit, bIdx) => (
                                                 <li key={bIdx} className="flex items-start">
@@ -96,7 +96,7 @@ const FeatureSectionDetail = () => {
                 </div>
 
                 <div className="mt-32 text-center p-12 rounded-3xl border border-slate-100">
-                    <h2 className="text-3xl font-bold mb-4 font-outfit">Ready to upgrade your shop?</h2>
+                    <h2 className="text-3xl font-bold mb-4 font-black tracking-[-0.03em]">Ready to upgrade your shop?</h2>
                     <p className="text-lg text-slate-600 mb-8 max-w-2xl mx-auto">
                         Join hundreds of auto glass professionals who have streamlined their workflow with APAI.
                     </p>

@@ -598,7 +598,7 @@ const PublicContactContent = () => {
     // Main Contact Form
     return (
         <div
-            className="bg-white text-gray-900 font-sans selection:bg-yellow-200 h-screen w-full overflow-hidden flex flex-col"
+            className="bg-white text-gray-900 font-sans h-screen w-full overflow-hidden flex flex-col"
             style={{
                 '--theme-color': themeColor,
                 background: `linear-gradient(135deg, ${themeColor}26 0%, #ffffff 50%, ${themeColor}12 100%)`

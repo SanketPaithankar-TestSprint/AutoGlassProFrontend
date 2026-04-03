@@ -18,6 +18,7 @@ import {
     MailOutlined,
     PhoneOutlined
 } from '@ant-design/icons';
+import BrandButton from '../common/BrandButton';
 import axios from 'axios';
 import urls from '../../config';
 import { COUNTRIES, getStatesOrProvinces, getCities } from '../../const/locations';
@@ -430,14 +431,15 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                         >
                             {t('common.cancel')}
                         </Button>
-                        <Button
+                        <BrandButton
                             type="primary"
                             htmlType="submit"
-                            className="h-11 rounded-xl auth-button-gradient text-white font-['Plus_Jakarta_Sans'] font-bold !shadow-[0px_10px_40px_rgba(98,60,225,0.15)] active:scale-[0.98] transition-all duration-200 text-xl flex-1 flex items-center justify-center overflow-hidden"
+                            variant="gradient"
+                            className="h-11 flex-1"
                             loading={loading}
                         >
                             {t('auth.continue')}
-                        </Button>
+                        </BrandButton>
                     </div>
                 </Form.Item>
             </Form>

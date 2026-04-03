@@ -1,3 +1,65 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+:root {
+  --color-orangey: #ff8c42;
+  --color-brand-lavender: #dfdcff;
+  --brand-violet: #7E5CFE;
+  
+  /* High-Performance SaaS Typography Colors */
+  --text-primary: #1e293b;    /* Slate 800 - Confident Headings */
+  --text-secondary: #475569;  /* Slate 600 - Readable Body */
+  --text-muted: #94a3b8;     /* Slate 400 - Captions */
+  --text-link: #7E5CFE;      /* Brand Violet - Action Items */
+  --text-placeholder: #ccd6e0;
+  
+  /* Font Families */
+  --font-display: 'Inter', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+/* Base Typography Reset */
+body {
+  font-family: var(--font-body);
+  color: var(--text-secondary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.011em; /* Optimized for Inter readability */
+}
+
+::selection {
+  background-color: #7E5CFE;
+  color: #ffffff;
+}
+
+::-moz-selection {
+  background-color: #7E5CFE;
+  color: #ffffff;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  color: var(--text-primary);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.022em; /* Tighter tracking for impactful headings */
+}
+
+h1 { font-size: clamp(2.25rem, 5vw, 3.75rem); }
+h2 { font-size: clamp(1.875rem, 4vw, 2.75rem); }
+h3 { font-size: 1.5rem; }
+h4 { font-size: 1.25rem; }
+
+p, li { font-size: 1rem; font-weight: 400; color: var(--text-secondary); }
+
+small, .caption { font-size: 0.8125rem; font-weight: 400; color: var(--text-muted); }
+
+label { font-size: 0.875rem; font-weight: 600; color: var(--text-primary); }
+
+a { color: var(--text-link); text-decoration: none; transition: all 0.2s; }
+a:hover { opacity: 0.85; text-decoration: underline; }
+
+button, .btn-text { font-family: var(--font-body); font-weight: 600; letter-spacing: -0.01em; }
+
 /* Glassmorphism Navbar */
 .ant-layout-header.glass-navbar {
   background: transparent !important;
@@ -29,50 +91,41 @@ body,
 
 .nav-link {
   color: #1e293b !important; /* slate-800 */
-  text-decoration: none;
-  font-weight: 500;
+  text-decoration: none !important;
+  font-weight: 600;
   font-size: 1.1rem;
   padding: 0.5rem 0.2rem;
-  margin: 0 0.5rem;
+  margin: 0 0.25rem;
   position: relative;
-  transition: color 0.3s ease;
-  border-radius: 4px;
-  transition: color 0.2s, background 0.2s;
+  transition: all 0.2s ease;
   display: block;
 }
-
 
 .nav-link:hover,
 .nav-link:focus,
 .nav-link.active {
-  background: linear-gradient(90deg, #8E6BFF 0%, #1FA6C9 50%, #0C8FB8 100%) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  color: transparent !important;
+  color: var(--brand-violet) !important;
+  text-decoration: none !important;
 }
 
 .hover-gradient-text {
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .hover-gradient-text:hover {
-  background: linear-gradient(90deg, #8E6BFF 0%, #1FA6C9 50%, #0C8FB8 100%) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  color: transparent !important;
+  color: var(--brand-violet) !important;
+  -webkit-text-fill-color: var(--brand-violet) !important;
 }
 
 .nav-link::after {
   content: '';
   position: absolute;
-  bottom: 0;
+  bottom: -4px;
   left: 0;
   width: 0;
-  height: 3px;
-  background: #8E6BFF;
-  transition: width 0.3s ease;
+  height: 2px;
+  background: var(--brand-violet);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 2px;
 }
 
@@ -91,18 +144,16 @@ body,
 
 .footer-link:hover,
 .footer-link:focus {
-  font-family: 'Pacifico', cursive;
-  color: #60a5fa !important;
+  color: var(--brand-violet) !important;
 }
 
 @import "tailwindcss";
 
 @theme {
-  --font-pacifico: "Pacifico", cursive;
-  --font-poppins: "Poppins", sans-serif;
+  --font-inter: "Inter", sans-serif;
   --color-brand-primary: #7E5CFE;
   --color-brand-cyan: #00A8E4;
-  --color-brand-text: #0f172a;
+  --color-brand-text: #1e293b;
   --color-brand-muted: #475569;
 }
 
@@ -136,7 +187,15 @@ body,
 }
 
 .brand-gradient {
-  background: linear-gradient(90deg, #7B5BE6 0%, #3FAFD0 50%, #0F9AC7 100%);
+  background: #7E5CFE !important;
+  transition: all 0.3s ease;
+}
+
+.brand-button-premium:hover {
+  background-image: none !important;
+  background-color: #6b47e8 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(126, 92, 254, 0.3) !important;
 }
 
 .brand-gradient-text {
@@ -145,6 +204,18 @@ body,
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
 
 /* Custom animation for contact form */
@@ -168,16 +239,16 @@ body,
 html,
 body,
 #root {
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--font-body);
 }
 
 :root {
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--font-body);
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: light;
-  color: #0f172a;
+  color: var(--text-primary);
   background-color: #FFFFFF;
 
   font-synthesis: none;

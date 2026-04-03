@@ -106,7 +106,7 @@ const PrivacyPolicy = () => {
                 {/* Header */}
                 <div className="text-center mb-12">
                     <SafetyCertificateOutlined className="text-5xl text-violet-600 mb-4" />
-                    <Title level={1} className="!text-3xl md:!text-4xl !font-bold !text-slate-900 !mb-3 !font-outfit">
+                    <Title level={1} className="!text-3xl md:!text-4xl !font-bold !text-slate-900 !mb-3 !font-black tracking-[-0.03em]">
                         {t('privacy.title')}
                     </Title>
                     <Paragraph className="!text-slate-600 !text-base !mb-1 !leading-relaxed max-w-2xl mx-auto">
@@ -123,7 +123,7 @@ const PrivacyPolicy = () => {
                 <div className="space-y-10">
                     {sections.map((section, index) => (
                         <div key={index}>
-                            <Title level={3} className="!text-xl !font-bold !text-slate-800 !mb-3 !font-outfit">
+                            <Title level={3} className="!text-xl !font-bold !text-slate-800 !mb-3 !font-black tracking-[-0.03em]">
                                 {section.number}. {section.title}
                             </Title>
 

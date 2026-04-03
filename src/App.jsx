@@ -43,6 +43,7 @@ const EmployeeAttendance = React.lazy(() => import('./components/EmployeeAttenda
 const VendorsRoot = React.lazy(() => import('./components/Vendors/VendorsRoot.jsx'));
 import ErrorBoundary from './components/PublicContact/ErrorBoundary';
 const SitemapPage = React.lazy(() => import('./components/Sitemap/SitemapPage.jsx'));
+const NewFeaturesPage = React.lazy(() => import('./components/FeaturesPage/NewFeaturesPage.jsx'));
 const BlogsPage = React.lazy(() => import('./components/Blogs/BlogsPage.jsx'));
 const BlogPostPage = React.lazy(() => import('./components/Blogs/BlogPostPage.jsx'));
 const ShopChatPanel = React.lazy(() => import('./components/Chat/ShopChatPanel.jsx'));
@@ -246,6 +247,7 @@ function AppContent() {
                           <Route path="tickets" element={<SupportTicketsPage />} />
                           <Route path="contact" element={<CallSupportPage />} />
                         </Route>
+                        <Route path="/newfeatures" element={<NewFeaturesPage />} />
                       </Routes >
                     </Suspense >
                   </ErrorBoundary >
@@ -263,22 +265,7 @@ function AppContent() {
           <Header onLoginSuccess={handleLoginSuccess} />
 
           <Content className="flex-1 flex flex-col relative overflow-hidden"> {/* Header is fixed provided we handle spacing in pages */}
-            {/* Shared Gradient Background for all public pages */}
-            <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-              <motion.div
-                className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] min-w-[500px] min-h-[500px] rounded-full blur-[120px] opacity-20"
-                style={{ background: 'linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)', willChange: 'transform, opacity' }}
-                animate={{ scale: [1, 1.1, 1], opacity: [0.15, 0.25, 0.15] }}
-                transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-              />
-              <motion.div
-                className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] min-w-[500px] min-h-[500px] rounded-full blur-[120px] opacity-20"
-                style={{ background: 'linear-gradient(135deg, #00A8E4 0%, #7E5CFE 100%)', willChange: 'transform, opacity' }}
-                animate={{ scale: [1, 1.2, 1], opacity: [0.15, 0.25, 0.15] }}
-                transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-              />
-            </div>
-            <div className={`flex flex-col relative z-10 ${location.pathname === '/auth' ? '' : 'min-h-screen'} ${(location.pathname === '/' || location.pathname === '/auth' || location.pathname === '/vin-decoder') ? '' : 'pt-16'}`}>
+            <div className={`flex flex-col relative z-10 bg-white ${location.pathname === '/auth' ? '' : 'min-h-screen'}`}>
               <Suspense fallback={
                 <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh]">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
@@ -302,6 +289,7 @@ function AppContent() {
                   <Route path="/blogs/:slug" element={<BlogPostPage />} />
                   <Route path="/sitemap" element={<SitemapPage />} />
                   <Route path="/vin-decoder" element={<VinDecoderRoot />} />
+                  <Route path="/newfeatures" element={<NewFeaturesPage />} />
                 </Routes>
               </Suspense>
             </div>

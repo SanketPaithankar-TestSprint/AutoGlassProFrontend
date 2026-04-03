@@ -3,7 +3,7 @@ import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Badge, Card, Button, Space, Typography, List } from "antd";
 import { CheckCircleTwoTone, ExclamationCircleTwoTone, CloseCircleTwoTone, ClockCircleTwoTone, DollarOutlined, InfoCircleOutlined, CheckOutlined } from "@ant-design/icons";
-import { subscriptionStyles, getBadgeClass } from "../../../constants/subscriptionStyles";
+import { subscriptionStyles, getBadgeClass } from "../../../const/subscriptionStyles";
 
 
 const statusMap = {

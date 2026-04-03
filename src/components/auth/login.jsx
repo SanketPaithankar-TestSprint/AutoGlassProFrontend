@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useTranslation } from 'react-i18next';
-import { Form, Input, Button, Checkbox, Alert, Space, notification } from "antd";
+import { Form, Input, Checkbox, Alert, Space, notification } from "antd";
 import { UserOutlined, LockOutlined, GoogleOutlined, AppleOutlined } from "@ant-design/icons";
+import BrandButton from "../common/BrandButton";
 import { loginUser, loginEmployee, handleLoginSuccess } from '../../api/login';
 import { getTaxSettings } from '../../api/taxSettings';
 
@@ -218,15 +219,15 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
                 </div>
 
                 <Form.Item className="mb-8">
-                    <Button
+                    <BrandButton
                         type="primary"
                         htmlType="submit"
                         loading={loading}
                         block
-                        className="h-14 rounded-xl auth-button-gradient text-xl font-bold shadow-lg transition-all flex items-center justify-center p-0"
+                        className="h-14 text-xl"
                     >
                         {loading ? t('auth.signingIn') : t('auth.signIn')}
-                    </Button>
+                    </BrandButton>
                 </Form.Item>
 
                 <div className="relative flex items-center justify-center mb-8">

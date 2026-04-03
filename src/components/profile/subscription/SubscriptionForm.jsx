@@ -1,7 +1,7 @@
 import React from "react";
 import { Form, Input, InputNumber, Select, Button, Row, Col, Typography, Card, Divider, Checkbox } from "antd";
 import { DollarOutlined, InfoCircleOutlined, ArrowUpOutlined, CheckCircleFilled, MessageOutlined } from "@ant-design/icons";
-import { RECURRING_TYPE_OPTIONS } from "../../../constants/subscription";
+import { RECURRING_TYPE_OPTIONS } from "../../../const/subscription";
 import { COUNTRIES, getStatesOrProvinces, getCities, US_CITIES } from "../../../const/locations";
 import "./SubscriptionForm.css";
 
