@@ -1,0 +1,443 @@
+import React, { useEffect, useState } from "react";
+import { MdSupportAgent } from "react-icons/md";
+import { Layout, Button, Space, Drawer, Modal, Dropdown, Badge } from "antd";
+import { MenuOutlined, UserOutlined, DownOutlined, PieChartOutlined, TeamOutlined, FormOutlined, CalendarOutlined, FolderOpenOutlined, BarChartOutlined, MessageOutlined, AuditOutlined, BarcodeOutlined, ArrowLeftOutlined, InfoCircleOutlined, BookOutlined, FileTextOutlined } from "@ant-design/icons";
+import Logo from "./logo";
+import { getValidToken } from "../api/getValidToken";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import LanguageToggle from "./LanguageToggle";
+import { useChat } from "../context/ChatContext";
+
+const { Header: AntHeader } = Layout;
+
+
+
+// Shared typography style for all header actions
+const headerTextClass = "text-[16px] xl:text-[17px] font-medium leading-none text-slate-800";
+
+// ProfileDropdown component
+const ProfileDropdown = ({ onLogout }) => {
+  const { t } = useTranslation();
+  const [isOpen, setIsOpen] = useState(false);
+
+  const items = [
+    {
+      key: "profile",
+      label: <Link to="/profile" title="">{t('auth.userProfile')}</Link>,
+      title: "",
+    },
+    {
+      key: "help-support",
+      label: <Link to="/help" title="">Help & Support</Link>,
+      title: "",
+    },
+
+    {
+      key: "logout",
+      label: (
+        <span
+          style={{ color: "#f97373" }}
+          onClick={onLogout}
+        >
+          {t('auth.logout')}
+        </span>
+      ),
+      danger: true,
+      title: "",
+    },
+  ];
+
+  return (
+    <Dropdown
+      menu={{ items }}
+      placement="bottomRight"
+      trigger={["click"]}
+      onOpenChange={(open) => setIsOpen(open)}
+    >
+      <Button
+        type="text"
+        icon={<UserOutlined className="text-[16px]" />}
+        className="!h-9 !px-4 hover-gradient-text !bg-transparent hover:!bg-transparent !border-0 focus:!outline-none focus:!ring-0"
+      >
+        <span className="inline-flex items-center gap-1">
+          <span className={headerTextClass}>{t('auth.profile')}</span>
+          <DownOutlined className={`text-[10px] transition-transform duration-500 ${isOpen ? 'rotate-180' : ''}`} />
+        </span>
+      </Button>
+    </Dropdown>
+  );
+};
+
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== "undefined" ? window.innerWidth < 1024 : true
+  );
+
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 1023.98px)");
+    const onChange = (e) => setIsMobile(e.matches);
+    setIsMobile(mql.matches);
+    if (mql.addEventListener) mql.addEventListener("change", onChange);
+    else mql.addListener(onChange);
+    return () => {
+      if (mql.removeEventListener) mql.removeEventListener("change", onChange);
+      else mql.removeListener(onChange);
+    };
+  }, []);
+
+  return isMobile;
+};
+
+const AUTH_PATHS = [
+  "/auth",
+  "/auth/login",
+  "/auth/signup",
+  "/auth/forgot-password",
+  "/auth/reset-password",
+];
+
+function isAuthRoute(pathname) {
+  // Match /auth and any subroutes (e.g., /auth, /auth/login, /auth/forgot-password, etc.)
+  return pathname.startsWith("/auth") ||
+    pathname === "/login" ||
+    pathname === "/signup" ||
+    pathname === "/forgot-password" ||
+    pathname === "/reset-password";
+}
+
+const Header = ({ onLoginSuccess: onParentLoginSuccess }) => {
+  const isMobile = useIsMobile();
+  const location = useLocation();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [isAuthed, setIsAuthed] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [scrolled, setScrolled] = useState(false);
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  // Chat Notifications
+  const { unreadTotal } = useChat() || {};
+  const unreadChatCount = unreadTotal || 0;
+
+  useEffect(() => {
+    const token = getValidToken();
+    setIsAuthed(!!token);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    if (!isMobile) setDrawerOpen(false);
+  }, [isMobile]);
+
+  useEffect(() => {
+    const onScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+
+
+  const menuItems = [
+    ...(!isAuthed ? [
+      { key: "home", label: t('nav.home'), href: "/", icon: null },
+      { key: "features", label: t('nav.features'), href: "/features", icon: null },
+      { key: "pricing", label: t('nav.pricing'), href: "/pricing", icon: null },
+      { key: "contact", label: t('nav.contact'), href: "/contact", icon: null },
+    ] : []),
+    ...(isAuthed ? [
+      { key: "analytics", label: t('nav.analytics'), href: "/analytics", icon: <PieChartOutlined /> },
+      { key: "customers", label: t('nav.customers'), href: "/customers", icon: <TeamOutlined /> },
+      { key: "Quote", label: t('nav.quote'), href: "/quote", icon: <FormOutlined /> },
+      { key: "decoder", label: t('nav.vinDecoder') || 'VIN Decoder', href: "/decoder", icon: <BarcodeOutlined /> },
+      { key: "schedule", label: t('nav.schedule'), href: "/schedule", icon: <CalendarOutlined /> },
+      { key: "dashboard", label: t('nav.dashboard'), href: "/jobs", icon: <FolderOpenOutlined /> },
+      { key: "reports", label: t('nav.reports'), href: "/reports", icon: <BarChartOutlined /> },
+      { key: "service-inquiries", label: t('nav.serviceInquiries'), href: "/inquiries", icon: <MessageOutlined /> },
+      { key: "employee-attendance", label: t('nav.employeeAttendance'), href: "/attendance", icon: <AuditOutlined /> },
+      {
+        key: "live-chat",
+        label: t('nav.liveChat'),
+        href: "/chat",
+        icon: (
+          <div className="relative inline-block">
+            <MdSupportAgent className="text-2xl" />
+            {unreadChatCount > 0 && (
+              <Badge
+                count={unreadChatCount}
+                size="small"
+                color="#ef4444"
+                overflowCount={99}
+                className="absolute -top-2 -right-3"
+                style={{
+                  fontSize: 10,
+                  minWidth: 16,
+                  height: 16,
+                  lineHeight: '16px'
+                }}
+              />
+            )}
+          </div>
+        )
+      },
+    ] : []),
+  ];
+
+  const NavLink = ({ label, href }) => {
+    const isActive = location.pathname === href;
+    return (
+      <Link
+        to={href}
+        className={`nav-link tracking-normal flex items-center ${headerTextClass} ${isActive ? 'active' : ''}`}
+        style={{ WebkitTapHighlightColor: "transparent" }}
+      >
+        <span className="leading-none">{label}</span>
+      </Link>
+    );
+  };
+
+
+  if (loading) {
+    return (
+      <div className="fixed top-0 left-0 right-0 z-40 h-20 bg-transparent flex items-center justify-center">
+        <div className="h-6 w-6 rounded-full border-2 border-violet-500 border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
+  // AUTH HEADER: Only logo, no nav/actions
+  if (isAuthRoute(location.pathname)) {
+    return (
+      <AntHeader
+        className="fixed top-0 left-0 right-0 z-40 flex items-center px-4 sm:px-6 md:px-8 transition-all duration-500 h-16 glass-navbar"
+        style={{ paddingInline: 0, minWidth: 0 }}
+      >
+        <div className="flex items-center gap-4 min-w-0 ml-4 h-full">
+          <Link to="/" className="flex items-center gap-2 min-w-0">
+            <Logo className="w-52 sm:w-60 h-16 min-w-0 object-contain" />
+          </Link>
+        </div>
+      </AntHeader>
+    );
+  }
+
+  return (
+    <>
+      <AntHeader
+        className={`fixed top-0 left-0 right-0 z-40 flex items-center px-4 sm:px-6 md:px-8 transition-all duration-500 h-16 glass-navbar ${scrolled ? 'scrolled' : ''}`}
+        style={{ paddingInline: 0, minWidth: 0 }}
+      >
+        {/* Left: Logo + small tag */}
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 ml-4 h-full">
+          <Link
+            to="/"
+            className="flex items-center gap-2 hover:scale-[1.02] transition-transform duration-150 min-w-0"
+          >
+            <Logo className="!w-38 sm:w-44 h-11 min-w-0 object-contain" />
+          </Link>
+        </div>
+
+        {/* Center: Navigation */}
+        <nav className="hidden lg:flex flex-1 justify-center min-w-0">
+          <ul className="flex items-center gap-4 sm:gap-8 xl:gap-12 group/navlink min-w-0 m-0 p-0">
+            {menuItems.map((item) => (
+              <li key={item.key} className="list-none min-w-0 flex items-center">
+                <NavLink label={item.label} href={item.href} />
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        {/* Right: Buttons / Profile */}
+        {!isAuthed ? (
+          <div className="hidden lg:flex ml-auto min-w-0 items-center gap-2 sm:gap-4 pr-6">
+            <LanguageToggle />
+            <Button
+              type="text"
+              onClick={() => navigate('/auth', { state: { mode: 'signin' } })}
+              className="hover-gradient-text !h-9 !px-8 !rounded-full !border-0 !bg-transparent !flex items-center justify-center"
+            >
+              <span className={headerTextClass}>Sign In</span>
+            </Button>
+          </div>
+        ) : (
+          <div className="hidden lg:flex items-center gap-2 sm:gap-3 ml-auto min-w-0">
+            <LanguageToggle compact />
+            <ProfileDropdown
+              onLogout={() => {
+                localStorage.removeItem("ApiToken");
+                sessionStorage.removeItem("ApiToken");
+                window.location.href = "/";
+              }}
+            />
+          </div>
+        )}
+
+        {/* Mobile menu button */}
+        {isMobile && (
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px', marginRight: '1rem' }}>
+            <Button
+              type="text"
+              aria-label="Open navigation"
+              icon={<MenuOutlined className="text-[18px]" />}
+              onClick={() => setDrawerOpen(true)}
+              className="!flex lg:!hidden !items-center !justify-center !h-9 !w-9 !rounded-full !text-slate-700 !bg-white hover:!bg-slate-100 !border border-slate-200 shadow-sm focus:!outline-none focus:!ring-0 focus:!shadow-none"
+            />
+            <LanguageToggle compact />
+          </div>
+        )}
+      </AntHeader>
+
+      {/* Mobile Drawer */}
+      {isAuthed && isMobile && (
+        <Drawer
+          title={
+            <div className="flex items-center justify-between w-full pr-8">
+              <div className="flex items-center gap-2">
+                <Logo className="w-32 h-auto" />
+              </div>
+
+              {/* User Avatar Circle */}
+              <Link to="/profile" onClick={() => setDrawerOpen(false)}>
+                <div className="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center border border-violet-200 overflow-hidden">
+                  {localStorage.getItem('userLogo') ? (
+                    <img src={localStorage.getItem('userLogo')} alt="User" className="w-full h-full object-cover" />
+                  ) : (
+                    <UserOutlined className="text-violet-600 text-xl" />
+                  )}
+                </div>
+              </Link>
+            </div>
+          }
+          placement="right"
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          styles={{ body: { padding: 0, background: "#f7f7fa", borderRadius: '24px 0 0 24px' } }}
+          maskClosable
+          destroyOnClose
+          zIndex={2000}
+          className="ap-header-drawer"
+        >
+          <nav className="p-4 text-slate-700">
+
+            <ul className="space-y-2 pl-0 m-0 list-none">
+              {menuItems.map((item) => (
+                <li key={item.key}>
+                  <Link
+                    to={item.href}
+                    className="flex items-center gap-3 px-4 py-2 rounded-md text-base text-slate-700 hover:text-violet-700 hover:bg-violet-100 outline-none transition-colors duration-150"
+                    style={{ WebkitTapHighlightColor: "transparent" }}
+                    onClick={() => setDrawerOpen(false)}
+                  >
+                    {item.icon && <span className="text-xl">{item.icon}</span>}
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+            {isAuthed && (
+              <div className="pt-4 border-t border-slate-200 mt-4">
+                <ul className="space-y-2 pl-0 m-0 list-none">
+                  <li>
+                    <Link
+                      to="/profile"
+                      className="block px-4 py-2 rounded-md text-base text-slate-700 hover:text-violet-700 hover:bg-violet-100 outline-none transition-colors duration-150"
+                      onClick={() => setDrawerOpen(false)}
+                    >
+                      {t('auth.viewProfile')}
+                    </Link>
+                  </li>
+
+                  <li>
+                    <div
+                      className="block px-4 py-2 rounded-md text-base text-red-500 hover:bg-red-50 hover:text-red-600 cursor-pointer transition-colors duration-150"
+                      onClick={() => {
+                        setDrawerOpen(false);
+                        localStorage.removeItem("ApiToken");
+                        sessionStorage.removeItem("ApiToken");
+                        window.location.href = "/";
+                      }}
+                    >
+                      {t('auth.logout')}
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            )}
+
+            {!isAuthed && (
+              <div className="px-4 pt-4 border-t border-slate-200 mt-4">
+                <Button
+                  className="hover-gradient-text w-full !h-12 !rounded-lg !bg-transparent !border-0"
+                  onClick={() => {
+                    setDrawerOpen(false);
+                    navigate('/auth', { state: { mode: 'signin' } });
+                  }}
+                >
+                  <span className={headerTextClass}>Sign In</span>
+                </Button>
+              </div>
+            )}
+          </nav>
+        </Drawer>
+      )}
+
+      {/* Guest Mobile Drawer */}
+      {!isAuthed && isMobile && (
+        <Drawer
+          title={
+            <div className="flex items-center gap-2">
+              <Logo className="w-32 h-auto" />
+            </div>
+          }
+          placement="right"
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          styles={{ body: { padding: 0, background: "#f7f7fa", borderRadius: '24px 0 0 24px' } }}
+          maskClosable
+          destroyOnClose
+          zIndex={2000}
+          className="ap-header-drawer"
+        >
+          <nav className="p-4 text-slate-700">
+
+            <ul className="space-y-2 pl-0 m-0 list-none">
+              {menuItems.map((item) => (
+                <li key={item.key}>
+                  <Link
+                    to={item.href}
+                    className="flex items-center gap-3 px-4 py-2 rounded-md text-base text-slate-700 hover:text-violet-700 hover:bg-violet-100 outline-none transition-colors duration-150"
+                    style={{ WebkitTapHighlightColor: "transparent" }}
+                    onClick={() => setDrawerOpen(false)}
+                  >
+                    {item.icon && <span className="text-xl">{item.icon}</span>}
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+            <div className="px-4 pt-4 border-t border-slate-200 mt-4">
+              <Button
+                className="hover-gradient-text w-full !h-12 !rounded-lg !bg-transparent !border-0"
+                onClick={() => {
+                  setDrawerOpen(false);
+                  navigate('/auth', { state: { mode: 'signin' } });
+                }}
+              >
+                <span className={headerTextClass}>Sign In</span>
+              </Button>
+            </div>
+          </nav>
+        </Drawer>
+      )}
+
+
+    </>
+  );
+};
+
+export default React.memo(Header);

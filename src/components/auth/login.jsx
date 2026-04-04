@@ -199,7 +199,7 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
                             e.preventDefault();
                             if (onForgotPasswordClick) onForgotPasswordClick();
                         }}
-                        className="text-blue-500 font-semibold hover:text-blue-600 transition-colors"
+                        className="text-[#7E5CFE] font-semibold hover:text-[#6b47e8] transition-colors"
                     >
                         Forgot your password?
                     </a>
@@ -223,7 +223,7 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
                         htmlType="submit"
                         loading={loading}
                         block
-                        className="h-14 rounded-xl auth-button-gradient text-xl font-bold shadow-lg transition-all flex items-center justify-center p-0"
+                        className="h-14 !rounded-full auth-button-gradient !text-base !font-semibold transition-all duration-300 flex items-center justify-center p-0"
                     >
                         {loading ? t('auth.signingIn') : t('auth.signIn')}
                     </Button>
@@ -243,7 +243,7 @@ export default function Login({ onLoginSuccess, onSignUpClick, onForgotPasswordC
                             e.preventDefault();
                             if (onSignUpClick) onSignUpClick();
                         }}
-                        className="text-blue-500 font-bold auth-link-gradient-hover cursor-pointer"
+                        className="font-bold auth-link-gradient-hover cursor-pointer"
                     >
                         Sign up
                     </button>

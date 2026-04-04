@@ -1,85 +1,220 @@
-// Home.jsx
-import React, { useEffect, useRef, useState } from "react";
+// HomeRoot.jsx - Synchronized Landing Reveal
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from "react-router-dom";
-import { getValidToken } from "../../api/getValidToken";
 import PageHead from "../PageHead";
+import { PlayCircleOutlined } from "@ant-design/icons";
 import ValuePropSection from "./ValuePropSection";
-import { motion } from "framer-motion";
-import { Button } from "antd";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import BrandButton from "../common/BrandButton";
 import VideoModal from "../VideoModal/VideoModal";
 import BrowserMockup from "../../assets/browser_mockup.png";
-import gsap from "gsap";
-import { SplitText } from "gsap/SplitText";
-import { useGSAP } from "@gsap/react";
 
-gsap.registerPlugin(SplitText);
+const HERO_ANIMATION_MODES = Object.freeze({
+    FADE_BLUR: "fade-blur",
+    SLIDE_UP: "slide-up",
+    TYPEWRITER: "typewriter",
+    CROSSFADE: "crossfade",
+});
+
+const HERO_ROTATION_CONFIG = Object.freeze({
+    mode: HERO_ANIMATION_MODES.FADE_BLUR,
+    intervalMs: 4200,
+    pauseOnHover: true,
+    showDots: true,
+});
+
+const TYPEWRITER_CHAR_DELAY_MS = 24;
+
+const getHeroTitleMotionProps = (animationMode) => {
+    if (animationMode === HERO_ANIMATION_MODES.SLIDE_UP) {
+        return {
+            initial: { opacity: 0, y: 24 },
+            animate: { opacity: 1, y: 0, transition: { duration: 0.48, ease: [0.22, 1, 0.36, 1] } },
+            exit: { opacity: 0, y: -20, transition: { duration: 0.32, ease: "easeInOut" } },
+        };
+    }
+
+    if (animationMode === HERO_ANIMATION_MODES.CROSSFADE) {
+        return {
+            initial: { opacity: 0 },
+            animate: { opacity: 1, transition: { duration: 0.35, ease: "easeOut" } },
+            exit: { opacity: 0, transition: { duration: 0.25, ease: "easeIn" } },
+        };
+    }
+
+    if (animationMode === HERO_ANIMATION_MODES.TYPEWRITER) {
+        return {
+            initial: { opacity: 0 },
+            animate: { opacity: 1, transition: { duration: 0.25, ease: "easeOut" } },
+            exit: { opacity: 0, transition: { duration: 0.2, ease: "easeIn" } },
+        };
+    }
+
+    return {
+        initial: { opacity: 0, y: 10, filter: "blur(10px)" },
+        animate: {
+            opacity: 1,
+            y: 0,
+            filter: "blur(0px)",
+            transition: { duration: 0.52, ease: [0.22, 1, 0.36, 1] },
+        },
+        exit: {
+            opacity: 0,
+            y: -8,
+            filter: "blur(8px)",
+            transition: { duration: 0.3, ease: "easeInOut" },
+        },
+    };
+};
+
+const getHeroSubtitleMotionProps = (animationMode, isTypewriterComplete) => {
+    if (animationMode === HERO_ANIMATION_MODES.SLIDE_UP) {
+        return {
+            initial: { opacity: 0, y: 18 },
+            animate: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1], delay: 0.06 } },
+            exit: { opacity: 0, y: -14, transition: { duration: 0.28, ease: "easeInOut" } },
+        };
+    }
+
+    if (animationMode === HERO_ANIMATION_MODES.TYPEWRITER) {
+        return {
+            initial: { opacity: 0, y: 8 },
+            animate: isTypewriterComplete
+                ? { opacity: 1, y: 0, transition: { duration: 0.34, ease: "easeOut" } }
+                : { opacity: 0, y: 8 },
+            exit: { opacity: 0, y: -8, transition: { duration: 0.2, ease: "easeIn" } },
+        };
+    }
+
+    if (animationMode === HERO_ANIMATION_MODES.CROSSFADE) {
+        return {
+            initial: { opacity: 0 },
+            animate: { opacity: 1, transition: { duration: 0.3, ease: "easeOut" } },
+            exit: { opacity: 0, transition: { duration: 0.22, ease: "easeIn" } },
+        };
+    }
+
+    return {
+        initial: { opacity: 0, y: 6, filter: "blur(6px)" },
+        animate: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.45, ease: "easeOut", delay: 0.08 } },
+        exit: { opacity: 0, y: -6, filter: "blur(4px)", transition: { duration: 0.25, ease: "easeIn" } },
+    };
+};
 
 const Home = () => {
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
-    const [isAuthed, setIsAuthed] = useState(false);
-    const [mounted, setMounted] = useState(false);
+    const prefersReducedMotion = useReducedMotion();
     const [isVideoOpen, setIsVideoOpen] = useState(false);
-    const heroTitleRef = useRef(null);
-    const heroDescRef = useRef(null);
+    const [heroIndex, setHeroIndex] = useState(0);
+    const [isHeroPaused, setIsHeroPaused] = useState(false);
+    const [typedTitle, setTypedTitle] = useState("");
+    const [copyBlockHeight, setCopyBlockHeight] = useState(null);
+    const copyMeasureRefs = useRef([]);
+
+    const heroTexts = useMemo(
+        () => [
+            {
+                title: t('home.heroMainTitle'),
+                subtitle: t('home.heroDescription'),
+            },
+            {
+                title: t('home.heroAltTitle', {
+                    defaultValue: 'The Intelligent OS for Modern Auto Glass Shops.',
+                }),
+                subtitle: t('home.heroAltDescription', {
+                    defaultValue: 'From precision NAGS-integrated quoting and VIN decoding to automated payment reminders, APAI eliminates the manual guesswork so you can focus on the glass and the growth.',
+                }),
+            },
+        ],
+        [t, i18n.language]
+    );
+
+    const effectiveAnimationMode = prefersReducedMotion
+        ? HERO_ANIMATION_MODES.CROSSFADE
+        : HERO_ROTATION_CONFIG.mode;
+
+    const activeHero = heroTexts[heroIndex] ?? { title: "", subtitle: "" };
+    const shouldPauseCycle = HERO_ROTATION_CONFIG.pauseOnHover && isHeroPaused;
 
     useEffect(() => {
-        const token = getValidToken();
-        setIsAuthed(Boolean(token));
-    }, []);
+        setHeroIndex(0);
+    }, [i18n.language]);
 
     useEffect(() => {
-        setMounted(true);
-    }, []);
+        const measureCopyHeight = () => {
+            const maxHeight = copyMeasureRefs.current.reduce((max, node) => {
+                if (!node) {
+                    return max;
+                }
 
-    // SplitText animations for title + description
-    useGSAP(() => {
-        // Title: wave color shift — faster, no word breaking
-        if (heroTitleRef.current) {
-            const split = SplitText.create(heroTitleRef.current, {
-                type: "chars,words",
-                wordsClass: "split-word",
-            });
-            // Make each word a nowrap inline-block so chars don't break mid-word
-            split.words.forEach((word) => {
-                word.style.whiteSpace = "nowrap";
-                word.style.display = "inline-block";
-            });
-            gsap.from(split.chars, {
-                y: 35,
-                color: "#7E5CFE",
-                opacity: 0,
-                stagger: { each: 0.02, from: "start" },
-                duration: 0.35,
-                ease: "sine.out",
-            });
+                return Math.max(max, node.offsetHeight);
+            }, 0);
+
+            if (maxHeight > 0) {
+                setCopyBlockHeight(maxHeight);
+            }
+        };
+
+        const rafId = window.requestAnimationFrame(measureCopyHeight);
+        window.addEventListener('resize', measureCopyHeight);
+
+        return () => {
+            window.cancelAnimationFrame(rafId);
+            window.removeEventListener('resize', measureCopyHeight);
+        };
+    }, [heroTexts, i18n.language]);
+
+    useEffect(() => {
+        if (heroTexts.length < 2 || shouldPauseCycle) {
+            return undefined;
         }
 
-        // Description: words fade up with stagger
-        if (heroDescRef.current) {
-            const splitDesc = SplitText.create(heroDescRef.current, { type: "words" });
-            gsap.from(splitDesc.words, {
-                y: 20,
-                opacity: 0,
-                stagger: { each: 0.03, from: "start" },
-                duration: 0.4,
-                ease: "power2.out",
-                delay: 0.5, // start after title finishes
-            });
+        const intervalId = window.setInterval(() => {
+            setHeroIndex((prevIndex) => (prevIndex + 1) % heroTexts.length);
+        }, HERO_ROTATION_CONFIG.intervalMs);
+
+        return () => {
+            window.clearInterval(intervalId);
+        };
+    }, [heroTexts.length, shouldPauseCycle]);
+
+    useEffect(() => {
+        if (effectiveAnimationMode !== HERO_ANIMATION_MODES.TYPEWRITER) {
+            setTypedTitle(activeHero.title);
+            return undefined;
         }
-    }, { dependencies: [i18n.language], revertOnUpdate: true });
+
+        setTypedTitle("");
+        let charIndex = 0;
+
+        const typewriterTimer = window.setInterval(() => {
+            charIndex += 1;
+            setTypedTitle(activeHero.title.slice(0, charIndex));
+
+            if (charIndex >= activeHero.title.length) {
+                window.clearInterval(typewriterTimer);
+            }
+        }, TYPEWRITER_CHAR_DELAY_MS);
+
+        return () => {
+            window.clearInterval(typewriterTimer);
+        };
+    }, [activeHero.title, effectiveAnimationMode]);
+
+    const isTypewriterComplete =
+        effectiveAnimationMode !== HERO_ANIMATION_MODES.TYPEWRITER ||
+        typedTitle.length >= activeHero.title.length;
 
     return (
-        <div className="relative text-slate-900 overflow-hidden bg-slate-50/50" style={{ minHeight: 'calc(var(--vh, 1vh) * 100)' }}>
+        <div className="relative text-slate-900 overflow-hidden bg-white" style={{ minHeight: 'calc(var(--vh, 1vh) * 100)' }}>
             <PageHead
                 title="APAI | Smart Auto Glass Shop Management Software"
-                description="Scale your auto glass business with APAI. Automate quoting, invoicing, and NAGS pricing. The all-in-one AI platform built to grow your shop for only $99/mo."
+                description="Scale your auto glass business with APAI."
             />
 
-
             <div className="relative z-10">
-                {/* Hero Section */}
                 <section
                     className="relative bg-transparent text-slate-900 py-0 flex justify-center items-center"
                     style={{ minHeight: 'calc(var(--vh, 1vh) * 100)' }}
@@ -89,143 +224,152 @@ const Home = () => {
                         {/* Left Column */}
                         <div className="text-center lg:text-left lg:col-span-5 w-full">
 
-                            {/* Heading */}
-                            <h1
-                                key={`title-${i18n.language}`}
-                                ref={heroTitleRef}
-                                className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight text-violet-600 mb-3 sm:mb-4 md:mb-6 px-2 sm:px-0"
+                            {/* Rotating Hero Copy */}
+                            <div
+                                className="relative mb-5 md:mb-6 flex flex-col min-h-[220px] md:min-h-[250px] lg:min-h-[300px] overflow-hidden"
+                                style={copyBlockHeight ? { height: `${copyBlockHeight}px` } : undefined}
+                                onMouseEnter={HERO_ROTATION_CONFIG.pauseOnHover ? () => setIsHeroPaused(true) : undefined}
+                                onMouseLeave={HERO_ROTATION_CONFIG.pauseOnHover ? () => setIsHeroPaused(false) : undefined}
                             >
-                                <span className="block">{t('home.heroTitleLine1')}</span>
-                                <span className="block">{t('home.heroTitleLine2')}</span>
-                                <span className="block">{t('home.heroTitleLine3')}</span>
-                            </h1>
+                                <div aria-hidden="true" className="absolute top-0 left-0 w-full pointer-events-none invisible -z-10">
+                                    {heroTexts.map((heroText, index) => (
+                                        <div
+                                            key={`hero-measure-${heroText.title}`}
+                                            ref={(node) => {
+                                                copyMeasureRefs.current[index] = node;
+                                            }}
+                                            className="relative flex flex-col"
+                                        >
+                                            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black leading-[1.05] !text-[#7E5CFE] !m-0 px-2 sm:px-0 tracking-[-0.04em]">
+                                                {heroText.title}
+                                            </h1>
+                                            <p className="text-sm sm:text-base md:text-lg leading-6 md:leading-7 text-slate-600 max-w-2xl mx-auto lg:mx-0 !m-0 px-2 sm:px-0 pt-2">
+                                                {heroText.subtitle}
+                                            </p>
+                                            {HERO_ROTATION_CONFIG.showDots && heroTexts.length > 1 ? (
+                                                <div className="pt-3">
+                                                    <div className="h-2 w-8" />
+                                                </div>
+                                            ) : null}
+                                        </div>
+                                    ))}
+                                </div>
 
-                            {/* Description */}
-                             <p
-                                key={`desc-${i18n.language}`}
-                                ref={heroDescRef}
-                                className="mt-6 text-lg md:text-xl leading-8 text-slate-600 mb-5 sm:mb-6 md:mb-8 max-w-2xl mx-auto lg:mx-0 px-2 sm:px-0"
-                                style={{ opacity: 1 }} // GSAP controls opacity on chars
-                            >
-                                {t('home.heroDescription')}
-                            </p>
+                                <div className="relative !min-h-0" aria-live="polite">
+                                    <AnimatePresence mode="wait">
+                                        <motion.h1
+                                            key={`hero-title-${heroIndex}-${effectiveAnimationMode}`}
+                                            {...getHeroTitleMotionProps(effectiveAnimationMode)}
+                                            className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold leading-[1.05] !text-[#7E5CFE] !m-0 px-2 sm:px-0 tracking-[-0.04em]"
+                                        >
+                                            {effectiveAnimationMode === HERO_ANIMATION_MODES.TYPEWRITER ? typedTitle : activeHero.title}
+                                            {effectiveAnimationMode === HERO_ANIMATION_MODES.TYPEWRITER && !isTypewriterComplete ? (
+                                                <span
+                                                    className="inline-block w-[0.08em] h-[0.9em] align-[-0.08em] bg-[#7E5CFE] ml-1 animate-pulse"
+                                                    aria-hidden="true"
+                                                />
+                                            ) : null}
+                                        </motion.h1>
+                                    </AnimatePresence>
+                                </div>
 
-                            <motion.div
-                                className="flex flex-row justify-center lg:justify-start gap-3 w-full"
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5, delay: 0.9 }}
-                            >
-                                <motion.div
-                                    whileHover={{ scale: 1.04 }}
-                                    whileTap={{ scale: 0.97 }}
-                                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                                >
-                                    <Button
+                                <div className="relative !min-h-0 mt-2">
+                                    <AnimatePresence mode="wait">
+                                        <motion.p
+                                            key={`hero-subtitle-${heroIndex}-${effectiveAnimationMode}`}
+                                            {...getHeroSubtitleMotionProps(effectiveAnimationMode, isTypewriterComplete)}
+                                            className="text-sm sm:text-base md:text-lg leading-6 md:leading-7 text-slate-600 max-w-2xl mx-auto lg:mx-0 !m-0 px-2 sm:px-0"
+                                        >
+                                            {activeHero.subtitle}
+                                        </motion.p>
+                                    </AnimatePresence>
+                                </div>
+
+                                {HERO_ROTATION_CONFIG.showDots && heroTexts.length > 1 ? (
+                                    <div className="mt-auto pt-3 flex items-center justify-center lg:justify-start gap-2" role="tablist" aria-label="Hero message navigation">
+                                        {heroTexts.map((heroText, index) => (
+                                            <button
+                                                key={heroText.title}
+                                                type="button"
+                                                role="tab"
+                                                aria-selected={index === heroIndex}
+                                                aria-label={`Show hero message ${index + 1}`}
+                                                className={`h-2 rounded-full transition-all duration-300 ${index === heroIndex ? 'w-8 bg-[#7E5CFE]' : 'w-2 bg-slate-300 hover:bg-slate-400'}`}
+                                                onClick={() => setHeroIndex(index)}
+                                            />
+                                        ))}
+                                    </div>
+                                ) : null}
+                            </div>
+
+                            <div className="md:-mt-4 flex flex-col sm:flex-row justify-center lg:justify-start gap-2 sm:gap-3 w-full">
+                                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+                                    <BrandButton
                                         type="primary"
-                                         className="brand-gradient !text-white !h-12 !px-8 !rounded-full !text-sm !font-semibold shadow-lg transition-all duration-200"
-                                         style={{
-                                             boxShadow: '0 4px 14px 0 rgba(126, 92, 254, 0.39)',
-                                             border: 'none'
-                                         }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.backgroundColor = '#6b47e8';
-                                            e.currentTarget.style.transform = 'translateY(-2px)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.backgroundColor = '#7E5CFE';
-                                            e.currentTarget.style.transform = 'translateY(0)';
-                                        }}
+                                        variant="solid"
                                         onClick={() => navigate('/auth', { state: { mode: 'signup' } })}
+                                        className="!h-12 sm:!h-14 !px-6 sm:!px-10 !text-base !rounded-full w-full sm:w-auto !bg-[#7E5CFE] hover:!bg-[#7E5CFE]"
                                     >
-                                        <span className="font-medium">{t('pricing.startFreeTrial')}</span>
-                                    </Button>
+                                        {t('pricing.startFreeTrial')}
+                                    </BrandButton>
                                 </motion.div>
 
-                                <motion.div
-                                    whileHover={{ scale: 1.04 }}
-                                    whileTap={{ scale: 0.97 }}
-                                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                                >
-                                     <Button
-                                        className="!bg-transparent !border-violet-600 !text-violet-600 hover:!bg-violet-100 !h-12 !px-8 !rounded-full !text-sm !font-semibold shadow-sm hover:shadow-md transition-all duration-200"
-                                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
+                                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+                                    <BrandButton
+                                        variant="outline"
+                                        className="!h-12 sm:!h-14 !px-6 sm:!px-10 !rounded-full !text-base shadow-sm w-full sm:w-auto"
                                         onClick={() => setIsVideoOpen(true)}
                                     >
-                                        <span className="font-medium">{t('home.watchDemo')}</span>
-                                    </Button>
+                                        <div className="flex items-center gap-2">
+                                            <PlayCircleOutlined className="text-xl" />
+                                            {t('home.watchDemo')}
+                                        </div>
+                                    </BrandButton>
                                 </motion.div>
-                            </motion.div>
+                            </div>
                         </div>
 
-                        {/* Right Column: Image */}
-                        <div className="hidden lg:flex relative lg:col-span-6 justify-center lg:justify-end">
+                        {/* Right Column */}
+                        <div className="hidden lg:flex relative lg:col-span-7 justify-center lg:justify-end">
                             <motion.div
-                                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-[100px] pointer-events-none"
-                                style={{ background: 'linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)', willChange: 'transform, opacity' }}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 0.4 }}
-                                transition={{ duration: 1.2, ease: "easeOut" }}
+                                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[850px] h-[850px] rounded-full blur-[110px] pointer-events-none"
+                                style={{ background: 'linear-gradient(135deg, rgba(126, 92, 254, 0.25) 0%, rgba(0, 168, 228, 0.15) 100%)' }}
+                                initial={{ opacity: 0, scale: 0.8, rotate: 0 }}
+                                animate={{ 
+                                    opacity: [0.7, 1, 0.7],
+                                    scale: [1, 1.15, 1],
+                                    rotate: [0, 60, 0],
+                                }}
+                                transition={{ 
+                                    duration: 6, 
+                                    repeat: Infinity, 
+                                    ease: "easeInOut" 
+                                }}
                             />
                             <motion.div
                                 className="relative w-full max-w-5xl"
-                                initial={{ opacity: 0, x: 100 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
+                                style={{ transformOrigin: ' center' }}
+                                initial={{ opacity: 0, x: 40, scale: 1.4 }}
+                                animate={{ opacity: 1, x: 0, scale: 1.4 }}
+                                transition={{ duration: 1, delay: 0.5 }}
                             >
                                 <img
                                     src={BrowserMockup}
-                                    alt="AutoGlassPro Dashboard Mockup"
-                                    className="w-full h-auto object-contain drop-shadow-2xl relative z-10 rounded-2xl"
+                                    alt="AutoGlassPro Dashboard"
+                                    className="w-full h-auto object-contain drop-shadow-[0_25px_60px_rgba(0,0,0,0.12)] relative z-10 rounded-2xl"
+                                    style={{
+                                        WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 72%, rgba(0,0,0,0.75) 82%, rgba(0,0,0,0.35) 90%, rgba(0,0,0,0) 100%)',
+                                        maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 72%, rgba(0,0,0,0.75) 82%, rgba(0,0,0,0.35) 90%, rgba(0,0,0,0) 100%)',
+                                    }}
                                 />
                             </motion.div>
                         </div>
                     </div>
                 </section>
 
-                {/* Value Proposition */}
-                <div
-                    className={`transition-all duration-700 ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
-                >
-                    <ValuePropSection />
-                </div>
-
-                {/* CTA Section */}
-                <div className="relative section-padding px-4 sm:px-6 lg:px-8 mb-24">
-                    <div className="max-w-5xl mx-auto text-center">
-                        <motion.div
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.6, delay: 0.3 }}
-                            className="bg-gradient-to-r from-[#7E5CFE] to-[#7E5CFE] rounded-3xl p-8 md:p-20 shadow-2xl"
-                        >
-                             <h2 className="section-heading text-white mb-4">
-                                 {t('home.ctaTitle')}
-                             </h2>
-                             <p className="text-violet-100 mb-8 text-lg md:text-xl">
-                                 {t('home.ctaDescription')}
-                             </p>
-                            <motion.div
-                                className="flex justify-center"
-                                whileTap={{ scale: 0.95 }}
-                                transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                            >
-                                <Button
-                                    type="primary"
-                                    size="large"
-                                    className="!bg-white !text-violet-600 !border-none !rounded-full !px-10 !h-14 !text-base !font-bold shadow-lg hover:shadow-xl transition-all duration-300"
-                                    onClick={() => navigate('/contact')}
-                                >
-                                    {t('home.ctaContactButton')}
-                                </Button>
-                            </motion.div>
-                        </motion.div>
-                    </div>
-                </div>
+                <ValuePropSection />
             </div>
 
-            {/* Video Modal */}
             <VideoModal isOpen={isVideoOpen} onClose={() => setIsVideoOpen(false)} />
         </div>
     );

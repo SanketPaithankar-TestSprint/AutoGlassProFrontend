@@ -1,15 +1,15 @@
 import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Form, Input, Button, Select, message, Typography } from 'antd';
-import { 
-    MailOutlined, UserOutlined, CheckCircleOutlined, 
-    BulbOutlined, SettingOutlined, PlaySquareOutlined, ThunderboltOutlined 
+import {
+    MailOutlined, UserOutlined, CheckCircleOutlined,
+    BulbOutlined, SettingOutlined, PlaySquareOutlined, ThunderboltOutlined
 } from '@ant-design/icons';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import PageHead from './PageHead';
-import { SiYoutube, SiX, SiInstagram, SiLinkedin } from "react-icons/si";
+
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -36,27 +36,27 @@ const ContactPage = () => {
             scrollTrigger: {
                 trigger: stepsContainerRef.current,
                 start: "top 70%",
-                end: "center center",
-                scrub: 1, 
+                end: "center 60%",
+                scrub: 1,
             }
         });
 
         tl.to(".progress-line", { width: "100%", ease: "none", duration: 2 }, 0);
 
         // Step 1
-        tl.to(".step-circle-0", { borderColor: "#00A8E4", backgroundColor: "#00A8E4", color: "#ffffff", duration: 0.2 }, 0);
-        tl.to(".step-badge-0", { backgroundColor: "#00A8E4", borderColor: "#00A8E4", color: "#ffffff", duration: 0.2 }, 0);
-        tl.to(".step-card-0", { borderColor: "#bae6fd", boxShadow: "0 10px 15px -3px rgba(0, 168, 228, 0.1), 0 4px 6px -4px rgba(0, 168, 228, 0.1)", duration: 0.2 }, 0);
+        tl.to(".step-circle-0", { borderColor: "#7E5CFE", backgroundColor: "#7E5CFE", color: "#ffffff", duration: 0.2 }, 0);
+        tl.to(".step-badge-0", { backgroundColor: "#7E5CFE", borderColor: "#7E5CFE", color: "#ffffff", duration: 0.2 }, 0);
+        tl.to(".step-card-0", { borderColor: "#ddd6fe", boxShadow: "0 10px 15px -3px rgba(126, 92, 254, 0.12), 0 4px 6px -4px rgba(126, 92, 254, 0.12)", duration: 0.2 }, 0);
 
         // Step 2
-        tl.to(".step-circle-1", { borderColor: "#00A8E4", backgroundColor: "#00A8E4", color: "#ffffff", duration: 0.2 }, 1.0);
-        tl.to(".step-badge-1", { backgroundColor: "#00A8E4", borderColor: "#00A8E4", color: "#ffffff", duration: 0.2 }, 1.0);
-        tl.to(".step-card-1", { borderColor: "#bae6fd", boxShadow: "0 10px 15px -3px rgba(0, 168, 228, 0.1), 0 4px 6px -4px rgba(0, 168, 228, 0.1)", duration: 0.2 }, 1.0);
+        tl.to(".step-circle-1", { borderColor: "#7E5CFE", backgroundColor: "#7E5CFE", color: "#ffffff", duration: 0.2 }, 1.0);
+        tl.to(".step-badge-1", { backgroundColor: "#7E5CFE", borderColor: "#7E5CFE", color: "#ffffff", duration: 0.2 }, 1.0);
+        tl.to(".step-card-1", { borderColor: "#ddd6fe", boxShadow: "0 10px 15px -3px rgba(126, 92, 254, 0.12), 0 4px 6px -4px rgba(126, 92, 254, 0.12)", duration: 0.2 }, 1.0);
 
         // Step 3
-        tl.to(".step-circle-2", { borderColor: "#00A8E4", backgroundColor: "#00A8E4", color: "#ffffff", duration: 0.2 }, 2.0);
-        tl.to(".step-badge-2", { backgroundColor: "#00A8E4", borderColor: "#00A8E4", color: "#ffffff", duration: 0.2 }, 2.0);
-        tl.to(".step-card-2", { borderColor: "#bae6fd", boxShadow: "0 10px 15px -3px rgba(0, 168, 228, 0.1), 0 4px 6px -4px rgba(0, 168, 228, 0.1)", duration: 0.2 }, 2.0);
+        tl.to(".step-circle-2", { borderColor: "#7E5CFE", backgroundColor: "#7E5CFE", color: "#ffffff", duration: 0.2 }, 1.6);
+        tl.to(".step-badge-2", { backgroundColor: "#7E5CFE", borderColor: "#7E5CFE", color: "#ffffff", duration: 0.2 }, 1.6);
+        tl.to(".step-card-2", { borderColor: "#ddd6fe", boxShadow: "0 10px 15px -3px rgba(126, 92, 254, 0.12), 0 4px 6px -4px rgba(126, 92, 254, 0.12)", duration: 0.2 }, 1.6);
 
     }, { scope: stepsContainerRef });
 
@@ -98,7 +98,7 @@ ${userMessage || 'No message provided'}
     };
 
     return (
-        <div className="min-h-screen py-2 md:py-4 px-4 sm:px-6 lg:px-8 flex flex-col items-center animate-fade-in relative overflow-hidden">
+        <div className="min-h-screen py-2 md:py-4 px-4 sm:px-6 lg:px-8 flex flex-col items-center animate-fade-in relative overflow-hidden bg-white pt-32">
             <PageHead
                 title="Contact APAI | Sign Up for Your Auto Glass Business"
                 description="Have questions about APAI? Contact our team today for support, demos, or sign up for 30 days trial."
@@ -106,7 +106,7 @@ ${userMessage || 'No message provided'}
 
             <div className="w-full max-w-6xl flex flex-col items-center relative z-10">
                 {/* Header Section */}
-                <div className="text-center mb-6 md:mb-10 mt-4">
+                <div className="text-center mb-6 md:mb-10 mt-10">
                     <h1 className="text-3xl md:text-5xl font-black tracking-tight text-slate-900 mb-4">
                         {t('contact.getInTouch')}
                     </h1>
@@ -117,16 +117,16 @@ ${userMessage || 'No message provided'}
 
                 {/* Main Content Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch w-full">
-                    
+
                     {/* Left Column: Image Area */}
-                    <div className="lg:col-span-6 relative lg:-mt-10 flex flex-col justify-center">
+                    <div className="lg:col-span-5 relative lg:-mt-10 flex flex-col justify-center">
                         <div className="relative mt-10 md:mt-20">
                             <img
                                 src={contactImage2}
                                 alt="Dashboard Mockup"
                                 className="w-full h-auto drop-shadow-xl rounded-3xl border border-slate-200"
                             />
-                            <div className="absolute -bottom-16 -right-4 md:-right-8 w-56 md:w-72 lg:w-80 animate-float z-10">
+                            <div className="absolute -bottom-24 -right-4 md:-right-8 w-72 md:w-96 lg:w-[26rem] animate-float z-10">
                                 <img
                                     src={contactImage}
                                     alt="Support Character"
@@ -140,38 +140,18 @@ ${userMessage || 'No message provided'}
                                 {t('contact.emailUsDesc')}
                             </p>
                             <div className="bg-slate-50 py-3 px-4 rounded-xl border border-slate-100 inline-block">
-                                <a href={`mailto:${t('contact.supportEmail')}`} className="inline-flex items-center gap-2 text-base font-bold text-[#00A8E4] hover:text-[#0082b3] transition-colors">
+                                <a href={`mailto:${t('contact.supportEmail')}`} className="inline-flex items-center gap-2 text-base font-bold text-[#7E5CFE] hover:text-[#6b47e8] transition-colors">
                                     <MailOutlined className="text-lg" />
                                     {t('contact.supportEmail')}
                                 </a>
                             </div>
                         </div>
 
-                        <div className="mt-8 md:mt-10 lg:mt-12 w-full max-w-md mx-auto xl:ml-0 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm text-center lg:text-left transition-all hover:border-[#7E5CFE]/30">
-                            <h3 className="text-xl md:text-2xl font-black text-slate-900 mb-3">{t('footer.followUs')}</h3>
-                            <p className="text-slate-500 text-sm md:text-base leading-relaxed mb-4">
-                                {t('social.followUsDesc')}
-                            </p>
-                            <div className="flex items-center justify-center lg:justify-start gap-4">
-                                <a href="https://x.com/autopaneai" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 hover:text-black hover:bg-slate-100 transition-all border border-slate-100 shadow-sm hover:scale-110">
-                                    <SiX size={18} />
-                                </a>
-                                <a href="https://instagram.com/autopaneai" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 hover:text-[#E4405F] hover:bg-slate-100 transition-all border border-slate-100 shadow-sm hover:scale-110">
-                                    <SiInstagram size={18} />
-                                </a>
-                                <a href="https://linkedin.com/company/autopaneai" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 hover:text-[#0A66C2] hover:bg-slate-100 transition-all border border-slate-100 shadow-sm hover:scale-110">
-                                    <SiLinkedin size={18} />
-                                </a>
-                                <a href="https://youtube.com/@autopaneai" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-600 hover:text-[#FF0000] hover:bg-slate-100 transition-all border border-slate-100 shadow-sm hover:scale-110">
-                                    <SiYoutube size={18} />
-                                </a>
-                            </div>
-                        </div>
                     </div>
 
                     {/* Right Column: Standard Form */}
-                    <div className="lg:col-span-6">
-                        <div className="bg-white rounded-3xl p-6 md:p-10 border border-slate-200 shadow-sm flex flex-col justify-start self-start w-full">
+                    <div className="lg:col-span-7">
+                        <div className="bg-white rounded-3xl p-7 md:p-12 border border-slate-200 shadow-sm flex flex-col justify-start self-start w-full">
                             {submitted ? (
                                 <div className="text-center py-8 animate-fade-in">
                                     <div className="w-14 h-14 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-green-100">
@@ -183,7 +163,7 @@ ${userMessage || 'No message provided'}
                                     </p>
                                     <Button
                                         onClick={handleReset}
-                                        className="h-11 px-8 rounded-xl text-sm font-bold bg-[#00A8E4] text-white hover:!bg-[#0082b3] !border-none transition-all shadow-md shadow-blue-200"
+                                        className="h-11 px-8 rounded-xl text-sm font-bold bg-[#7E5CFE] text-white hover:!bg-[#6b47e8] !border-none transition-all shadow-md shadow-violet-200"
                                     >
                                         {t('contact.sendAnother')}
                                     </Button>
@@ -191,7 +171,7 @@ ${userMessage || 'No message provided'}
                             ) : (
                                 <>
                                     <div className="flex items-center gap-3 mb-6">
-                                        <div className="w-8 h-8 rounded-lg bg-[#00A8E4] flex items-center justify-center text-white text-base shadow-sm">
+                                        <div className="w-8 h-8 rounded-lg bg-[#7E5CFE] flex items-center justify-center text-white text-base shadow-sm">
                                             <UserOutlined />
                                         </div>
                                         <div>
@@ -215,7 +195,7 @@ ${userMessage || 'No message provided'}
                                             rules={[{ required: true, message: 'Required' }]}
                                             className="mb-3"
                                         >
-                                            <Input className="!rounded-lg bg-slate-50 border-slate-200 hover:border-[#0082b3] focus:border-[#00A8E4] transition-all h-10 text-xs" placeholder="e.g. Acme Auto Glass" />
+                                            <Input className="!rounded-lg bg-slate-50 border-slate-200 hover:border-[#6b47e8] focus:border-[#7E5CFE] transition-all h-10 text-xs" placeholder="e.g. Acme Auto Glass" />
                                         </Form.Item>
 
                                         <div className="grid grid-cols-2 gap-3 mb-3">
@@ -225,7 +205,7 @@ ${userMessage || 'No message provided'}
                                                 rules={[{ required: true, message: '!' }]}
                                                 className="mb-0"
                                             >
-                                                <Input className="!rounded-lg bg-slate-50 border-slate-200 hover:border-[#0082b3] focus:border-[#00A8E4] transition-all h-10 text-xs" placeholder="John" />
+                                                <Input className="!rounded-lg bg-slate-50 border-slate-200 hover:border-[#6b47e8] focus:border-[#7E5CFE] transition-all h-10 text-xs" placeholder="John" />
                                             </Form.Item>
                                             <Form.Item
                                                 name="lastName"
@@ -233,7 +213,7 @@ ${userMessage || 'No message provided'}
                                                 rules={[{ required: true, message: '!' }]}
                                                 className="mb-0"
                                             >
-                                                <Input className="!rounded-lg bg-slate-50 border-slate-200 hover:border-[#0082b3] focus:border-[#00A8E4] transition-all h-10 text-xs" placeholder="Doe" />
+                                                <Input className="!rounded-lg bg-slate-50 border-slate-200 hover:border-[#6b47e8] focus:border-[#7E5CFE] transition-all h-10 text-xs" placeholder="Doe" />
                                             </Form.Item>
                                         </div>
 
@@ -243,7 +223,7 @@ ${userMessage || 'No message provided'}
                                             rules={[{ required: true, type: 'email', message: '!' }]}
                                             className="mb-3"
                                         >
-                                            <Input className="!rounded-lg bg-slate-50 border-slate-200 hover:border-[#0082b3] focus:border-[#00A8E4] transition-all h-10 text-xs" placeholder="john@example.com" />
+                                            <Input className="!rounded-lg bg-slate-50 border-slate-200 hover:border-[#6b47e8] focus:border-[#7E5CFE] transition-all h-10 text-xs" placeholder="john@example.com" />
                                         </Form.Item>
 
                                         <Form.Item
@@ -264,9 +244,9 @@ ${userMessage || 'No message provided'}
                                                         ))}
                                                     </Select>
                                                 </Form.Item>
-                                                <Form.Item 
-                                                    name="phone" 
-                                                    noStyle 
+                                                <Form.Item
+                                                    name="phone"
+                                                    noStyle
                                                     normalize={(value) => {
                                                         if (!value) return value;
                                                         const onlyNums = value.replace(/[^\d]/g, '');
@@ -276,13 +256,13 @@ ${userMessage || 'No message provided'}
                                                     }}
                                                     rules={[
                                                         { required: true, message: '!' },
-                                                        { 
-                                                          pattern: /^\(\d{3}\)\s\d{3}-\d{4}$/, 
-                                                          message: t('contact.invalidPhone') 
+                                                        {
+                                                            pattern: /^\(\d{3}\)\s\d{3}-\d{4}$/,
+                                                            message: t('contact.invalidPhone')
                                                         }
                                                     ]}
                                                 >
-                                                    <Input className="flex-1 !rounded-lg bg-slate-50 border-slate-200 hover:border-[#0082b3] focus:border-[#00A8E4] transition-all h-10 text-xs" placeholder="(555) 000-0000" maxLength={14} />
+                                                    <Input className="flex-1 !rounded-lg bg-slate-50 border-slate-200 hover:border-[#6b47e8] focus:border-[#7E5CFE] transition-all h-10 text-xs" placeholder="(555) 000-0000" maxLength={14} />
                                                 </Form.Item>
                                             </div>
                                         </Form.Item>
@@ -294,7 +274,7 @@ ${userMessage || 'No message provided'}
                                         >
                                             <Input.TextArea
                                                 rows={2}
-                                                className="!rounded-lg bg-slate-50 border-slate-200 hover:border-[#0082b3] focus:border-[#00A8E4] transition-all text-xs"
+                                                className="!rounded-lg bg-slate-50 border-slate-200 hover:border-[#6b47e8] focus:border-[#7E5CFE] transition-all text-xs"
                                                 placeholder={t('contact.howCanWeHelp')}
                                             />
                                         </Form.Item>
@@ -304,7 +284,7 @@ ${userMessage || 'No message provided'}
                                                 type="primary"
                                                 htmlType="submit"
                                                 loading={loading}
-                                                className="w-full !h-11 !rounded-xl !text-sm !font-bold !bg-[#00A8E4] hover:!bg-[#0082b3] !border-none shadow-md shadow-blue-200 transition-all hover:-translate-y-1 active:scale-[0.98]"
+                                                className="w-full !h-11 !rounded-xl !text-sm !font-bold !bg-[#7E5CFE] hover:!bg-[#6b47e8] !border-none shadow-md shadow-violet-200 transition-all hover:-translate-y-1 active:scale-[0.98]"
                                             >
                                                 {t('common.submit')}
                                             </Button>
@@ -322,9 +302,9 @@ ${userMessage || 'No message provided'}
                 {/* How It Works Section */}
                 <div className="w-full mb-24">
                     <div className="text-center mb-16">
-                        <span className="text-[#00A8E4] font-bold tracking-[0.2em] uppercase text-xs mb-3 block">{t('contact.howItWorks')}</span>
+                        <span className="text-[#7E5CFE] font-bold tracking-[0.2em] uppercase text-xs mb-3 block">{t('contact.howItWorks')}</span>
                         <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-6 tracking-tight">
-                            3 <span className="text-[#00A8E4]">{t('contact.simpleSteps')}</span> {t('contact.toGetStarted')}
+                            3 <span className="text-[#7E5CFE]">{t('contact.simpleSteps')}</span> {t('contact.toGetStarted')}
                         </h2>
                         <h3 className="text-lg md:text-xl font-medium text-slate-600 mb-6 max-w-3xl mx-auto">{t('contact.howItWorksDesc')}</h3>
                     </div>
@@ -332,9 +312,9 @@ ${userMessage || 'No message provided'}
                     <div ref={stepsContainerRef} className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
                         {/* Connecting Line (Desktop) */}
                         <div className="hidden md:block absolute top-8 left-[10%] right-[10%] h-[2px] bg-slate-200 z-0">
-                            <div className="progress-line absolute top-0 left-0 h-full w-0 bg-[#00A8E4]"></div>
+                            <div className="progress-line absolute top-0 left-0 h-full w-0 bg-[#7E5CFE]"></div>
                         </div>
-                        
+
                         {[
                             {
                                 step: "01",
@@ -375,9 +355,9 @@ ${userMessage || 'No message provided'}
                 <div className="w-full mb-32 bg-slate-50 rounded-[3rem] p-10 md:p-16 border border-slate-100">
                     <div className="flex flex-col lg:flex-row gap-16 items-center">
                         <div className="lg:w-2/5">
-                            <span className="text-[#00A8E4] font-bold tracking-[0.2em] uppercase text-xs mb-3 block">{t('contact.why')}</span>
+                            <span className="text-[#7E5CFE] font-bold tracking-[0.2em] uppercase text-xs mb-3 block">{t('contact.why')}</span>
                             <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 mb-6 leading-[1.1]">
-                                {t('contact.connectWith')} <span className="text-[#00A8E4]">APAI?</span>
+                                {t('contact.connectWith')} <span className="text-[#7E5CFE]">APAI?</span>
                             </h2>
                             <p className="text-slate-500 text-lg leading-relaxed">
                                 {t('contact.whyConnectDesc')}
@@ -391,12 +371,12 @@ ${userMessage || 'No message provided'}
                                 { title: t('contact.zeroPressureDemos'), desc: t('contact.zeroPressureDemosDesc'), icon: <PlaySquareOutlined style={{ color: '#ffffff' }} /> },
                                 { title: t('contact.rapidSupport'), desc: t('contact.rapidSupportDesc'), icon: <ThunderboltOutlined style={{ color: '#ffffff' }} /> }
                             ].map((item, index) => (
-                                <div key={index} className="bg-[#00A8E4] p-6 rounded-[1.5rem] shadow-md transition-all hover:-translate-y-1 hover:shadow-lg shadow-cyan-500/20">
+                                <div key={index} className="bg-[#7E5CFE] p-6 rounded-[1.5rem] shadow-md transition-all hover:-translate-y-1 hover:shadow-lg shadow-violet-500/20">
                                     <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl mb-4 border border-white/30 shadow-inner backdrop-blur-sm">
                                         {item.icon}
                                     </div>
-                                    <h4 className="text-base font-bold text-white mb-2">{item.title}</h4>
-                                    <p className="text-cyan-50 text-sm leading-relaxed">{item.desc}</p>
+                                    <h4 className="text-base font-bold !text-white mb-2">{item.title}</h4>
+                                    <p className="!text-white text-sm leading-relaxed">{item.desc}</p>
                                 </div>
                             ))}
                         </div>

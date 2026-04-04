@@ -21,170 +21,105 @@ const Footer = () => {
     setIsAuthed(!!token);
   }, []);
 
+  // ─── Dashboard Footer (Minimalist Strip) ──────────────────────────────────
   if (isAuthed) {
     return (
-      <AntFooter className="bg-white px-3 sm:px-4 md:px-6 py-2 md:py-1">
-        <div className="mx-auto w-full max-w-7xl flex flex-col xs:flex-row items-center justify-between gap-3 sm:gap-4 text-xs flex-wrap">
-          {/* Left: Logo + Copy */}
-          <div className="flex items-center gap-2 sm:gap-3 text-slate-400">
-            <motion.div
-              className="flex items-center gap-2"
-              whileHover={{ scale: 1.05 }}
-            >
-              <Logo className="w-10 sm:w-12 h-auto" />
-            </motion.div>
-            <span className="hidden sm:inline text-slate-300">|</span>
-            <span className="text-xs sm:text-xs whitespace-nowrap">© {new Date().getFullYear()} APAI</span>
+      <AntFooter className="bg-white border-t border-slate-100 px-4 py-2.5">
+        <div className="mx-auto w-full max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-4">
+          {/* Brand Identity */}
+          <div className="flex items-center gap-3">
+            <Link to="/" className="flex items-center gap-2 group transition-transform hover:scale-[1.02]">
+              <Logo className="w-9 h-auto" />
+              <span className="text-slate-300 font-light text-sm">|</span>
+              <span className="text-[11px] font-medium tracking-wider text-slate-400 uppercase">
+                © {new Date().getFullYear()} AutoPane AI
+              </span>
+            </Link>
           </div>
 
-          {/* Quick Links Section */}
-          <div className="hidden md:flex items-center gap-3 md:gap-4 lg:gap-6 text-xs flex-wrap">
-            <Link to="/" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide text-xs md:text-xs">{t('nav.home')}</Link>
-            <Link to="/pricing" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide text-xs md:text-xs">{t('nav.pricing')}</Link>
-            <Link to="/features" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide text-xs md:text-xs">{t('nav.features')}</Link>
-            <Link to="/about" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide text-xs md:text-xs">{t('nav.about')}</Link>
-            <Link to="/contact" className="text-slate-500 hover:text-slate-800 transition-colors tracking-wide text-xs md:text-xs">{t('nav.contact')}</Link>
-            <Link to="/blogs" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide text-xs md:text-xs">{t('nav.blogs')}</Link>
-            <Link to="/vin-decoder" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide text-xs md:text-xs">{t('nav.vinDecoder')}</Link>
-            <Link to="/sitemap" className="text-slate-500 hover:text-slate-800 transition-colors tracking-wide text-xs md:text-xs">{t('nav.sitemap')}</Link>
-            <Link to="/privacy-policy" className="text-slate-500 hover:text-slate-800 transition-colors tracking-wide text-xs md:text-xs">{t('nav.privacy')}</Link>
-            <Link to="/terms-of-service" className="text-slate-500 hover:text-slate-800 transition-colors tracking-wide text-xs md:text-xs">{t('nav.terms')}</Link>
-          </div>
-          {/* Social Media Section */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <motion.a
-              href={SOCIAL_LINKS.youtube}
-              className="hover:scale-110 transition-transform"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="YouTube"
-              whileHover={{ scale: 1.2 }}
-            >
-              <SiYoutube size={16} className="sm:w-5 sm:h-5" color="#FF0701" />
-            </motion.a>
-            <motion.a
-              href={SOCIAL_LINKS.x}
-              className="hover:scale-110 transition-transform"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="X"
-              whileHover={{ scale: 1.2 }}
-            >
-              <SiX size={16} className="sm:w-5 sm:h-5" color="#000000" />
-            </motion.a>
-            <motion.a
-              href={SOCIAL_LINKS.instagram}
-              className="hover:scale-110 transition-transform"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Instagram"
-              whileHover={{ scale: 1.2 }}
-            >
-              <SiInstagram size={16} className="sm:w-5 sm:h-5" style={{ background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }} />
-            </motion.a>
-            <motion.a
-              href={SOCIAL_LINKS.linkedin}
-              className="hover:scale-110 transition-transform"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="LinkedIn"
-              whileHover={{ scale: 1.2 }}
-            >
-              <SiLinkedin size={16} className="sm:w-5 sm:h-5" color="#0A66C2" />
-            </motion.a>
-            <motion.a
-              href={SOCIAL_LINKS.tiktok}
-              className="hover:scale-110 transition-transform"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="TikTok"
-              whileHover={{ scale: 1.2 }}
-            >
-              <SiTiktok size={16} className="sm:w-5 sm:h-5" color="#000000" />
-            </motion.a>
+          {/* Practical Links */}
+          <nav className="flex items-center gap-5 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+            <Link to="/help" className="hover:text-violet-600 transition-colors uppercase">{t('nav.help') || 'Help'}</Link>
+            <Link to="/privacy-policy" className="hover:text-violet-600 transition-colors uppercase">{t('nav.privacy')}</Link>
+            <Link to="/terms-of-service" className="hover:text-violet-600 transition-colors uppercase">{t('nav.terms')}</Link>
+          </nav>
+
+          {/* Social Icons (Brand Colored) */}
+          <div className="flex items-center gap-4">
+            <motion.a href={SOCIAL_LINKS.linkedin} target="_blank" className="text-[#0A66C2] hover:opacity-85 transition-all" whileHover={{ y: -2 }}><SiLinkedin size={15} /></motion.a>
+            <motion.a href={SOCIAL_LINKS.instagram} target="_blank" className="text-[#E4405F] hover:opacity-85 transition-all" whileHover={{ y: -2 }}><SiInstagram size={15} /></motion.a>
+            <motion.a href={SOCIAL_LINKS.x} target="_blank" className="text-black hover:opacity-70 transition-all" whileHover={{ y: -2 }}><SiX size={15} /></motion.a>
+            <motion.a href={SOCIAL_LINKS.youtube} target="_blank" className="text-[#FF0000] hover:opacity-85 transition-all" whileHover={{ y: -2 }}><SiYoutube size={15} /></motion.a>
+            <motion.a href={SOCIAL_LINKS.tiktok} target="_blank" className="text-[#EE1D52] hover:opacity-85 transition-all" whileHover={{ y: -2 }}><SiTiktok size={15} /></motion.a>
           </div>
         </div>
       </AntFooter>
     );
   }
 
+  // ─── Public Marketing Footer (Refined Minimalist) ──────────────────────────
   return (
-    <AntFooter
-      className="bg-white px-3 sm:px-4 md:px-6 !pt-3 md:!pt-4 !pb-2"
-    >
+    <AntFooter className="bg-slate-50/50 border-t border-slate-100 pt-8 pb-3 px-5">
       <div className="mx-auto w-full max-w-6xl">
-        <Row gutter={[24, 20]} className="md:gutter-[32,24]">
-          {/* Brand Section */}
-          <Col xs={24} sm={12} md={6} lg={6} className="ps-2 sm:ps-4 md:ps-0">
-            <motion.div
-              className="flex items-center gap-2 mb-2 md:mb-3"
-              whileHover={{ scale: 1.05 }}
-            >
-              <Logo className="w-16 sm:w-20 h-auto" />
-            </motion.div>
-
-            <Paragraph className="!text-slate-600 !mt-2 md:!mt-4 !mb-4 text-xs sm:text-sm leading-relaxed max-w-sm">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-12 mb-5">
+          
+          {/* Brand Identity Column */}
+          <div className="md:col-span-4 lg:col-span-5">
+            <Link to="/" className="inline-block mb-3 transition-transform hover:scale-[1.02]">
+              <Logo className="w-22 h-auto" />
+            </Link>
+            <Paragraph className="!text-slate-500 !mb-3 text-[13px] leading-relaxed max-w-sm font-medium">
               {t('footer.tagline')}
             </Paragraph>
-          </Col>
-
-          {/* Quick Links */}
-          <Col xs={24} sm={12} md={6} lg={6} className="ps-2 sm:ps-4 md:ps-0">
-            <Title level={5} className="!text-slate-800 !mb-2 md:!mb-3 text-xs sm:text-sm font-semibold">
-              {t('footer.quickLinks')}
-            </Title>
-            <ul className="mt-2 md:mt-3 space-y-1 md:space-y-2 text-xs sm:text-sm">
-              <li><Link to="/" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">{t('nav.home')}</Link></li>
-              <li><Link to="/pricing" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">{t('nav.pricing')}</Link></li>
-              <li><Link to="/features" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">{t('nav.features')}</Link></li>
-              <li><Link to="/about" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">{t('nav.about')}</Link></li>
-            </ul>
-          </Col>
-
-          {/* Resources */}
-          <Col xs={24} sm={12} md={6} lg={6} className="ps-2 sm:ps-4 md:ps-0">
-            <Title level={5} className="!text-slate-800 !mb-2 md:!mb-3 text-xs sm:text-sm font-semibold">
-              {t('footer.resources')}
-            </Title>
-            <ul className="space-y-1 md:space-y-2 text-xs sm:text-sm">
-              <li><Link to="/contact" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">{t('nav.contact')}</Link></li>
-              <li><Link to="/blogs" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">{t('nav.blogs')}</Link></li>
-              <li><Link to="/vin-decoder" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">{t('nav.vinDecoder')}</Link></li>
-              <li><Link to="/sitemap" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">{t('nav.sitemap')}</Link></li>
-              <li><Link to="/privacy-policy" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">{t('nav.privacy')}</Link></li>
-              <li><Link to="/terms-of-service" className="text-slate-500 hover:text-[#7E5CFE] transition-colors tracking-wide">{t('nav.termsOfService')}</Link></li>
-            </ul>
-          </Col>
-
-          {/* Follow Us */}
-          <Col xs={24} sm={12} md={6} lg={6} className="ps-2 sm:ps-4 md:ps-0">
-            <Title level={5} className="!text-slate-800 !mb-2 md:!mb-3 text-xs sm:text-sm font-semibold">
-              {t('footer.followUs')}
-            </Title>
-            <div className="flex items-center gap-2 sm:gap-3 md:gap-4 flex-wrap">
-              <motion.a href={SOCIAL_LINKS.youtube} className="hover:scale-110 transition-transform" target="_blank" rel="noopener noreferrer" aria-label="YouTube" whileHover={{ scale: 1.2 }}>
-                <SiYoutube size={18} className="sm:w-6 sm:h-6" color="#FF0000" />
-              </motion.a>
-              <motion.a href={SOCIAL_LINKS.x} className="hover:scale-110 transition-transform" target="_blank" rel="noopener noreferrer" aria-label="X" whileHover={{ scale: 1.2 }}>
-                <SiX size={18} className="sm:w-6 sm:h-6" color="#000000" />
-              </motion.a>
-              <motion.a href={SOCIAL_LINKS.instagram} className="hover:scale-110 transition-transform" target="_blank" rel="noopener noreferrer" aria-label="Instagram" whileHover={{ scale: 1.2 }}>
-                <SiInstagram size={18} className="sm:w-6 sm:h-6" style={{ background: 'linear-gradient(135deg, #833AB4 0%, #FD1D1D 45%, #FCAF45 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }} />
-              </motion.a>
-              <motion.a href={SOCIAL_LINKS.linkedin} className="hover:scale-110 transition-transform" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" whileHover={{ scale: 1.2 }}>
-                <SiLinkedin size={18} className="sm:w-6 sm:h-6" color="#0A66C2" />
-              </motion.a>
-              <motion.a href={SOCIAL_LINKS.tiktok} className="hover:scale-110 transition-transform" target="_blank" rel="noopener noreferrer" aria-label="TikTok" whileHover={{ scale: 1.2 }}>
-                <SiTiktok size={18} className="sm:w-6 sm:h-6" color="#000000" />
-              </motion.a>
+            <div className="flex items-center gap-3">
+              <motion.a href={SOCIAL_LINKS.linkedin} target="_blank" className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[#0A66C2] hover:border-[#0A66C2]/30 hover:shadow-md transition-all" whileHover={{ y: -3 }}><SiLinkedin size={14} /></motion.a>
+              <motion.a href={SOCIAL_LINKS.instagram} target="_blank" className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[#E4405F] hover:border-[#E4405F]/30 hover:shadow-md transition-all" whileHover={{ y: -3 }}><SiInstagram size={14} /></motion.a>
+              <motion.a href={SOCIAL_LINKS.x} target="_blank" className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-black hover:border-slate-400 hover:shadow-md transition-all" whileHover={{ y: -3 }}><SiX size={14} /></motion.a>
+              <motion.a href={SOCIAL_LINKS.youtube} target="_blank" className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[#FF0000] hover:border-[#FF0000]/30 hover:shadow-md transition-all" whileHover={{ y: -3 }}><SiYoutube size={14} /></motion.a>
+              <motion.a href={SOCIAL_LINKS.tiktok} target="_blank" className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[#EE1D52] hover:border-[#EE1D52]/30 hover:shadow-md transition-all" whileHover={{ y: -3 }}><SiTiktok size={14} /></motion.a>
             </div>
-          </Col>
-        </Row>
+          </div>
 
-        <Divider className="!border-slate-200 !mt-4 md:!mt-6 !mb-2 md:!mb-3" />
+          {/* Navigation Columns */}
+          <div className="md:col-span-8 lg:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-8">
+            {/* Quick Links */}
+            <div>
+              <h5 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-800 mb-3">{t('footer.quickLinks')}</h5>
+              <ul className="space-y-2 text-[13px] font-semibold">
+                <li><Link to="/" className="text-slate-500 hover:text-violet-600 transition-colors">{t('nav.home')}</Link></li>
+                <li><Link to="/features" className="text-slate-500 hover:text-violet-600 transition-colors">{t('nav.features')}</Link></li>
+                <li><Link to="/about" className="text-slate-500 hover:text-violet-600 transition-colors">{t('nav.about')}</Link></li>
+                <li><Link to="/pricing" className="text-slate-500 hover:text-violet-600 transition-colors">{t('nav.pricing')}</Link></li>
+              </ul>
+            </div>
 
-        <div className="py-2 text-center text-[10px] xs:text-[11px] sm:text-xs text-slate-400">
-          © {new Date().getFullYear()} APAI. {t('footer.allRightsReserved')}
+            {/* Resources */}
+            <div>
+              <h5 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-800 mb-3">{t('footer.resources')}</h5>
+              <ul className="space-y-2 text-[13px] font-semibold">
+                <li><Link to="/blogs" className="text-slate-500 hover:text-violet-600 transition-colors">{t('nav.blogs')}</Link></li>
+                <li><Link to="/contact" className="text-slate-500 hover:text-violet-600 transition-colors">{t('nav.contact')}</Link></li>
+                <li><Link to="/vin-decoder" className="text-slate-500 hover:text-violet-600 transition-colors">{t('nav.vinDecoder')}</Link></li>
+                <li><Link to="/sitemap" className="text-slate-500 hover:text-violet-600 transition-colors">{t('nav.sitemap')}</Link></li>
+              </ul>
+            </div>
+
+            {/* Legal (Combining some small ones) */}
+            <div className="col-span-2 sm:col-span-1 mt-8 sm:mt-0">
+              <h5 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-800 mb-3">Legal</h5>
+              <ul className="space-y-2 text-[13px] font-semibold">
+                <li><Link to="/privacy-policy" className="text-slate-500 hover:text-violet-600 transition-colors">{t('nav.privacy')}</Link></li>
+                <li><Link to="/terms-of-service" className="text-slate-500 hover:text-violet-600 transition-colors">{t('nav.terms')}</Link></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Strip */}
+        <div className="pt-3 border-t border-slate-200/60 flex flex-col md:flex-row items-center justify-center gap-3">
+          <p className="text-xs text-slate-400 font-medium tracking-wide">
+            © {new Date().getFullYear()} AutoPane AI. {t('footer.allRightsReserved')}
+          </p>
         </div>
       </div>
     </AntFooter>

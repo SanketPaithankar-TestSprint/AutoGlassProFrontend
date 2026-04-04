@@ -43,13 +43,22 @@ body,
 
 
 .nav-link:hover,
-.nav-link:focus,
-.nav-link.active {
+.nav-link:focus {
   background: linear-gradient(90deg, #8E6BFF 0%, #1FA6C9 50%, #0C8FB8 100%) !important;
   -webkit-background-clip: text !important;
   background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
+}
+
+.nav-link.active,
+.nav-link.active:hover,
+.nav-link.active:focus {
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  -webkit-text-fill-color: #7E5CFE !important;
+  color: #7E5CFE !important;
 }
 
 .hover-gradient-text {
@@ -439,33 +448,54 @@ input[type=number] {
   z-index: 10;
 }
 
-/* Auth Page Button Gradients */
+/* Auth styles aligned with public page buttons/links */
 .auth-button-gradient {
-  background: linear-gradient(90deg, #8E6BFF 0%, #1FA6C9 50%, #0C8FB8 100%) !important;
+  background: #7e5cfe !important;
   border: none !important;
-  color: white !important;
+  color: #ffffff !important;
+  border-radius: 9999px !important;
+  font-family: "Poppins", sans-serif !important;
+  font-weight: 600 !important;
+  box-shadow: 0 10px 22px rgba(126, 92, 254, 0.2) !important;
+  transition: all 0.25s ease !important;
 }
 
 .auth-button-gradient:hover {
-  opacity: 0.9 !important;
+  background: #6b47e8 !important;
+  border-color: #6b47e8 !important;
+  color: #ffffff !important;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(142, 107, 255, 0.3);
+  box-shadow: 0 14px 28px rgba(126, 92, 254, 0.25) !important;
 }
 
 .auth-button-gradient:active {
   transform: translateY(0);
 }
 
+.auth-button-gradient-outline {
+  background: transparent !important;
+  border: 2px solid #7e5cfe !important;
+  color: #7e5cfe !important;
+  border-radius: 9999px !important;
+  font-family: "Poppins", sans-serif !important;
+  font-weight: 600 !important;
+}
+
+.auth-button-gradient-outline:hover {
+  background: rgba(126, 92, 254, 0.08) !important;
+  border-color: #6b47e8 !important;
+  color: #6b47e8 !important;
+}
+
 .auth-link-gradient-hover {
   background: none !important;
   border: none !important;
-  transition: all 0.3s ease !important;
+  color: #7e5cfe !important;
+  transition: color 0.25s ease !important;
 }
 
 .auth-link-gradient-hover:hover {
-  background: linear-gradient(90deg, #8E6BFF 0%, #1FA6C9 50%, #0C8FB8 100%) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  color: transparent !important;
+  color: #6b47e8 !important;
+  background: none !important;
+  -webkit-text-fill-color: #6b47e8 !important;
 }

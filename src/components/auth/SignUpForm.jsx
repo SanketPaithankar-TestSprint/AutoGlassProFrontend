@@ -426,14 +426,14 @@ const SignUpForm = ({ onSuccess, onCancel }) => {
                     <div className="flex flex-col sm:flex-row gap-4">
                         <Button
                             onClick={onCancel}
-                            className="h-11 rounded-xl auth-button-gradient-outline font-semibold text-lg flex-1 flex items-center justify-center transition-all bg-white border border-gray-200 hover:border-[#7C3AED] hover:text-[#7C3AED]"
+                            className="h-11 !rounded-full auth-button-gradient-outline font-semibold text-base flex-1 flex items-center justify-center transition-all"
                         >
                             {t('common.cancel')}
                         </Button>
                         <Button
                             type="primary"
                             htmlType="submit"
-                            className="h-11 rounded-xl auth-button-gradient text-white font-['Plus_Jakarta_Sans'] font-bold !shadow-[0px_10px_40px_rgba(98,60,225,0.15)] active:scale-[0.98] transition-all duration-200 text-xl flex-1 flex items-center justify-center overflow-hidden"
+                            className="h-11 !rounded-full auth-button-gradient text-white !font-semibold transition-all duration-300 text-base flex-1 flex items-center justify-center overflow-hidden"
                             loading={loading}
                         >
                             {t('auth.continue')}

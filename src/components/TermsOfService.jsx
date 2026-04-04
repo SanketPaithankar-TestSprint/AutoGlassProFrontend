@@ -109,17 +109,12 @@ const TermsOfService = () => {
                 title="Terms of Service | APAI Auto Glass Management Software"
                 description="Review the terms and conditions for using APAI's AI-powered auto glass platform. Learn about subscriptions, usage rights, and our $99 service."
             />
-            {/* Static gradient background */}
-            <div
-                className="fixed inset-0 z-0 pointer-events-none opacity-20"
-                style={{ background: 'linear-gradient(135deg, #7E5CFE 0%, #00A8E4 100%)' }}
-            />
 
-            <div className="max-w-4xl mx-auto bg-white/90 backdrop-blur-xl rounded-3xl shadow-sm border border-slate-100 p-8 md:p-12 relative z-10">
+            <div className="max-w-4xl mx-auto mt-6 md:mt-10 bg-white rounded-3xl shadow-sm border border-slate-100 p-8 md:p-12 relative z-10">
                 {/* Header */}
                 <div className="text-center mb-12">
                     <FileProtectOutlined className="text-5xl text-violet-600 mb-4" />
-                    <Title level={1} className="!text-3xl md:!text-4xl !font-bold !text-slate-900 !mb-3 !font-outfit">
+                    <Title level={1} className="!text-3xl md:!text-4xl !font-bold !text-slate-900 !mb-3 !font-black tracking-[-0.03em]">
                         {t('terms.title')}
                     </Title>
                     <Paragraph className="!text-slate-600 !text-base !mb-1 !leading-relaxed max-w-2xl mx-auto">
@@ -135,7 +130,7 @@ const TermsOfService = () => {
                 <div className="space-y-10">
                     {sections.map((section, index) => (
                         <div key={index}>
-                            <Title level={3} className="!text-xl !font-bold !text-slate-800 !mb-3 !font-outfit">
+                            <Title level={3} className="!text-xl !font-bold !text-slate-800 !mb-3 !font-black tracking-[-0.03em]">
                                 {section.number}. {section.title}
                             </Title>
 

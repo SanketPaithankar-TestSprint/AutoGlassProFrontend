@@ -32,11 +32,11 @@ const AuthShell = ({
         <section className="order-2 flex w-full items-center justify-center px-5 py-8 sm:px-8 md:px-10 lg:order-1 lg:w-[50%] lg:px-14 xl:px-20">
           <div className="w-full max-w-[500px]">
             <div className="mb-10 mt-10">
-              <h1 className="text-[38px] font-bold leading-tight tracking-tight text-[#0D2B5C] sm:text-[44px]">
+              <h1 className="text-[38px] font-black leading-tight tracking-[-0.03em] text-[#1e293b] sm:text-[44px]">
                 {title}
               </h1>
-              <p className="mt-3 max-w-[420px] text-[15px] leading-7 text-slate-500 sm:text-base group">
-                <span className="transition-colors duration-200 text-slate-500 group-hover:bg-gradient-to-r group-hover:from-violet-500 group-hover:to-fuchsia-500 group-hover:bg-clip-text group-hover:text-transparent">
+              <p className="mt-3 max-w-[420px] text-[15px] leading-7 text-slate-600 sm:text-base font-medium">
+                <span className="text-slate-600">
                   {description}
                 </span>
               </p>
